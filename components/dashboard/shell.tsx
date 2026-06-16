@@ -23,12 +23,10 @@ export interface NavItem {
 
 export function DashboardShell({
   items,
-  businessName,
   liveUrl,
   children,
 }: {
   items: NavItem[];
-  businessName: string;
   liveUrl?: string | null;
   children: React.ReactNode;
 }) {

@@ -162,7 +162,6 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
                     block={block}
                     onToggle={(v) => toggleBlock(type, v)}
                     onItem={(idx, field, value) => updateItem(type, idx, field, value)}
-                    onField={(field, value) => block && update(block.id, field, value)}
                   />
                 );
               })}
@@ -200,14 +199,13 @@ function FieldRow({ label, children }: { label: string; children: React.ReactNod
 }
 
 function BlockEditor({
-  type, enabled, block, onToggle, onItem, onField,
+  type, enabled, block, onToggle, onItem,
 }: {
   type: BlockType;
   enabled: boolean;
   block: any;
   onToggle: (v: boolean) => void;
   onItem: (idx: number, field: string, value: string) => void;
-  onField: (field: string, value: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const items: any[] = block?.content?.items || [];

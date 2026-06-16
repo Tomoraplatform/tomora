@@ -64,6 +64,9 @@ export interface Site {
   trial_ends_at: string | null;
   site_data: SiteData;
   paystack_public_key: string | null;
+  bank_name: string | null;
+  account_number: string | null;
+  account_name: string | null;
   created_at: string;
 }
 
@@ -77,6 +80,7 @@ export interface Subscription {
   renewal_amount: number;
   next_billing_date: string | null;
   last_payment_date: string | null;
+  last_reference: string | null;
   created_at: string;
 }
 

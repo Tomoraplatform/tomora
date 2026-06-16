@@ -7,7 +7,7 @@ export default async function PanelLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { site, profile } = await getDashboardData();
+  const { site } = await getDashboardData();
   const isEcommerce = site?.category === "ecommerce";
 
   const items: NavItem[] = [
@@ -33,7 +33,7 @@ export default async function PanelLayout({
     : null;
 
   return (
-    <DashboardShell items={items} businessName={profile?.business_name || "My Site"} liveUrl={liveUrl}>
+    <DashboardShell items={items} liveUrl={liveUrl}>
       {children}
     </DashboardShell>
   );
