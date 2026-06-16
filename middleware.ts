@@ -44,10 +44,15 @@ export async function middleware(request: NextRequest) {
   // ---- Tenant (published site) routing ----
   if (tenant) {
     const rewriteUrl = url.clone();
-    rewriteUrl.pathname = `/_sites/${tenant.type}/${encodeURIComponent(
+    rewriteUrl.pathname = `/sites/${tenant.type}/${encodeURIComponent(
       tenant.value
     )}${url.pathname === "/" ? "" : url.pathname}`;
     return NextResponse.rewrite(rewriteUrl);
+  }
+
+  // The internal /sites/* tree is only reachable via tenant rewrites above.
+  if (url.pathname.startsWith("/sites/")) {
+    return new NextResponse("Not found", { status: 404 });
   }
 
   // ---- Main app: auth gating ----
