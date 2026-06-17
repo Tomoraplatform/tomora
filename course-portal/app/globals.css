@@ -1,0 +1,66 @@
+@import url("https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-ui: "Urbanist", sans-serif;
+  --font-editorial: "Lora", serif;
+
+  /* Soft cream / charcoal / warm caramel palette */
+  --color-bg: #fff8ec;
+  --color-surface: #ffffff;
+  --color-surface-warm: #fdf3e2;
+  --color-text: #1d1d1d;
+  --color-muted: #7c7468;
+  --color-border: #ece2cf;
+  --color-accent: #c8822f; /* warm caramel */
+  --color-accent-soft: #f6e8d4;
+  --color-accent-dark: #a8691f;
+  --color-success: #4f7a45;
+  --color-warning: #b8821b;
+  --color-error: #b4452f;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.font-editorial {
+  font-family: var(--font-editorial);
+}
+
+/* Hide download / print affordances inside embedded PDF viewers where possible */
+.pdf-frame {
+  width: 100%;
+  border: none;
+}
+
+::selection {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-dark);
+}
+
+/* Thin custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #e3d6bd;
+  border-radius: 999px;
+  border: 3px solid var(--color-bg);
+}
