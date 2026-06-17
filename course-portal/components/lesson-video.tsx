@@ -1,4 +1,15 @@
-/** Bunny Stream embed. `url` is the iframe embed URL stored per lesson. */
+/**
+ * Lesson video. Supports two sources:
+ *  - A directly-uploaded file (Supabase Storage / any .mp4/.webm/...) → <video>
+ *  - A Bunny Stream / embed iframe URL → <iframe>
+ */
+function isDirectVideoFile(url: string) {
+  return (
+    /\.(mp4|webm|ogg|ogv|mov|m4v)(\?|#|$)/i.test(url) ||
+    url.includes("/storage/v1/object/")
+  );
+}
+
 export function LessonVideo({ url, title }: { url: string; title: string }) {
   const isPlaceholder = !url || url.includes("LIBRARY_ID");
 
@@ -8,9 +19,24 @@ export function LessonVideo({ url, title }: { url: string; title: string }) {
         <div className="px-6">
           <p className="font-semibold text-charcoal">Video coming soon</p>
           <p className="mt-1 text-sm text-muted">
-            An admin can add the Bunny Stream embed link for this lesson.
+            An admin can upload a video or add an embed link for this lesson.
           </p>
         </div>
+      </div>
+    );
+  }
+
+  if (isDirectVideoFile(url)) {
+    return (
+      <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-line bg-black shadow-card">
+        <video
+          src={url}
+          title={title}
+          controls
+          controlsList="nodownload"
+          playsInline
+          className="absolute inset-0 h-full w-full"
+        />
       </div>
     );
   }
