@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "Tomora — Build Your Business Website in Minutes",
   description:
     "No code. No stress. Pick a template, add your brand, and go live — built for African businesses.",
-  icons: { icon: "/tomora-logo.png" },
+  // Favicon + touch icon resolved from app/icon.svg, app/icon.png, app/apple-icon.png
 };
 
 export default function RootLayout({
