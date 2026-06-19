@@ -2,7 +2,7 @@
 
 import { ArrowRight, PlayCircle, Truck, RotateCcw, ShieldCheck, Headphones, Instagram, Facebook } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, BrandButton, Img, ProductCardV2 } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2 } from "./shared";
 
 export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "LUNORA";
@@ -33,7 +33,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
             <h1 className="mt-4 font-serif text-5xl font-bold leading-[1.05] sm:text-6xl">{siteData.heroHeadline}</h1>
             <p className="mt-5 max-w-md text-lg italic text-black/60">{siteData.heroSubtext}</p>
             <div className="mt-7 flex flex-wrap items-center gap-4">
-              <BrandButton as="a" href="#products">{siteData.ctaText || "Shop Now"} <ArrowRight className="h-4 w-4" /></BrandButton>
+              <BrandButton as="a" href={siteData.ctaHref || "#products"}>{siteData.ctaText || "Shop Now"} <ArrowRight className="h-4 w-4" /></BrandButton>
               <a href="#" className="flex items-center gap-2 text-sm font-medium"><PlayCircle className="h-5 w-5" /> Watch Lookbook</a>
             </div>
             <div className="mt-8 grid max-w-md grid-cols-3 gap-4">
@@ -127,7 +127,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
           <div className="lg:col-span-2">
             <p className="text-lg font-semibold">{name}</p>
             <p className="mt-2 max-w-xs text-sm text-white/50">Curated fashion essentials for every day.</p>
-            <div className="mt-4 flex gap-3 text-white/70"><Instagram className="h-5 w-5" /><Facebook className="h-5 w-5" /></div>
+            <SocialIcons social={siteData.social} className="mt-4 text-white/70" />
           </div>
           {[["Shop", ["All Products", "New Arrivals", "Women", "Men", "Sale"]], ["Customer Care", ["Shipping", "Returns", "FAQ", "Contact"]], ["About Us", ["Story", "Careers", "Press"]]].map(([h, items]: any) => (
             <div key={h}><h4 className="text-sm font-semibold">{h}</h4><ul className="mt-3 space-y-2 text-sm text-white/50">{items.map((x: string) => <li key={x}>{x}</li>)}</ul></div>

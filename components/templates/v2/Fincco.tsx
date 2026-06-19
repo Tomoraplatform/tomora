@@ -2,7 +2,7 @@
 
 import { ArrowRight, TrendingUp, Building2, Briefcase, LineChart, Sparkles, Headphones, Star, Phone } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img } from "./shared";
 
 const GREEN = "#0D3B2A";
 const SERVICES = [
@@ -39,7 +39,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
           <h1 className="mt-3 max-w-2xl text-4xl font-bold leading-tight sm:text-5xl">{siteData.heroHeadline}</h1>
           <p className="mt-4 max-w-md text-white/80">{siteData.heroSubtext}</p>
           <div className="mt-7 flex flex-wrap gap-3">
-            <BrandButton>{siteData.ctaText || "Free Consultation"} <ArrowRight className="h-4 w-4" /></BrandButton>
+            <BrandButton as="a" href={siteData.ctaHref || "#"}>{siteData.ctaText || "Free Consultation"} <ArrowRight className="h-4 w-4" /></BrandButton>
             <a href="#" className="inline-flex items-center gap-2 rounded-md border border-white/40 px-6 py-3 text-sm font-semibold">Learn More</a>
           </div>
         </div>
@@ -59,9 +59,12 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
       <section className="mx-auto max-w-6xl px-5 pb-16">
         <h2 className="text-center text-3xl font-bold">The largest truly global wealth manager</h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {SERVICES.map(({ icon: Icon, t }) => (
-            <div key={t} className="rounded-2xl border border-black/10 p-6"><span className="flex h-11 w-11 items-center justify-center rounded-lg" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span><h3 className="mt-4 font-semibold">{t}</h3><p className="mt-1 text-sm text-black/60">Tailored strategies for your goals.</p><a href="#" className="mt-3 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>Learn More →</a></div>
-          ))}
+          {servicesOf(siteData, SERVICES.map((s) => ({ title: s.t, description: "Tailored strategies for your goals." }))).map((s, i) => {
+            const Icon = SERVICES[i % SERVICES.length].icon;
+            return (
+              <div key={i} className="rounded-2xl border border-black/10 p-6"><span className="flex h-11 w-11 items-center justify-center rounded-lg" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span><h3 className="mt-4 font-semibold">{s.title}</h3><p className="mt-1 text-sm text-black/60">{s.description}</p><a href="#" className="mt-3 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>Learn More →</a></div>
+            );
+          })}
         </div>
       </section>
 
@@ -109,7 +112,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
 
       <footer style={{ background: GREEN }} className="text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-2"><p className="text-lg font-bold">{name}</p><p className="mt-2 max-w-xs text-sm text-white/50">Trusted by 6+ million users in 175+ countries.</p></div>
+          <div className="lg:col-span-2"><p className="text-lg font-bold">{name}</p><p className="mt-2 max-w-xs text-sm text-white/50">Trusted by 6+ million users in 175+ countries.</p><SocialIcons social={siteData.social} className="mt-4 text-white/70" /></div>
           {[["Company", ["About", "Careers", "Press"]], ["Services", ["Wealth", "Banking", "Trading"]]].map(([h, items]: any) => (
             <div key={h}><h4 className="text-sm font-semibold">{h}</h4><ul className="mt-3 space-y-2 text-sm text-white/50">{items.map((x: string) => <li key={x}>{x}</li>)}</ul></div>
           ))}

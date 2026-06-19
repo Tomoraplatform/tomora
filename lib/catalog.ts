@@ -1,6 +1,6 @@
 import type {
   SiteData, CatalogProduct, CatalogCourse, CatalogCause, CatalogEvent, CatalogPortfolioItem,
-  CatalogTestimonial,
+  CatalogTestimonial, CatalogServiceItem,
 } from "./database.types";
 
 /* ============================ Categories ============================ */
@@ -126,6 +126,61 @@ function demoTestimonials(category: CatalogCategoryId): CatalogTestimonial[] {
   return base[category] || base.shop;
 }
 
+function demoServices(templateId: string): CatalogServiceItem[] {
+  const map: Record<string, CatalogServiceItem[]> = {
+    "portfolio-01": [
+      { id: "s1", title: "Business Strategy", description: "Plans that turn ideas into measurable growth." },
+      { id: "s2", title: "App Development", description: "Robust, scalable applications built to last." },
+      { id: "s3", title: "Mobile App", description: "Native-feel mobile experiences users love." },
+      { id: "s4", title: "Web Design", description: "Beautiful, conversion-focused websites." },
+      { id: "s5", title: "Brand Identity", description: "Distinctive brands with personality." },
+      { id: "s6", title: "Consulting", description: "Hands-on guidance for your next launch." },
+    ],
+    "portfolio-02": [
+      { id: "s1", title: "UX/UI", description: "Intuitive interfaces that delight users." },
+      { id: "s2", title: "Graphics", description: "Striking visuals and brand assets." },
+      { id: "s3", title: "Web Design", description: "Responsive, modern websites." },
+      { id: "s4", title: "App Design", description: "Polished mobile experiences." },
+    ],
+    "org-01": [
+      { id: "s1", title: "Help & Support", description: "Programs that change lives every day." },
+      { id: "s2", title: "Education", description: "Schooling and learning for every child." },
+      { id: "s3", title: "Adoption", description: "Loving homes for children who need them." },
+      { id: "s4", title: "Volunteering", description: "Join hands with our field teams." },
+    ],
+    "org-02": [
+      { id: "s1", title: "Kids Education", description: "Schools and scholarships for children." },
+      { id: "s2", title: "Pure Water", description: "Clean, safe water for every community." },
+      { id: "s3", title: "Healthy Food", description: "Nutritious meals for families in need." },
+      { id: "s4", title: "Medical Care", description: "Clinics and outreach where it's needed." },
+    ],
+    "org-03": [
+      { id: "s1", title: "Global Wealth Management", description: "Tailored strategies for your goals." },
+      { id: "s2", title: "Personal & Corporate Banking", description: "Banking built around your needs." },
+      { id: "s3", title: "Asset Management", description: "Grow and protect your assets." },
+      { id: "s4", title: "Trading & Investment", description: "Smart, data-driven investing." },
+    ],
+    "events-01": [
+      { id: "s1", title: "High Energy", description: "An event experience people remember." },
+      { id: "s2", title: "Trusted Hosts", description: "Run by an experienced, caring team." },
+      { id: "s3", title: "Fresh Ideas", description: "Talks and workshops that inspire." },
+    ],
+    "events-02": [
+      { id: "s1", title: "Missional Communities", description: "Find your people and grow together." },
+      { id: "s2", title: "Previous Sermons", description: "Catch up on messages any time." },
+      { id: "s3", title: "Our Weddings", description: "Celebrate life's biggest moments." },
+      { id: "s4", title: "Special Events", description: "Gatherings for the whole family." },
+    ],
+    "events-03": [
+      { id: "s1", title: "Education Ministry", description: "Equipping every generation with the Word." },
+      { id: "s2", title: "Children Ministry", description: "A safe, joyful place for kids to grow." },
+      { id: "s3", title: "Parent Ministry", description: "Supporting families at every stage." },
+      { id: "s4", title: "Teacher Ministry", description: "Training and encouraging our teachers." },
+    ],
+  };
+  return map[templateId] || [];
+}
+
 function demoPortfolio(seed: string): CatalogPortfolioItem[] {
   const t = ["Mobile Banking App", "Brand Identity", "E-commerce Redesign", "Marketing Website", "Dashboard UI", "Logo Suite"];
   return t.map((title, i) => ({
@@ -170,10 +225,11 @@ export function createCatalogContent(
     heroSubtext: hero.s,
     heroImage: img(`${seed}-hero`, 1200, 900),
     ctaText: hero.c,
-    ctaHref: "#",
+    ctaHref: "",
     contactForm: tpl ? !["shop", "education"].includes(tpl.category) || templateId === "education-02" : false,
     social: { instagram: "", twitter: "", facebook: "", website: "" },
     testimonials: tpl ? demoTestimonials(tpl.category) : [],
+    services: demoServices(templateId),
   };
 
   switch (tpl?.category) {

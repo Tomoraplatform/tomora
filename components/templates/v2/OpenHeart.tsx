@@ -2,7 +2,7 @@
 
 import { HandHeart, GraduationCap, Baby, Users, Quote, ChevronRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, testimonialsOf, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img } from "./shared";
 
 const SERVICES = [
   { icon: HandHeart, t: "Help & Support" }, { icon: GraduationCap, t: "Education" },
@@ -28,7 +28,7 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
         <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-5 py-28 text-white md:flex-row md:items-end md:justify-between">
           <h1 className="max-w-2xl text-3xl font-bold leading-tight sm:text-4xl">{siteData.heroHeadline}</h1>
           <div className="shrink-0">
-            <BrandButton>{siteData.ctaText || "Donate Now"} <ChevronRight className="h-4 w-4" /></BrandButton>
+            <BrandButton as="a" href={siteData.ctaHref || "#"}>{siteData.ctaText || "Donate Now"} <ChevronRight className="h-4 w-4" /></BrandButton>
             <div className="mt-4"><p className="text-xs uppercase tracking-wide text-white/60">Donation so far</p><p className="text-3xl font-bold">₦45,000,000</p></div>
           </div>
         </div>
@@ -49,9 +49,12 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
       {/* Services */}
       <section className="mx-auto max-w-6xl px-5 pb-16">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {SERVICES.map(({ icon: Icon, t }) => (
-            <div key={t} className="text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-6 w-6" /></span><h3 className="mt-3 font-semibold">{t}</h3><p className="mt-1 text-sm text-black/60">Programs that change lives every day.</p></div>
-          ))}
+          {servicesOf(siteData, SERVICES.map((s) => ({ title: s.t, description: "Programs that change lives every day." }))).map((s, i) => {
+            const Icon = SERVICES[i % SERVICES.length].icon;
+            return (
+              <div key={i} className="text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-6 w-6" /></span><h3 className="mt-3 font-semibold">{s.title}</h3><p className="mt-1 text-sm text-black/60">{s.description}</p></div>
+            );
+          })}
         </div>
       </section>
 
@@ -78,7 +81,7 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
 
       <footer className="bg-[#F9F7F4] border-t border-black/5">
         <div className="mx-auto flex max-w-6xl flex-col justify-between gap-8 px-5 py-12 md:flex-row">
-          <div><p className="text-lg font-bold">{name}</p><p className="mt-2 text-sm text-black/50">{siteData.address || "Lagos, Nigeria"}<br />{siteData.phone || "+234 800 000 0000"}<br />{siteData.email || "hello@openheart.org"}</p></div>
+          <div><p className="text-lg font-bold">{name}</p><p className="mt-2 text-sm text-black/50">{siteData.address || "Lagos, Nigeria"}<br />{siteData.phone || "+234 800 000 0000"}<br />{siteData.email || "hello@openheart.org"}</p><SocialIcons social={siteData.social} className="mt-3 text-black/60" /></div>
           <div><p className="text-sm font-semibold">Newsletter</p><div className="mt-3 flex gap-2"><input className="rounded-md border border-black/15 px-3 py-2 text-sm" placeholder="Email" /><BrandButton className="px-4 py-2">Subscribe</BrandButton></div></div>
         </div>
         <div className="border-t border-black/5 py-5 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. Built with Tomora.</div>

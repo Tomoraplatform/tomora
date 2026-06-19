@@ -156,6 +156,14 @@ export function testimonialsOf(siteData: SiteData): CatalogTestimonial[] {
   return siteData.testimonials?.length ? siteData.testimonials : [];
 }
 
+/** Editable services/features. Falls back to the template's built-in defaults. */
+export function servicesOf(
+  siteData: SiteData,
+  fallback: { title: string; description?: string }[]
+): { title: string; description?: string }[] {
+  return siteData.services?.length ? siteData.services : fallback;
+}
+
 function normalizeUrl(url: string, base: string): string {
   if (!url) return "#";
   if (/^https?:\/\//i.test(url)) return url;

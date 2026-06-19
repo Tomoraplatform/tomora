@@ -2,7 +2,7 @@
 
 import { ArrowRight, Mic, Users, Calendar, Zap, ShieldCheck, Sparkles } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img } from "./shared";
 
 const NAVY = "#0A0F2E";
 const ABOUT = [{ icon: Mic, t: "World-class Speakers" }, { icon: Users, t: "Global Network" }, { icon: Calendar, t: "Daily Sessions" }];
@@ -29,7 +29,7 @@ export function ConferenceDark({ siteData, brandColor }: TemplateProps) {
           <div className="relative mx-auto max-w-6xl px-5 py-28">
             <h1 className="max-w-2xl text-4xl font-bold leading-tight sm:text-6xl">{siteData.heroHeadline}</h1>
             <p className="mt-4 max-w-md text-white/70">{siteData.heroSubtext}</p>
-            <BrandButton className="mt-7">{siteData.ctaText || "Register"} <ArrowRight className="h-4 w-4" /></BrandButton>
+            <BrandButton as="a" href={siteData.ctaHref || "#"} className="mt-7">{siteData.ctaText || "Register"} <ArrowRight className="h-4 w-4" /></BrandButton>
           </div>
         </section>
       </div>
@@ -74,6 +74,7 @@ export function ConferenceDark({ siteData, brandColor }: TemplateProps) {
             <div key={h}><h4 className="text-sm font-semibold">{h}</h4><ul className="mt-3 space-y-2 text-sm text-white/50">{items.map((x: string) => <li key={x}>{x}</li>)}</ul></div>
           ))}
         </div>
+        <div className="flex justify-center pb-3 pt-1"><SocialIcons social={siteData.social} className="opacity-70" /></div>
         <div className="border-t border-white/10 py-5 text-center text-sm text-white/40">© {new Date().getFullYear()} {name}. Built with Tomora.</div>
       </footer>
     </BrandStyle>

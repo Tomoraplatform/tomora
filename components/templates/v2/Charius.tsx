@@ -2,7 +2,7 @@
 
 import { PlayCircle, HandHeart, Wallet, HeartHandshake, GraduationCap, Droplet, Utensils, Stethoscope, MapPin } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, BrandButton, Img, formatNaira } from "./shared";
+import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img, formatNaira } from "./shared";
 
 const ACTIONS = [{ icon: HeartHandshake, t: "Become a Volunteer" }, { icon: Wallet, t: "Quick Fundraising" }, { icon: HandHeart, t: "Start Donating" }];
 const WHATWEDO = [{ icon: GraduationCap, t: "Kids Education" }, { icon: Droplet, t: "Pure Water" }, { icon: Utensils, t: "Healthy Food" }, { icon: Stethoscope, t: "Medical Care" }];
@@ -30,7 +30,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
           <h1 className="mt-2 text-4xl font-bold leading-tight sm:text-5xl">{siteData.heroHeadline}</h1>
           <p className="mt-4 max-w-md text-black/60">{siteData.heroSubtext}</p>
           <div className="mt-6 flex items-center gap-4">
-            <BrandButton><PlayCircle className="h-4 w-4" /> {siteData.ctaText || "Join Our Campaign"}</BrandButton>
+            <BrandButton as="a" href={siteData.ctaHref || "#"}><PlayCircle className="h-4 w-4" /> {siteData.ctaText || "Join Our Campaign"}</BrandButton>
           </div>
           <div className="mt-6 flex items-center gap-3">
             <div className="flex -space-x-2">{[0,1,2,3].map((i) => <Img key={i} src={`https://picsum.photos/seed/ch-vol${i}/64`} className="h-9 w-9 rounded-full border-2 border-white object-cover" />)}</div>
@@ -94,9 +94,12 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
       <section className="mx-auto max-w-6xl px-5 py-16">
         <h2 className="text-center text-3xl font-bold">What We Do</h2>
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {WHATWEDO.map(({ icon: Icon, t }) => (
-            <div key={t} className="rounded-2xl border border-black/10 p-6 text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-6 w-6" /></span><h3 className="mt-3 font-semibold">{t}</h3></div>
-          ))}
+          {servicesOf(siteData, WHATWEDO.map((s) => ({ title: s.t }))).map((s, i) => {
+            const Icon = WHATWEDO[i % WHATWEDO.length].icon;
+            return (
+              <div key={i} className="rounded-2xl border border-black/10 p-6 text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-6 w-6" /></span><h3 className="mt-3 font-semibold">{s.title}</h3>{s.description ? <p className="mt-1 text-sm text-black/60">{s.description}</p> : null}</div>
+            );
+          })}
         </div>
       </section>
 
@@ -114,7 +117,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
 
       <footer className="bg-[#0D0D0D] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-2"><p className="text-lg font-bold">{name}</p><p className="mt-2 max-w-xs text-sm text-white/50">Bringing hope, education and care to those who need it most.</p></div>
+          <div className="lg:col-span-2"><p className="text-lg font-bold">{name}</p><p className="mt-2 max-w-xs text-sm text-white/50">Bringing hope, education and care to those who need it most.</p><SocialIcons social={siteData.social} className="mt-4 text-white/70" /></div>
           {[["About", ["Story", "Team", "Reports"]], ["Quick Links", ["Donate", "Volunteer", "Events"]]].map(([h, items]: any) => (
             <div key={h}><h4 className="text-sm font-semibold">{h}</h4><ul className="mt-3 space-y-2 text-sm text-white/50">{items.map((x: string) => <li key={x}>{x}</li>)}</ul></div>
           ))}

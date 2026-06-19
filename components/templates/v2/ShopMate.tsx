@@ -2,7 +2,7 @@
 
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Quote, ShoppingCart } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img } from "./shared";
 
 const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"];
 
@@ -38,7 +38,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
             <h1 className="mt-4 font-serif text-4xl font-bold leading-tight sm:text-5xl">{siteData.heroHeadline}</h1>
             <p className="mt-4 max-w-md text-black/60">{siteData.heroSubtext}</p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <BrandButton as="a" href="#products">{siteData.ctaText || "Shop Now"} <ArrowRight className="h-4 w-4" /></BrandButton>
+              <BrandButton as="a" href={siteData.ctaHref || "#products"}>{siteData.ctaText || "Shop Now"} <ArrowRight className="h-4 w-4" /></BrandButton>
               <OutlineButton href="#offer">Explore Deals</OutlineButton>
             </div>
             <div className="mt-7 flex items-center gap-3">
@@ -131,16 +131,16 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
-      <ShopFooter name={name} />
+      <ShopFooter name={name} social={siteData.social} />
     </BrandStyle>
   );
 }
 
-function ShopFooter({ name }: { name: string }) {
+function ShopFooter({ name, social }: { name: string; social?: any }) {
   return (
     <footer className="border-t border-black/5 bg-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
-        <div><p className="text-lg font-bold">{name}</p><p className="mt-2 text-sm text-black/50">Quality products delivered to your door, with secure Paystack checkout.</p></div>
+        <div><p className="text-lg font-bold">{name}</p><p className="mt-2 text-sm text-black/50">Quality products delivered to your door, with secure Paystack checkout.</p><SocialIcons social={social} className="mt-3 text-black/60" /></div>
         <div><h4 className="text-sm font-semibold">Quick Links</h4><ul className="mt-3 space-y-2 text-sm text-black/50"><li>Home</li><li>Shop</li><li>Deals</li><li>About</li></ul></div>
         <div><h4 className="text-sm font-semibold">Customer Service</h4><ul className="mt-3 space-y-2 text-sm text-black/50"><li>Shipping</li><li>Returns</li><li>FAQ</li><li>Contact</li></ul></div>
         <div><h4 className="text-sm font-semibold">Newsletter</h4>

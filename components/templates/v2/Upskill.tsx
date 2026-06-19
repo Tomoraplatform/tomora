@@ -6,7 +6,7 @@ import {
   Users, MessageSquare, Award,
 } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img } from "./shared";
 
 const CATS = [
   { icon: Briefcase, t: "Business" }, { icon: Code, t: "Development" }, { icon: Languages, t: "Language" },
@@ -133,6 +133,7 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
             <div key={h}><h4 className="font-semibold">{h}</h4><ul className="mt-3 space-y-2 text-black/50">{items.map((x: string) => <li key={x}>{x}</li>)}</ul></div>
           ))}
         </div>
+        <div className="flex justify-center pb-3 pt-1"><SocialIcons social={siteData.social} className="opacity-70" /></div>
         <div className="border-t border-black/5 py-5 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. Built with Tomora.</div>
       </footer>
     </BrandStyle>

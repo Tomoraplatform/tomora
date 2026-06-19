@@ -2,7 +2,7 @@
 
 import { Search, ShoppingCart, ArrowRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, Img, formatNaira } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira } from "./shared";
 import { useStore } from "../store-context";
 import type { CatalogProduct, Product, SiteData } from "@/lib/database.types";
 
@@ -107,6 +107,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
             <div key={h}><h4 className="font-semibold">{h}</h4><ul className="mt-3 space-y-2 text-neutral-500">{items.map((x: string) => <li key={x}>{x}</li>)}</ul></div>
           ))}
         </div>
+        <div className="flex justify-center pb-3 pt-1"><SocialIcons social={siteData.social} className="opacity-70" /></div>
         <div className="border-t border-neutral-100 py-5 text-center text-sm text-neutral-400">© {new Date().getFullYear()} {name}. Built with Tomora.</div>
       </footer>
     </BrandStyle>

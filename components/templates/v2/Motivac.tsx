@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowRight, Search, MapPin, Mic, CalendarDays, Globe, Star, Ticket } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, testimonialsOf, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, Img } from "./shared";
 
 const PROGRESS = [["Full Rating", 92], ["Management", 80], ["Social Media", 74]] as const;
 const SCHED_TABS = ["All Events", "Presentation", "Evaluation", "Open Discussion"];
@@ -34,7 +34,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
           <span className="text-sm font-semibold uppercase tracking-[0.25em]" style={{ color: "var(--brand-primary)" }}>Worldwide Conference</span>
           <h1 className="mt-4 max-w-2xl font-serif text-5xl font-bold leading-tight sm:text-6xl">{siteData.heroHeadline}</h1>
           <div className="mt-8 flex flex-wrap gap-3">
-            <BrandButton>{siteData.ctaText || "Registration"} <ArrowRight className="h-4 w-4" /></BrandButton>
+            <BrandButton as="a" href={siteData.ctaHref || "#register"}>{siteData.ctaText || "Registration"} <ArrowRight className="h-4 w-4" /></BrandButton>
             <a href="#register" className="inline-flex items-center gap-2 rounded-md border border-white/40 px-6 py-3 text-sm font-semibold"><Ticket className="h-4 w-4" /> Get Ticket</a>
           </div>
         </div>
@@ -138,6 +138,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
             <div key={h}><h4 className="text-sm font-semibold">{h}</h4><ul className="mt-3 space-y-2 text-sm text-white/50">{items.map((x: string) => <li key={x}>{x}</li>)}</ul></div>
           ))}
         </div>
+        <div className="flex justify-center pb-3 pt-1"><SocialIcons social={siteData.social} className="opacity-70" /></div>
         <div className="border-t border-white/10 py-5 text-center text-sm text-white/40">© {new Date().getFullYear()} {name}. Built with Tomora.</div>
       </footer>
     </BrandStyle>

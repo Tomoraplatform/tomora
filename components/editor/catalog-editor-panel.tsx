@@ -23,6 +23,8 @@ export function CatalogEditorPanel({
   const [uploading, setUploading] = useState<string | null>(null);
   const custom = data.brandColors || [];
   const testimonials = data.testimonials || [];
+  const services = data.services || [];
+  const social = data.social || {};
 
   async function upload(field: "logoUrl" | "heroImage", file?: File) {
     if (!file) return;
@@ -55,6 +57,16 @@ export function CatalogEditorPanel({
   }
   function removeTestimonial(i: number) {
     patch({ testimonials: testimonials.filter((_, idx) => idx !== i) });
+  }
+
+  function setService(i: number, field: "title" | "description", value: string) {
+    patch({ services: services.map((s, idx) => (idx === i ? { ...s, [field]: value } : s)) });
+  }
+  function addService() {
+    patch({ services: [...services, { id: `s-${Date.now()}`, title: "New item", description: "Describe it here." }] });
+  }
+  function removeService(i: number) {
+    patch({ services: services.filter((_, idx) => idx !== i) });
   }
 
   return (
@@ -100,8 +112,30 @@ export function CatalogEditorPanel({
         <FieldRow label="Hero image">
           <UploadRow label={data.heroImage ? "Replace image" : "Upload image"} preview={data.heroImage} busy={uploading === "heroImage"} onFile={(f) => upload("heroImage", f)} />
         </FieldRow>
-        <FieldRow label="Button text"><Input value={data.ctaText || ""} onChange={(e) => patch({ ctaText: e.target.value })} /></FieldRow>
+        <div className="grid grid-cols-2 gap-3">
+          <FieldRow label="Button text"><Input value={data.ctaText || ""} onChange={(e) => patch({ ctaText: e.target.value })} /></FieldRow>
+          <FieldRow label="Button link"><Input value={data.ctaHref || ""} onChange={(e) => patch({ ctaHref: e.target.value })} placeholder="# or https://" /></FieldRow>
+        </div>
       </Section>
+
+      {services.length > 0 && (
+      <Section title="Services / Features">
+        <p className="mb-1 text-xs text-ink/50">The cards in your services / what-we-do section.</p>
+        <div className="space-y-3">
+          {services.map((s, i) => (
+            <div key={s.id || i} className="space-y-2 rounded-lg border border-ink/10 p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-ink/60">Item {i + 1}</span>
+                <button onClick={() => removeService(i)} className="text-ink/40 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+              </div>
+              <Input className="h-8 text-xs" placeholder="Title" value={s.title} onChange={(e) => setService(i, "title", e.target.value)} />
+              <Textarea rows={2} className="text-xs" placeholder="Description" value={s.description || ""} onChange={(e) => setService(i, "description", e.target.value)} />
+            </div>
+          ))}
+        </div>
+        <Button type="button" variant="outline" size="sm" className="mt-2 w-full" onClick={addService}><Plus className="h-4 w-4" /> Add item</Button>
+      </Section>
+      )}
 
       <Section title="Testimonials">
         <p className="mb-1 text-xs text-ink/50">Add, edit or remove what people say about you.</p>
@@ -125,6 +159,15 @@ export function CatalogEditorPanel({
         <FieldRow label="Phone"><Input value={data.phone || ""} onChange={(e) => patch({ phone: e.target.value })} /></FieldRow>
         <FieldRow label="Email"><Input value={data.email || ""} onChange={(e) => patch({ email: e.target.value })} /></FieldRow>
         <FieldRow label="Address"><Input value={data.address || ""} onChange={(e) => patch({ address: e.target.value })} /></FieldRow>
+      </Section>
+
+      <Section title="Social links">
+        <p className="mb-1 text-xs text-ink/50">Only the ones you fill in will show on your site.</p>
+        {(["instagram", "twitter", "facebook", "website"] as const).map((k) => (
+          <FieldRow key={k} label={k[0].toUpperCase() + k.slice(1)}>
+            <Input value={social[k] || ""} onChange={(e) => patch({ social: { ...social, [k]: e.target.value } })} placeholder={k === "website" ? "https://" : "@handle or URL"} />
+          </FieldRow>
+        ))}
       </Section>
     </div>
   );

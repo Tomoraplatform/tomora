@@ -198,6 +198,7 @@ export interface SiteData {
   /** Custom brand color hex codes the user saved (max 3). First is primary. */
   brandColors?: string[];
   testimonials?: CatalogTestimonial[];
+  services?: CatalogServiceItem[];
   products?: CatalogProduct[];
   courses?: CatalogCourse[];
   causes?: CatalogCause[];
@@ -210,4 +211,10 @@ export interface CatalogTestimonial {
   name: string;
   role?: string;
   quote: string;
+}
+
+export interface CatalogServiceItem {
+  id: string;
+  title: string;
+  description?: string;
 }

@@ -6,7 +6,7 @@ import {
   Mail, Phone, MapPin, Quote, Bookmark,
 } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, testimonialsOf, BrandButton, Img, ContactFormV2 } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2 } from "./shared";
 
 const SERVICES = [
   { icon: TrendingUp, t: "Business Strategy", d: "Plans that turn ideas into measurable growth." },
@@ -59,12 +59,15 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
       <section className="mx-auto max-w-6xl px-5 py-14">
         <h2 className="text-3xl font-bold">What I Do</h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {SERVICES.map(({ icon: Icon, t, d }) => (
-            <div key={t} className="rounded-2xl bg-white p-6 shadow-sm">
-              <span className="flex h-11 w-11 items-center justify-center rounded-lg" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span>
-              <h3 className="mt-4 font-semibold">{t}</h3><p className="mt-1 text-sm text-black/60">{d}</p>
-            </div>
-          ))}
+          {servicesOf(siteData, SERVICES.map((s) => ({ title: s.t, description: s.d }))).map((s, i) => {
+            const Icon = SERVICES[i % SERVICES.length].icon;
+            return (
+              <div key={i} className="rounded-2xl bg-white p-6 shadow-sm">
+                <span className="flex h-11 w-11 items-center justify-center rounded-lg" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span>
+                <h3 className="mt-4 font-semibold">{s.title}</h3><p className="mt-1 text-sm text-black/60">{s.description}</p>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -137,7 +140,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
         </section>
       )}
 
-      <footer className="bg-white py-8 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. Built with Tomora.</footer>
+      <footer className="bg-white py-8 text-center text-sm text-black/40"><SocialIcons social={siteData.social} className="mb-3 justify-center" />© {new Date().getFullYear()} {name}. Built with Tomora.</footer>
     </BrandStyle>
   );
 }
