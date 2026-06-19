@@ -1,15 +1,19 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { loadPublishedSite } from "@/lib/published";
 import { PublishedSiteView } from "@/components/published/published-site-view";
-import type { Metadata } from "next";
 
 interface Params {
-  params: { type: string; value: string };
+  params: { subdomain: string };
 }
 
+/**
+ * Path-based public URL for a published site: /s/<subdomain>.
+ * Works on any host (including *.vercel.app where wildcard subdomains are not
+ * available). Real subdomain hosts are still handled by middleware → /sites.
+ */
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const type = params.type === "custom" ? "custom" : "subdomain";
-  const data = await loadPublishedSite(type, decodeURIComponent(params.value));
+  const data = await loadPublishedSite("subdomain", decodeURIComponent(params.subdomain));
   if (!data) return { title: "Site not found" };
   const name = data.site.site_data?.businessName || "Website";
   return {
@@ -18,12 +22,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-export default async function PublishedSitePage({ params }: Params) {
-  const type = params.type === "custom" ? "custom" : "subdomain";
-  const data = await loadPublishedSite(type, decodeURIComponent(params.value));
-
+export default async function PublicSiteByPath({ params }: Params) {
+  const data = await loadPublishedSite("subdomain", decodeURIComponent(params.subdomain));
   if (!data) notFound();
-
   return (
     <PublishedSiteView site={data.site} products={data.products} isLive={data.isLive} />
   );

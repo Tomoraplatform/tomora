@@ -116,7 +116,8 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
             <span className="text-xs text-ink/70">{live ? "Published" : "Offline"}</span>
             <Switch checked={live} onCheckedChange={(v) => { setLive(v); dirty(); }} />
           </div>
-          <Button asChild variant="outline" size="sm"><a href={liveUrl} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /> Preview</a></Button>
+          <Button asChild variant="outline" size="sm"><a href="/dashboard/preview" target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /> Preview</a></Button>
+          <Button asChild variant="ghost" size="sm"><a href={liveUrl} target="_blank" rel="noreferrer">View Live</a></Button>
           <Button size="sm" onClick={save} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
             {saved ? "Saved" : "Save"}

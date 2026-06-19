@@ -1,6 +1,6 @@
 import { getDashboardData } from "@/lib/dashboard";
 import { DashboardShell, type NavItem } from "@/components/dashboard/shell";
-import { APP_DOMAIN } from "@/lib/constants";
+import { siteLiveUrl } from "@/lib/site-url";
 
 export default async function PanelLayout({
   children,
@@ -26,11 +26,7 @@ export default async function PanelLayout({
     { href: "/dashboard/account", label: "Account", icon: "Settings" },
   ];
 
-  const liveUrl = site
-    ? site.custom_domain && site.domain_status === "active"
-      ? `https://${site.custom_domain}`
-      : `https://${site.subdomain}.${APP_DOMAIN}`
-    : null;
+  const liveUrl = site ? siteLiveUrl(site) : null;
 
   return (
     <DashboardShell items={items} liveUrl={liveUrl}>

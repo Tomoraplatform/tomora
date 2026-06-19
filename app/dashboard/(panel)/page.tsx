@@ -9,7 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { APP_DOMAIN, TRIAL_DAYS, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, nextCharge } from "@/lib/constants";
+import { TRIAL_DAYS, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, nextCharge } from "@/lib/constants";
+import { siteLiveUrl } from "@/lib/site-url";
 import { formatNaira } from "@/lib/utils";
 
 export const metadata = { title: "Dashboard — Tomora" };
@@ -40,10 +41,8 @@ export default async function DashboardHome() {
   const status = isPro ? "Live (Pro)" : onTrial ? "Trial" : "Offline";
   const statusVariant = isPro ? "success" : onTrial ? "warning" : "destructive";
 
-  const liveHost = site?.custom_domain && site.domain_status === "active"
-    ? site.custom_domain
-    : `${site?.subdomain}.${APP_DOMAIN}`;
-  const liveUrl = `https://${liveHost}`;
+  const liveUrl = siteLiveUrl(site!);
+  const liveHost = liveUrl.replace(/^https?:\/\//, "");
 
   const charge = nextCharge(subscription?.billing_cycle_position ?? 0);
 
@@ -81,8 +80,9 @@ export default async function DashboardHome() {
               <p className="text-sm text-ink/60">Your trial has ended. Upgrade to bring your site back online.</p>
             )}
 
-            <div className="flex gap-2 pt-1">
+            <div className="flex flex-wrap gap-2 pt-1">
               <Button asChild size="sm"><Link href="/dashboard/editor"><Pencil className="h-4 w-4" /> Edit Site</Link></Button>
+              <Button asChild size="sm" variant="outline"><Link href="/dashboard/preview" target="_blank">Preview</Link></Button>
               <Button asChild size="sm" variant="outline"><a href={liveUrl} target="_blank" rel="noreferrer">View Live</a></Button>
             </div>
           </CardContent>

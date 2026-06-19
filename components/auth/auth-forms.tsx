@@ -1,8 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useFormState } from "react-dom";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import {
   signIn,
   signUp,
@@ -14,6 +15,25 @@ import { Label } from "@/components/ui/label";
 import { SubmitButton } from "./submit-button";
 
 const initial: AuthState = {};
+
+/** Password field with a show/hide eye toggle. */
+function PasswordInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <Input {...props} type={show ? "text" : "password"} className="pr-10" />
+      <button
+        type="button"
+        onClick={() => setShow((v) => !v)}
+        aria-label={show ? "Hide password" : "Show password"}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-ink/50 hover:text-ink"
+        tabIndex={-1}
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
 
 function Feedback({ state }: { state: AuthState }) {
   if (state.error)
@@ -50,7 +70,7 @@ export function LoginForm({ next }: { next?: string }) {
             Forgot password?
           </Link>
         </div>
-        <Input id="password" name="password" type="password" autoComplete="current-password" required placeholder="••••••••" />
+        <PasswordInput id="password" name="password" autoComplete="current-password" required placeholder="••••••••" />
       </div>
       <SubmitButton className="w-full" size="lg">Log In</SubmitButton>
       <p className="text-center text-sm text-ink/60">
@@ -78,11 +98,11 @@ export function SignupForm() {
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
-        <Input id="password" name="password" type="password" autoComplete="new-password" required placeholder="At least 6 characters" />
+        <PasswordInput id="password" name="password" autoComplete="new-password" required placeholder="At least 6 characters" />
       </div>
       <div className="space-y-2">
         <Label htmlFor="confirm">Confirm password</Label>
-        <Input id="confirm" name="confirm" type="password" autoComplete="new-password" required placeholder="Re-enter your password" />
+        <PasswordInput id="confirm" name="confirm" autoComplete="new-password" required placeholder="Re-enter your password" />
       </div>
       <SubmitButton className="w-full" size="lg">Create Account</SubmitButton>
       <p className="text-center text-sm text-ink/60">

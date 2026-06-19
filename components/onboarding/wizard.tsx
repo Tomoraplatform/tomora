@@ -17,6 +17,7 @@ import { TemplateThumb } from "@/components/templates/template-thumb";
 import { APP_DOMAIN, TRIAL_DAYS } from "@/lib/constants";
 import { CATALOG_CATEGORIES, catalogTemplatesByCategory, createCatalogContent, type CatalogCategoryId } from "@/lib/catalog";
 import { slugifySubdomain } from "@/lib/utils";
+import { siteLiveUrl } from "@/lib/site-url";
 import { uploadImage } from "@/lib/upload";
 import { completeOnboarding } from "@/app/onboarding/actions";
 
@@ -239,13 +240,23 @@ export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
             </div>
             <h1 className="text-3xl font-bold">You're live!</h1>
             <p className="mt-3 text-ink/60">Your free {TRIAL_DAYS}-day trial has started. Your site is published at:</p>
-            <div className="mx-auto mt-5 flex items-center justify-center gap-2 rounded-xl border border-ink/15 bg-white px-5 py-4 font-mono text-sm">
-              <span className="font-semibold text-ink">{subdomain}.{APP_DOMAIN}</span>
+            <a
+              href={siteLiveUrl({ subdomain })}
+              target="_blank"
+              rel="noreferrer"
+              className="mx-auto mt-5 flex items-center justify-center gap-2 rounded-xl border border-ink/15 bg-white px-5 py-4 font-mono text-sm hover:border-ink"
+            >
+              <span className="font-semibold text-ink">{siteLiveUrl({ subdomain }).replace(/^https?:\/\//, "")}</span>
               <ExternalLink className="h-4 w-4 text-ink/40" />
+            </a>
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              <Button size="lg" variant="outline" asChild>
+                <a href={siteLiveUrl({ subdomain })} target="_blank" rel="noreferrer">View My Site</a>
+              </Button>
+              <Button size="lg" onClick={() => router.push("/dashboard")}>
+                Go to Dashboard <ArrowRight className="h-4 w-4" />
+              </Button>
             </div>
-            <Button size="lg" className="mt-8" onClick={() => router.push("/dashboard")}>
-              Go to Dashboard <ArrowRight className="h-4 w-4" />
-            </Button>
           </div>
         )}
       </main>
