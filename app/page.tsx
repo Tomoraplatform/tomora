@@ -25,7 +25,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { TEMPLATES, FAQS, CATEGORIES } from "@/lib/constants";
+import { TEMPLATES, FAQS, CATEGORIES, PLANS } from "@/lib/constants";
 import { formatNaira } from "@/lib/utils";
 
 const CATEGORY_LABEL = Object.fromEntries(
@@ -377,68 +377,71 @@ function Pricing() {
           Simple, honest pricing
         </h2>
         <p className="mt-4 text-lg text-ink/70">
-          Start free. Upgrade when you&apos;re ready to grow.
+          Start free. Pick a plan when you&apos;re ready to go live.
         </p>
       </div>
 
-      <div className="mx-auto mt-12 grid max-w-4xl gap-6 md:grid-cols-2">
-        {/* Free trial */}
-        <div className="flex flex-col rounded-2xl border border-ink/10 bg-white p-8">
-          <h3 className="text-xl font-semibold">Free Trial</h3>
-          <p className="mt-2 text-ink/60">Everything you need to launch.</p>
-          <div className="mt-6 flex items-baseline gap-1">
-            <span className="text-4xl font-bold">14 days</span>
-            <span className="text-ink/50">free</span>
-          </div>
-          <ul className="mt-6 space-y-3 text-sm">
-            {[
-              "Subdomain included (yourbrand.tomora.com)",
-              "All 8 templates",
-              "Brand colors and logo",
-              "No credit card required",
-            ].map((f) => (
-              <li key={f} className="flex items-start gap-2">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                <span className="text-ink/80">{f}</span>
-              </li>
-            ))}
-          </ul>
-          <Button asChild variant="outline" size="lg" className="mt-8">
-            <Link href="/signup">Start Free Trial</Link>
-          </Button>
-        </div>
+      <div className="mx-auto mt-12 grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        {PLANS.map((plan) => {
+          const popular = plan.popular;
+          const isCustom = plan.id === "custom";
+          return (
+            <div
+              key={plan.id}
+              className={`relative flex flex-col rounded-2xl border p-6 ${
+                popular ? "border-2 border-ink bg-ink text-cream" : "border-ink/10 bg-white"
+              }`}
+            >
+              {popular && (
+                <span className="absolute right-5 top-5 rounded-full bg-cream px-2.5 py-0.5 text-[11px] font-semibold text-ink">
+                  Popular
+                </span>
+              )}
+              <h3 className="text-lg font-semibold">{plan.name}</h3>
+              <p className={`mt-1 text-sm ${popular ? "text-cream/70" : "text-ink/60"}`}>{plan.tagline}</p>
 
-        {/* Pro */}
-        <div className="relative flex flex-col rounded-2xl border-2 border-ink bg-ink p-8 text-cream">
-          <span className="absolute right-6 top-6 rounded-full bg-cream px-3 py-1 text-xs font-semibold text-ink">
-            Most popular
-          </span>
-          <h3 className="text-xl font-semibold">Pro Plan</h3>
-          <p className="mt-2 text-cream/70">For growing businesses.</p>
-          <div className="mt-6 flex items-baseline gap-1">
-            <span className="text-4xl font-bold">{formatNaira(30000)}</span>
-            <span className="text-cream/60">first payment</span>
-          </div>
-          <p className="mt-1 text-sm text-cream/60">
-            Then {formatNaira(22500)} every 4 months for 3 cycles, then resets.
-          </p>
-          <ul className="mt-6 space-y-3 text-sm">
-            {[
-              "1 year custom domain included",
-              "Custom domain connection",
-              "E-commerce and Paystack checkout",
-              "Priority support",
-            ].map((f) => (
-              <li key={f} className="flex items-start gap-2">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-cream" />
-                <span className="text-cream/90">{f}</span>
-              </li>
-            ))}
-          </ul>
-          <Button asChild size="lg" className="mt-8 bg-cream text-ink hover:bg-white">
-            <Link href="/signup">Get Started</Link>
-          </Button>
-        </div>
+              <div className="mt-5">
+                {plan.id === "trial" ? (
+                  <span className="text-3xl font-bold">14 days</span>
+                ) : isCustom ? (
+                  <span className="text-3xl font-bold">Let&apos;s talk</span>
+                ) : (
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-bold">{formatNaira(plan.price!)}</span>
+                    <span className={popular ? "text-cream/60" : "text-ink/50"}>/{plan.period}</span>
+                  </div>
+                )}
+                {plan.id === "pro" && (
+                  <p className="mt-1 text-xs text-cream/60">
+                    then {formatNaira(plan.renewal!)} every 4 months
+                  </p>
+                )}
+              </div>
+
+              <ul className="mt-5 flex-1 space-y-2.5 text-sm">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2">
+                    <Check className={`mt-0.5 h-4 w-4 shrink-0 ${popular ? "text-cream" : "text-emerald-600"}`} />
+                    <span className={popular ? "text-cream/90" : "text-ink/80"}>{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button
+                asChild
+                size="lg"
+                variant={popular ? "default" : "outline"}
+                className={`mt-6 ${popular ? "bg-cream text-ink hover:bg-white" : ""}`}
+              >
+                {isCustom ? (
+                  <a href="mailto:tomoraplatform@gmail.com">{plan.cta}</a>
+                ) : (
+                  <Link href="/signup">{plan.cta}</Link>
+                )}
+              </Button>
+            </div>
+          );
+        })}
       </div>
     </section>
   );

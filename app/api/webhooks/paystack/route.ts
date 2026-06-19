@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     switch (event.event) {
       case "charge.success":
         if (purpose === "platform" && userId && data.reference) {
-          await applyPlatformPayment(userId, data.reference);
+          await applyPlatformPayment(userId, data.reference, data?.metadata?.plan);
         }
         break;
       case "charge.failed":

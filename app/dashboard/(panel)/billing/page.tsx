@@ -2,13 +2,14 @@ import { CheckCircle2, AlertCircle, Check } from "lucide-react";
 import { getDashboardData } from "@/lib/dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { UpgradeButton } from "@/components/dashboard/upgrade-button";
-import {
-  FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, RENEWAL_INTERVAL_MONTHS, nextCharge,
-} from "@/lib/constants";
+import { PLANS, getPlan, nextCharge, RENEWAL_INTERVAL_MONTHS } from "@/lib/constants";
 import { formatNaira } from "@/lib/utils";
 
 export const metadata = { title: "Billing — Tomora" };
+
+const PAID_PLANS = PLANS.filter((p) => p.id === "starter" || p.id === "growth" || p.id === "pro");
 
 export default async function BillingPage({
   searchParams,
@@ -16,75 +17,103 @@ export default async function BillingPage({
   searchParams: { status?: string };
 }) {
   const { subscription } = await getDashboardData();
-  const isPro = subscription?.status === "active";
+  const active = subscription?.status === "active";
   const pastDue = subscription?.status === "past_due";
+  const currentPlan = getPlan(subscription?.plan || "");
+  const isPro = currentPlan?.id === "pro";
   const position = subscription?.billing_cycle_position ?? 0;
-  const charge = nextCharge(position);
+  const proCharge = nextCharge(position);
+  const nextAmount = isPro ? proCharge.amount : currentPlan?.renewal ?? currentPlan?.price ?? 0;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-ink">Billing</h1>
-        <p className="mt-1 text-ink/60">Manage your Tomora Pro plan.</p>
+        <p className="mt-1 text-ink/60">Choose a plan or manage your subscription.</p>
       </div>
 
       {searchParams.status === "success" && (
         <Banner ok>Payment successful. Your site is live and your plan is active.</Banner>
       )}
-      {searchParams.status === "failed" && (
-        <Banner>Payment was not completed. Please try again.</Banner>
-      )}
+      {searchParams.status === "failed" && <Banner>Payment was not completed. Please try again.</Banner>}
       {pastDue && (
         <Banner>Your last payment failed. Settle it within the grace period to keep your site online.</Banner>
       )}
 
+      {/* Current plan */}
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
           <CardTitle>Current Plan</CardTitle>
-          <Badge variant={isPro ? "success" : "secondary"}>{isPro ? "Pro" : "Free Trial"}</Badge>
+          <Badge variant={active ? "success" : "secondary"}>{active ? currentPlan?.name || "Active" : "Free Trial"}</Badge>
         </CardHeader>
         <CardContent className="space-y-4">
-          {isPro ? (
+          {active ? (
             <div className="grid gap-3 sm:grid-cols-2">
-              <Stat label="Cycle position" value={`${position} of 3`} />
-              <Stat label="Next amount" value={formatNaira(charge.amount)} />
+              <Stat label="Plan" value={currentPlan?.name || "—"} />
+              <Stat label="Next amount" value={formatNaira(nextAmount)} />
               <Stat label="Next billing date" value={subscription?.next_billing_date ? new Date(subscription.next_billing_date).toLocaleDateString() : "—"} />
               <Stat label="Last payment" value={subscription?.last_payment_date ? new Date(subscription.last_payment_date).toLocaleDateString() : "—"} />
-              <div className="sm:col-span-2 pt-2">
-                <UpgradeButton label={`Pay ${formatNaira(charge.amount)} now`} />
-                <p className="mt-2 text-xs text-ink/50">
-                  {charge.includesDomain
-                    ? "This payment includes another year of your custom domain."
-                    : `Renewal of ${formatNaira(RENEWAL_AMOUNT)} every ${RENEWAL_INTERVAL_MONTHS} months.`}
-                </p>
+              <div className="pt-2 sm:col-span-2">
+                <UpgradeButton plan={currentPlan?.id} label={`Pay ${formatNaira(nextAmount)} now`} />
+                {isPro && (
+                  <p className="mt-2 text-xs text-ink/50">Cycle {position} of 3 · renews every {RENEWAL_INTERVAL_MONTHS} months.</p>
+                )}
               </div>
             </div>
           ) : (
-            <>
-              <p className="text-ink/70">
-                Upgrade to Pro to keep your site online after the trial, connect a custom domain, and unlock priority support.
-              </p>
-              <ul className="space-y-2 text-sm">
-                {[
-                  `First payment ${formatNaira(FIRST_PAYMENT_AMOUNT)} — includes 1 year custom domain`,
-                  `Then ${formatNaira(RENEWAL_AMOUNT)} every ${RENEWAL_INTERVAL_MONTHS} months for 3 cycles`,
-                  "After 3 renewals the cycle resets and the next payment is " + formatNaira(FIRST_PAYMENT_AMOUNT),
-                ].map((t) => (
-                  <li key={t} className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /><span className="text-ink/80">{t}</span></li>
-                ))}
-              </ul>
-              <UpgradeButton />
-            </>
+            <p className="text-ink/70">
+              You&apos;re on the free trial. Choose a plan below to keep your site online and unlock more features.
+            </p>
           )}
         </CardContent>
       </Card>
 
+      {/* Plan options */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {PAID_PLANS.map((plan) => {
+          const isCurrent = active && currentPlan?.id === plan.id;
+          return (
+            <Card key={plan.id} className={plan.popular ? "border-2 border-ink" : ""}>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>{plan.name}</CardTitle>
+                  {plan.popular && <Badge>Popular</Badge>}
+                </div>
+                <div className="mt-2 flex items-baseline gap-1">
+                  <span className="text-3xl font-bold text-ink">{formatNaira(plan.price!)}</span>
+                  <span className="text-ink/50">/{plan.period}</span>
+                </div>
+                {plan.id === "pro" && (
+                  <p className="text-xs text-ink/50">then {formatNaira(plan.renewal!)} every 4 months</p>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ul className="space-y-2 text-sm">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                      <span className="text-ink/80">{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                {isCurrent ? (
+                  <Button disabled variant="outline" className="w-full">Current plan</Button>
+                ) : (
+                  <UpgradeButton plan={plan.id} label={plan.cta} variant={plan.popular ? "default" : "outline"} className="w-full" />
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
       <Card>
-        <CardHeader><CardTitle>How billing works</CardTitle></CardHeader>
-        <CardContent className="space-y-2 text-sm text-ink/70">
-          <p>Your first Pro payment is {formatNaira(FIRST_PAYMENT_AMOUNT)} and includes one year of a custom domain.</p>
-          <p>The next three payments are {formatNaira(RENEWAL_AMOUNT)} each, charged every {RENEWAL_INTERVAL_MONTHS} months.</p>
-          <p>After the third renewal the cycle resets — your following payment returns to {formatNaira(FIRST_PAYMENT_AMOUNT)} and renews your domain for another year.</p>
+        <CardHeader><CardTitle>Need something custom?</CardTitle></CardHeader>
+        <CardContent className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-ink/70">
+            Custom features built and managed by a Tomora web expert.
+          </p>
+          <Button asChild variant="outline"><a href="mailto:tomoraplatform@gmail.com">Talk to us</a></Button>
         </CardContent>
       </Card>
     </div>

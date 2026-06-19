@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { TRIAL_DAYS, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, nextCharge } from "@/lib/constants";
+import { TRIAL_DAYS, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, nextCharge, getPlan } from "@/lib/constants";
 import { siteLiveUrl } from "@/lib/site-url";
 import { formatNaira } from "@/lib/utils";
 
@@ -45,6 +45,9 @@ export default async function DashboardHome() {
   const liveHost = liveUrl.replace(/^https?:\/\//, "");
 
   const charge = nextCharge(subscription?.billing_cycle_position ?? 0);
+  const currentPlan = getPlan(subscription?.plan || "");
+  const isProPlan = currentPlan?.id === "pro";
+  const nextAmount = isProPlan ? charge.amount : (currentPlan?.renewal ?? currentPlan?.price ?? charge.amount);
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -92,22 +95,23 @@ export default async function DashboardHome() {
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle>Subscription</CardTitle>
-            <Badge variant={isPro ? "success" : "secondary"}>{isPro ? "Pro" : "Free Trial"}</Badge>
+            <Badge variant={isPro ? "success" : "secondary"}>{isPro ? currentPlan?.name || "Active" : "Free Trial"}</Badge>
           </CardHeader>
           <CardContent className="space-y-3">
             {isPro ? (
               <>
+                <Row label="Plan" value={currentPlan?.name || "—"} />
                 <Row label="Next billing date" value={subscription?.next_billing_date ? new Date(subscription.next_billing_date).toLocaleDateString() : "—"} />
-                <Row label="Next amount" value={formatNaira(charge.amount)} />
-                <Row label="Cycle position" value={`${subscription?.billing_cycle_position ?? 0} of 3`} />
+                <Row label="Next amount" value={formatNaira(nextAmount)} />
+                {isProPlan && <Row label="Cycle position" value={`${subscription?.billing_cycle_position ?? 0} of 3`} />}
                 <Button asChild size="sm" variant="outline" className="mt-1"><Link href="/dashboard/billing">Manage Plan</Link></Button>
               </>
             ) : (
               <>
                 <p className="text-sm text-ink/60">
-                  Upgrade for {formatNaira(FIRST_PAYMENT_AMOUNT)} (includes 1 year custom domain), then {formatNaira(RENEWAL_AMOUNT)} every 4 months.
+                  Plans from {formatNaira(10000)}/month. Pro is {formatNaira(FIRST_PAYMENT_AMOUNT)} then {formatNaira(RENEWAL_AMOUNT)} every 4 months.
                 </p>
-                <Button asChild size="sm" className="mt-1"><Link href="/dashboard/billing"><CreditCard className="h-4 w-4" /> Upgrade to Pro</Link></Button>
+                <Button asChild size="sm" className="mt-1"><Link href="/dashboard/billing"><CreditCard className="h-4 w-4" /> Choose a Plan</Link></Button>
               </>
             )}
           </CardContent>

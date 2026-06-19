@@ -2,6 +2,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   nextCharge, RENEWAL_INTERVAL_MONTHS, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, GRACE_PERIOD_DAYS,
+  getPlan,
 } from "@/lib/constants";
 
 function addMonths(date: Date, months: number) {
@@ -11,10 +12,11 @@ function addMonths(date: Date, months: number) {
 }
 
 /**
- * Records a successful platform payment and advances the billing cycle.
- * Idempotent on `reference`. Activates the user's site.
+ * Records a successful platform payment, sets the plan, and (for Pro) advances
+ * the 4-month billing cycle. Monthly plans renew every month. Idempotent on
+ * `reference`. Activates the user's site.
  */
-export async function applyPlatformPayment(userId: string, reference: string) {
+export async function applyPlatformPayment(userId: string, reference: string, planId?: string) {
   const admin = createAdminClient();
 
   const { data: sub } = await admin
@@ -25,17 +27,22 @@ export async function applyPlatformPayment(userId: string, reference: string) {
 
   if (sub?.last_reference === reference) return { already: true };
 
-  const position = sub?.billing_cycle_position ?? 0;
-  const result = nextCharge(position);
+  const plan = getPlan(planId || sub?.plan || "pro");
+  const isPro = plan?.id === "pro";
   const now = new Date();
-  const nextBilling = addMonths(now, RENEWAL_INTERVAL_MONTHS);
+
+  // Pro keeps the 0-3 cycle; monthly plans stay at position 0.
+  const position = sub?.billing_cycle_position ?? 0;
+  const result = isPro ? nextCharge(position) : { nextPosition: 0, includesDomain: !!plan?.includesDomain };
+  const nextBilling = addMonths(now, isPro ? RENEWAL_INTERVAL_MONTHS : 1);
 
   const payload = {
     user_id: userId,
     status: "active" as const,
+    plan: plan?.id || "pro",
     billing_cycle_position: result.nextPosition,
-    first_payment_amount: FIRST_PAYMENT_AMOUNT,
-    renewal_amount: RENEWAL_AMOUNT,
+    first_payment_amount: plan?.price ?? FIRST_PAYMENT_AMOUNT,
+    renewal_amount: plan?.renewal ?? plan?.price ?? RENEWAL_AMOUNT,
     next_billing_date: nextBilling.toISOString(),
     last_payment_date: now.toISOString(),
     last_reference: reference,
@@ -50,16 +57,13 @@ export async function applyPlatformPayment(userId: string, reference: string) {
   // Re-activate the site and clear the trial gate.
   await admin.from("sites").update({ is_live: true }).eq("user_id", userId);
 
-  // First payment of a cycle includes a year of custom domain.
+  // Plans that include a domain extend it for a year on the qualifying payment.
   if (result.includesDomain) {
     const expires = addMonths(now, 12).toISOString();
-    await admin
-      .from("domains")
-      .update({ expires_at: expires })
-      .eq("user_id", userId);
+    await admin.from("domains").update({ expires_at: expires }).eq("user_id", userId);
   }
 
-  return { already: false, chargedPosition: position, newPosition: result.nextPosition };
+  return { already: false };
 }
 
 /**

@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { initTransaction } from "@/lib/paystack";
-import { nextCharge } from "@/lib/constants";
+import { getPlan, nextCharge } from "@/lib/constants";
 
-/** Starts a Paystack checkout for the platform Pro plan / renewal. */
+/** Starts a Paystack checkout for a platform plan (or a Pro renewal). */
 export async function POST(request: NextRequest) {
   const supabase = createClient();
   const {
@@ -13,13 +13,32 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
   }
 
+  let body: any = {};
+  try {
+    body = await request.json();
+  } catch {
+    /* no body — treated as a Pro renewal below */
+  }
+
   const { data: sub } = await supabase
     .from("subscriptions")
-    .select("billing_cycle_position")
+    .select("billing_cycle_position, plan")
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const { amount } = nextCharge(sub?.billing_cycle_position ?? 0);
+  // Determine plan + amount.
+  const planId: string = body?.plan || sub?.plan || "pro";
+  const plan = getPlan(planId);
+  if (!plan || plan.price == null) {
+    return NextResponse.json({ error: "Invalid plan." }, { status: 400 });
+  }
+
+  let amount = plan.price;
+  // Pro uses the 4-month cycle; a renewal (already on Pro) uses nextCharge.
+  if (planId === "pro" && sub?.plan === "pro") {
+    amount = nextCharge(sub.billing_cycle_position ?? 0).amount;
+  }
+
   const reference = `tomplat_${user.id.slice(0, 8)}_${Date.now()}`;
 
   try {
@@ -28,7 +47,7 @@ export async function POST(request: NextRequest) {
       amountNaira: amount,
       reference,
       callbackUrl: `${request.nextUrl.origin}/api/billing/callback`,
-      metadata: { userId: user.id, purpose: "platform" },
+      metadata: { userId: user.id, purpose: "platform", plan: planId },
     });
     return NextResponse.json({ authorization_url: data.authorization_url });
   } catch (e: any) {

@@ -4,10 +4,11 @@ export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com";
 
 /* ---------------- Billing ---------------- */
 export const TRIAL_DAYS = 14;
-export const FIRST_PAYMENT_AMOUNT = 30000; // NGN — includes 1yr custom domain
-export const RENEWAL_AMOUNT = 22500; // NGN — positions 1,2,3
+export const FIRST_PAYMENT_AMOUNT = 30000; // NGN — Pro first payment, includes 1yr custom domain
+export const RENEWAL_AMOUNT = 25000; // NGN — Pro renewals at positions 1,2,3
 export const RENEWAL_INTERVAL_MONTHS = 4;
 export const GRACE_PERIOD_DAYS = 7;
+export const EXTRA_DOMAIN_AMOUNT = 8000; // NGN — buy a custom domain for an extra site
 
 /**
  * Given the current billing_cycle_position (0-3), returns the amount to charge
@@ -29,6 +30,131 @@ export function nextCharge(position: number): {
   }
   return { amount: RENEWAL_AMOUNT, nextPosition: position + 1, includesDomain: false };
 }
+
+/* ---------------- Plans ---------------- */
+export type PlanId = "trial" | "starter" | "growth" | "pro" | "custom";
+
+export interface Plan {
+  id: PlanId;
+  name: string;
+  /** First charge amount in NGN (0 for trial, null for custom). */
+  price: number | null;
+  /** Renewal amount in NGN if different from price. */
+  renewal?: number;
+  /** Billing period label. */
+  period: string;
+  tagline: string;
+  features: string[];
+  cta: string;
+  popular?: boolean;
+  /** How many sites this plan allows in total (incl. the first). */
+  siteLimit: number;
+  /** Whether publishing live is allowed on this plan. */
+  canPublish: boolean;
+  includesDomain?: boolean;
+}
+
+export const PLANS: Plan[] = [
+  {
+    id: "trial",
+    name: "Free Trial",
+    price: 0,
+    period: "14 days",
+    tagline: "Build and preview — no credit card.",
+    features: [
+      "14 days free",
+      "Free Tomora subdomain",
+      "All 14 templates",
+      "Build & preview your site",
+      "No credit card required",
+    ],
+    cta: "Start Free Trial",
+    siteLimit: 1,
+    canPublish: true,
+  },
+  {
+    id: "starter",
+    name: "Starter",
+    price: 10000,
+    period: "month",
+    tagline: "Get online with the essentials.",
+    features: [
+      "Free Tomora subdomain",
+      "Payment gateway setup",
+      "We set up your website",
+      "Mobile-friendly interface",
+      "Standard support",
+    ],
+    cta: "Choose Starter",
+    siteLimit: 1,
+    canPublish: true,
+  },
+  {
+    id: "growth",
+    name: "Growth",
+    price: 15000,
+    period: "month",
+    tagline: "For growing online stores.",
+    features: [
+      "Custom domain name included",
+      "Abandoned cart recovery",
+      "Unlimited orders",
+      "We set up your website",
+      "Payment gateway setup",
+      "Inventory management",
+    ],
+    cta: "Choose Growth",
+    siteLimit: 2,
+    canPublish: true,
+    includesDomain: true,
+    popular: true,
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    price: 30000,
+    renewal: 25000,
+    period: "4 months",
+    tagline: "Everything, plus a dedicated expert.",
+    features: [
+      "1 year custom domain included",
+      "Everything in Growth",
+      "VIP priority support",
+      "Advanced sales analytics",
+      "Dedicated account manager",
+      "Automated invoicing",
+    ],
+    cta: "Choose Pro",
+    siteLimit: 3,
+    canPublish: true,
+    includesDomain: true,
+  },
+  {
+    id: "custom",
+    name: "Custom",
+    price: null,
+    period: "tailored",
+    tagline: "Built and managed by our experts.",
+    features: [
+      "Everything in Pro",
+      "Custom features & integrations",
+      "Built by a Tomora web expert",
+      "Ongoing managed service",
+      "Priority onboarding",
+    ],
+    cta: "Talk to us",
+    siteLimit: 99,
+    canPublish: true,
+    includesDomain: true,
+  },
+];
+
+export function getPlan(id: string): Plan | undefined {
+  return PLANS.find((p) => p.id === id);
+}
+
+/** The minimum plan that allows publishing a paid live site (Growth). */
+export const PUBLISH_PLAN: PlanId = "growth";
 
 /* ---------------- Categories ---------------- */
 export interface CategoryMeta {

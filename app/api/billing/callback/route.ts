@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   try {
     const result = await verifyTransaction(reference);
     if (result.success && result.metadata?.userId) {
-      await applyPlatformPayment(result.metadata.userId, reference);
+      await applyPlatformPayment(result.metadata.userId, reference, result.metadata.plan);
       return NextResponse.redirect(`${dashboard}?status=success`);
     }
   } catch {
