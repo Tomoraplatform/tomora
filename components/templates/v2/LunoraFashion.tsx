@@ -2,7 +2,7 @@
 
 import { ArrowRight, PlayCircle, Truck, RotateCcw, ShieldCheck, Headphones, Instagram, Facebook } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, BrandButton, Img, ProductCardV2 } from "./shared";
+import { TemplateProps, Brandmark, BrandButton, Img, ProductCardV2 } from "./shared";
 
 export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "LUNORA";
@@ -14,7 +14,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
     <BrandStyle brandColor={brandColor} className="bg-[#FAF8F5] font-sans text-[#0A0A0A]">
       <header className="border-b border-black/5 bg-[#FAF8F5]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <span className="text-sm font-semibold uppercase tracking-[0.2em]">{name} <span className="text-black/40">| Fashion</span></span>
+          <Brandmark siteData={siteData} name={name} className="text-sm font-semibold uppercase tracking-[0.2em]" />
           <nav className="hidden gap-6 text-sm text-black/60 lg:flex">
             {["Home", "Shop", "Collections", "Lookbook", "Blog", "Contact"].map((l) => <a key={l} href="#">{l}</a>)}
           </nav>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowRight, Search, MapPin, Mic, CalendarDays, Globe, Star, Ticket } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, BrandButton, Img } from "./shared";
 
 const PROGRESS = [["Full Rating", 92], ["Management", 80], ["Social Media", 74]] as const;
 const SCHED_TABS = ["All Events", "Presentation", "Evaluation", "Open Discussion"];
@@ -20,7 +20,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
 
       <header className="bg-[#1A0533] text-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <span className="text-lg font-bold">{name}</span>
+          <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
           <nav className="hidden gap-6 text-sm text-white/70 lg:flex">{["Home", "Events", "Speakers", "Blog", "Contact"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
           <BrandButton className="px-4 py-2">Register</BrandButton>
         </div>

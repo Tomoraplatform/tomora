@@ -2,7 +2,7 @@
 
 import { Search, ShoppingCart, ArrowRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Img, formatNaira } from "./shared";
+import { TemplateProps, Brandmark, Img, formatNaira } from "./shared";
 import { useStore } from "../store-context";
 import type { CatalogProduct, Product, SiteData } from "@/lib/database.types";
 
@@ -34,7 +34,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
       <header className="border-b border-neutral-200">
         <div className="mx-auto flex max-w-6xl items-center gap-6 px-5 py-4">
           <div>
-            <p className="text-lg font-bold leading-none">{name}</p>
+            <Brandmark siteData={siteData} name={name} className="text-lg font-bold leading-none" />
             <p className="text-[10px] text-neutral-400">The biggest choice on the web</p>
           </div>
           <div className="relative ml-auto hidden flex-1 max-w-md md:block">

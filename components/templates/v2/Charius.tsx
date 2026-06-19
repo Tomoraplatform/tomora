@@ -2,7 +2,7 @@
 
 import { PlayCircle, HandHeart, Wallet, HeartHandshake, GraduationCap, Droplet, Utensils, Stethoscope, MapPin } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, BrandButton, Img, formatNaira } from "./shared";
+import { TemplateProps, Brandmark, BrandButton, Img, formatNaira } from "./shared";
 
 const ACTIONS = [{ icon: HeartHandshake, t: "Become a Volunteer" }, { icon: Wallet, t: "Quick Fundraising" }, { icon: HandHeart, t: "Start Donating" }];
 const WHATWEDO = [{ icon: GraduationCap, t: "Kids Education" }, { icon: Droplet, t: "Pure Water" }, { icon: Utensils, t: "Healthy Food" }, { icon: Stethoscope, t: "Medical Care" }];
@@ -17,7 +17,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
       <div className="bg-[#0D0D0D] py-2 text-center text-xs text-white/80">Join our upcoming campaign — every gift counts</div>
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <span className="text-lg font-bold">{name}</span>
+          <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
           <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{["Home", "Donations", "Events", "Blog", "Contact"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
           <BrandButton className="px-4 py-2">Donate Now</BrandButton>
         </div>

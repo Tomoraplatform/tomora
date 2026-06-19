@@ -2,7 +2,7 @@
 
 import { HandHeart, GraduationCap, Baby, Users, Quote, ChevronRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, BrandButton, Img } from "./shared";
 
 const SERVICES = [
   { icon: HandHeart, t: "Help & Support" }, { icon: GraduationCap, t: "Education" },
@@ -16,7 +16,7 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
     <BrandStyle brandColor={brandColor} className="bg-[#F9F7F4] font-sans text-neutral-900">
       <header className="bg-[#F9F7F4]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
-          <span className="text-sm font-bold uppercase tracking-wide">{name} Charity Organization</span>
+          <Brandmark siteData={siteData} name={name} className="text-sm font-bold uppercase tracking-wide" />
           <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{["Home", "Who We Are", "Where We Work", "Blog", "Contact"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
         </div>
       </header>

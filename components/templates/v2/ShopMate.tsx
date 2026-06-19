@@ -2,7 +2,7 @@
 
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Quote, ShoppingCart } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, BrandButton, OutlineButton, ProductCardV2, Img } from "./shared";
+import { TemplateProps, Brandmark, BrandButton, OutlineButton, ProductCardV2, Img } from "./shared";
 
 const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"];
 
@@ -22,7 +22,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
       {/* Nav */}
       <header className="sticky top-0 z-20 border-b border-black/5 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <span className="text-xl font-bold">{name}</span>
+          <Brandmark siteData={siteData} name={name} className="text-xl font-bold" />
           <nav className="hidden gap-7 text-sm text-black/60 md:flex">
             <a href="#categories">Categories</a><a href="#products">Shop</a><a href="#offer">Deals</a>
           </nav>

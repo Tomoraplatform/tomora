@@ -2,7 +2,7 @@
 
 import { Search, Play, HandHeart, Users, CalendarDays, Plus, Phone, MapPin, Mail } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Img } from "./shared";
+import { TemplateProps, Brandmark, Img } from "./shared";
 
 const QUICK = [{ icon: Play, t: "Watch" }, { icon: HandHeart, t: "Give" }, { icon: Users, t: "Who We Are" }, { icon: CalendarDays, t: "Events" }];
 const MINISTRIES = ["Missional Communities", "Previous Sermons", "Our Weddings", "Special Events"];
@@ -16,7 +16,7 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
       <div className="bg-[#1A1208] py-2 text-xs text-white/70"><div className="mx-auto flex max-w-6xl items-center gap-5 px-5"><span className="flex items-center gap-1"><Play className="h-3 w-3" /> Media</span><span className="flex items-center gap-1"><Mail className="h-3 w-3" /> Contact Us</span></div></div>
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <span className="text-lg font-bold">{name}</span>
+          <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
           <nav className="hidden gap-5 text-sm text-black/60 lg:flex">{["Belong & Grow", "Mission & Serve", "Prayer & Care", "Worship & Music", "Giving"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
         </div>
       </header>

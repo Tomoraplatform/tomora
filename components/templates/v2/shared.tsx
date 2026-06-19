@@ -10,6 +10,23 @@ export interface TemplateProps {
   brandColor: string;
 }
 
+/** Renders the uploaded logo if present, otherwise the business name text. */
+export function Brandmark({
+  siteData,
+  name,
+  className,
+}: {
+  siteData: SiteData;
+  name: string;
+  className?: string;
+}) {
+  if (siteData.logoUrl) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={siteData.logoUrl} alt={name} className="h-9 w-auto max-w-[170px] object-contain" />;
+  }
+  return <span className={className}>{name}</span>;
+}
+
 /** Brand-colored solid button. */
 export function BrandButton({
   children, className = "", as = "button", href, onClick,

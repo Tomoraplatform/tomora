@@ -2,7 +2,7 @@
 
 import { Search, Mail, Phone, FileText, PhoneCall, Users, Home as HomeIcon, Scale, MapPin, ArrowRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, BrandButton, Img } from "./shared";
 
 const QUICK = [
   { icon: FileText, t: "Services & Forms" }, { icon: PhoneCall, t: "Useful Numbers" },
@@ -17,7 +17,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
     <BrandStyle brandColor={brandColor} className="bg-white font-sans text-neutral-900">
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <div><p className="text-lg font-bold leading-none">{name}</p><p className="text-[10px] text-black/40">Community & Region</p></div>
+          <div><Brandmark siteData={siteData} name={name} className="text-lg font-bold leading-none" /><p className="text-[10px] text-black/40">Community & Region</p></div>
           <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{["About", "Living Here", "Heritage", "Services"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
         </div>
       </header>

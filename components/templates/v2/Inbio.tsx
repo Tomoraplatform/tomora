@@ -6,7 +6,7 @@ import {
   Mail, Phone, MapPin, Quote, Bookmark,
 } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, BrandButton, Img, ContactFormV2 } from "./shared";
+import { TemplateProps, Brandmark, BrandButton, Img, ContactFormV2 } from "./shared";
 
 const SERVICES = [
   { icon: TrendingUp, t: "Business Strategy", d: "Plans that turn ideas into measurable growth." },
@@ -33,7 +33,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
     <BrandStyle brandColor={brandColor} className="bg-[#F5F5F7] font-sans text-neutral-900">
       <header className="bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <span className="text-lg font-bold">{name}</span>
+          <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
           <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{["Home", "Features", "Portfolio", "Resume", "Pricing", "Contact"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
           <div className="flex items-center gap-3"><Heart className="h-5 w-5 text-black/40" /><BrandButton className="px-4 py-2">Buy Now</BrandButton></div>
         </div>

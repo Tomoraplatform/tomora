@@ -2,7 +2,7 @@
 
 import { ArrowRight, Mic, Users, Calendar, Zap, ShieldCheck, Sparkles } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, BrandButton, Img } from "./shared";
 
 const NAVY = "#0A0F2E";
 const ABOUT = [{ icon: Mic, t: "World-class Speakers" }, { icon: Users, t: "Global Network" }, { icon: Calendar, t: "Daily Sessions" }];
@@ -16,7 +16,7 @@ export function ConferenceDark({ siteData, brandColor }: TemplateProps) {
       <div style={{ background: NAVY }}>
         <header className="border-b border-white/10">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-            <span className="text-lg font-bold">{name}</span>
+            <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
             <nav className="hidden gap-6 text-sm text-white/70 lg:flex">{["Home", "About", "Speakers", "Blog", "Area"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
             <BrandButton className="px-4 py-2">Free Quote</BrandButton>
           </div>

@@ -2,7 +2,7 @@
 
 import { ArrowRight, TrendingUp, Building2, Briefcase, LineChart, Sparkles, Headphones, Star, Phone } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, BrandButton, Img } from "./shared";
 
 const GREEN = "#0D3B2A";
 const SERVICES = [
@@ -24,7 +24,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
       <div className="bg-[#0D3B2A] py-2 text-center text-xs text-white/70">12 Marina Road, Lagos · hello@fincco.com</div>
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <span className="text-lg font-bold">{name}</span>
+          <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
           <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{["Homepage", "About Us", "Case Study", "Services", "Pages"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
           <div className="flex items-center gap-3"><span className="hidden items-center gap-1 text-sm text-black/60 sm:flex"><Phone className="h-4 w-4" /> +234 800 000</span><BrandButton className="px-4 py-2">Free Consultation</BrandButton></div>
         </div>
