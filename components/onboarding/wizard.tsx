@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Building2, ShoppingBag, User, Heart, Check, ArrowLeft, ArrowRight,
+  ShoppingBag, User, GraduationCap, Heart, CalendarDays, Check, ArrowLeft, ArrowRight,
   UploadCloud, Loader2, PartyPopper, ExternalLink, Pencil,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
@@ -13,20 +13,20 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { BrowserFrame } from "@/components/browser-frame";
 import { SiteRenderer } from "@/components/templates";
-import { CATEGORIES, templatesForCategory, APP_DOMAIN, TRIAL_DAYS } from "@/lib/constants";
-import { createDefaultSiteData } from "@/lib/site-data";
+import { TemplateThumb } from "@/components/templates/template-thumb";
+import { APP_DOMAIN, TRIAL_DAYS } from "@/lib/constants";
+import { CATALOG_CATEGORIES, catalogTemplatesByCategory, createCatalogContent, type CatalogCategoryId } from "@/lib/catalog";
 import { slugifySubdomain } from "@/lib/utils";
 import { uploadImage } from "@/lib/upload";
 import { completeOnboarding } from "@/app/onboarding/actions";
-import type { SiteCategory } from "@/lib/database.types";
 
-const ICONS = { Building2, ShoppingBag, User, Heart } as const;
+const ICONS = { ShoppingBag, User, GraduationCap, Heart, CalendarDays } as const;
 const PRESET_COLORS = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777"];
 
 export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [category, setCategory] = useState<SiteCategory | null>(null);
+  const [category, setCategory] = useState<CatalogCategoryId | null>(null);
   const [templateId, setTemplateId] = useState<string | null>(null);
 
   const [businessName, setBusinessName] = useState("");
@@ -48,7 +48,7 @@ export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
 
   const previewData = useMemo(() => {
     if (!templateId || !category) return null;
-    const d = createDefaultSiteData(templateId, category, {
+    const d = createCatalogContent(templateId, {
       businessName: businessName || "Your Business",
       brandColor,
       logoUrl,
@@ -105,8 +105,8 @@ export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
         {/* STEP 1 — Category */}
         {step === 1 && (
           <Section title="What kind of website do you need?" subtitle="Pick the option that best fits your goals.">
-            <div className="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
-              {CATEGORIES.map((c) => {
+            <div className="mx-auto grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {CATALOG_CATEGORIES.map((c) => {
                 const Icon = ICONS[c.icon];
                 const active = category === c.id;
                 return (
@@ -127,17 +127,17 @@ export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
         {/* STEP 2 — Template */}
         {step === 2 && category && (
           <Section title="Choose your starting template" subtitle="You can fully customise it next.">
-            <div className="mx-auto grid max-w-3xl gap-6 sm:grid-cols-2">
-              {templatesForCategory(category).map((t) => {
+            <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {catalogTemplatesByCategory(category).map((t) => {
                 const active = templateId === t.id;
                 return (
-                  <div key={t.id} className={`overflow-hidden rounded-2xl border-2 bg-white transition-all ${active ? "border-ink" : "border-transparent"}`}>
-                    <div className="flex h-40 items-center justify-center" style={{ background: t.thumb.bg }}>
-                      <div className="h-16 w-28 rounded-md" style={{ background: t.thumb.accent }} />
+                  <div key={t.id} className={`overflow-hidden rounded-2xl border-2 bg-white transition-all ${active ? "border-ink shadow-md" : "border-transparent"}`}>
+                    <div className="border-b border-ink/5">
+                      <TemplateThumb template={t} color={brandColor} />
                     </div>
                     <div className="p-5">
                       <h3 className="font-semibold">{t.name}</h3>
-                      <p className="mt-1 text-sm text-ink/60">{t.description}</p>
+                      <p className="mt-1 text-sm text-ink/60">{t.blurb}</p>
                       <Button className="mt-4 w-full" variant={active ? "default" : "outline"} onClick={() => setTemplateId(t.id)}>
                         {active ? (<><Check className="h-4 w-4" /> Selected</>) : "Choose This"}
                       </Button>

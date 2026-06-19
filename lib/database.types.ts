@@ -132,14 +132,71 @@ export interface SiteBlock {
   content: Record<string, Json>;
 }
 
+/* ---- v2 template content shapes ---- */
+export interface CatalogProduct {
+  id: string;
+  name: string;
+  price: number;
+  comparePrice?: number;
+  image: string;
+  rating?: number;
+  reviews?: number;
+  category?: string;
+}
+export interface CatalogCourse {
+  id: string;
+  title: string;
+  instructor: string;
+  category: string;
+  level: string;
+  rating?: number;
+  image: string;
+}
+export interface CatalogCause {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  raised: number;
+  goal: number;
+}
+export interface CatalogEvent {
+  id: string;
+  title: string;
+  date: string;
+  location: string;
+  image: string;
+  description?: string;
+}
+export interface CatalogPortfolioItem {
+  id: string;
+  title: string;
+  category: string;
+  image: string;
+  description?: string;
+}
+
 export interface SiteData {
   businessName: string;
   tagline?: string;
   logoUrl?: string;
   brandColor: string;
+  brandColorSecondary?: string;
   phone?: string;
   email?: string;
   address?: string;
   social?: SocialLinks;
   blocks: SiteBlock[];
+
+  // v2 template fields (optional — populated by the catalog content generator)
+  heroHeadline?: string;
+  heroSubtext?: string;
+  heroImage?: string;
+  ctaText?: string;
+  contactForm?: boolean;
+  products?: CatalogProduct[];
+  courses?: CatalogCourse[];
+  causes?: CatalogCause[];
+  events?: CatalogEvent[];
+  portfolioItems?: CatalogPortfolioItem[];
 }

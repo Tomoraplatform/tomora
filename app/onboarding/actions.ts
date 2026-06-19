@@ -3,12 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createDefaultSiteData } from "@/lib/site-data";
+import { createCatalogContent, isCatalogTemplate, catalogTemplate, type CatalogCategoryId } from "@/lib/catalog";
 import { slugifySubdomain } from "@/lib/utils";
 import { TRIAL_DAYS } from "@/lib/constants";
 import type { SiteCategory, SocialLinks } from "@/lib/database.types";
 
 export interface OnboardingPayload {
-  category: SiteCategory;
+  /** Catalog category id (shop/portfolio/education/organization/events). */
+  category: string;
   templateId: string;
   businessName: string;
   tagline?: string;
@@ -18,6 +20,18 @@ export interface OnboardingPayload {
   email?: string;
   address?: string;
   social: SocialLinks;
+}
+
+/** Maps a catalog category to the existing site_category DB enum. */
+function toDbCategory(cat: string): SiteCategory {
+  const map: Record<CatalogCategoryId, SiteCategory> = {
+    shop: "ecommerce",
+    portfolio: "creator",
+    education: "business",
+    organization: "organization",
+    events: "organization",
+  };
+  return map[cat as CatalogCategoryId] ?? "business";
 }
 
 export interface OnboardingResult {
@@ -63,12 +77,24 @@ export async function completeOnboarding(
     .eq("user_id", user.id)
     .maybeSingle();
 
-  const siteData = createDefaultSiteData(payload.templateId, payload.category, {
-    businessName: payload.businessName.trim(),
-    brandColor: payload.brandColor,
-    logoUrl: payload.logoUrl,
-    tagline: payload.tagline,
-  });
+  const isCatalog = isCatalogTemplate(payload.templateId);
+  const dbCategory: SiteCategory = isCatalog
+    ? toDbCategory(catalogTemplate(payload.templateId)!.category)
+    : toDbCategory(payload.category);
+
+  const siteData = isCatalog
+    ? createCatalogContent(payload.templateId, {
+        businessName: payload.businessName.trim(),
+        brandColor: payload.brandColor,
+        logoUrl: payload.logoUrl,
+        tagline: payload.tagline,
+      })
+    : createDefaultSiteData(payload.templateId, dbCategory, {
+        businessName: payload.businessName.trim(),
+        brandColor: payload.brandColor,
+        logoUrl: payload.logoUrl,
+        tagline: payload.tagline,
+      });
   // mirror contact details into site_data for templates
   siteData.phone = payload.phone;
   siteData.email = payload.email || user.email || undefined;
@@ -83,7 +109,7 @@ export async function completeOnboarding(
       .from("sites")
       .update({
         template_id: payload.templateId,
-        category: payload.category,
+        category: dbCategory,
         site_data: siteData,
         is_live: true,
         trial_ends_at: trialEnds.toISOString(),
@@ -103,7 +129,7 @@ export async function completeOnboarding(
       .insert({
         user_id: user.id,
         template_id: payload.templateId,
-        category: payload.category,
+        category: dbCategory,
         subdomain,
         domain_status: "none",
         is_live: true,
