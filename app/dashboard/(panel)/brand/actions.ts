@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { currentSiteId } from "@/lib/dashboard";
 import type { SocialLinks, SiteData } from "@/lib/database.types";
 
 export interface BrandInput {
@@ -32,9 +33,11 @@ export async function updateBrand(input: BrandInput): Promise<{ ok: boolean; err
     social_links: input.social || {},
   }).eq("user_id", user.id);
 
-  // Sync the brand fields into the site's site_data so templates reflect them.
-  const { data: site } = await supabase
-    .from("sites").select("id, site_data").eq("user_id", user.id).maybeSingle();
+  // Sync the brand fields into the current site's site_data so templates reflect them.
+  const siteId = await currentSiteId(user.id);
+  const { data: site } = siteId
+    ? await supabase.from("sites").select("id, site_data").eq("id", siteId).maybeSingle()
+    : { data: null };
   if (site) {
     const sd = (site.site_data || {}) as SiteData;
     const updated: SiteData = {

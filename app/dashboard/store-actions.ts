@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { currentSiteId } from "@/lib/dashboard";
 import type { OrderStatus } from "@/lib/database.types";
 
 async function requireUserAndSite() {
@@ -10,13 +11,9 @@ async function requireUserAndSite() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated.");
-  const { data: site } = await supabase
-    .from("sites")
-    .select("id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-  if (!site) throw new Error("No site found.");
-  return { supabase, userId: user.id, siteId: site.id as string };
+  const siteId = await currentSiteId(user.id);
+  if (!siteId) throw new Error("No site found.");
+  return { supabase, userId: user.id, siteId };
 }
 
 export interface ProductInput {
@@ -92,7 +89,7 @@ export async function savePayoutSettings(input: {
   accountName: string;
 }): Promise<{ ok: boolean; error?: string }> {
   try {
-    const { supabase, userId } = await requireUserAndSite();
+    const { supabase, siteId } = await requireUserAndSite();
     const { error } = await supabase
       .from("sites")
       .update({
@@ -101,7 +98,7 @@ export async function savePayoutSettings(input: {
         account_number: input.accountNumber || null,
         account_name: input.accountName || null,
       })
-      .eq("user_id", userId);
+      .eq("id", siteId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard/payouts");
     return { ok: true };

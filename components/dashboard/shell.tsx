@@ -5,14 +5,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote,
-  Globe, CreditCard, Settings, Menu, X, LogOut, ExternalLink,
+  Globe, CreditCard, Settings, Menu, X, LogOut, ExternalLink, LayoutTemplate,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/app/(auth)/actions";
+import { SiteSwitcher, type SwitcherSite } from "./site-switcher";
 
 const ICONS = {
-  LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote, Globe, CreditCard, Settings,
+  LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote, Globe, CreditCard, Settings, LayoutTemplate,
 } as const;
 
 export interface NavItem {
@@ -24,10 +25,14 @@ export interface NavItem {
 export function DashboardShell({
   items,
   liveUrl,
+  sites,
+  currentSiteId,
   children,
 }: {
   items: NavItem[];
   liveUrl?: string | null;
+  sites?: SwitcherSite[];
+  currentSiteId?: string;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -36,6 +41,7 @@ export function DashboardShell({
   const SidebarContent = (
     <div className="flex h-full flex-col">
       <div className="px-5 py-5"><Logo /></div>
+      {sites && currentSiteId && <SiteSwitcher sites={sites} currentId={currentSiteId} />}
       <nav className="flex-1 space-y-1 px-3">
         {items.map((item) => {
           const Icon = ICONS[item.icon];

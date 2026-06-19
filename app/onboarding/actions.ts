@@ -70,12 +70,14 @@ export async function completeOnboarding(
     { onConflict: "user_id" }
   );
 
-  // 2. Reuse an existing site if the user already has one.
-  const { data: existing } = await supabase
+  // 2. Reuse an existing site if the user already has one (first onboarding only).
+  const { data: existingList } = await supabase
     .from("sites")
     .select("id, subdomain")
     .eq("user_id", user.id)
-    .maybeSingle();
+    .order("created_at", { ascending: true })
+    .limit(1);
+  const existing = existingList?.[0] ?? null;
 
   const isCatalog = isCatalogTemplate(payload.templateId);
   const dbCategory: SiteCategory = isCatalog

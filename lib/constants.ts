@@ -86,7 +86,7 @@ export const PLANS: Plan[] = [
       "Standard support",
     ],
     cta: "Choose Starter",
-    siteLimit: 1,
+    siteLimit: 2,
     canPublish: true,
   },
   {

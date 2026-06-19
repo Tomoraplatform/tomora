@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { currentSiteId } from "@/lib/dashboard";
 
 const DOMAIN_RE = /^(?!-)([a-z0-9-]{1,63}\.)+[a-z]{2,}$/i;
 
@@ -20,9 +21,9 @@ export async function connectDomain(domainRaw: string): Promise<{ ok: boolean; e
     return { ok: false, error: "Upgrade to Pro to connect a custom domain." };
   }
 
-  const { data: site } = await supabase
-    .from("sites").select("id").eq("user_id", user.id).maybeSingle();
-  if (!site) return { ok: false, error: "No site found." };
+  const siteId = await currentSiteId(user.id);
+  if (!siteId) return { ok: false, error: "No site found." };
+  const site = { id: siteId };
 
   const { error: siteErr } = await supabase
     .from("sites")
@@ -52,11 +53,11 @@ export async function removeDomain(): Promise<{ ok: boolean; error?: string }> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Not authenticated." };
-  const { data: site } = await supabase.from("sites").select("id").eq("user_id", user.id).maybeSingle();
-  if (!site) return { ok: false, error: "No site found." };
+  const siteId = await currentSiteId(user.id);
+  if (!siteId) return { ok: false, error: "No site found." };
 
-  await supabase.from("sites").update({ custom_domain: null, domain_status: "none" }).eq("id", site.id);
-  await supabase.from("domains").delete().eq("site_id", site.id);
+  await supabase.from("sites").update({ custom_domain: null, domain_status: "none" }).eq("id", siteId);
+  await supabase.from("domains").delete().eq("site_id", siteId);
   revalidatePath("/dashboard/domain");
   return { ok: true };
 }

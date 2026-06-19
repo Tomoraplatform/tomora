@@ -88,7 +88,10 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
     setSaving(true);
     const res = await saveSite(site.id, data, live);
     setSaving(false);
-    if (res.ok) { setSaved(true); }
+    if (res.ok) {
+      setSaved(true);
+      if (res.gated) { setLive(false); if (typeof window !== "undefined") window.alert(res.error); }
+    }
   }
 
   const editApi = useMemo(() => ({ editing: true, update }), [update]);

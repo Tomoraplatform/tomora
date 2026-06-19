@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   Pencil, Palette, ExternalLink, Globe, CreditCard, Package, ShoppingBag,
-  ArrowRight, CircleDot,
+  ArrowRight, CircleDot, LayoutTemplate,
 } from "lucide-react";
 import { getDashboardData } from "@/lib/dashboard";
 import { createClient } from "@/lib/supabase/server";
@@ -121,8 +121,9 @@ export default async function DashboardHome() {
       {/* Quick actions */}
       <div>
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink/50">Quick Actions</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <QuickAction href="/dashboard/editor" icon={<Pencil className="h-5 w-5" />} title="Edit Site" desc="Change content and layout" />
+          <QuickAction href="/dashboard/templates" icon={<LayoutTemplate className="h-5 w-5" />} title="Templates" desc="Browse & add a website" />
           <QuickAction href="/dashboard/brand" icon={<Palette className="h-5 w-5" />} title="Brand Settings" desc="Colors, logo and details" />
           <QuickAction href="/dashboard/domain" icon={<Globe className="h-5 w-5" />} title="Custom Domain" desc="Connect your own domain" />
         </div>

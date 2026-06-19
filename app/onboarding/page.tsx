@@ -12,12 +12,12 @@ export default async function OnboardingPage() {
   if (!user) redirect("/login?next=/onboarding");
 
   // If they already have a site, send them to the dashboard.
-  const { data: site } = await supabase
+  const { data: sites } = await supabase
     .from("sites")
     .select("id")
     .eq("user_id", user.id)
-    .maybeSingle();
-  if (site) redirect("/dashboard");
+    .limit(1);
+  if (sites && sites.length > 0) redirect("/dashboard");
 
   return <OnboardingWizard defaultEmail={user.email ?? undefined} />;
 }
