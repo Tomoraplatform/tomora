@@ -32,7 +32,7 @@ export function MarketingFooter() {
           <ul className="space-y-3 text-sm text-cream/80">
             <li><Link href="/signup" className="hover:text-cream">About</Link></li>
             <li><a href="#faq" className="hover:text-cream">FAQ</a></li>
-            <li><a href="mailto:hello@tomora.com" className="hover:text-cream">Contact</a></li>
+            <li><a href="mailto:tomoraplatform@gmail.com" className="hover:text-cream">Contact</a></li>
           </ul>
         </div>
 
