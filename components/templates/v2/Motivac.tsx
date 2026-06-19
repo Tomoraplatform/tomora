@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowRight, Search, MapPin, Mic, CalendarDays, Globe, Star, Ticket } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, BrandButton, Img } from "./shared";
 
 const PROGRESS = [["Full Rating", 92], ["Management", 80], ["Social Media", 74]] as const;
 const SCHED_TABS = ["All Events", "Presentation", "Evaluation", "Open Discussion"];
@@ -108,8 +108,12 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
         <div className="mx-auto max-w-3xl px-5 py-16 text-center">
           <h2 className="text-3xl font-bold">What Clients Say About Us</h2>
           <div className="mt-6 flex justify-center gap-1" style={{ color: "var(--brand-primary)" }}>{[0,1,2,3,4].map((i) => <Star key={i} className="h-4 w-4 fill-current" />)}</div>
-          <blockquote className="mt-4 text-lg text-white/80">An unforgettable conference. The speakers and energy were world-class.</blockquote>
-          <p className="mt-4 font-semibold">Ada Obi</p><p className="text-sm text-white/50">Attendee</p>
+          {testimonialsOf(siteData).slice(0, 1).map((t, i) => (
+            <div key={i}>
+              <blockquote className="mt-4 text-lg text-white/80">{t.quote}</blockquote>
+              <p className="mt-4 font-semibold">{t.name}</p>{t.role ? <p className="text-sm text-white/50">{t.role}</p> : null}
+            </div>
+          ))}
         </div>
       </section>
 

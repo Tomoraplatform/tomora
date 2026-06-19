@@ -1,8 +1,8 @@
 "use client";
 
-import { Star, ShoppingCart, Zap } from "lucide-react";
-import type { SiteData, CatalogProduct, Product } from "@/lib/database.types";
-import { formatNaira } from "@/lib/utils";
+import { Star, ShoppingCart, Zap, Instagram, Twitter, Facebook, Globe } from "lucide-react";
+import type { SiteData, CatalogProduct, CatalogTestimonial, Product, SocialLinks } from "@/lib/database.types";
+import { formatNaira, cn } from "@/lib/utils";
 import { useStore } from "../store-context";
 
 export interface TemplateProps {
@@ -150,3 +150,35 @@ export function NewsletterInput({ buttonText = "Subscribe", dark = false }: { bu
 }
 
 export { formatNaira, Zap };
+
+/** Editable testimonials, with a fallback so an un-edited site still looks full. */
+export function testimonialsOf(siteData: SiteData): CatalogTestimonial[] {
+  return siteData.testimonials?.length ? siteData.testimonials : [];
+}
+
+function normalizeUrl(url: string, base: string): string {
+  if (!url) return "#";
+  if (/^https?:\/\//i.test(url)) return url;
+  if (base) return base + url.replace(/^@/, "");
+  return `https://${url}`;
+}
+
+/** Renders social icons for whichever links the user provided (editable). */
+export function SocialIcons({ social, className = "" }: { social?: SocialLinks; className?: string }) {
+  const items = [
+    { url: social?.instagram, Icon: Instagram, base: "https://instagram.com/" },
+    { url: social?.twitter, Icon: Twitter, base: "https://twitter.com/" },
+    { url: social?.facebook, Icon: Facebook, base: "https://facebook.com/" },
+    { url: social?.website, Icon: Globe, base: "" },
+  ].filter((i) => i.url);
+  if (!items.length) return null;
+  return (
+    <div className={cn("flex gap-3", className)}>
+      {items.map(({ url, Icon, base }, i) => (
+        <a key={i} href={normalizeUrl(url as string, base)} target="_blank" rel="noreferrer" className="opacity-70 transition-opacity hover:opacity-100">
+          <Icon className="h-5 w-5" />
+        </a>
+      ))}
+    </div>
+  );
+}

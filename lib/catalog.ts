@@ -1,5 +1,6 @@
 import type {
   SiteData, CatalogProduct, CatalogCourse, CatalogCause, CatalogEvent, CatalogPortfolioItem,
+  CatalogTestimonial,
 } from "./database.types";
 
 /* ============================ Categories ============================ */
@@ -97,6 +98,34 @@ function demoEvents(seed: string): CatalogEvent[] {
     image: img(`${seed}-event-${i}`, 800, 600), description: "Join us for a memorable gathering with the whole community.",
   }));
 }
+function demoTestimonials(category: CatalogCategoryId): CatalogTestimonial[] {
+  const base: Record<string, CatalogTestimonial[]> = {
+    shop: [
+      { id: "t1", name: "Ada O.", role: "Customer", quote: "Fast delivery and great quality. I shop here every month." },
+      { id: "t2", name: "Tunde B.", role: "Customer", quote: "The checkout was smooth and my order arrived early." },
+      { id: "t3", name: "Grace M.", role: "Customer", quote: "Excellent customer support — they really care." },
+    ],
+    portfolio: [
+      { id: "t1", name: "Tunde Bello", role: "CEO, Bello Co.", quote: "Working together was effortless. The result exceeded our expectations." },
+      { id: "t2", name: "Grace Mwangi", role: "Product Lead", quote: "Incredible eye for detail. Our users noticed the difference immediately." },
+    ],
+    education: [
+      { id: "t1", name: "Ada Obi", role: "Graduate", quote: "An unforgettable program. The mentors and community were world-class." },
+      { id: "t2", name: "Sam Okafor", role: "Graduate", quote: "I got hired within two months of finishing. Worth every naira." },
+    ],
+    organization: [
+      { id: "t1", name: "Amara", role: "Beneficiary", quote: "They gave my daughter a future. Forever grateful." },
+      { id: "t2", name: "Joseph", role: "Volunteer", quote: "Clean water changed our entire village." },
+      { id: "t3", name: "Fatima", role: "Beneficiary", quote: "I learned to read at 40 thanks to this program." },
+    ],
+    events: [
+      { id: "t1", name: "Ada Obi", role: "Attendee", quote: "A wonderful, welcoming community. We felt at home from day one." },
+      { id: "t2", name: "Daniel A.", role: "Member", quote: "The events are thoughtfully run and genuinely uplifting." },
+    ],
+  };
+  return base[category] || base.shop;
+}
+
 function demoPortfolio(seed: string): CatalogPortfolioItem[] {
   const t = ["Mobile Banking App", "Brand Identity", "E-commerce Redesign", "Marketing Website", "Dashboard UI", "Logo Suite"];
   return t.map((title, i) => ({
@@ -141,8 +170,10 @@ export function createCatalogContent(
     heroSubtext: hero.s,
     heroImage: img(`${seed}-hero`, 1200, 900),
     ctaText: hero.c,
+    ctaHref: "#",
     contactForm: tpl ? !["shop", "education"].includes(tpl.category) || templateId === "education-02" : false,
     social: { instagram: "", twitter: "", facebook: "", website: "" },
+    testimonials: tpl ? demoTestimonials(tpl.category) : [],
   };
 
   switch (tpl?.category) {

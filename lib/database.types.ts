@@ -193,10 +193,21 @@ export interface SiteData {
   heroSubtext?: string;
   heroImage?: string;
   ctaText?: string;
+  ctaHref?: string;
   contactForm?: boolean;
+  /** Custom brand color hex codes the user saved (max 3). First is primary. */
+  brandColors?: string[];
+  testimonials?: CatalogTestimonial[];
   products?: CatalogProduct[];
   courses?: CatalogCourse[];
   causes?: CatalogCause[];
   events?: CatalogEvent[];
   portfolioItems?: CatalogPortfolioItem[];
+}
+
+export interface CatalogTestimonial {
+  id: string;
+  name: string;
+  role?: string;
+  quote: string;
 }

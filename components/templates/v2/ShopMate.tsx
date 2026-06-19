@@ -2,7 +2,7 @@
 
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Quote, ShoppingCart } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, BrandButton, OutlineButton, ProductCardV2, Img } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img } from "./shared";
 
 const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"];
 
@@ -117,13 +117,13 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
         <div className="mx-auto max-w-6xl px-5 py-14">
           <h2 className="text-center text-2xl font-bold">What Our Customers Say</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {["Fast delivery and great quality. I shop here every month.", "The checkout was smooth and my order arrived early.", "Excellent customer support — they really care."].map((q, i) => (
-              <figure key={i} className="rounded-2xl bg-white p-6 shadow-sm">
+            {testimonialsOf(siteData).map((t, i) => (
+              <figure key={t.id || i} className="rounded-2xl bg-white p-6 shadow-sm">
                 <Quote className="h-7 w-7" style={{ color: "var(--brand-primary)" }} />
-                <blockquote className="mt-3 text-sm text-black/70">{q}</blockquote>
+                <blockquote className="mt-3 text-sm text-black/70">{t.quote}</blockquote>
                 <figcaption className="mt-4 flex items-center gap-3">
                   <Img src={`https://picsum.photos/seed/rev${i}/64`} className="h-10 w-10 rounded-full object-cover" />
-                  <span className="text-sm font-semibold">{["Ada O.", "Tunde B.", "Grace M."][i]}</span>
+                  <span className="text-sm font-semibold">{t.name}</span>
                 </figcaption>
               </figure>
             ))}

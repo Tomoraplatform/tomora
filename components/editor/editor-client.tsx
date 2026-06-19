@@ -12,7 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { SiteRenderer } from "@/components/templates";
+import { CatalogEditorPanel } from "./catalog-editor-panel";
 import { BLOCK_LABELS, supportedBlocks, type BlockType } from "@/lib/site-data";
+import { isCatalogTemplate } from "@/lib/catalog";
 import { uploadImage } from "@/lib/upload";
 import { saveSite } from "@/app/dashboard/editor/actions";
 import { cn } from "@/lib/utils";
@@ -71,6 +73,8 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
   const setField = (field: "businessName" | "tagline" | "phone" | "email" | "address", v: string) => {
     setData((d) => ({ ...d, [field]: v })); dirty();
   };
+  const patch = (p: Partial<SiteData>) => { setData((d) => ({ ...d, ...p })); dirty(); };
+  const isCatalog = isCatalogTemplate(site.template_id);
 
   async function onLogo(file?: File) {
     if (!file) return;
@@ -128,6 +132,10 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         {/* Left panel */}
         <aside className="w-full shrink-0 overflow-y-auto border-b border-ink/10 bg-white p-4 lg:w-80 lg:border-b-0 lg:border-r">
+          {isCatalog ? (
+            <CatalogEditorPanel data={data} patch={patch} />
+          ) : (
+          <>
           <Section title="Brand">
             <FieldRow label="Business name"><Input value={data.businessName} onChange={(e) => setField("businessName", e.target.value)} /></FieldRow>
             <FieldRow label="Tagline"><Input value={data.tagline || ""} onChange={(e) => setField("tagline", e.target.value)} /></FieldRow>
@@ -168,6 +176,8 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
               })}
             </div>
           </Section>
+          </>
+          )}
         </aside>
 
         {/* Preview */}

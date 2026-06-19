@@ -6,7 +6,7 @@ import {
   Mail, Phone, MapPin, Quote, Bookmark,
 } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, BrandButton, Img, ContactFormV2 } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, BrandButton, Img, ContactFormV2 } from "./shared";
 
 const SERVICES = [
   { icon: TrendingUp, t: "Business Strategy", d: "Plans that turn ideas into measurable growth." },
@@ -106,11 +106,13 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
       {/* Testimonial */}
       <section className="mx-auto max-w-4xl px-5 py-14">
         <h2 className="text-center text-3xl font-bold">Testimonial</h2>
-        <figure className="mt-8 rounded-2xl bg-white p-8 text-center shadow-sm">
-          <Quote className="mx-auto h-8 w-8" style={{ color: "var(--brand-primary)" }} />
-          <blockquote className="mt-4 text-lg text-black/70">Working with {name} was effortless. The final product exceeded our expectations and shipped on time.</blockquote>
-          <figcaption className="mt-5"><p className="font-semibold">Tunde Bello</p><p className="text-sm text-black/50">CEO, Bello Co.</p></figcaption>
-        </figure>
+        {testimonialsOf(siteData).slice(0, 1).map((t, i) => (
+          <figure key={i} className="mt-8 rounded-2xl bg-white p-8 text-center shadow-sm">
+            <Quote className="mx-auto h-8 w-8" style={{ color: "var(--brand-primary)" }} />
+            <blockquote className="mt-4 text-lg text-black/70">{t.quote}</blockquote>
+            <figcaption className="mt-5"><p className="font-semibold">{t.name}</p>{t.role ? <p className="text-sm text-black/50">{t.role}</p> : null}</figcaption>
+          </figure>
+        ))}
       </section>
 
       {/* Clients */}

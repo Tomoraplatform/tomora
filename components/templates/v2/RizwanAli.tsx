@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, Linkedin, Instagram, Github, Layout, PenTool, Globe, Smartphone, Quote, Star } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, BrandButton, Img, ContactFormV2 } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, BrandButton, Img, ContactFormV2 } from "./shared";
 
 const SERVICES = [
   { icon: Layout, t: "UX/UI", d: "Intuitive interfaces that delight users." },
@@ -99,12 +99,14 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
       {/* Testimonials */}
       <section className="mx-auto max-w-4xl px-5 py-16">
         <h2 className="text-center text-3xl font-bold">Testimonials</h2>
-        <figure className="mt-8 rounded-2xl border border-black/10 p-8 text-center">
-          <div className="flex justify-center gap-1" style={{ color: "var(--brand-primary)" }}>{[0,1,2,3,4].map((i) => <Star key={i} className="h-4 w-4 fill-current" />)}</div>
-          <Quote className="mx-auto mt-3 h-7 w-7 text-black/20" />
-          <blockquote className="mt-3 text-lg text-black/70">Incredible eye for detail. {name} transformed our product and our users noticed immediately.</blockquote>
-          <figcaption className="mt-4"><p className="font-semibold">Grace Mwangi</p><p className="text-sm text-black/50">Product Lead</p></figcaption>
-        </figure>
+        {testimonialsOf(siteData).slice(0, 1).map((t, i) => (
+          <figure key={i} className="mt-8 rounded-2xl border border-black/10 p-8 text-center">
+            <div className="flex justify-center gap-1" style={{ color: "var(--brand-primary)" }}>{[0,1,2,3,4].map((n) => <Star key={n} className="h-4 w-4 fill-current" />)}</div>
+            <Quote className="mx-auto mt-3 h-7 w-7 text-black/20" />
+            <blockquote className="mt-3 text-lg text-black/70">{t.quote}</blockquote>
+            <figcaption className="mt-4"><p className="font-semibold">{t.name}</p>{t.role ? <p className="text-sm text-black/50">{t.role}</p> : null}</figcaption>
+          </figure>
+        ))}
       </section>
 
       {/* Contact */}

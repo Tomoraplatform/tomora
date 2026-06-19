@@ -2,7 +2,7 @@
 
 import { HandHeart, GraduationCap, Baby, Users, Quote, ChevronRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, BrandButton, Img } from "./shared";
 
 const SERVICES = [
   { icon: HandHeart, t: "Help & Support" }, { icon: GraduationCap, t: "Education" },
@@ -70,8 +70,8 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
       <section className="mx-auto max-w-6xl px-5 py-16">
         <h2 className="text-2xl font-bold">Success Stories</h2>
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {["They gave my daughter a future.", "Clean water changed our village.", "I learned to read at 40.", "The care team saved my son."].map((q, i) => (
-            <figure key={i} className="rounded-2xl bg-white p-6 shadow-sm"><Quote className="h-6 w-6" style={{ color: "var(--brand-primary)" }} /><blockquote className="mt-3 text-sm text-black/70">{q}</blockquote><figcaption className="mt-4 text-sm font-semibold">{["Amara", "Joseph", "Fatima", "Grace"][i]}</figcaption></figure>
+          {testimonialsOf(siteData).map((t, i) => (
+            <figure key={t.id || i} className="rounded-2xl bg-white p-6 shadow-sm"><Quote className="h-6 w-6" style={{ color: "var(--brand-primary)" }} /><blockquote className="mt-3 text-sm text-black/70">{t.quote}</blockquote><figcaption className="mt-4 text-sm font-semibold">{t.name}</figcaption></figure>
           ))}
         </div>
       </section>
