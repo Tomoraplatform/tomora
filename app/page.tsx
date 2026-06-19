@@ -3,10 +3,6 @@ import {
   Star,
   Users,
   Zap,
-  Building2,
-  ShoppingBag,
-  User,
-  Heart,
   Palette,
   Globe,
   CreditCard,
@@ -18,6 +14,7 @@ import {
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 import { BrowserFrame } from "@/components/browser-frame";
+import { TemplatePreview } from "@/components/marketing/template-preview";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -25,11 +22,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { TEMPLATES, FAQS, CATEGORIES, PLANS } from "@/lib/constants";
+import { FAQS, PLANS } from "@/lib/constants";
+import { CATALOG_TEMPLATES, CATALOG_CATEGORIES } from "@/lib/catalog";
 import { formatNaira } from "@/lib/utils";
 
-const CATEGORY_LABEL = Object.fromEntries(
-  CATEGORIES.map((c) => [c.id, c.name])
+const CATALOG_LABEL = Object.fromEntries(
+  CATALOG_CATEGORIES.map((c) => [c.id, c.name])
 ) as Record<string, string>;
 
 export default function Home() {
@@ -81,49 +79,12 @@ function Hero() {
 
         <div className="relative">
           <div className="absolute -inset-6 -z-10 rounded-3xl bg-ink/5 blur-2xl" />
-          <BrowserFrame url="ada-styles.tomora.com">
-            <HeroMockSite />
+          <BrowserFrame url="ada-styles.tomora.com" bodyClassName="h-[440px]">
+            <TemplatePreview templateId="shop-01" brandColor="#022245" businessName="Ada Styles" autoScroll />
           </BrowserFrame>
         </div>
       </div>
     </section>
-  );
-}
-
-function HeroMockSite() {
-  return (
-    <div className="text-[10px] leading-tight">
-      <div className="flex items-center justify-between bg-ink px-4 py-3 text-cream">
-        <span className="font-bold">Ada Styles</span>
-        <div className="hidden gap-3 text-cream/80 sm:flex">
-          <span>Home</span>
-          <span>Shop</span>
-          <span>About</span>
-          <span>Contact</span>
-        </div>
-        <span className="rounded bg-cream px-2 py-1 text-ink">Shop Now</span>
-      </div>
-      <div className="bg-gradient-to-br from-ink to-ink-700 px-6 py-10 text-cream">
-        <p className="text-[9px] uppercase tracking-widest text-cream/60">
-          New Collection
-        </p>
-        <p className="mt-2 max-w-[16rem] text-xl font-bold leading-tight">
-          Timeless fashion, made in Lagos
-        </p>
-        <span className="mt-4 inline-block rounded bg-cream px-3 py-1.5 text-ink">
-          Explore
-        </span>
-      </div>
-      <div className="grid grid-cols-3 gap-3 p-5">
-        {["#e7ddcf", "#cdd9e5", "#e3d6e8"].map((c, i) => (
-          <div key={i} className="space-y-2">
-            <div className="aspect-square rounded-md" style={{ background: c }} />
-            <div className="h-1.5 w-3/4 rounded bg-slate-200" />
-            <div className="h-1.5 w-1/2 rounded bg-slate-200" />
-          </div>
-        ))}
-      </div>
-    </div>
   );
 }
 
@@ -211,37 +172,10 @@ function VisualCard({ children }: { children: React.ReactNode }) {
 }
 
 function TemplatesVisual() {
-  const cats = [
-    { icon: Building2, label: "Business" },
-    { icon: ShoppingBag, label: "Shop" },
-    { icon: User, label: "Creator" },
-    { icon: Heart, label: "Community" },
-  ];
   return (
-    <VisualCard>
-      <div className="grid grid-cols-4 gap-3">
-        {cats.map(({ icon: Icon, label }) => (
-          <div
-            key={label}
-            className="flex flex-col items-center gap-2 rounded-lg border border-ink/10 bg-cream/60 p-3 text-center"
-          >
-            <Icon className="h-5 w-5 text-ink" />
-            <span className="text-[11px] font-medium text-ink/70">{label}</span>
-          </div>
-        ))}
-      </div>
-      <div className="mt-4 grid grid-cols-2 gap-3">
-        {["#022245", "#0a3263"].map((c, i) => (
-          <div key={i} className="overflow-hidden rounded-lg border border-ink/10">
-            <div className="h-16" style={{ background: c }} />
-            <div className="space-y-1.5 p-3">
-              <div className="h-2 w-2/3 rounded bg-slate-200" />
-              <div className="h-2 w-1/2 rounded bg-slate-100" />
-            </div>
-          </div>
-        ))}
-      </div>
-    </VisualCard>
+    <BrowserFrame url="upskill.tomora.com" bodyClassName="h-72 sm:h-[22rem]" className="shadow-xl">
+      <TemplatePreview templateId="education-01" brandColor="#2B6CB0" businessName="Upskill Academy" />
+    </BrowserFrame>
   );
 }
 
@@ -298,17 +232,29 @@ function PublishVisual() {
 }
 
 function CommerceVisual() {
+  const items = [
+    { seed: "tomshop-bag", name: "Leather Backpack", price: 18000 },
+    { seed: "tomshop-shoe", name: "Running Sneakers", price: 27000 },
+    { seed: "tomshop-watch", name: "Classic Watch", price: 32000 },
+    { seed: "tomshop-bottle", name: "Steel Bottle", price: 6500 },
+    { seed: "tomshop-bag2", name: "Canvas Tote", price: 9500 },
+    { seed: "tomshop-cam", name: "Mini Camera", price: 41000 },
+  ];
   return (
     <VisualCard>
       <div className="grid grid-cols-3 gap-3">
-        {["#e7ddcf", "#cdd9e5", "#e3d6e8", "#d8e8d6", "#f0dcd2", "#dde0ec"].map(
-          (c, i) => (
-            <div key={i} className="space-y-1.5">
-              <div className="aspect-square rounded-md" style={{ background: c }} />
-              <div className="h-1.5 w-3/4 rounded bg-slate-200" />
+        {items.map((p) => (
+          <div key={p.seed} className="overflow-hidden rounded-lg border border-ink/10">
+            <div className="aspect-square overflow-hidden bg-cream">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`https://picsum.photos/seed/${p.seed}/240`} alt={p.name} className="h-full w-full object-cover" />
             </div>
-          )
-        )}
+            <div className="space-y-0.5 p-2">
+              <p className="truncate text-[11px] font-medium text-ink/80">{p.name}</p>
+              <p className="text-[11px] font-semibold text-ink">{formatNaira(p.price)}</p>
+            </div>
+          </div>
+        ))}
       </div>
       <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-ink py-2.5 text-cream">
         <CreditCard className="h-4 w-4" />
@@ -332,24 +278,18 @@ function TemplateShowcase() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {TEMPLATES.map((t) => (
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {CATALOG_TEMPLATES.map((t) => (
             <div
               key={t.id}
-              className="group relative overflow-hidden rounded-xl border border-ink/10 bg-cream/40 transition-all hover:-translate-y-1 hover:shadow-xl"
+              className="group relative overflow-hidden rounded-xl border border-ink/10 bg-white transition-all hover:-translate-y-1 hover:shadow-xl"
             >
-              <div
-                className="relative flex h-40 items-center justify-center"
-                style={{ background: t.thumb.bg }}
-              >
-                <div
-                  className="h-16 w-28 rounded-md"
-                  style={{ background: t.thumb.accent, opacity: 0.9 }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+              <div className="relative h-52 overflow-hidden border-b border-ink/5">
+                <TemplatePreview templateId={t.id} brandColor={t.accent} businessName={t.name} />
+                <div className="absolute inset-0 flex items-center justify-center bg-ink/0 opacity-0 transition-all group-hover:bg-ink/30 group-hover:opacity-100">
                   <Button size="sm" asChild>
                     <Link href="/signup">
-                      <Eye className="h-4 w-4" /> Preview
+                      <Eye className="h-4 w-4" /> Use this template
                     </Link>
                   </Button>
                 </div>
@@ -357,7 +297,7 @@ function TemplateShowcase() {
               <div className="p-4">
                 <h3 className="font-semibold">{t.name}</h3>
                 <p className="text-xs uppercase tracking-wide text-ink/50">
-                  {CATEGORY_LABEL[t.category]}
+                  {CATALOG_LABEL[t.category]}
                 </p>
               </div>
             </div>
