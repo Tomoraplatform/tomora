@@ -10,6 +10,22 @@ export interface AuthState {
   message?: string;
 }
 
+/** Builds a readable message from a Supabase auth error (avoids blank "{}"). */
+function authError(error: { message?: string; status?: number; code?: string }): string {
+  const msg = (error?.message || "").trim();
+  if (msg && msg !== "{}") {
+    // Common Supabase signup failure when the profile trigger errors.
+    if (/database error saving new user/i.test(msg)) {
+      return "We couldn't finish creating your account (database error). Please try again shortly.";
+    }
+    return msg;
+  }
+  if (error?.status === 500) {
+    return "Server error creating your account. Please try again in a moment.";
+  }
+  return "Something went wrong. Please try again.";
+}
+
 export async function signUp(
   _prev: AuthState,
   formData: FormData
@@ -40,7 +56,7 @@ export async function signUp(
     },
   });
 
-  if (error) return { error: error.message };
+  if (error) return { error: authError(error) };
 
   // If email confirmation is disabled, a session is returned immediately.
   if (data.session) {
@@ -67,7 +83,7 @@ export async function signIn(
 
   const supabase = createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: error.message };
+  if (error) return { error: authError(error) };
 
   revalidatePath("/", "layout");
   redirect(next.startsWith("/") ? next : "/dashboard");
