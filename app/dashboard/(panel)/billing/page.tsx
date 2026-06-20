@@ -9,7 +9,7 @@ import { formatNaira } from "@/lib/utils";
 
 export const metadata = { title: "Billing — Tomora" };
 
-const PAID_PLANS = PLANS.filter((p) => p.id === "starter" || p.id === "growth" || p.id === "pro");
+const PAID_PLANS = PLANS.filter((p) => p.id !== "trial" && p.id !== "custom");
 
 export default async function BillingPage({
   searchParams,
@@ -69,7 +69,7 @@ export default async function BillingPage({
       </Card>
 
       {/* Plan options */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {PAID_PLANS.map((plan) => {
           const isCurrent = active && currentPlan?.id === plan.id;
           return (

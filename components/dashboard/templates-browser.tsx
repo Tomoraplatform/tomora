@@ -5,7 +5,7 @@ import { Eye, Plus, Loader2, Lock, X } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { TemplateThumb } from "@/components/templates/template-thumb";
+import { TemplatePreview } from "@/components/marketing/template-preview";
 import { SiteRenderer } from "@/components/templates";
 import {
   CATALOG_CATEGORIES, catalogTemplatesByCategory, createCatalogContent, type CatalogTemplate,
@@ -58,7 +58,9 @@ export function TemplatesBrowser({
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {catalogTemplatesByCategory(cat.id).map((t) => (
               <div key={t.id} className="overflow-hidden rounded-2xl border border-ink/10 bg-white">
-                <div className="border-b border-ink/5"><TemplateThumb template={t} /></div>
+                <div className="h-48 overflow-hidden border-b border-ink/5">
+                  <TemplatePreview templateId={t.id} brandColor={t.accent} businessName={t.name} />
+                </div>
                 <div className="p-4">
                   <h3 className="font-semibold text-ink">{t.name}</h3>
                   <p className="mt-1 line-clamp-2 text-sm text-ink/60">{t.blurb}</p>
