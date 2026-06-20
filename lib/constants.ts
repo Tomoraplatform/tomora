@@ -4,8 +4,8 @@ export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com";
 
 /* ---------------- Billing ---------------- */
 export const TRIAL_DAYS = 14;
-export const FIRST_PAYMENT_AMOUNT = 30000; // NGN — Pro first payment, includes 1yr custom domain
-export const RENEWAL_AMOUNT = 25000; // NGN — Pro renewals at positions 1,2,3
+export const FIRST_PAYMENT_AMOUNT = 29800; // NGN — Pro first payment, includes 1yr custom domain
+export const RENEWAL_AMOUNT = 24800; // NGN — Pro renewals at positions 1,2,3
 export const RENEWAL_INTERVAL_MONTHS = 4;
 export const GRACE_PERIOD_DAYS = 7;
 /** One-time charge to add a custom domain to a site not covered by the plan. */
@@ -33,7 +33,7 @@ export function nextCharge(position: number): {
 }
 
 /* ---------------- Plans ---------------- */
-export type PlanId = "trial" | "starter" | "growth" | "pro" | "custom";
+export type PlanId = "trial" | "basic" | "starter" | "growth" | "pro" | "custom";
 
 export interface Plan {
   id: PlanId;
@@ -74,38 +74,56 @@ export const PLANS: Plan[] = [
     canPublish: true,
   },
   {
-    id: "starter",
-    name: "Starter",
-    price: 10000,
+    id: "basic",
+    name: "Basic",
+    price: 4800,
     period: "month",
-    tagline: "Get online with the essentials.",
+    tagline: "Get one website online.",
     features: [
       "Free Tomora subdomain",
       "Payment gateway setup",
-      "We set up your website",
+      "We set up your website (one website)",
+      "Mobile-friendly interface",
+      "Standard support",
+    ],
+    cta: "Choose Basic",
+    siteLimit: 1,
+    canPublish: true,
+  },
+  {
+    id: "starter",
+    name: "Starter",
+    price: 9800,
+    period: "month",
+    tagline: "Build and publish up to 3 websites.",
+    features: [
+      "Build & publish up to 3 websites",
+      "Free Tomora subdomain",
+      "Payment gateway setup",
+      "We set up your websites",
       "Mobile-friendly interface",
       "Standard support",
     ],
     cta: "Choose Starter",
-    siteLimit: 2,
+    siteLimit: 3,
     canPublish: true,
   },
   {
     id: "growth",
     name: "Growth",
-    price: 15000,
+    price: 14800,
     period: "month",
     tagline: "For growing online stores.",
     features: [
       "Custom domain name included",
       "Abandoned cart recovery",
       "Unlimited orders",
-      "We set up your website",
+      "Up to 5 websites",
       "Payment gateway setup",
       "Inventory management",
     ],
     cta: "Choose Growth",
-    siteLimit: 2,
+    siteLimit: 5,
     canPublish: true,
     includesDomain: true,
     popular: true,
@@ -113,12 +131,13 @@ export const PLANS: Plan[] = [
   {
     id: "pro",
     name: "Pro",
-    price: 30000,
-    renewal: 25000,
+    price: 29800,
+    renewal: 24800,
     period: "4 months",
     tagline: "Everything, plus a dedicated expert.",
     features: [
       "1 year custom domain included",
+      "Up to 10 websites",
       "Everything in Growth",
       "VIP priority support",
       "Advanced sales analytics",
@@ -126,7 +145,7 @@ export const PLANS: Plan[] = [
       "Automated invoicing",
     ],
     cta: "Choose Pro",
-    siteLimit: 3,
+    siteLimit: 10,
     canPublish: true,
     includesDomain: true,
   },

@@ -33,8 +33,8 @@ export async function saveSite(
     ]);
     const isPrimary = sites?.[0]?.id === siteId;
     if (!isPrimary) {
-      const planId = sub?.status === "active" ? sub?.plan || "" : "";
-      const canPublishExtra = ["growth", "pro", "custom"].includes(planId);
+      const plan = sub?.status === "active" ? getPlan(sub?.plan || "") : undefined;
+      const canPublishExtra = (plan?.siteLimit ?? 1) > 1;
       if (!canPublishExtra) {
         effectiveLive = false;
         gated = true;

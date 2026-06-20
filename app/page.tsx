@@ -321,7 +321,7 @@ function Pricing() {
         </p>
       </div>
 
-      <div className="mx-auto mt-12 grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="mx-auto mt-12 grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {PLANS.map((plan) => {
           const popular = plan.popular;
           const isCustom = plan.id === "custom";
@@ -352,7 +352,7 @@ function Pricing() {
                   </div>
                 )}
                 {plan.id === "pro" && (
-                  <p className="mt-1 text-xs text-cream/60">
+                  <p className={`mt-1 text-xs ${popular ? "text-cream/60" : "text-ink/50"}`}>
                     then {formatNaira(plan.renewal!)} every 4 months
                   </p>
                 )}
