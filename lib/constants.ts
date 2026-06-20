@@ -14,9 +14,9 @@ export const EXTRA_DOMAIN_AMOUNT = 8000; // NGN — buy a custom domain for an e
 /**
  * Given the current billing_cycle_position (0-3), returns the amount to charge
  * for the NEXT payment and the position it will become afterwards.
- *  - position 0  -> charge 30,000 (first payment / reset), becomes 1
- *  - position 1,2 -> charge 22,500, becomes +1
- *  - position 3  -> charge 22,500, becomes 0 (cycle resets)
+ *  - position 0  -> charge 29,800 (first payment / reset), becomes 1
+ *  - position 1,2 -> charge 24,800, becomes +1
+ *  - position 3  -> charge 24,800, becomes 0 (cycle resets)
  */
 export function nextCharge(position: number): {
   amount: number;
@@ -295,7 +295,7 @@ export const FAQS = [
   },
   {
     q: "Can I use my own domain name?",
-    a: "Yes. On the Pro plan your first payment of N30,000 includes one year of a custom domain. We give you simple DNS instructions and verify it automatically.",
+    a: "Yes. On the Pro plan your first payment includes one year of a custom domain. We give you simple DNS instructions and verify it automatically. On other plans you can add a custom domain for ₦8,000.",
   },
   {
     q: "What happens when my trial ends?",
