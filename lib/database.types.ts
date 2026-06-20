@@ -214,6 +214,7 @@ export interface SiteData {
   brandColors?: string[];
   testimonials?: CatalogTestimonial[];
   services?: CatalogServiceItem[];
+  resume?: CatalogResumeItem[];
   products?: CatalogProduct[];
   courses?: CatalogCourse[];
   causes?: CatalogCause[];
@@ -232,4 +233,12 @@ export interface CatalogServiceItem {
   id: string;
   title: string;
   description?: string;
+}
+
+export interface CatalogResumeItem {
+  id: string;
+  group: string;   // tab, e.g. Education / Experience
+  title: string;   // date range or skill area
+  subtitle: string; // institution / role
+  detail?: string;  // qualification / note
 }

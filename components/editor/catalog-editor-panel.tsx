@@ -46,6 +46,16 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     fields: [{ key: "name", label: "Name" }, { key: "role", label: "Role" }, { key: "quote", label: "Quote", type: "textarea" }],
     make: () => ({ id: `t-${Date.now()}`, name: "New name", role: "Customer", quote: "Their words here." }),
   },
+  resume: {
+    key: "resume", title: "Resume (Education / Experience / Skills)",
+    fields: [
+      { key: "group", label: "Section (e.g. Education, Experience, Skills)" },
+      { key: "title", label: "Date range or area" },
+      { key: "subtitle", label: "Institution / role" },
+      { key: "detail", label: "Qualification / note" },
+    ],
+    make: () => ({ id: `r-${Date.now()}`, group: "Education", title: "2020 - 2024", subtitle: "Institution", detail: "Qualification" }),
+  },
 };
 
 export function CatalogEditorPanel({

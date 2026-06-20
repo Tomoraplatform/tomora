@@ -27,7 +27,20 @@ const RESUME: Record<string, { a: string; b: string; c: string }[]> = {
 export function Inbio({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "Alex Morgan";
   const items = siteData.portfolioItems || [];
-  const [tab, setTab] = useState("Education");
+
+  // Build resume tabs from editable siteData.resume, falling back to demo content.
+  const resumeGroups: Record<string, { a: string; b: string; c: string }[]> = {};
+  if (siteData.resume && siteData.resume.length) {
+    for (const r of siteData.resume) {
+      const g = r.group || "Resume";
+      (resumeGroups[g] ||= []).push({ a: r.title, b: r.subtitle, c: r.detail || "" });
+    }
+  } else {
+    Object.assign(resumeGroups, RESUME);
+  }
+  const resumeTabs = Object.keys(resumeGroups);
+  const [tab, setTab] = useState(resumeTabs[0] || "Education");
+  const activeTab = resumeGroups[tab] ? tab : resumeTabs[0];
 
   return (
     <BrandStyle brandColor={brandColor} className="bg-[#F5F5F7] font-sans text-neutral-900">
@@ -92,12 +105,12 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
       <section id="resume" className="mx-auto max-w-6xl px-5 py-14">
         <h2 className="text-3xl font-bold">My Resume</h2>
         <div className="mt-6 flex flex-wrap gap-2">
-          {Object.keys(RESUME).map((k) => (
-            <button key={k} onClick={() => setTab(k)} className="rounded-full px-4 py-2 text-sm font-medium" style={tab === k ? { background: "var(--brand-primary)", color: "var(--brand-on-primary)" } : { background: "#fff" }}>{k}</button>
+          {resumeTabs.map((k) => (
+            <button key={k} onClick={() => setTab(k)} className="rounded-full px-4 py-2 text-sm font-medium" style={activeTab === k ? { background: "var(--brand-primary)", color: "var(--brand-on-primary)" } : { background: "#fff" }}>{k}</button>
           ))}
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          {RESUME[tab].map((r, i) => (
+          {(resumeGroups[activeTab] || []).map((r, i) => (
             <div key={i} className="rounded-2xl bg-white p-6 shadow-sm">
               <span className="text-xs font-semibold" style={{ color: "var(--brand-primary)" }}>{r.a}</span>
               <h3 className="mt-1 font-semibold">{r.b}</h3><p className="text-sm text-black/60">{r.c}</p>

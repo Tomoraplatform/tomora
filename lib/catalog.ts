@@ -53,12 +53,12 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["testimonials"],
   "shop-02": [],
   "shop-03": [],
-  "portfolio-01": ["services", "portfolio", "testimonials"],
+  "portfolio-01": ["services", "portfolio", "resume", "testimonials"],
   "portfolio-02": ["services", "portfolio", "testimonials"],
   "education-01": ["courses"],
   "education-02": ["events", "testimonials"],
@@ -211,6 +211,17 @@ function demoPortfolio(seed: string): CatalogPortfolioItem[] {
   }));
 }
 
+function demoResume(seed: string): import("./database.types").CatalogResumeItem[] {
+  return [
+    { id: `${seed}-r1`, group: "Education", title: "2016 - 2020", subtitle: "University of Lagos", detail: "BSc Computer Science" },
+    { id: `${seed}-r2`, group: "Education", title: "2020 - 2022", subtitle: "Design Academy", detail: "Product Design Diploma" },
+    { id: `${seed}-r3`, group: "Experience", title: "2022 - Now", subtitle: "Senior Designer, Studio", detail: "Leading product design" },
+    { id: `${seed}-r4`, group: "Experience", title: "2020 - 2022", subtitle: "Designer, Agency", detail: "Client work across web & mobile" },
+    { id: `${seed}-r5`, group: "Skills", title: "Design", subtitle: "Figma, UI/UX", detail: "Expert" },
+    { id: `${seed}-r6`, group: "Skills", title: "Development", subtitle: "React, Next.js", detail: "Advanced" },
+  ];
+}
+
 /* ============================ Content generator ============================ */
 const HERO = {
   "shop-01": { h: "Discover The Best Products for You", s: "Quality products, fast delivery, and secure Paystack checkout — all in one place.", c: "Shop Now" },
@@ -259,7 +270,7 @@ export function createCatalogContent(
     case "education": data.courses = demoCourses(seed); break;
     case "organization": data.causes = demoCauses(seed); data.events = demoEvents(seed); break;
     case "events": data.events = demoEvents(seed); break;
-    case "portfolio": data.portfolioItems = demoPortfolio(seed); break;
+    case "portfolio": data.portfolioItems = demoPortfolio(seed); if (templateId === "portfolio-01") data.resume = demoResume(seed); break;
   }
   return data;
 }
