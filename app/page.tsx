@@ -50,7 +50,7 @@ export default function Home() {
 function Hero() {
   return (
     <section className="relative overflow-hidden">
-      <div className="container grid items-center gap-12 py-16 md:py-24 lg:grid-cols-2">
+      <div className="container grid grid-cols-1 items-center gap-12 py-16 md:py-24 lg:grid-cols-2">
         <div className="max-w-xl">
           <span className="inline-flex items-center gap-2 rounded-full border border-ink/15 bg-white px-3 py-1 text-xs font-medium text-ink/70">
             <Zap className="h-3.5 w-3.5" /> Built for African businesses
@@ -143,7 +143,7 @@ function Features() {
       {features.map((f, i) => (
         <div
           key={f.title}
-          className="grid items-center gap-10 lg:grid-cols-2"
+          className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2"
         >
           <div className={i % 2 === 1 ? "lg:order-2" : ""}>
             <span className="text-xs font-semibold uppercase tracking-widest text-ink/50">
@@ -278,7 +278,7 @@ function TemplateShowcase() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {CATALOG_TEMPLATES.map((t) => (
             <div
               key={t.id}
@@ -321,7 +321,7 @@ function Pricing() {
         </p>
       </div>
 
-      <div className="mx-auto mt-12 grid max-w-6xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {PLANS.map((plan) => {
           const popular = plan.popular;
           const isCustom = plan.id === "custom";
@@ -420,7 +420,7 @@ function Testimonials() {
             Loved by businesses like yours
           </h2>
         </div>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-3">
           {quotes.map((q) => (
             <figure
               key={q.name}
