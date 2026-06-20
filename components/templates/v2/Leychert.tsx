@@ -18,7 +18,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <div><Brandmark siteData={siteData} name={name} className="text-lg font-bold leading-none" /><p className="text-[10px] text-black/40">Community & Region</p></div>
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{["About", "Living Here", "Heritage", "Services"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["About","#news"],["Living Here","#events"],["Heritage","#territory"],["Services","#quick"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
         </div>
       </header>
 
@@ -36,7 +36,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Quick access */}
-      <section className="mx-auto max-w-6xl px-5 py-14">
+      <section id="quick" className="mx-auto max-w-6xl px-5 py-14">
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5">
           {QUICK.map(({ icon: Icon, t }) => (
             <div key={t} className="flex flex-col items-center gap-3 text-center"><span className="flex h-16 w-16 items-center justify-center rounded-full border-2" style={{ borderColor: "var(--brand-primary)", color: "var(--brand-primary)" }}><Icon className="h-6 w-6" /></span><span className="text-sm font-semibold">{t}</span></div>
@@ -45,7 +45,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* News */}
-      <section className="mx-auto max-w-6xl px-5 py-14">
+      <section id="news" className="mx-auto max-w-6xl px-5 py-14">
         <div className="grid gap-8 lg:grid-cols-[40%_60%]">
           <div>
             <h2 className="font-serif text-4xl font-bold italic">News</h2>
@@ -63,7 +63,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Agenda */}
-      <section className="bg-[#FBF8F3]">
+      <section id="events" className="bg-[#FBF8F3]">
         <div className="mx-auto max-w-6xl px-5 py-14">
           <div className="grid gap-8 lg:grid-cols-[30%_70%]">
             <div><h2 className="font-serif text-4xl font-bold italic">Events</h2><p className="mt-3 text-black/60">Discover what&apos;s happening across the community.</p><BrandButton className="mt-4">All Events</BrandButton></div>
@@ -80,7 +80,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Territory */}
-      <section className="relative">
+      <section id="territory" className="relative">
         <Img src="https://picsum.photos/seed/ley-territory/1200/600" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-black/55" />
         <div className="relative mx-auto grid max-w-6xl items-center gap-8 px-5 py-20 text-white lg:grid-cols-2">

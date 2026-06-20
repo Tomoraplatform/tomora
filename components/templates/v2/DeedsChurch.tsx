@@ -25,7 +25,7 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{["Home", "Sermons", "Events", "Stories", "About"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Home","#"],["Sermons","#about"],["Events","#ministries"],["Stories","#ministries"],["About","#about"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
           <BrandButton className="px-4 py-2">Donate Now</BrandButton>
         </div>
       </header>
@@ -42,7 +42,7 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* About */}
-      <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-[40%_60%]">
+      <section id="about" className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-[40%_60%]">
         <div className="relative">
           <Img src="https://picsum.photos/seed/deeds-a1/500/600" className="aspect-[5/6] w-full rounded-2xl object-cover" />
           <Img src="https://picsum.photos/seed/deeds-a2/300/300" className="absolute -bottom-6 -right-4 h-32 w-32 rounded-2xl border-4 border-white object-cover" />
@@ -58,7 +58,7 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Ministries */}
-      <section className="bg-[#F5F5F5]">
+      <section id="ministries" className="bg-[#F5F5F5]">
         <div className="mx-auto grid max-w-6xl items-start gap-10 px-5 py-16 lg:grid-cols-[40%_60%]">
           <div>
             <h2 className="text-3xl font-bold">Explore Our Church Ministries</h2>

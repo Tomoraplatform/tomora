@@ -34,7 +34,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
       <header className="bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{["Home", "Features", "Portfolio", "Resume", "Pricing", "Contact"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Home","#"],["Features","#services"],["Portfolio","#portfolio"],["Resume","#resume"],["Pricing","#services"],["Contact","#contact"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
           <div className="flex items-center gap-3"><Heart className="h-5 w-5 text-black/40" /><BrandButton className="px-4 py-2">Buy Now</BrandButton></div>
         </div>
       </header>
@@ -56,7 +56,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* What I Do */}
-      <section className="mx-auto max-w-6xl px-5 py-14">
+      <section id="services" className="mx-auto max-w-6xl px-5 py-14">
         <h2 className="text-3xl font-bold">What I Do</h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {servicesOf(siteData, SERVICES.map((s) => ({ title: s.t, description: s.d }))).map((s, i) => {
@@ -72,7 +72,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Portfolio */}
-      <section className="mx-auto max-w-6xl px-5 py-14">
+      <section id="portfolio" className="mx-auto max-w-6xl px-5 py-14">
         <h2 className="text-3xl font-bold">My Portfolio</h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((p) => (
@@ -89,7 +89,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Resume */}
-      <section className="mx-auto max-w-6xl px-5 py-14">
+      <section id="resume" className="mx-auto max-w-6xl px-5 py-14">
         <h2 className="text-3xl font-bold">My Resume</h2>
         <div className="mt-6 flex flex-wrap gap-2">
           {Object.keys(RESUME).map((k) => (
@@ -127,7 +127,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
 
       {/* Contact */}
       {siteData.contactForm !== false && (
-        <section className="mx-auto max-w-6xl px-5 py-14">
+        <section id="contact" className="mx-auto max-w-6xl px-5 py-14">
           <h2 className="text-3xl font-bold">Contact With Me</h2>
           <div className="mt-8 grid gap-8 lg:grid-cols-2">
             <div className="rounded-2xl bg-white p-6 shadow-sm"><ContactFormV2 submitText="Send Message" /></div>

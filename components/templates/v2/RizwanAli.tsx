@@ -25,7 +25,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{["Home", "About Me", "Services", "Portfolio", "Testimonials", "Contact"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Home","#"],["About Me","#about"],["Services","#services"],["Portfolio","#projects"],["Testimonials","#testimonials"],["Contact","#contact"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
           <BrandButton className="px-4 py-2">Contact Me</BrandButton>
         </div>
       </header>
@@ -50,7 +50,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* About */}
-      <section className="bg-[#F7F9FC]">
+      <section id="about" className="bg-[#F7F9FC]">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
           <Img src="https://picsum.photos/seed/riz-about/700/700" className="mx-auto aspect-square w-72 rounded-full object-cover" />
           <div>
@@ -66,7 +66,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Services */}
-      <section className="mx-auto max-w-6xl px-5 py-16">
+      <section id="services" className="mx-auto max-w-6xl px-5 py-16">
         <h2 className="text-center text-3xl font-bold">Services</h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {servicesOf(siteData, SERVICES.map((s) => ({ title: s.t, description: s.d }))).map((s, i) => {
@@ -82,7 +82,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Projects */}
-      <section className="bg-[#F7F9FC]">
+      <section id="projects" className="bg-[#F7F9FC]">
         <div className="mx-auto max-w-6xl px-5 py-16">
           <h2 className="text-center text-3xl font-bold">My Projects</h2>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
@@ -100,7 +100,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Testimonials */}
-      <section className="mx-auto max-w-4xl px-5 py-16">
+      <section id="testimonials" className="mx-auto max-w-4xl px-5 py-16">
         <h2 className="text-center text-3xl font-bold">Testimonials</h2>
         {testimonialsOf(siteData).slice(0, 1).map((t, i) => (
           <figure key={i} className="mt-8 rounded-2xl border border-black/10 p-8 text-center">
@@ -114,7 +114,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
 
       {/* Contact */}
       {siteData.contactForm !== false && (
-        <section className="bg-[#F7F9FC]">
+        <section id="contact" className="bg-[#F7F9FC]">
           <div className="mx-auto max-w-xl px-5 py-16">
             <h2 className="text-center text-3xl font-bold">Contact Me</h2>
             <p className="mt-2 text-center text-black/60">Have a project in mind? Let&apos;s build it together.</p>

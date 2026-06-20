@@ -21,7 +21,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
       <header className="bg-[#1A0533] text-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-          <nav className="hidden gap-6 text-sm text-white/70 lg:flex">{["Home", "Events", "Speakers", "Blog", "Contact"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
+          <nav className="hidden gap-6 text-sm text-white/70 lg:flex">{[["Home","#"],["Events","#venues"],["Speakers","#schedules"],["Blog","#venues"],["Contact","#register"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
           <BrandButton className="px-4 py-2">Register</BrandButton>
         </div>
       </header>
@@ -66,7 +66,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Popular venues */}
-      <section className="bg-[#FBF7FC]">
+      <section id="venues" className="bg-[#FBF7FC]">
         <div className="mx-auto max-w-6xl px-5 py-16">
           <div className="flex items-end justify-between"><h2 className="text-3xl font-bold">Explore the Popular Venues</h2><a href="#" className="text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>View All</a></div>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
@@ -81,7 +81,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Schedules */}
-      <section className="mx-auto max-w-6xl px-5 py-16">
+      <section id="schedules" className="mx-auto max-w-6xl px-5 py-16">
         <h2 className="text-3xl font-bold">Information of Event Schedules</h2>
         <div className="mt-6 flex flex-wrap gap-2">{SCHED_TABS.map((t, i) => <button key={t} onClick={() => setTab(i)} className="rounded-full px-4 py-2 text-sm font-medium" style={tab === i ? { background: "var(--brand-primary)", color: "var(--brand-on-primary)" } : { background: "#F3F4F6" }}>{t}</button>)}</div>
         <div className="mt-6 divide-y divide-black/5 overflow-hidden rounded-2xl border border-black/10">

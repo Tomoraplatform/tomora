@@ -17,7 +17,7 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
       <header className="bg-[#F9F7F4]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
           <Brandmark siteData={siteData} name={name} className="text-sm font-bold uppercase tracking-wide" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{["Home", "Who We Are", "Where We Work", "Blog", "Contact"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Home","#"],["Who We Are","#mission"],["Where We Work","#services"],["Blog","#stories"],["Contact","#stories"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
         </div>
       </header>
 
@@ -40,14 +40,14 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Mission */}
-      <section className="mx-auto max-w-3xl px-5 py-16 text-center">
+      <section id="mission" className="mx-auto max-w-3xl px-5 py-16 text-center">
         <h2 className="text-3xl font-bold leading-tight">Give a helping hand to those who need it!</h2>
         <p className="mt-4 text-black/60">{siteData.heroSubtext}</p>
         <a href="#" className="mt-6 inline-block rounded-md border-2 px-6 py-3 text-sm font-semibold" style={{ borderColor: "var(--brand-primary)", color: "var(--brand-primary)" }}>Read More</a>
       </section>
 
       {/* Services */}
-      <section className="mx-auto max-w-6xl px-5 pb-16">
+      <section id="services" className="mx-auto max-w-6xl px-5 pb-16">
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {servicesOf(siteData, SERVICES.map((s) => ({ title: s.t, description: "Programs that change lives every day." }))).map((s, i) => {
             const Icon = SERVICES[i % SERVICES.length].icon;
@@ -70,7 +70,7 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Success stories */}
-      <section className="mx-auto max-w-6xl px-5 py-16">
+      <section id="stories" className="mx-auto max-w-6xl px-5 py-16">
         <h2 className="text-2xl font-bold">Success Stories</h2>
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {testimonialsOf(siteData).map((t, i) => (

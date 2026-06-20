@@ -17,7 +17,7 @@ export function ConferenceDark({ siteData, brandColor }: TemplateProps) {
         <header className="border-b border-white/10">
           <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
             <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-            <nav className="hidden gap-6 text-sm text-white/70 lg:flex">{["Home", "About", "Speakers", "Blog", "Area"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
+            <nav className="hidden gap-6 text-sm text-white/70 lg:flex">{[["Home","#"],["About","#about"],["Speakers","#mission"],["Blog","#why"],["Area","#why"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
             <BrandButton className="px-4 py-2">Free Quote</BrandButton>
           </div>
         </header>
@@ -35,7 +35,7 @@ export function ConferenceDark({ siteData, brandColor }: TemplateProps) {
       </div>
 
       {/* About (light) */}
-      <section className="bg-white text-neutral-900">
+      <section id="about" className="bg-white text-neutral-900">
         <div className="mx-auto grid max-w-6xl gap-6 px-5 py-16 sm:grid-cols-3">
           {ABOUT.map(({ icon: Icon, t }) => (
             <div key={t} className="rounded-2xl border border-black/10 p-6 text-center"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-6 w-6" /></span><h3 className="mt-3 font-semibold">{t}</h3><p className="mt-1 text-sm text-black/60">Everything you need for a great event.</p></div>
@@ -44,7 +44,7 @@ export function ConferenceDark({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Mission dark */}
-      <section style={{ background: NAVY }}>
+      <section id="mission" style={{ background: NAVY }}>
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-[55%_45%]">
           <div>
             <h2 className="text-3xl font-bold">Our Mission</h2>
@@ -56,7 +56,7 @@ export function ConferenceDark({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Why choose */}
-      <section className="bg-white text-neutral-900">
+      <section id="why" className="bg-white text-neutral-900">
         <div className="mx-auto max-w-6xl px-5 py-16">
           <h2 className="text-center text-3xl font-bold">Why Choose Us</h2>
           <div className="mt-8 grid gap-5 sm:grid-cols-3">

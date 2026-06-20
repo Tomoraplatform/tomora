@@ -17,7 +17,7 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-          <nav className="hidden gap-5 text-sm text-black/60 lg:flex">{["Belong & Grow", "Mission & Serve", "Prayer & Care", "Worship & Music", "Giving"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
+          <nav className="hidden gap-5 text-sm text-black/60 lg:flex">{[["Belong & Grow","#ministries"],["Mission & Serve","#ministries"],["Prayer & Care","#news"],["Worship & Music","#news"],["Giving","#news"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
         </div>
       </header>
 
@@ -41,7 +41,7 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
       <section className="mx-auto max-w-3xl px-5 py-16 text-center"><p className="text-xl leading-relaxed text-black/70">{siteData.heroSubtext} We are a community committed to faith, hope and love — come as you are and grow with us.</p></section>
 
       {/* Ministry grid */}
-      <section className="mx-auto max-w-6xl px-5 pb-16">
+      <section id="ministries" className="mx-auto max-w-6xl px-5 pb-16">
         <div className="grid gap-4 sm:grid-cols-2">
           {MINISTRIES.map((m, i) => (
             <a key={m} href="#" className="group relative aspect-[16/9] overflow-hidden rounded-2xl">
@@ -55,7 +55,7 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* What's new */}
-      <section className="mx-auto max-w-6xl px-5 pb-16">
+      <section id="news" className="mx-auto max-w-6xl px-5 pb-16">
         <h2 className="text-2xl font-bold uppercase" style={{ color: "var(--brand-primary)" }}>What&apos;s New at {name}</h2>
         <div className="mt-6 grid gap-8 lg:grid-cols-2">
           <div>

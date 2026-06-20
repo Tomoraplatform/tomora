@@ -41,7 +41,7 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-xl font-bold" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{["Home", "Course", "Bootcamp", "Blog", "Contact"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Home","#"],["Course","#bootcamp"],["Bootcamp","#bootcamp"],["Blog","#advantages"],["Contact","#faq"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
           <div className="flex items-center gap-2"><a href="#" className="rounded-md border border-black/15 px-4 py-2 text-sm">Login</a><BrandButton className="px-4 py-2">Register</BrandButton></div>
         </div>
       </header>
@@ -67,7 +67,7 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Advantages */}
-      <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 lg:grid-cols-2">
+      <section id="advantages" className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 lg:grid-cols-2">
         <div>
           <h2 className="text-3xl font-bold">The Advantages of the {name} Program</h2>
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
@@ -80,7 +80,7 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Bootcamp program */}
-      <section className="bg-[#EEF3FF]">
+      <section id="bootcamp" className="bg-[#EEF3FF]">
         <div className="mx-auto max-w-6xl px-5 py-14">
           <h2 className="text-center text-3xl font-bold">Bootcamp Program</h2>
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -112,7 +112,7 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* FAQ */}
-      <section className="bg-[#EEF3FF]">
+      <section id="faq" className="bg-[#EEF3FF]">
         <div className="mx-auto max-w-3xl px-5 py-14">
           <h2 className="text-center text-3xl font-bold">Frequently Asked Questions</h2>
           <div className="mt-8 space-y-3">

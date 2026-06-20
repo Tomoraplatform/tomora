@@ -25,7 +25,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{["Homepage", "About Us", "Case Study", "Services", "Pages"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Homepage","#"],["About Us","#about"],["Case Study","#projects"],["Services","#services"],["Pages","#projects"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
           <div className="flex items-center gap-3"><span className="hidden items-center gap-1 text-sm text-black/60 sm:flex"><Phone className="h-4 w-4" /> +234 800 000</span><BrandButton className="px-4 py-2">Free Consultation</BrandButton></div>
         </div>
       </header>
@@ -46,7 +46,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Credibility */}
-      <section className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-16 lg:grid-cols-[40%_60%]">
+      <section id="about" className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-16 lg:grid-cols-[40%_60%]">
         <h2 className="text-3xl font-bold">15+ Years of Financial Experience</h2>
         <div>
           <p className="text-black/60">We are the magic behind the company&apos;s best days — combining data, strategy and human insight to grow your wealth.</p>
@@ -56,7 +56,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Services */}
-      <section className="mx-auto max-w-6xl px-5 pb-16">
+      <section id="services" className="mx-auto max-w-6xl px-5 pb-16">
         <h2 className="text-center text-3xl font-bold">The largest truly global wealth manager</h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {servicesOf(siteData, SERVICES.map((s) => ({ title: s.t, description: "Tailored strategies for your goals." }))).map((s, i) => {
@@ -76,7 +76,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Projects */}
-      <section className="mx-auto max-w-6xl px-5 py-16">
+      <section id="projects" className="mx-auto max-w-6xl px-5 py-16">
         <h2 className="text-center text-3xl font-bold">We bring your business to new heights.</h2>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PROJECTS.map((p, i) => (

@@ -18,7 +18,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{["Home", "Donations", "Events", "Blog", "Contact"].map((l) => <a key={l} href="#">{l}</a>)}</nav>
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Home","#"],["Donations","#causes"],["Events","#events"],["Blog","#whatwedo"],["Contact","#events"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
           <BrandButton className="px-4 py-2">Donate Now</BrandButton>
         </div>
       </header>
@@ -50,7 +50,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* About */}
-      <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-12 lg:grid-cols-2">
+      <section id="about" className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-12 lg:grid-cols-2">
         <div className="grid grid-cols-2 gap-3">{[0,1,2,3].map((i) => <Img key={i} src={`https://picsum.photos/seed/ch-about${i}/400`} className="aspect-square w-full rounded-2xl object-cover" />)}</div>
         <div>
           <span className="font-semibold" style={{ color: "var(--brand-primary)" }}>Welcome to {name}</span>
@@ -66,7 +66,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Causes */}
-      <section className="bg-[#FBF8F2]">
+      <section id="causes" className="bg-[#FBF8F2]">
         <div className="mx-auto max-w-6xl px-5 py-16">
           <h2 className="text-center text-3xl font-bold">Our Causes</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
@@ -91,7 +91,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
       <section className="bg-[#0D0D0D] py-16 text-center text-white"><h2 className="mx-auto max-w-2xl px-5 text-3xl font-bold">Your Donation Means Another Smile.</h2></section>
 
       {/* What we do */}
-      <section className="mx-auto max-w-6xl px-5 py-16">
+      <section id="whatwedo" className="mx-auto max-w-6xl px-5 py-16">
         <h2 className="text-center text-3xl font-bold">What We Do</h2>
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {servicesOf(siteData, WHATWEDO.map((s) => ({ title: s.t }))).map((s, i) => {
@@ -104,7 +104,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Events */}
-      <section className="bg-[#FBF8F2]">
+      <section id="events" className="bg-[#FBF8F2]">
         <div className="mx-auto max-w-6xl px-5 py-16">
           <h2 className="text-center text-3xl font-bold">Join Our Upcoming Events</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">

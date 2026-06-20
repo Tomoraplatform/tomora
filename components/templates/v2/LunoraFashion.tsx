@@ -16,7 +16,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-sm font-semibold uppercase tracking-[0.2em]" />
           <nav className="hidden gap-6 text-sm text-black/60 lg:flex">
-            {["Home", "Shop", "Collections", "Lookbook", "Blog", "Contact"].map((l) => <a key={l} href="#">{l}</a>)}
+            {[["Home","#"],["Shop","#products"],["Collections","#collections"],["Lookbook","#products"],["Blog","#products"],["Contact","#products"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}
           </nav>
           <div className="flex items-center gap-2">
             <a href="#" className="rounded-md border border-black/20 px-4 py-2 text-sm">Login</a>
@@ -68,7 +68,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Shop by category grid */}
-      <section className="mx-auto max-w-6xl px-5 py-14">
+      <section id="collections" className="mx-auto max-w-6xl px-5 py-14">
         <div className="flex items-end justify-between">
           <div><span className="text-xs uppercase tracking-[0.3em] text-black/40">Shop by Category</span><h2 className="mt-2 font-serif text-3xl font-bold">Find Your Perfect Style</h2></div>
           <a href="#" className="text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All →</a>
