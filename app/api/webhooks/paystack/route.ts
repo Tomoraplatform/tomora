@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import crypto from "crypto";
-import { applyPlatformPayment, applyPaymentFailure, disableSubscription } from "@/lib/billing";
+import { applyPlatformPayment, applyPaymentFailure, disableSubscription, applyDomainPurchase } from "@/lib/billing";
 
 /**
  * Paystack webhook. Verifies the x-paystack-signature (HMAC SHA512 of the raw
@@ -35,7 +35,9 @@ export async function POST(request: NextRequest) {
   try {
     switch (event.event) {
       case "charge.success":
-        if (purpose === "platform" && userId && data.reference) {
+        if (purpose === "domain" && userId && data?.metadata?.siteId) {
+          await applyDomainPurchase(userId, data.metadata.siteId);
+        } else if (purpose === "platform" && userId && data.reference) {
           await applyPlatformPayment(userId, data.reference, data?.metadata?.plan);
         }
         break;

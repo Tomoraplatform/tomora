@@ -8,6 +8,7 @@ export const FIRST_PAYMENT_AMOUNT = 30000; // NGN — Pro first payment, include
 export const RENEWAL_AMOUNT = 25000; // NGN — Pro renewals at positions 1,2,3
 export const RENEWAL_INTERVAL_MONTHS = 4;
 export const GRACE_PERIOD_DAYS = 7;
+/** One-time charge to add a custom domain to a site not covered by the plan. */
 export const EXTRA_DOMAIN_AMOUNT = 8000; // NGN — buy a custom domain for an extra site
 
 /**

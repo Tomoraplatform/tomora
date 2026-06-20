@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { currentSiteId } from "@/lib/dashboard";
+import { domainAccess } from "@/lib/domain-access";
 
 const DOMAIN_RE = /^(?!-)([a-z0-9-]{1,63}\.)+[a-z]{2,}$/i;
 
@@ -14,15 +15,24 @@ export async function connectDomain(domainRaw: string): Promise<{ ok: boolean; e
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Not authenticated." };
 
-  // Custom domains require an active Pro subscription.
-  const { data: sub } = await supabase
-    .from("subscriptions").select("status").eq("user_id", user.id).maybeSingle();
-  if (sub?.status !== "active") {
-    return { ok: false, error: "Upgrade to Pro to connect a custom domain." };
-  }
-
   const siteId = await currentSiteId(user.id);
   if (!siteId) return { ok: false, error: "No site found." };
+
+  const [{ data: sites }, { data: sub }] = await Promise.all([
+    supabase.from("sites").select("*").eq("user_id", user.id).order("created_at", { ascending: true }),
+    supabase.from("subscriptions").select("*").eq("user_id", user.id).maybeSingle(),
+  ]);
+  const current = sites?.find((s: any) => s.id === siteId);
+  const access = domainAccess({
+    isPrimary: sites?.[0]?.id === siteId,
+    domainPurchased: !!current?.domain_purchased,
+    planId: sub?.plan,
+    subActive: sub?.status === "active",
+  });
+  if (!access.canConnect) {
+    return { ok: false, error: "This site needs a custom domain. Buy the ₦8,000 domain add-on or upgrade to a plan that includes one." };
+  }
+
   const site = { id: siteId };
 
   const { error: siteErr } = await supabase

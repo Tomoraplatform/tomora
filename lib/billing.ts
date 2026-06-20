@@ -96,3 +96,13 @@ export async function disableSubscription(userId: string) {
   await admin.from("subscriptions").update({ status: "cancelled" }).eq("user_id", userId);
   await admin.from("sites").update({ is_live: false }).eq("user_id", userId);
 }
+
+/** Marks a site as having paid for an extra custom domain. */
+export async function applyDomainPurchase(userId: string, siteId: string) {
+  const admin = createAdminClient();
+  await admin
+    .from("sites")
+    .update({ domain_purchased: true })
+    .eq("id", siteId)
+    .eq("user_id", userId);
+}

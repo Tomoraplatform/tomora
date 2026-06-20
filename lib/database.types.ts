@@ -67,6 +67,7 @@ export interface Site {
   bank_name: string | null;
   account_number: string | null;
   account_name: string | null;
+  domain_purchased: boolean;
   created_at: string;
 }
 

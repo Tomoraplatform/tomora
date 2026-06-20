@@ -1,21 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Globe, Loader2, CheckCircle2, Copy, RefreshCw, Trash2, Lock } from "lucide-react";
+import { Globe, Loader2, CheckCircle2, Copy, RefreshCw, Trash2, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { connectDomain, removeDomain } from "@/app/dashboard/(panel)/domain/actions";
+import { formatNaira } from "@/lib/utils";
 import type { DomainStatus } from "@/lib/database.types";
 
 export function DomainManager({
-  initialDomain, initialStatus, isPro, subdomain, appDomain,
+  initialDomain, initialStatus, canConnect, included, domainPurchased, extraDomainAmount, siteId, subdomain, appDomain,
 }: {
   initialDomain: string | null;
   initialStatus: DomainStatus;
-  isPro: boolean;
+  canConnect: boolean;
+  included: boolean;
+  domainPurchased: boolean;
+  extraDomainAmount: number;
+  siteId: string;
   subdomain: string;
   appDomain: string;
 }) {
@@ -23,10 +28,10 @@ export function DomainManager({
   const [status, setStatus] = useState<DomainStatus>(initialStatus);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [buying, setBuying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const target = `cname.${appDomain}`;
 
-  // Poll for verification while pending/verifying.
   useEffect(() => {
     if (status !== "pending" && status !== "verifying") return;
     const id = setInterval(async () => {
@@ -43,6 +48,22 @@ export function DomainManager({
     setBusy(false);
     if (res.ok) { setDomain(input.trim().toLowerCase()); setStatus("pending"); }
     else setError(res.error || "Could not connect domain.");
+  }
+
+  async function buyDomain() {
+    setBuying(true); setError(null);
+    try {
+      const res = await fetch("/api/billing/init", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ purpose: "domain", siteId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not start payment.");
+      window.location.href = data.authorization_url;
+    } catch (e: any) {
+      setError(e.message); setBuying(false);
+    }
   }
 
   async function recheck() {
@@ -79,19 +100,34 @@ export function DomainManager({
         </CardContent>
       </Card>
 
-      {!isPro ? (
+      {!canConnect ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-3 p-8 text-center">
-            <Lock className="h-8 w-8 text-ink/40" />
-            <p className="font-medium text-ink">Custom domains are a Pro feature</p>
-            <p className="text-sm text-ink/60">Upgrade to connect your own domain. Your first payment includes one year of a custom domain.</p>
-            <Button asChild className="mt-2"><Link href="/dashboard/billing">Upgrade to Pro</Link></Button>
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink/5"><Globe className="h-6 w-6 text-ink/50" /></span>
+            <p className="font-medium text-ink">Connect a custom domain to this site</p>
+            <p className="max-w-sm text-sm text-ink/60">
+              Add a custom domain (like yourbrand.com) for a one-time {formatNaira(extraDomainAmount)},
+              or move to a plan that includes a domain.
+            </p>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+              <Button onClick={buyDomain} disabled={buying}>
+                {buying ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
+                Buy custom domain — {formatNaira(extraDomainAmount)}
+              </Button>
+              <Button asChild variant="outline"><Link href="/dashboard/billing">See plans</Link></Button>
+            </div>
           </CardContent>
         </Card>
       ) : !connected ? (
         <Card>
           <CardHeader><CardTitle>Connect a domain</CardTitle></CardHeader>
           <CardContent className="space-y-4">
+            {(included || domainPurchased) && (
+              <p className="flex items-center gap-1.5 text-sm text-emerald-700">
+                <CheckCircle2 className="h-4 w-4" /> {included ? "A custom domain is included on your plan." : "Domain add-on purchased."}
+              </p>
+            )}
             <div className="flex flex-col gap-2 sm:flex-row">
               <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="yourbrand.com" />
               <Button onClick={connect} disabled={busy}>{busy && <Loader2 className="h-4 w-4 animate-spin" />} Connect</Button>
