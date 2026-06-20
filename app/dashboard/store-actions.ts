@@ -33,18 +33,20 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
     const { supabase, userId, siteId } = await requireUserAndSite();
     if (!input.name?.trim()) return { ok: false, error: "Name is required." };
 
-    const row = {
+    const row: Record<string, unknown> = {
       user_id: userId,
       site_id: siteId,
       name: input.name.trim(),
       description: input.description || null,
       price: Math.max(0, Math.round(input.price || 0)),
-      compare_price: input.comparePrice ? Math.max(0, Math.round(input.comparePrice)) : null,
       images: (input.images || []).slice(0, 5),
       category: input.category || null,
       stock: Math.max(0, Math.round(input.stock || 0)),
       is_active: input.is_active,
     };
+    // Only include compare_price when set, so saving still works before the
+    // 0006 migration adds the column.
+    if (input.comparePrice) row.compare_price = Math.max(0, Math.round(input.comparePrice));
 
     if (input.id) {
       const { error } = await supabase.from("products").update(row).eq("id", input.id).eq("user_id", userId);

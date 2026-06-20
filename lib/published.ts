@@ -42,12 +42,17 @@ export async function loadPublishedSite(
   let products: Product[] = [];
   let reviews: Review[] = [];
   if (site.category === "ecommerce") {
-    const [{ data: prod }, { data: revs }] = await Promise.all([
-      admin.from("products").select("*").eq("site_id", site.id).eq("is_active", true).order("created_at", { ascending: false }),
-      admin.from("reviews").select("*").eq("site_id", site.id).eq("is_published", true).order("created_at", { ascending: false }).limit(50),
-    ]);
+    const { data: prod } = await admin
+      .from("products").select("*").eq("site_id", site.id).eq("is_active", true).order("created_at", { ascending: false });
     products = (prod as Product[]) || [];
-    reviews = (revs as Review[]) || [];
+    // Best-effort: reviews table may not exist yet (pre-0006 migration).
+    try {
+      const { data: revs } = await admin
+        .from("reviews").select("*").eq("site_id", site.id).eq("is_published", true).order("created_at", { ascending: false }).limit(50);
+      reviews = (revs as Review[]) || [];
+    } catch {
+      reviews = [];
+    }
   }
 
   return { site: site as Site, products, reviews, isLive };
