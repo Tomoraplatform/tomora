@@ -8,23 +8,58 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { uploadImage } from "@/lib/upload";
 import { cn } from "@/lib/utils";
-import type { SiteData, CatalogTestimonial } from "@/lib/database.types";
+import type { EditableList } from "@/lib/catalog";
+import type { SiteData } from "@/lib/database.types";
 
 const PRESET = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777", "#111111"];
+
+type Field = { key: string; label: string; type?: "text" | "textarea" | "number" | "image" };
+
+const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fields: Field[]; make: () => any }> = {
+  services: {
+    key: "services", title: "Services / Features",
+    fields: [{ key: "title", label: "Title" }, { key: "description", label: "Description", type: "textarea" }],
+    make: () => ({ id: `s-${Date.now()}`, title: "New item", description: "Describe it here." }),
+  },
+  portfolio: {
+    key: "portfolioItems", title: "Portfolio / Projects",
+    fields: [{ key: "image", label: "Image", type: "image" }, { key: "title", label: "Title" }, { key: "category", label: "Category" }, { key: "description", label: "Description", type: "textarea" }],
+    make: () => ({ id: `pf-${Date.now()}`, title: "New project", category: "Design", description: "What you built.", image: "" }),
+  },
+  courses: {
+    key: "courses", title: "Courses",
+    fields: [{ key: "image", label: "Image", type: "image" }, { key: "title", label: "Title" }, { key: "instructor", label: "Instructor" }, { key: "category", label: "Category" }, { key: "level", label: "Level" }],
+    make: () => ({ id: `c-${Date.now()}`, title: "New course", instructor: "You", category: "General", level: "Beginner", image: "" }),
+  },
+  causes: {
+    key: "causes", title: "Causes / Campaigns",
+    fields: [{ key: "image", label: "Image", type: "image" }, { key: "title", label: "Title" }, { key: "description", label: "Description", type: "textarea" }, { key: "raised", label: "Raised (NGN)", type: "number" }, { key: "goal", label: "Goal (NGN)", type: "number" }],
+    make: () => ({ id: `ca-${Date.now()}`, title: "New cause", description: "Why it matters.", image: "", raised: 0, goal: 100000 }),
+  },
+  events: {
+    key: "events", title: "Events",
+    fields: [{ key: "image", label: "Image", type: "image" }, { key: "title", label: "Title" }, { key: "date", label: "Date" }, { key: "location", label: "Location" }, { key: "description", label: "Description", type: "textarea" }],
+    make: () => ({ id: `e-${Date.now()}`, title: "New event", date: "Sat 12 Jul", location: "Main Hall", description: "Join us.", image: "" }),
+  },
+  testimonials: {
+    key: "testimonials", title: "Testimonials",
+    fields: [{ key: "name", label: "Name" }, { key: "role", label: "Role" }, { key: "quote", label: "Quote", type: "textarea" }],
+    make: () => ({ id: `t-${Date.now()}`, name: "New name", role: "Customer", quote: "Their words here." }),
+  },
+};
 
 export function CatalogEditorPanel({
   data,
   patch,
+  lists,
 }: {
   data: SiteData;
   patch: (p: Partial<SiteData>) => void;
+  lists: EditableList[];
 }) {
   const [hex, setHex] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
   const custom = data.brandColors || [];
-  const testimonials = data.testimonials || [];
-  const services = data.services || [];
-  const social = data.social || {};
 
   async function upload(field: "logoUrl" | "heroImage", file?: File) {
     if (!file) return;
@@ -38,35 +73,8 @@ export function CatalogEditorPanel({
     const v = hex.trim();
     if (!/^#?[0-9a-fA-F]{6}$/.test(v)) return;
     const code = v.startsWith("#") ? v : `#${v}`;
-    const next = Array.from(new Set([...custom, code])).slice(0, 3);
-    patch({ brandColors: next, brandColor: code });
+    patch({ brandColors: Array.from(new Set([...custom, code])).slice(0, 3), brandColor: code });
     setHex("");
-  }
-
-  function setTestimonial(i: number, field: keyof CatalogTestimonial, value: string) {
-    const next = testimonials.map((t, idx) => (idx === i ? { ...t, [field]: value } : t));
-    patch({ testimonials: next });
-  }
-  function addTestimonial() {
-    patch({
-      testimonials: [
-        ...testimonials,
-        { id: `t-${Date.now()}`, name: "New name", role: "Customer", quote: "Their words go here." },
-      ],
-    });
-  }
-  function removeTestimonial(i: number) {
-    patch({ testimonials: testimonials.filter((_, idx) => idx !== i) });
-  }
-
-  function setService(i: number, field: "title" | "description", value: string) {
-    patch({ services: services.map((s, idx) => (idx === i ? { ...s, [field]: value } : s)) });
-  }
-  function addService() {
-    patch({ services: [...services, { id: `s-${Date.now()}`, title: "New item", description: "Describe it here." }] });
-  }
-  function removeService(i: number) {
-    patch({ services: services.filter((_, idx) => idx !== i) });
   }
 
   return (
@@ -88,16 +96,6 @@ export function CatalogEditorPanel({
           ))}
         </div>
         <p className="text-xs text-ink/50">Add up to 3 custom brand colors ({custom.length}/3).</p>
-        {custom.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {custom.map((c) => (
-              <span key={c} className="inline-flex items-center gap-1 rounded-full border border-ink/15 py-0.5 pl-1 pr-2 text-xs">
-                <span className="h-4 w-4 rounded-full" style={{ background: c }} /> {c}
-                <button onClick={() => patch({ brandColors: custom.filter((x) => x !== c) })}><X className="h-3 w-3" /></button>
-              </span>
-            ))}
-          </div>
-        )}
         {custom.length < 3 && (
           <div className="flex gap-2">
             <Input value={hex} onChange={(e) => setHex(e.target.value)} placeholder="#1A2B3C" className="h-9" onKeyDown={(e) => e.key === "Enter" && addHex()} />
@@ -118,42 +116,20 @@ export function CatalogEditorPanel({
         </div>
       </Section>
 
-      {services.length > 0 && (
-      <Section title="Services / Features">
-        <p className="mb-1 text-xs text-ink/50">The cards in your services / what-we-do section.</p>
-        <div className="space-y-3">
-          {services.map((s, i) => (
-            <div key={s.id || i} className="space-y-2 rounded-lg border border-ink/10 p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-ink/60">Item {i + 1}</span>
-                <button onClick={() => removeService(i)} className="text-ink/40 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
-              </div>
-              <Input className="h-8 text-xs" placeholder="Title" value={s.title} onChange={(e) => setService(i, "title", e.target.value)} />
-              <Textarea rows={2} className="text-xs" placeholder="Description" value={s.description || ""} onChange={(e) => setService(i, "description", e.target.value)} />
-            </div>
-          ))}
-        </div>
-        <Button type="button" variant="outline" size="sm" className="mt-2 w-full" onClick={addService}><Plus className="h-4 w-4" /> Add item</Button>
-      </Section>
-      )}
-
-      <Section title="Testimonials">
-        <p className="mb-1 text-xs text-ink/50">Add, edit or remove what people say about you.</p>
-        <div className="space-y-3">
-          {testimonials.map((t, i) => (
-            <div key={t.id || i} className="space-y-2 rounded-lg border border-ink/10 p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-ink/60">Testimonial {i + 1}</span>
-                <button onClick={() => removeTestimonial(i)} className="text-ink/40 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
-              </div>
-              <Input className="h-8 text-xs" placeholder="Name" value={t.name} onChange={(e) => setTestimonial(i, "name", e.target.value)} />
-              <Input className="h-8 text-xs" placeholder="Role (optional)" value={t.role || ""} onChange={(e) => setTestimonial(i, "role", e.target.value)} />
-              <Textarea rows={2} className="text-xs" placeholder="Quote" value={t.quote} onChange={(e) => setTestimonial(i, "quote", e.target.value)} />
-            </div>
-          ))}
-        </div>
-        <Button type="button" variant="outline" size="sm" className="mt-2 w-full" onClick={addTestimonial}><Plus className="h-4 w-4" /> Add testimonial</Button>
-      </Section>
+      {lists.map((l) => {
+        const cfg = LIST_CONFIG[l];
+        const items = (data[cfg.key] as any[]) || [];
+        return (
+          <ListEditor
+            key={l}
+            title={cfg.title}
+            items={items}
+            fields={cfg.fields}
+            onChange={(next) => patch({ [cfg.key]: next } as Partial<SiteData>)}
+            onAdd={() => patch({ [cfg.key]: [...items, cfg.make()] } as Partial<SiteData>)}
+          />
+        );
+      })}
 
       <Section title="Contact details">
         <FieldRow label="Phone"><Input value={data.phone || ""} onChange={(e) => patch({ phone: e.target.value })} /></FieldRow>
@@ -165,10 +141,81 @@ export function CatalogEditorPanel({
         <p className="mb-1 text-xs text-ink/50">Only the ones you fill in will show on your site.</p>
         {(["instagram", "twitter", "facebook", "website"] as const).map((k) => (
           <FieldRow key={k} label={k[0].toUpperCase() + k.slice(1)}>
-            <Input value={social[k] || ""} onChange={(e) => patch({ social: { ...social, [k]: e.target.value } })} placeholder={k === "website" ? "https://" : "@handle or URL"} />
+            <Input value={data.social?.[k] || ""} onChange={(e) => patch({ social: { ...(data.social || {}), [k]: e.target.value } })} placeholder={k === "website" ? "https://" : "@handle or URL"} />
           </FieldRow>
         ))}
       </Section>
+    </div>
+  );
+}
+
+function ListEditor({
+  title, items, fields, onChange, onAdd,
+}: {
+  title: string;
+  items: any[];
+  fields: Field[];
+  onChange: (next: any[]) => void;
+  onAdd: () => void;
+}) {
+  const set = (i: number, key: string, value: any) =>
+    onChange(items.map((it, idx) => (idx === i ? { ...it, [key]: value } : it)));
+  const remove = (i: number) => onChange(items.filter((_, idx) => idx !== i));
+
+  return (
+    <Section title={title}>
+      <div className="space-y-3">
+        {items.map((item, i) => (
+          <div key={item.id || i} className="space-y-2 rounded-lg border border-ink/10 p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-ink/60">Item {i + 1}</span>
+              <button onClick={() => remove(i)} className="text-ink/40 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+            </div>
+            {fields.map((f) => (
+              <ItemField key={f.key} field={f} value={item[f.key]} onChange={(v) => set(i, f.key, v)} />
+            ))}
+          </div>
+        ))}
+      </div>
+      <Button type="button" variant="outline" size="sm" className="mt-2 w-full" onClick={onAdd}><Plus className="h-4 w-4" /> Add item</Button>
+    </Section>
+  );
+}
+
+function ItemField({ field, value, onChange }: { field: Field; value: any; onChange: (v: any) => void }) {
+  const [busy, setBusy] = useState(false);
+  if (field.type === "image") {
+    return (
+      <div className="space-y-1">
+        <Label className="text-[11px] text-ink/50">{field.label}</Label>
+        <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-ink/25 p-2 text-xs hover:bg-ink/[0.02]">
+          {value ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={value} alt="" className="h-8 w-8 rounded object-cover" />
+          ) : (
+            <span className="flex h-8 w-8 items-center justify-center rounded bg-ink text-cream">
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UploadCloud className="h-3.5 w-3.5" />}
+            </span>
+          )}
+          <span className="text-ink/60">{value ? "Replace image" : "Upload image"}</span>
+          <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+            const file = e.target.files?.[0]; if (!file) return;
+            setBusy(true); const { url } = await uploadImage(file, "branding"); setBusy(false);
+            if (url) onChange(url);
+          }} />
+        </label>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-1">
+      <Label className="text-[11px] text-ink/50">{field.label}</Label>
+      {field.type === "textarea" ? (
+        <Textarea rows={2} className="text-xs" value={value || ""} onChange={(e) => onChange(e.target.value)} />
+      ) : (
+        <Input className="h-8 text-xs" type={field.type === "number" ? "number" : "text"} value={value ?? ""}
+          onChange={(e) => onChange(field.type === "number" ? Number(e.target.value) : e.target.value)} />
+      )}
     </div>
   );
 }

@@ -52,6 +52,28 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
   { id: "events-04", name: "Leychert", category: "events", component: "Leychert", accent: "#C4622D", blurb: "Community / municipality with news and events." },
 ];
 
+/** Which content lists each template renders from site_data (so the editor can expose them). */
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials";
+export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
+  "shop-01": ["testimonials"],
+  "shop-02": [],
+  "shop-03": [],
+  "portfolio-01": ["services", "portfolio", "testimonials"],
+  "portfolio-02": ["services", "portfolio", "testimonials"],
+  "education-01": ["courses"],
+  "education-02": ["events", "testimonials"],
+  "org-01": ["services", "testimonials"],
+  "org-02": ["services", "causes", "events"],
+  "org-03": ["services"],
+  "events-01": ["services"],
+  "events-02": ["events"],
+  "events-03": [],
+  "events-04": ["events"],
+};
+export function templateLists(id: string): EditableList[] {
+  return TEMPLATE_LISTS[id] ?? [];
+}
+
 export function catalogTemplate(id: string) {
   return CATALOG_TEMPLATES.find((t) => t.id === id);
 }

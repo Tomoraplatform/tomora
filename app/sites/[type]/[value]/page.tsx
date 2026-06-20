@@ -3,6 +3,10 @@ import { loadPublishedSite } from "@/lib/published";
 import { PublishedSiteView } from "@/components/published/published-site-view";
 import type { Metadata } from "next";
 
+// Always render fresh so edits appear immediately after publishing.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface Params {
   params: { type: string; value: string };
 }

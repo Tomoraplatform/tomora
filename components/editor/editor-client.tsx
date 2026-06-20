@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import {
   Save, ExternalLink, Loader2, Check, Palette, UploadCloud,
-  ChevronDown, Eye, EyeOff,
+  ChevronDown, Eye, EyeOff, Rocket,
 } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
@@ -11,10 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { SiteRenderer } from "@/components/templates";
 import { CatalogEditorPanel } from "./catalog-editor-panel";
 import { BLOCK_LABELS, supportedBlocks, type BlockType } from "@/lib/site-data";
-import { isCatalogTemplate } from "@/lib/catalog";
+import { isCatalogTemplate, templateLists, createCatalogContent } from "@/lib/catalog";
 import { uploadImage } from "@/lib/upload";
 import { saveSite } from "@/app/dashboard/editor/actions";
 import { cn } from "@/lib/utils";
@@ -23,16 +24,32 @@ import type { Site, SiteData } from "@/lib/database.types";
 const PRESET_COLORS = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777", "#111111"];
 
 export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string }) {
-  const [data, setData] = useState<SiteData>(() => ({
-    ...site.site_data,
-    blocks: site.site_data.blocks ?? [],
-    brandColor: site.site_data.brandColor || "#022245",
-    businessName: site.site_data.businessName || "",
-  }));
+  const [data, setData] = useState<SiteData>(() => {
+    const base: SiteData = {
+      ...site.site_data,
+      blocks: site.site_data.blocks ?? [],
+      brandColor: site.site_data.brandColor || "#022245",
+      businessName: site.site_data.businessName || "",
+    };
+    // Seed editable content lists from template defaults for older sites that
+    // were created before these fields existed, so everything is editable.
+    if (isCatalogTemplate(site.template_id)) {
+      const defaults = createCatalogContent(site.template_id, {
+        businessName: base.businessName || "Your Brand",
+        brandColor: base.brandColor,
+      });
+      (["services", "portfolioItems", "courses", "causes", "events", "testimonials"] as const).forEach((k) => {
+        if (!(base as any)[k]?.length && (defaults as any)[k]?.length) (base as any)[k] = (defaults as any)[k];
+      });
+    }
+    return base;
+  });
   const [live, setLive] = useState(site.is_live);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showPublish, setShowPublish] = useState(false);
+  const [publishing, setPublishing] = useState(false);
 
   const dirty = () => setSaved(false);
 
@@ -75,6 +92,7 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
   };
   const patch = (p: Partial<SiteData>) => { setData((d) => ({ ...d, ...p })); dirty(); };
   const isCatalog = isCatalogTemplate(site.template_id);
+  const lists = isCatalog ? templateLists(site.template_id) : [];
 
   async function onLogo(file?: File) {
     if (!file) return;
@@ -90,8 +108,18 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
     setSaving(false);
     if (res.ok) {
       setSaved(true);
-      if (res.gated) { setLive(false); if (typeof window !== "undefined") window.alert(res.error); }
+      if (res.gated) { setLive(false); if (typeof window !== "undefined") window.alert(res.error); return; }
+      setShowPublish(true);
     }
+  }
+
+  async function publishNow() {
+    setPublishing(true);
+    const res = await saveSite(site.id, data, true);
+    setPublishing(false);
+    setShowPublish(false);
+    if (res.ok && !res.gated) { setLive(true); setSaved(true); }
+    else if (res.gated && typeof window !== "undefined") window.alert(res.error);
   }
 
   const editApi = useMemo(() => ({ editing: true, update }), [update]);
@@ -136,7 +164,7 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
         {/* Left panel */}
         <aside className="w-full shrink-0 overflow-y-auto border-b border-ink/10 bg-white p-4 lg:w-80 lg:border-b-0 lg:border-r">
           {isCatalog ? (
-            <CatalogEditorPanel data={data} patch={patch} />
+            <CatalogEditorPanel data={data} patch={patch} lists={lists} />
           ) : (
           <>
           <Section title="Brand">
@@ -190,6 +218,23 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
           </div>
         </div>
       </div>
+
+      <Dialog open={showPublish} onOpenChange={setShowPublish}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Rocket className="h-5 w-5" /> Publish your changes?</DialogTitle>
+            <DialogDescription>
+              Your edits are saved. Publish them to make your live site show the latest changes.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setShowPublish(false)} disabled={publishing}>Not now</Button>
+            <Button onClick={publishNow} disabled={publishing}>
+              {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />} Publish
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
