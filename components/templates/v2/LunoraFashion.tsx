@@ -2,7 +2,7 @@
 
 import { ArrowRight, PlayCircle, Truck, RotateCcw, ShieldCheck, Headphones, Instagram, Facebook } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2 } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading } from "./shared";
 
 export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "LUNORA";
@@ -70,7 +70,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
       {/* Shop by category grid */}
       <section id="collections" className="mx-auto max-w-6xl px-5 py-14">
         <div className="flex items-end justify-between">
-          <div><span className="text-xs uppercase tracking-[0.3em] text-black/40">Shop by Category</span><h2 className="mt-2 font-serif text-3xl font-bold">Find Your Perfect Style</h2></div>
+          <div><span className="text-xs uppercase tracking-[0.3em] text-black/40">Shop by Category</span><h2 className="mt-2 font-serif text-3xl font-bold">{heading(siteData, "categories", "Find Your Perfect Style")}</h2></div>
           <a href="#" className="text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All →</a>
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
@@ -101,7 +101,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
       {/* Best sellers */}
       <section id="products" className="mx-auto max-w-6xl px-5 pb-14">
         <div className="flex items-end justify-between">
-          <div><span className="text-xs uppercase tracking-[0.3em] text-black/40">Best Sellers</span><h2 className="mt-2 font-serif text-3xl font-bold">Our Most Loved Picks</h2></div>
+          <div><span className="text-xs uppercase tracking-[0.3em] text-black/40">Best Sellers</span><h2 className="mt-2 font-serif text-3xl font-bold">{heading(siteData, "bestsellers", "Our Most Loved Picks")}</h2></div>
           <a href="#" className="text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All →</a>
         </div>
         <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-6">
@@ -115,7 +115,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
           <div className="aspect-[16/10] overflow-hidden rounded-2xl"><Img src="https://picsum.photos/seed/lun-news/900/560" className="h-full w-full object-cover" /></div>
           <div>
             <span className="text-xs uppercase tracking-[0.3em] text-black/40">Get 10% off your first order</span>
-            <h2 className="mt-2 font-serif text-3xl font-bold">Join Our Style List</h2>
+            <h2 className="mt-2 font-serif text-3xl font-bold">{heading(siteData, "newsletter", "Join Our Style List")}</h2>
             <p className="mt-3 text-black/60">Be first to know about new arrivals, sales and style tips.</p>
             <div className="mt-5 flex gap-2"><input className="min-w-0 flex-1 rounded-md border border-black/15 px-4 py-3 text-sm" placeholder="Email address" /><BrandButton>Subscribe</BrandButton></div>
           </div>

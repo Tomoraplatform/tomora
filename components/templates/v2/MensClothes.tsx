@@ -2,7 +2,7 @@
 
 import { Search, ShoppingCart, ArrowRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira, heading } from "./shared";
 import { useStore } from "../store-context";
 import type { CatalogProduct, Product, SiteData } from "@/lib/database.types";
 
@@ -74,7 +74,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
 
       {/* New products */}
       <section id="new" className="mx-auto max-w-6xl px-5 py-10">
-        <h2 className="text-xl font-bold">New products</h2>
+        <h2 className="text-xl font-bold">{heading(siteData, "new", "New products")}</h2>
         <div className="mt-6 grid grid-cols-2 gap-5 lg:grid-cols-4">
           {products.slice(0, 4).map((p) => <Card key={p.id} product={p} siteData={siteData} />)}
         </div>
@@ -83,7 +83,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
       {/* Special products */}
       <section className="bg-neutral-50">
         <div className="mx-auto max-w-6xl px-5 py-10">
-          <h2 className="text-xl font-bold">Special products</h2>
+          <h2 className="text-xl font-bold">{heading(siteData, "special", "Special products")}</h2>
           <div className="mt-6 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-5">
             {products.map((p) => <Card key={p.id} product={{ ...p, comparePrice: p.comparePrice || Math.round(p.price * 1.3) }} siteData={siteData} />)}
           </div>

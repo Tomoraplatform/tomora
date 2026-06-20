@@ -2,7 +2,7 @@
 
 import { HandHeart, GraduationCap, Baby, Users, Quote, ChevronRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, heading } from "./shared";
 
 const SERVICES = [
   { icon: HandHeart, t: "Help & Support" }, { icon: GraduationCap, t: "Education" },
@@ -41,7 +41,7 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
 
       {/* Mission */}
       <section id="mission" className="mx-auto max-w-3xl px-5 py-16 text-center">
-        <h2 className="text-3xl font-bold leading-tight">Give a helping hand to those who need it!</h2>
+        <h2 className="text-3xl font-bold leading-tight">{heading(siteData, "hero2", "Give a helping hand to those who need it!")}</h2>
         <p className="mt-4 text-black/60">{siteData.heroSubtext}</p>
         <a href="#" className="mt-6 inline-block rounded-md border-2 px-6 py-3 text-sm font-semibold" style={{ borderColor: "var(--brand-primary)", color: "var(--brand-primary)" }}>Read More</a>
       </section>
@@ -62,7 +62,7 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
       <section className="grid md:grid-cols-2">
         <div className="px-6 py-14 text-white md:px-12" style={{ background: "var(--brand-primary)" }}>
           <span className="text-sm font-semibold uppercase tracking-wide opacity-80">Get involved</span>
-          <h2 className="mt-2 text-3xl font-bold">We Need Volunteers</h2>
+          <h2 className="mt-2 text-3xl font-bold">{heading(siteData, "volunteers", "We Need Volunteers")}</h2>
           <p className="mt-3 max-w-md opacity-90">Join hundreds of volunteers bringing hope to communities across Africa.</p>
           <a href="#" className="mt-6 inline-block rounded-md bg-white px-6 py-3 text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>Join Now</a>
         </div>
@@ -71,7 +71,7 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
 
       {/* Success stories */}
       <section id="stories" className="mx-auto max-w-6xl px-5 py-16">
-        <h2 className="text-2xl font-bold">Success Stories</h2>
+        <h2 className="text-2xl font-bold">{heading(siteData, "stories", "Success Stories")}</h2>
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {testimonialsOf(siteData).map((t, i) => (
             <figure key={t.id || i} className="rounded-2xl bg-white p-6 shadow-sm"><Quote className="h-6 w-6" style={{ color: "var(--brand-primary)" }} /><blockquote className="mt-3 text-sm text-black/70">{t.quote}</blockquote><figcaption className="mt-4 text-sm font-semibold">{t.name}</figcaption></figure>

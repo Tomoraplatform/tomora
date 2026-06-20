@@ -2,7 +2,7 @@
 
 import { Search, Mail, Phone, FileText, PhoneCall, Users, Home as HomeIcon, Scale, MapPin, ArrowRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading } from "./shared";
 
 const QUICK = [
   { icon: FileText, t: "Services & Forms" }, { icon: PhoneCall, t: "Useful Numbers" },
@@ -48,7 +48,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
       <section id="news" className="mx-auto max-w-6xl px-5 py-14">
         <div className="grid gap-8 lg:grid-cols-[40%_60%]">
           <div>
-            <h2 className="font-serif text-4xl font-bold italic">News</h2>
+            <h2 className="font-serif text-4xl font-bold italic">{heading(siteData, "news", "News")}</h2>
             <BrandButton className="mt-4">View All News</BrandButton>
             {events[0] && (
               <div className="mt-6 overflow-hidden rounded-2xl border border-black/10"><Img src={events[0].image} className="aspect-[16/9] w-full object-cover" /><div className="p-5"><span className="text-xs font-semibold" style={{ color: "var(--brand-primary)" }}>{events[0].date}</span><h3 className="mt-1 font-semibold">{events[0].title}</h3><p className="mt-1 text-sm text-black/60">{events[0].description}</p><a href="#" className="mt-2 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>Read More →</a></div></div>
@@ -66,7 +66,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
       <section id="events" className="bg-[#FBF8F3]">
         <div className="mx-auto max-w-6xl px-5 py-14">
           <div className="grid gap-8 lg:grid-cols-[30%_70%]">
-            <div><h2 className="font-serif text-4xl font-bold italic">Events</h2><p className="mt-3 text-black/60">Discover what&apos;s happening across the community.</p><BrandButton className="mt-4">All Events</BrandButton></div>
+            <div><h2 className="font-serif text-4xl font-bold italic">{heading(siteData, "events", "Events")}</h2><p className="mt-3 text-black/60">Discover what&apos;s happening across the community.</p><BrandButton className="mt-4">All Events</BrandButton></div>
             <div className="flex gap-5 overflow-x-auto pb-2">
               {events.map((e) => (
                 <div key={e.id} className="w-64 shrink-0 overflow-hidden rounded-2xl bg-white shadow-sm">
@@ -84,7 +84,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
         <Img src="https://picsum.photos/seed/ley-territory/1200/600" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-black/55" />
         <div className="relative mx-auto grid max-w-6xl items-center gap-8 px-5 py-20 text-white lg:grid-cols-2">
-          <div><h2 className="font-serif text-4xl font-bold italic">The Territory</h2><p className="mt-3 max-w-md text-white/80">Explore the towns, landmarks and natural beauty that make our region home.</p><a href="#" className="mt-5 inline-flex items-center gap-2 rounded-md border border-white/50 px-6 py-3 text-sm font-semibold">View Interactive Map <ArrowRight className="h-4 w-4" /></a></div>
+          <div><h2 className="font-serif text-4xl font-bold italic">{heading(siteData, "territory", "The Territory")}</h2><p className="mt-3 max-w-md text-white/80">Explore the towns, landmarks and natural beauty that make our region home.</p><a href="#" className="mt-5 inline-flex items-center gap-2 rounded-md border border-white/50 px-6 py-3 text-sm font-semibold">View Interactive Map <ArrowRight className="h-4 w-4" /></a></div>
           <div className="flex justify-center"><MapPin className="h-24 w-24 text-white/60" /></div>
         </div>
       </section>

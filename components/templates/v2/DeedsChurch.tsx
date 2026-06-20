@@ -2,7 +2,7 @@
 
 import { Phone, Mail, ArrowRight, Quote } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading } from "./shared";
 
 const MINISTRIES = [
   ["Education Ministry", "Equipping every generation with the Word."],
@@ -50,7 +50,7 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
         </div>
         <div>
           <span className="text-sm font-semibold uppercase" style={{ color: "var(--brand-primary)" }}>Work of the Church</span>
-          <h2 className="mt-2 text-3xl font-bold">We Preach the Gospel in Every Sermon</h2>
+          <h2 className="mt-2 text-3xl font-bold">{heading(siteData, "sermons", "We Preach the Gospel in Every Sermon")}</h2>
           <p className="mt-3 text-black/60">{siteData.heroSubtext}</p>
           <blockquote className="mt-5 border-l-4 pl-4 text-black/70" style={{ borderColor: "var(--brand-primary)" }}><Quote className="mb-1 h-5 w-5" style={{ color: "var(--brand-primary)" }} />Faith, hope and love — and the greatest of these is love.</blockquote>
           <BrandButton className="mt-5">About The Church <ArrowRight className="h-4 w-4" /></BrandButton>
@@ -61,7 +61,7 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
       <section id="ministries" className="bg-[#F5F5F5]">
         <div className="mx-auto grid max-w-6xl items-start gap-10 px-5 py-16 lg:grid-cols-[40%_60%]">
           <div>
-            <h2 className="text-3xl font-bold">Explore Our Church Ministries</h2>
+            <h2 className="text-3xl font-bold">{heading(siteData, "ministries", "Explore Our Church Ministries")}</h2>
             <p className="mt-3 text-black/60">There is a place for everyone to belong, serve and grow.</p>
             <a href="#" className="mt-4 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>All Church Ministries →</a>
           </div>

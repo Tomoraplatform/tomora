@@ -156,6 +156,12 @@ export function testimonialsOf(siteData: SiteData): CatalogTestimonial[] {
   return siteData.testimonials?.length ? siteData.testimonials : [];
 }
 
+/** Editable section heading. Returns the user's override or the template default. */
+export function heading(siteData: SiteData, key: string, fallback: string): string {
+  const v = siteData.sectionTitles?.[key];
+  return v && v.trim() ? v : fallback;
+}
+
 /** Editable services/features. Falls back to the template's built-in defaults. */
 export function servicesOf(
   siteData: SiteData,

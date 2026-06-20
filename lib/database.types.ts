@@ -212,9 +212,13 @@ export interface SiteData {
   contactForm?: boolean;
   /** Custom brand color hex codes the user saved (max 3). First is primary. */
   brandColors?: string[];
+  /** Per-template editable section headings, keyed by section id. */
+  sectionTitles?: Record<string, string>;
   testimonials?: CatalogTestimonial[];
   services?: CatalogServiceItem[];
   resume?: CatalogResumeItem[];
+  faqs?: CatalogFaq[];
+  stats?: CatalogStat[];
   products?: CatalogProduct[];
   courses?: CatalogCourse[];
   causes?: CatalogCause[];
@@ -241,4 +245,16 @@ export interface CatalogResumeItem {
   title: string;   // date range or skill area
   subtitle: string; // institution / role
   detail?: string;  // qualification / note
+}
+
+export interface CatalogFaq {
+  id: string;
+  question: string;
+  answer: string;
+}
+
+export interface CatalogStat {
+  id: string;
+  value: string;
+  label: string;
 }

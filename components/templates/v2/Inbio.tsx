@@ -6,7 +6,7 @@ import {
   Mail, Phone, MapPin, Quote, Bookmark,
 } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2 } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading } from "./shared";
 
 const SERVICES = [
   { icon: TrendingUp, t: "Business Strategy", d: "Plans that turn ideas into measurable growth." },
@@ -70,7 +70,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
 
       {/* What I Do */}
       <section id="services" className="mx-auto max-w-6xl px-5 py-14">
-        <h2 className="text-3xl font-bold">What I Do</h2>
+        <h2 className="text-3xl font-bold">{heading(siteData, "services", "What I Do")}</h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {servicesOf(siteData, SERVICES.map((s) => ({ title: s.t, description: s.d }))).map((s, i) => {
             const Icon = SERVICES[i % SERVICES.length].icon;
@@ -86,7 +86,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
 
       {/* Portfolio */}
       <section id="portfolio" className="mx-auto max-w-6xl px-5 py-14">
-        <h2 className="text-3xl font-bold">My Portfolio</h2>
+        <h2 className="text-3xl font-bold">{heading(siteData, "portfolio", "My Portfolio")}</h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((p) => (
             <div key={p.id} className="group relative overflow-hidden rounded-2xl">
@@ -103,7 +103,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
 
       {/* Resume */}
       <section id="resume" className="mx-auto max-w-6xl px-5 py-14">
-        <h2 className="text-3xl font-bold">My Resume</h2>
+        <h2 className="text-3xl font-bold">{heading(siteData, "resume", "My Resume")}</h2>
         <div className="mt-6 flex flex-wrap gap-2">
           {resumeTabs.map((k) => (
             <button key={k} onClick={() => setTab(k)} className="rounded-full px-4 py-2 text-sm font-medium" style={activeTab === k ? { background: "var(--brand-primary)", color: "var(--brand-on-primary)" } : { background: "#fff" }}>{k}</button>
@@ -121,7 +121,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
 
       {/* Testimonial */}
       <section className="mx-auto max-w-4xl px-5 py-14">
-        <h2 className="text-center text-3xl font-bold">Testimonial</h2>
+        <h2 className="text-center text-3xl font-bold">{heading(siteData, "testimonials", "Testimonial")}</h2>
         {testimonialsOf(siteData).slice(0, 1).map((t, i) => (
           <figure key={i} className="mt-8 rounded-2xl bg-white p-8 text-center shadow-sm">
             <Quote className="mx-auto h-8 w-8" style={{ color: "var(--brand-primary)" }} />
@@ -141,7 +141,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
       {/* Contact */}
       {siteData.contactForm !== false && (
         <section id="contact" className="mx-auto max-w-6xl px-5 py-14">
-          <h2 className="text-3xl font-bold">Contact With Me</h2>
+          <h2 className="text-3xl font-bold">{heading(siteData, "contact", "Contact With Me")}</h2>
           <div className="mt-8 grid gap-8 lg:grid-cols-2">
             <div className="rounded-2xl bg-white p-6 shadow-sm"><ContactFormV2 submitText="Send Message" /></div>
             <div className="space-y-4">

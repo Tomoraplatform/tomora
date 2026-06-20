@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { uploadImage } from "@/lib/upload";
 import { cn } from "@/lib/utils";
-import type { EditableList } from "@/lib/catalog";
+import type { EditableList, SectionDef } from "@/lib/catalog";
 import type { SiteData } from "@/lib/database.types";
 
 const PRESET = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777", "#111111"];
@@ -46,6 +46,16 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     fields: [{ key: "name", label: "Name" }, { key: "role", label: "Role" }, { key: "quote", label: "Quote", type: "textarea" }],
     make: () => ({ id: `t-${Date.now()}`, name: "New name", role: "Customer", quote: "Their words here." }),
   },
+  faqs: {
+    key: "faqs", title: "FAQ",
+    fields: [{ key: "question", label: "Question" }, { key: "answer", label: "Answer", type: "textarea" }],
+    make: () => ({ id: `f-${Date.now()}`, question: "New question?", answer: "The answer." }),
+  },
+  stats: {
+    key: "stats", title: "Stats / Numbers",
+    fields: [{ key: "value", label: "Value (e.g. 120+)" }, { key: "label", label: "Label" }],
+    make: () => ({ id: `st-${Date.now()}`, value: "10+", label: "Metric" }),
+  },
   resume: {
     key: "resume", title: "Resume (Education / Experience / Skills)",
     fields: [
@@ -62,10 +72,12 @@ export function CatalogEditorPanel({
   data,
   patch,
   lists,
+  sections = [],
 }: {
   data: SiteData;
   patch: (p: Partial<SiteData>) => void;
   lists: EditableList[];
+  sections?: SectionDef[];
 }) {
   const [hex, setHex] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
@@ -125,6 +137,21 @@ export function CatalogEditorPanel({
           <FieldRow label="Button link"><Input value={data.ctaHref || ""} onChange={(e) => patch({ ctaHref: e.target.value })} placeholder="# or https://" /></FieldRow>
         </div>
       </Section>
+
+      {sections.length > 0 && (
+        <Section title="Section headings">
+          <p className="mb-1 text-xs text-ink/50">Rename any section title on your page. Leave blank to keep the default.</p>
+          {sections.map((s) => (
+            <FieldRow key={s.key} label={s.label.replace("{name}", data.businessName || "your brand")}>
+              <Input
+                value={data.sectionTitles?.[s.key] ?? ""}
+                placeholder={s.label.replace("{name}", data.businessName || "your brand")}
+                onChange={(e) => patch({ sectionTitles: { ...(data.sectionTitles || {}), [s.key]: e.target.value } })}
+              />
+            </FieldRow>
+          ))}
+        </Section>
+      )}
 
       {lists.map((l) => {
         const cfg = LIST_CONFIG[l];

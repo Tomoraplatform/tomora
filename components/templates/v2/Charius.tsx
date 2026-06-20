@@ -2,7 +2,7 @@
 
 import { PlayCircle, HandHeart, Wallet, HeartHandshake, GraduationCap, Droplet, Utensils, Stethoscope, MapPin } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img, formatNaira } from "./shared";
+import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img, formatNaira, heading } from "./shared";
 
 const ACTIONS = [{ icon: HeartHandshake, t: "Become a Volunteer" }, { icon: Wallet, t: "Quick Fundraising" }, { icon: HandHeart, t: "Start Donating" }];
 const WHATWEDO = [{ icon: GraduationCap, t: "Kids Education" }, { icon: Droplet, t: "Pure Water" }, { icon: Utensils, t: "Healthy Food" }, { icon: Stethoscope, t: "Medical Care" }];
@@ -54,7 +54,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
         <div className="grid grid-cols-2 gap-3">{[0,1,2,3].map((i) => <Img key={i} src={`https://picsum.photos/seed/ch-about${i}/400`} className="aspect-square w-full rounded-2xl object-cover" />)}</div>
         <div>
           <span className="font-semibold" style={{ color: "var(--brand-primary)" }}>Welcome to {name}</span>
-          <h2 className="mt-2 text-3xl font-bold">You&apos;re the Hope of Others.</h2>
+          <h2 className="mt-2 text-3xl font-bold">{heading(siteData, "hope", "You're the Hope of Others.")}</h2>
           <p className="mt-3 text-black/60">We work hand-in-hand with local communities to deliver education, clean water, food and medical care where it is needed most.</p>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             {[["Our Mission", "Empower communities to thrive."], ["Our Vision", "A future with opportunity for all."]].map(([t, d]) => (
@@ -68,7 +68,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
       {/* Causes */}
       <section id="causes" className="bg-[#FBF8F2]">
         <div className="mx-auto max-w-6xl px-5 py-16">
-          <h2 className="text-center text-3xl font-bold">Our Causes</h2>
+          <h2 className="text-center text-3xl font-bold">{heading(siteData, "causes", "Our Causes")}</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {causes.slice(0, 3).map((c) => {
               const pct = Math.min(100, Math.round((c.raised / c.goal) * 100));
@@ -88,11 +88,11 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
       </section>
 
       {/* Impact band */}
-      <section className="bg-[#0D0D0D] py-16 text-center text-white"><h2 className="mx-auto max-w-2xl px-5 text-3xl font-bold">Your Donation Means Another Smile.</h2></section>
+      <section className="bg-[#0D0D0D] py-16 text-center text-white"><h2 className="mx-auto max-w-2xl px-5 text-3xl font-bold">{heading(siteData, "donate", "Your Donation Means Another Smile.")}</h2></section>
 
       {/* What we do */}
       <section id="whatwedo" className="mx-auto max-w-6xl px-5 py-16">
-        <h2 className="text-center text-3xl font-bold">What We Do</h2>
+        <h2 className="text-center text-3xl font-bold">{heading(siteData, "services", "What We Do")}</h2>
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {servicesOf(siteData, WHATWEDO.map((s) => ({ title: s.t }))).map((s, i) => {
             const Icon = WHATWEDO[i % WHATWEDO.length].icon;
@@ -106,7 +106,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
       {/* Events */}
       <section id="events" className="bg-[#FBF8F2]">
         <div className="mx-auto max-w-6xl px-5 py-16">
-          <h2 className="text-center text-3xl font-bold">Join Our Upcoming Events</h2>
+          <h2 className="text-center text-3xl font-bold">{heading(siteData, "events", "Join Our Upcoming Events")}</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {events.slice(0, 3).map((e) => (
               <div key={e.id} className="overflow-hidden rounded-2xl bg-white shadow-sm"><Img src={e.image} className="aspect-[4/3] w-full object-cover" /><div className="p-5"><span className="text-xs font-semibold" style={{ color: "var(--brand-primary)" }}>{e.date}</span><h3 className="mt-1 font-semibold">{e.title}</h3><p className="mt-1 flex items-center gap-1 text-sm text-black/50"><MapPin className="h-4 w-4" />{e.location}</p></div></div>

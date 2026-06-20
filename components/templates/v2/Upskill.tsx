@@ -6,7 +6,7 @@ import {
   Users, MessageSquare, Award,
 } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading } from "./shared";
 
 const CATS = [
   { icon: Briefcase, t: "Business" }, { icon: Code, t: "Development" }, { icon: Languages, t: "Language" },
@@ -69,7 +69,7 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
       {/* Advantages */}
       <section id="advantages" className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 lg:grid-cols-2">
         <div>
-          <h2 className="text-3xl font-bold">The Advantages of the {name} Program</h2>
+          <h2 className="text-3xl font-bold">{heading(siteData, "advantages", `The Advantages of the ${name} Program`)}</h2>
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
             {ADV.map((a) => (
               <div key={a.t} className="flex gap-3"><Check className="mt-0.5 h-5 w-5 shrink-0" style={{ color: "var(--brand-primary)" }} /><div><p className="font-semibold">{a.t}</p><p className="text-sm text-black/60">{a.d}</p></div></div>
@@ -82,7 +82,7 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
       {/* Bootcamp program */}
       <section id="bootcamp" className="bg-[#EEF3FF]">
         <div className="mx-auto max-w-6xl px-5 py-14">
-          <h2 className="text-center text-3xl font-bold">Bootcamp Program</h2>
+          <h2 className="text-center text-3xl font-bold">{heading(siteData, "courses", "Bootcamp Program")}</h2>
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {courses.map((c) => (
               <div key={c.id} className="overflow-hidden rounded-2xl bg-white shadow-sm">
@@ -114,9 +114,9 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
       {/* FAQ */}
       <section id="faq" className="bg-[#EEF3FF]">
         <div className="mx-auto max-w-3xl px-5 py-14">
-          <h2 className="text-center text-3xl font-bold">Frequently Asked Questions</h2>
+          <h2 className="text-center text-3xl font-bold">{heading(siteData, "faq", "Frequently Asked Questions")}</h2>
           <div className="mt-8 space-y-3">
-            {FAQS.map(([q, a], i) => (
+            {(siteData.faqs?.length ? siteData.faqs.map((f) => [f.question, f.answer] as const) : FAQS).map(([q, a], i) => (
               <div key={i} className="rounded-xl bg-white">
                 <button onClick={() => setOpen(open === i ? null : i)} className="flex w-full items-center justify-between px-5 py-4 text-left font-medium">{q}<ChevronDown className={`h-5 w-5 transition-transform ${open === i ? "rotate-180" : ""}`} /></button>
                 {open === i && <p className="px-5 pb-5 text-sm text-black/60">{a}</p>}

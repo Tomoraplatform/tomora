@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, Linkedin, Instagram, Github, Layout, PenTool, Globe, Smartphone, Quote, Star } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2 } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading } from "./shared";
 
 const SERVICES = [
   { icon: Layout, t: "UX/UI", d: "Intuitive interfaces that delight users." },
@@ -54,9 +54,9 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
           <Img src="https://picsum.photos/seed/riz-about/700/700" className="mx-auto aspect-square w-72 rounded-full object-cover" />
           <div>
-            <h2 className="text-3xl font-bold">About Me</h2>
+            <h2 className="text-3xl font-bold">{heading(siteData, "about", "About Me")}</h2>
             <div className="mt-6 grid grid-cols-2 gap-5">
-              {STATS.map(([n, l]) => (
+              {(siteData.stats?.length ? siteData.stats.map((s) => [s.value, s.label] as const) : STATS).map(([n, l]) => (
                 <div key={l} className="rounded-2xl bg-white p-5 shadow-sm"><p className="text-3xl font-bold" style={{ color: "var(--brand-primary)" }}>{n}</p><p className="text-sm text-black/50">{l}</p></div>
               ))}
             </div>
@@ -67,7 +67,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
 
       {/* Services */}
       <section id="services" className="mx-auto max-w-6xl px-5 py-16">
-        <h2 className="text-center text-3xl font-bold">Services</h2>
+        <h2 className="text-center text-3xl font-bold">{heading(siteData, "services", "Services")}</h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {servicesOf(siteData, SERVICES.map((s) => ({ title: s.t, description: s.d }))).map((s, i) => {
             const Icon = SERVICES[i % SERVICES.length].icon;
@@ -84,7 +84,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
       {/* Projects */}
       <section id="projects" className="bg-[#F7F9FC]">
         <div className="mx-auto max-w-6xl px-5 py-16">
-          <h2 className="text-center text-3xl font-bold">My Projects</h2>
+          <h2 className="text-center text-3xl font-bold">{heading(siteData, "portfolio", "My Projects")}</h2>
           <div className="mt-6 flex flex-wrap justify-center gap-2">
             {FILTERS.map((f) => <button key={f} onClick={() => setFilter(f)} className="rounded-full px-4 py-2 text-sm font-medium" style={filter === f ? { background: "var(--brand-primary)", color: "var(--brand-on-primary)" } : { background: "#fff" }}>{f}</button>)}
           </div>
@@ -101,7 +101,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
 
       {/* Testimonials */}
       <section id="testimonials" className="mx-auto max-w-4xl px-5 py-16">
-        <h2 className="text-center text-3xl font-bold">Testimonials</h2>
+        <h2 className="text-center text-3xl font-bold">{heading(siteData, "testimonials", "Testimonials")}</h2>
         {testimonialsOf(siteData).slice(0, 1).map((t, i) => (
           <figure key={i} className="mt-8 rounded-2xl border border-black/10 p-8 text-center">
             <div className="flex justify-center gap-1" style={{ color: "var(--brand-primary)" }}>{[0,1,2,3,4].map((n) => <Star key={n} className="h-4 w-4 fill-current" />)}</div>
@@ -116,7 +116,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
       {siteData.contactForm !== false && (
         <section id="contact" className="bg-[#F7F9FC]">
           <div className="mx-auto max-w-xl px-5 py-16">
-            <h2 className="text-center text-3xl font-bold">Contact Me</h2>
+            <h2 className="text-center text-3xl font-bold">{heading(siteData, "contact", "Contact Me")}</h2>
             <p className="mt-2 text-center text-black/60">Have a project in mind? Let&apos;s build it together.</p>
             <div className="mt-8"><ContactFormV2 submitText="Subscribe Me" phone={false} /></div>
           </div>

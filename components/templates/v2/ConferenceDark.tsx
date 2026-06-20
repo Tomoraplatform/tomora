@@ -2,7 +2,7 @@
 
 import { ArrowRight, Mic, Users, Calendar, Zap, ShieldCheck, Sparkles } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading } from "./shared";
 
 const NAVY = "#0A0F2E";
 const ABOUT = [{ icon: Mic, t: "World-class Speakers" }, { icon: Users, t: "Global Network" }, { icon: Calendar, t: "Daily Sessions" }];
@@ -47,7 +47,7 @@ export function ConferenceDark({ siteData, brandColor }: TemplateProps) {
       <section id="mission" style={{ background: NAVY }}>
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-[55%_45%]">
           <div>
-            <h2 className="text-3xl font-bold">Our Mission</h2>
+            <h2 className="text-3xl font-bold">{heading(siteData, "mission", "Our Mission")}</h2>
             <p className="mt-4 text-white/70">We bring together builders, dreamers and leaders to share ideas that move the world forward. Two days of talks, workshops and connections.</p>
             <ul className="mt-4 space-y-2 text-white/70">{["50+ speakers", "20 workshops", "3000 attendees"].map((b) => <li key={b} className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full" style={{ background: "var(--brand-primary)" }} />{b}</li>)}</ul>
           </div>
@@ -58,7 +58,7 @@ export function ConferenceDark({ siteData, brandColor }: TemplateProps) {
       {/* Why choose */}
       <section id="why" className="bg-white text-neutral-900">
         <div className="mx-auto max-w-6xl px-5 py-16">
-          <h2 className="text-center text-3xl font-bold">Why Choose Us</h2>
+          <h2 className="text-center text-3xl font-bold">{heading(siteData, "why", "Why Choose Us")}</h2>
           <div className="mt-8 grid gap-5 sm:grid-cols-3">
             {WHY.map(({ icon: Icon, t }) => (
               <div key={t} className="rounded-2xl border border-black/10 p-6 shadow-sm"><span className="flex h-11 w-11 items-center justify-center rounded-lg" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span><h3 className="mt-4 font-semibold">{t}</h3><p className="mt-1 text-sm text-black/60">Reasons attendees love us.</p><a href="#" className="mt-3 inline-block rounded-md border px-4 py-2 text-sm font-semibold">Contact</a></div>

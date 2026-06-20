@@ -2,7 +2,7 @@
 
 import { Search, Play, HandHeart, Users, CalendarDays, Plus, Phone, MapPin, Mail } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, Img } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, Img, heading } from "./shared";
 
 const QUICK = [{ icon: Play, t: "Watch" }, { icon: HandHeart, t: "Give" }, { icon: Users, t: "Who We Are" }, { icon: CalendarDays, t: "Events" }];
 const MINISTRIES = ["Missional Communities", "Previous Sermons", "Our Weddings", "Special Events"];
@@ -56,7 +56,7 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
 
       {/* What's new */}
       <section id="news" className="mx-auto max-w-6xl px-5 pb-16">
-        <h2 className="text-2xl font-bold uppercase" style={{ color: "var(--brand-primary)" }}>What&apos;s New at {name}</h2>
+        <h2 className="text-2xl font-bold uppercase" style={{ color: "var(--brand-primary)" }}>{heading(siteData, "news", `What's New at ${name}`)}</h2>
         <div className="mt-6 grid gap-8 lg:grid-cols-2">
           <div>
             <p className="text-xs font-semibold uppercase text-black/40">Featured Event</p>

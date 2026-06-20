@@ -53,14 +53,14 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["testimonials"],
   "shop-02": [],
   "shop-03": [],
   "portfolio-01": ["services", "portfolio", "resume", "testimonials"],
-  "portfolio-02": ["services", "portfolio", "testimonials"],
-  "education-01": ["courses"],
+  "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
+  "education-01": ["courses", "faqs"],
   "education-02": ["events", "testimonials"],
   "org-01": ["services", "testimonials"],
   "org-02": ["services", "causes", "events"],
@@ -72,6 +72,92 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
 };
 export function templateLists(id: string): EditableList[] {
   return TEMPLATE_LISTS[id] ?? [];
+}
+
+/** Editable section headings per template: [key, default label]. */
+export type SectionDef = { key: string; label: string };
+export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
+  "shop-01": [
+    { key: "categories", label: "Shop by Categories" },
+    { key: "bestsellers", label: "Best Selling Products" },
+    { key: "sale", label: "Up to 50% Off" },
+    { key: "testimonials", label: "What Our Customers Say" },
+  ],
+  "shop-02": [
+    { key: "categories", label: "Find Your Perfect Style" },
+    { key: "bestsellers", label: "Our Most Loved Picks" },
+    { key: "newsletter", label: "Join Our Style List" },
+  ],
+  "shop-03": [
+    { key: "new", label: "New products" },
+    { key: "special", label: "Special products" },
+  ],
+  "portfolio-01": [
+    { key: "services", label: "What I Do" },
+    { key: "portfolio", label: "My Portfolio" },
+    { key: "resume", label: "My Resume" },
+    { key: "testimonials", label: "Testimonial" },
+    { key: "contact", label: "Contact With Me" },
+  ],
+  "portfolio-02": [
+    { key: "about", label: "About Me" },
+    { key: "services", label: "Services" },
+    { key: "portfolio", label: "My Projects" },
+    { key: "testimonials", label: "Testimonials" },
+    { key: "contact", label: "Contact Me" },
+  ],
+  "education-01": [
+    { key: "advantages", label: "The Advantages of the {name} Program" },
+    { key: "courses", label: "Bootcamp Program" },
+    { key: "faq", label: "Frequently Asked Questions" },
+  ],
+  "education-02": [
+    { key: "about", label: "Plan Your Events with Us" },
+    { key: "venues", label: "Explore the Popular Venues" },
+    { key: "schedule", label: "Information of Event Schedules" },
+    { key: "services", label: "We Bring The Best Things for You" },
+    { key: "testimonials", label: "What Clients Say About Us" },
+    { key: "register", label: "Register Here to Attend" },
+  ],
+  "org-01": [
+    { key: "hero2", label: "Give a helping hand to those who need it!" },
+    { key: "volunteers", label: "We Need Volunteers" },
+    { key: "stories", label: "Success Stories" },
+  ],
+  "org-02": [
+    { key: "hope", label: "You're the Hope of Others." },
+    { key: "causes", label: "Our Causes" },
+    { key: "donate", label: "Your Donation Means Another Smile." },
+    { key: "services", label: "What We Do" },
+    { key: "events", label: "Join Our Upcoming Events" },
+  ],
+  "org-03": [
+    { key: "experience", label: "15+ Years of Financial Experience" },
+    { key: "services", label: "The largest truly global wealth manager" },
+    { key: "cta", label: "Think fresh, work faster, grow smarter, save money." },
+    { key: "values", label: "We bring your business to new heights." },
+    { key: "invest", label: "Unlocking Investment Opportunities Together." },
+    { key: "join", label: "Ready to make a difference? Join the {name} team today." },
+  ],
+  "events-01": [
+    { key: "mission", label: "Our Mission" },
+    { key: "why", label: "Why Choose Us" },
+  ],
+  "events-02": [
+    { key: "news", label: "What's New at {name}" },
+  ],
+  "events-03": [
+    { key: "sermons", label: "We Preach the Gospel in Every Sermon" },
+    { key: "ministries", label: "Explore Our Church Ministries" },
+  ],
+  "events-04": [
+    { key: "news", label: "News" },
+    { key: "events", label: "Events" },
+    { key: "territory", label: "The Territory" },
+  ],
+};
+export function templateSections(id: string): SectionDef[] {
+  return TEMPLATE_SECTIONS[id] ?? [];
 }
 
 export function catalogTemplate(id: string) {
@@ -222,6 +308,24 @@ function demoResume(seed: string): import("./database.types").CatalogResumeItem[
   ];
 }
 
+function demoFaqs(seed: string): import("./database.types").CatalogFaq[] {
+  return [
+    { id: `${seed}-f1`, question: "How long is the program?", answer: "Most bootcamps run 8–12 weeks with flexible evening cohorts." },
+    { id: `${seed}-f2`, question: "Do I need prior experience?", answer: "No — beginner tracks start from the fundamentals." },
+    { id: `${seed}-f3`, question: "Is there a certificate?", answer: "Yes, you receive a verified certificate on completion." },
+    { id: `${seed}-f4`, question: "What support do I get?", answer: "1-on-1 mentoring, a buddy system and career coaching." },
+  ];
+}
+
+function demoStats(seed: string): import("./database.types").CatalogStat[] {
+  return [
+    { id: `${seed}-st1`, value: "181+", label: "Graphics" },
+    { id: `${seed}-st2`, value: "50+", label: "Website Design" },
+    { id: `${seed}-st3`, value: "120+", label: "Projects" },
+    { id: `${seed}-st4`, value: "8+", label: "Years" },
+  ];
+}
+
 /* ============================ Content generator ============================ */
 const HERO = {
   "shop-01": { h: "Discover The Best Products for You", s: "Quality products, fast delivery, and secure Paystack checkout — all in one place.", c: "Shop Now" },
@@ -267,10 +371,14 @@ export function createCatalogContent(
 
   switch (tpl?.category) {
     case "shop": data.products = demoProducts(seed); break;
-    case "education": data.courses = demoCourses(seed); break;
+    case "education": data.courses = demoCourses(seed); if (templateId === "education-01") data.faqs = demoFaqs(seed); break;
     case "organization": data.causes = demoCauses(seed); data.events = demoEvents(seed); break;
     case "events": data.events = demoEvents(seed); break;
-    case "portfolio": data.portfolioItems = demoPortfolio(seed); if (templateId === "portfolio-01") data.resume = demoResume(seed); break;
+    case "portfolio":
+      data.portfolioItems = demoPortfolio(seed);
+      if (templateId === "portfolio-01") data.resume = demoResume(seed);
+      if (templateId === "portfolio-02") data.stats = demoStats(seed);
+      break;
   }
   return data;
 }

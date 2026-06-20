@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowRight, Search, MapPin, Mic, CalendarDays, Globe, Star, Ticket } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, Img, heading } from "./shared";
 
 const PROGRESS = [["Full Rating", 92], ["Management", 80], ["Social Media", 74]] as const;
 const SCHED_TABS = ["All Events", "Presentation", "Evaluation", "Open Discussion"];
@@ -54,7 +54,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
         <div>
           <span className="text-sm font-semibold uppercase" style={{ color: "var(--brand-primary)" }}>Why us</span>
-          <h2 className="mt-2 text-3xl font-bold">Plan Your Events with Us</h2>
+          <h2 className="mt-2 text-3xl font-bold">{heading(siteData, "about", "Plan Your Events with Us")}</h2>
           <p className="mt-3 text-black/60">{siteData.heroSubtext}</p>
           <div className="mt-6 space-y-4">
             {PROGRESS.map(([label, pct]) => (
@@ -68,7 +68,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
       {/* Popular venues */}
       <section id="venues" className="bg-[#FBF7FC]">
         <div className="mx-auto max-w-6xl px-5 py-16">
-          <div className="flex items-end justify-between"><h2 className="text-3xl font-bold">Explore the Popular Venues</h2><a href="#" className="text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>View All</a></div>
+          <div className="flex items-end justify-between"><h2 className="text-3xl font-bold">{heading(siteData, "venues", "Explore the Popular Venues")}</h2><a href="#" className="text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>View All</a></div>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {events.slice(0, 3).map((e) => (
               <div key={e.id} className="overflow-hidden rounded-2xl bg-white shadow-sm">
@@ -82,7 +82,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
 
       {/* Schedules */}
       <section id="schedules" className="mx-auto max-w-6xl px-5 py-16">
-        <h2 className="text-3xl font-bold">Information of Event Schedules</h2>
+        <h2 className="text-3xl font-bold">{heading(siteData, "schedule", "Information of Event Schedules")}</h2>
         <div className="mt-6 flex flex-wrap gap-2">{SCHED_TABS.map((t, i) => <button key={t} onClick={() => setTab(i)} className="rounded-full px-4 py-2 text-sm font-medium" style={tab === i ? { background: "var(--brand-primary)", color: "var(--brand-on-primary)" } : { background: "#F3F4F6" }}>{t}</button>)}</div>
         <div className="mt-6 divide-y divide-black/5 overflow-hidden rounded-2xl border border-black/10">
           {events.map((e, i) => (
@@ -94,7 +94,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
       {/* Features */}
       <section className="bg-[#FBF7FC]">
         <div className="mx-auto max-w-6xl px-5 py-16">
-          <h2 className="text-center text-3xl font-bold">We Bring The Best Things for You</h2>
+          <h2 className="text-center text-3xl font-bold">{heading(siteData, "services", "We Bring The Best Things for You")}</h2>
           <div className="mt-8 grid gap-6 sm:grid-cols-3">
             {FEATURES.map(({ icon: Icon, t }) => (
               <div key={t} className="rounded-2xl bg-white p-6 text-center shadow-sm"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-6 w-6" /></span><h3 className="mt-3 font-semibold">{t}</h3></div>
@@ -106,7 +106,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
       {/* Testimonials dark */}
       <section className="bg-[#1A0533] text-white">
         <div className="mx-auto max-w-3xl px-5 py-16 text-center">
-          <h2 className="text-3xl font-bold">What Clients Say About Us</h2>
+          <h2 className="text-3xl font-bold">{heading(siteData, "testimonials", "What Clients Say About Us")}</h2>
           <div className="mt-6 flex justify-center gap-1" style={{ color: "var(--brand-primary)" }}>{[0,1,2,3,4].map((i) => <Star key={i} className="h-4 w-4 fill-current" />)}</div>
           {testimonialsOf(siteData).slice(0, 1).map((t, i) => (
             <div key={i}>
@@ -120,7 +120,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
       {/* Register */}
       {siteData.contactForm !== false && (
         <section id="register" className="mx-auto max-w-xl px-5 py-16">
-          <h2 className="text-center text-3xl font-bold">Register Here to Attend</h2>
+          <h2 className="text-center text-3xl font-bold">{heading(siteData, "register", "Register Here to Attend")}</h2>
           <form className="mt-8 grid gap-4" onSubmit={(e) => e.preventDefault()}>
             <input className="rounded-md border border-black/15 px-4 py-3 text-sm" placeholder="Full name" />
             <input className="rounded-md border border-black/15 px-4 py-3 text-sm" placeholder="Email" />

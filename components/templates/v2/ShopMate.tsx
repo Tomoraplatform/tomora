@@ -2,7 +2,7 @@
 
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Quote, ShoppingCart } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading } from "./shared";
 
 const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"];
 
@@ -71,7 +71,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
       {/* Categories */}
       <section id="categories" className="mx-auto max-w-6xl px-5 py-14">
         <div className="flex items-end justify-between">
-          <h2 className="text-2xl font-bold">Shop by Categories</h2>
+          <h2 className="text-2xl font-bold">{heading(siteData, "categories", "Shop by Categories")}</h2>
           <a href="#products" className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All <ArrowRight className="h-4 w-4" /></a>
         </div>
         <div className="mt-8 flex gap-6 overflow-x-auto pb-2">
@@ -90,7 +90,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
       <section id="products" className="bg-[#FBFAF7]">
         <div className="mx-auto max-w-6xl px-5 py-14">
           <div className="flex items-end justify-between">
-            <h2 className="text-2xl font-bold">Best Selling Products</h2>
+            <h2 className="text-2xl font-bold">{heading(siteData, "bestsellers", "Best Selling Products")}</h2>
             <a href="#products" className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All <ArrowRight className="h-4 w-4" /></a>
           </div>
           <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-5">
@@ -104,7 +104,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
         <div className="grid items-center gap-8 overflow-hidden rounded-3xl bg-[#F3EFE6] p-8 md:grid-cols-2 md:p-12">
           <div>
             <span className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--brand-primary)" }}>Special Offer</span>
-            <h2 className="mt-2 font-serif text-4xl font-bold">Up to 50% Off</h2>
+            <h2 className="mt-2 font-serif text-4xl font-bold">{heading(siteData, "sale", "Up to 50% Off")}</h2>
             <p className="mt-3 max-w-sm text-black/60">Limited time savings across our best-selling categories. Don&apos;t miss out.</p>
             <BrandButton as="a" href="#products" className="mt-6">Shop the Sale <ArrowRight className="h-4 w-4" /></BrandButton>
           </div>
@@ -115,7 +115,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
       {/* Testimonials */}
       <section className="bg-[#FBFAF7]">
         <div className="mx-auto max-w-6xl px-5 py-14">
-          <h2 className="text-center text-2xl font-bold">What Our Customers Say</h2>
+          <h2 className="text-center text-2xl font-bold">{heading(siteData, "testimonials", "What Our Customers Say")}</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {testimonialsOf(siteData).map((t, i) => (
               <figure key={t.id || i} className="rounded-2xl bg-white p-6 shadow-sm">

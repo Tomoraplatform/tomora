@@ -2,7 +2,7 @@
 
 import { ArrowRight, TrendingUp, Building2, Briefcase, LineChart, Sparkles, Headphones, Star, Phone } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img } from "./shared";
+import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img, heading } from "./shared";
 
 const GREEN = "#0D3B2A";
 const SERVICES = [
@@ -47,7 +47,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
 
       {/* Credibility */}
       <section id="about" className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-16 lg:grid-cols-[40%_60%]">
-        <h2 className="text-3xl font-bold">15+ Years of Financial Experience</h2>
+        <h2 className="text-3xl font-bold">{heading(siteData, "experience", "15+ Years of Financial Experience")}</h2>
         <div>
           <p className="text-black/60">We are the magic behind the company&apos;s best days — combining data, strategy and human insight to grow your wealth.</p>
           <div className="mt-4 flex items-center gap-4"><div className="flex" style={{ color: "var(--brand-primary)" }}>{[0,1,2,3,4].map((i) => <Star key={i} className="h-4 w-4 fill-current" />)}</div><div className="flex -space-x-2">{[0,1,2].map((i) => <Img key={i} src={`https://picsum.photos/seed/fin-c${i}/48`} className="h-8 w-8 rounded-full border-2 border-white object-cover" />)}</div></div>
@@ -57,7 +57,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
 
       {/* Services */}
       <section id="services" className="mx-auto max-w-6xl px-5 pb-16">
-        <h2 className="text-center text-3xl font-bold">The largest truly global wealth manager</h2>
+        <h2 className="text-center text-3xl font-bold">{heading(siteData, "services", "The largest truly global wealth manager")}</h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {servicesOf(siteData, SERVICES.map((s) => ({ title: s.t, description: "Tailored strategies for your goals." }))).map((s, i) => {
             const Icon = SERVICES[i % SERVICES.length].icon;
@@ -72,12 +72,12 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
       <section className="relative">
         <Img src="https://picsum.photos/seed/fin-growth/1200/500" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0" style={{ background: `${GREEN}E6` }} />
-        <div className="relative mx-auto max-w-3xl px-5 py-16 text-center text-white"><h2 className="text-3xl font-bold">Think fresh, work faster, grow smarter, save money.</h2><a href="#" className="mt-6 inline-block rounded-md border border-white/40 px-6 py-3 text-sm font-semibold">Get Started</a></div>
+        <div className="relative mx-auto max-w-3xl px-5 py-16 text-center text-white"><h2 className="text-3xl font-bold">{heading(siteData, "cta", "Think fresh, work faster, grow smarter, save money.")}</h2><a href="#" className="mt-6 inline-block rounded-md border border-white/40 px-6 py-3 text-sm font-semibold">Get Started</a></div>
       </section>
 
       {/* Projects */}
       <section id="projects" className="mx-auto max-w-6xl px-5 py-16">
-        <h2 className="text-center text-3xl font-bold">We bring your business to new heights.</h2>
+        <h2 className="text-center text-3xl font-bold">{heading(siteData, "values", "We bring your business to new heights.")}</h2>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {PROJECTS.map((p, i) => (
             <div key={p} className="group relative overflow-hidden rounded-2xl"><Img src={`https://picsum.photos/seed/fin-proj${i}/600/400`} className="aspect-[3/2] w-full object-cover" /><div className="absolute inset-0 bg-black/40" /><p className="absolute bottom-4 left-4 font-semibold text-white">{p}</p></div>
@@ -88,7 +88,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
       {/* Features */}
       <section className="bg-[#F4F8F6]">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
-          <h2 className="text-3xl font-bold">Unlocking Investment Opportunities Together.</h2>
+          <h2 className="text-3xl font-bold">{heading(siteData, "invest", "Unlocking Investment Opportunities Together.")}</h2>
           <div className="grid gap-5 sm:grid-cols-2">
             {FEATURES.map(({ icon: Icon, t }) => (
               <div key={t} className="flex gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span><div><p className="font-semibold">{t}</p><p className="text-sm text-black/60">Built around your needs.</p></div></div>
@@ -106,7 +106,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
 
       {/* Final CTA */}
       <section className="mx-auto max-w-3xl px-5 py-16 text-center">
-        <h2 className="text-3xl font-bold">Ready to make a difference? Join the {name} team today.</h2>
+        <h2 className="text-3xl font-bold">{heading(siteData, "join", `Ready to make a difference? Join the ${name} team today.`)}</h2>
         <BrandButton className="mt-6">Join Now</BrandButton>
       </section>
 
