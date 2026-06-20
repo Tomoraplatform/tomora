@@ -18,8 +18,8 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
     <BrandStyle brandColor={brandColor} className="bg-white font-sans text-neutral-900">
       <div className="text-white" style={{ background: "var(--brand-primary)" }}>
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-5 py-2 text-xs sm:flex-row">
-          <span className="font-semibold uppercase">Upcoming Event: 203 Days · 10 Hours · 81 Mins</span>
-          <span className="flex items-center gap-4"><span className="flex items-center gap-1"><Phone className="h-3 w-3" /> +234 800 000</span><span className="flex items-center gap-1"><Mail className="h-3 w-3" /> hello@deeds.org</span></span>
+          <span className="font-semibold uppercase">{heading(siteData, "banner", "Upcoming Event: 203 Days · 10 Hours · 81 Mins")}</span>
+          <span className="flex items-center gap-4"><span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {siteData.phone || "+234 800 000"}</span><span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {siteData.email || "hello@deeds.org"}</span></span>
         </div>
       </div>
       <header className="border-b border-black/5">

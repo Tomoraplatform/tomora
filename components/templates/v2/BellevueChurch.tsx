@@ -79,7 +79,7 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
       <footer className="bg-[#0D0D0D] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-3">
           <div><h4 className="text-sm font-semibold">Quick Links</h4><ul className="mt-3 space-y-2 text-sm text-white/50"><li>About</li><li>Sermons</li><li>Give</li><li>Events</li></ul></div>
-          <div><h4 className="text-sm font-semibold">Worship Times</h4><ul className="mt-3 space-y-2 text-sm text-white/50"><li>Sunday 9:00 AM</li><li>Sunday 11:00 AM</li></ul></div>
+          <div><h4 className="text-sm font-semibold">{heading(siteData, "worshipTimes", "Worship Times")}</h4><ul className="mt-3 space-y-2 text-sm text-white/50">{(siteData.hours?.length ? siteData.hours : [{ id: "1", label: "Sunday", time: "9:00 AM" }, { id: "2", label: "Sunday", time: "11:00 AM" }]).map((h) => <li key={h.id}>{h.label} {h.time}</li>)}</ul></div>
           <div><h4 className="text-sm font-semibold">Visit Us</h4><p className="mt-3 space-y-1 text-sm text-white/50"><span className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {siteData.address || "Lagos, Nigeria"}</span><span className="mt-1 flex items-center gap-2"><Phone className="h-4 w-4" /> {siteData.phone || "+234 800 000 0000"}</span></p></div>
         </div>
         <div className="flex justify-center pb-3 pt-1"><SocialIcons social={siteData.social} className="opacity-70" /></div>

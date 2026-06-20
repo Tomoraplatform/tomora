@@ -219,6 +219,7 @@ export interface SiteData {
   resume?: CatalogResumeItem[];
   faqs?: CatalogFaq[];
   stats?: CatalogStat[];
+  hours?: CatalogHour[];
   products?: CatalogProduct[];
   courses?: CatalogCourse[];
   causes?: CatalogCause[];
@@ -257,4 +258,10 @@ export interface CatalogStat {
   id: string;
   value: string;
   label: string;
+}
+
+export interface CatalogHour {
+  id: string;
+  label: string; // e.g. Sunday, Weekdays
+  time: string;  // e.g. 9:00 AM
 }

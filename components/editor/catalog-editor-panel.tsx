@@ -56,6 +56,11 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     fields: [{ key: "value", label: "Value (e.g. 120+)" }, { key: "label", label: "Label" }],
     make: () => ({ id: `st-${Date.now()}`, value: "10+", label: "Metric" }),
   },
+  hours: {
+    key: "hours", title: "Service / Opening Times",
+    fields: [{ key: "label", label: "Day (e.g. Sunday)" }, { key: "time", label: "Time (e.g. 9:00 AM)" }],
+    make: () => ({ id: `h-${Date.now()}`, label: "Sunday", time: "9:00 AM" }),
+  },
   resume: {
     key: "resume", title: "Resume (Education / Experience / Skills)",
     fields: [

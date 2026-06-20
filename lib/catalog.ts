@@ -53,7 +53,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["testimonials"],
   "shop-02": [],
@@ -66,7 +66,7 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "org-02": ["services", "causes", "events"],
   "org-03": ["services"],
   "events-01": ["services"],
-  "events-02": ["events"],
+  "events-02": ["events", "hours"],
   "events-03": [],
   "events-04": ["events"],
 };
@@ -145,8 +145,10 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   ],
   "events-02": [
     { key: "news", label: "What's New at {name}" },
+    { key: "worshipTimes", label: "Worship Times (footer heading)" },
   ],
   "events-03": [
+    { key: "banner", label: "Top banner notice (e.g. Upcoming Event: …)" },
     { key: "sermons", label: "We Preach the Gospel in Every Sermon" },
     { key: "ministries", label: "Explore Our Church Ministries" },
   ],
@@ -326,6 +328,13 @@ function demoStats(seed: string): import("./database.types").CatalogStat[] {
   ];
 }
 
+function demoHours(seed: string): import("./database.types").CatalogHour[] {
+  return [
+    { id: `${seed}-h1`, label: "Sunday", time: "9:00 AM" },
+    { id: `${seed}-h2`, label: "Sunday", time: "11:00 AM" },
+  ];
+}
+
 /* ============================ Content generator ============================ */
 const HERO = {
   "shop-01": { h: "Discover The Best Products for You", s: "Quality products, fast delivery, and secure Paystack checkout — all in one place.", c: "Shop Now" },
@@ -373,7 +382,7 @@ export function createCatalogContent(
     case "shop": data.products = demoProducts(seed); break;
     case "education": data.courses = demoCourses(seed); if (templateId === "education-01") data.faqs = demoFaqs(seed); break;
     case "organization": data.causes = demoCauses(seed); data.events = demoEvents(seed); break;
-    case "events": data.events = demoEvents(seed); break;
+    case "events": data.events = demoEvents(seed); if (templateId === "events-02") data.hours = demoHours(seed); break;
     case "portfolio":
       data.portfolioItems = demoPortfolio(seed);
       if (templateId === "portfolio-01") data.resume = demoResume(seed);
