@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { ShoppingCart, Plus, Minus, Trash2, Loader2, CheckCircle2, X } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Loader2, CheckCircle2, X, Star } from "lucide-react";
 import { SiteRenderer } from "@/components/templates";
 import type { StoreApi } from "@/components/templates/store-context";
-import type { Product, SiteData } from "@/lib/database.types";
+import type { Product, Review, SiteData } from "@/lib/database.types";
 import { formatNaira, contrastText } from "@/lib/utils";
 
 interface Line { product: Product; qty: number; }
@@ -25,12 +25,13 @@ function loadPaystack(): Promise<void> {
 }
 
 export function PublishedStore({
-  templateId, siteData, brandColor, products, siteId, paystackPublicKey,
+  templateId, siteData, brandColor, products, reviews = [], siteId, paystackPublicKey,
 }: {
   templateId: string;
   siteData: SiteData;
   brandColor: string;
   products: Product[];
+  reviews?: Review[];
   siteId: string;
   paystackPublicKey: string | null;
 }) {
@@ -115,6 +116,8 @@ export function PublishedStore({
   return (
     <div className="relative">
       <SiteRenderer templateId={templateId} siteData={siteData} brandColor={brandColor} products={products} storeApi={storeApi} />
+
+      <ReviewsSection siteId={siteId} brandColor={brandColor} onBrand={onBrand} reviews={reviews} />
 
       {/* Floating cart button */}
       <button
@@ -209,5 +212,119 @@ export function PublishedStore({
         </div>
       )}
     </div>
+  );
+}
+
+function Stars({ value, onChange, size = "h-5 w-5" }: { value: number; onChange?: (n: number) => void; size?: string }) {
+  return (
+    <span className="inline-flex" style={{ color: "var(--review-accent, #d4a23a)" }}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          disabled={!onChange}
+          onClick={() => onChange?.(n)}
+          className={onChange ? "cursor-pointer" : "cursor-default"}
+          aria-label={`${n} star`}
+        >
+          <Star className={size} fill={n <= Math.round(value) ? "currentColor" : "none"} />
+        </button>
+      ))}
+    </span>
+  );
+}
+
+function ReviewsSection({
+  siteId, brandColor, onBrand, reviews,
+}: {
+  siteId: string;
+  brandColor: string;
+  onBrand: string;
+  reviews: Review[];
+}) {
+  const [list, setList] = useState<Review[]>(reviews);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const avg = list.length ? list.reduce((s, r) => s + r.rating, 0) / list.length : 0;
+
+  async function submit() {
+    setError(null);
+    if (!name.trim()) { setError("Please enter your name."); return; }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ siteId, name, email, rating, comment }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not submit review.");
+      setList([{ id: `tmp-${Date.now()}`, site_id: siteId, product_id: null, reviewer_name: name, reviewer_email: email || null, rating, comment: comment || null, is_published: true, created_at: new Date().toISOString() }, ...list]);
+      setDone(true); setName(""); setEmail(""); setComment(""); setRating(5);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="bg-white" style={{ ["--review-accent" as any]: brandColor }}>
+      <div className="mx-auto max-w-5xl px-5 py-16">
+        <div className="flex flex-col items-center text-center">
+          <h2 className="text-3xl font-bold text-neutral-900">Customer Reviews</h2>
+          {list.length > 0 ? (
+            <div className="mt-2 flex items-center gap-2 text-neutral-600">
+              <Stars value={avg} /> <span className="font-semibold text-neutral-900">{avg.toFixed(1)}</span>
+              <span>· {list.length} review{list.length > 1 ? "s" : ""}</span>
+            </div>
+          ) : (
+            <p className="mt-2 text-neutral-500">Be the first to leave a review.</p>
+          )}
+        </div>
+
+        <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_360px]">
+          <div className="space-y-4">
+            {list.length === 0 && <p className="text-sm text-neutral-500">No reviews yet.</p>}
+            {list.map((r) => (
+              <div key={r.id} className="rounded-2xl border border-black/10 p-5">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-neutral-900">{r.reviewer_name}</span>
+                  <Stars value={r.rating} size="h-4 w-4" />
+                </div>
+                {r.comment && <p className="mt-2 text-sm text-neutral-600">{r.comment}</p>}
+                <p className="mt-2 text-xs text-neutral-400">{new Date(r.created_at).toLocaleDateString()}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-2xl border border-black/10 p-5">
+            <h3 className="font-semibold text-neutral-900">Leave a review</h3>
+            {done ? (
+              <div className="mt-4 flex items-center gap-2 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">
+                <CheckCircle2 className="h-4 w-4" /> Thanks for your review!
+              </div>
+            ) : (
+              <div className="mt-3 space-y-3">
+                <div className="flex items-center gap-2"><span className="text-sm text-neutral-600">Your rating</span><Stars value={rating} onChange={setRating} /></div>
+                <input className="w-full rounded-md border border-black/15 px-3 py-2 text-sm" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
+                <input className="w-full rounded-md border border-black/15 px-3 py-2 text-sm" placeholder="Email (optional)" value={email} onChange={(e) => setEmail(e.target.value)} />
+                <textarea rows={3} className="w-full rounded-md border border-black/15 px-3 py-2 text-sm" placeholder="Share your experience" value={comment} onChange={(e) => setComment(e.target.value)} />
+                {error && <p className="text-sm text-red-600">{error}</p>}
+                <button onClick={submit} disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-md py-2.5 text-sm font-semibold" style={{ background: brandColor, color: onBrand }}>
+                  {busy && <Loader2 className="h-4 w-4 animate-spin" />} Submit Review
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }

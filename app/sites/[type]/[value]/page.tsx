@@ -29,6 +29,6 @@ export default async function PublishedSitePage({ params }: Params) {
   if (!data) notFound();
 
   return (
-    <PublishedSiteView site={data.site} products={data.products} isLive={data.isLive} />
+    <PublishedSiteView site={data.site} products={data.products} reviews={data.reviews} isLive={data.isLive} />
   );
 }

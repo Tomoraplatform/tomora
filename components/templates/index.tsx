@@ -68,6 +68,7 @@ function toCatalogProducts(products?: Product[]): CatalogProduct[] | undefined {
     id: p.id,
     name: p.name,
     price: p.price,
+    comparePrice: p.compare_price ?? undefined,
     image: p.images?.[0] || "",
     category: p.category || undefined,
   }));

@@ -1,10 +1,11 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Site, Product, Subscription } from "@/lib/database.types";
+import type { Site, Product, Subscription, Review } from "@/lib/database.types";
 
 export interface PublishedSite {
   site: Site;
   products: Product[];
+  reviews: Review[];
   isLive: boolean;
 }
 
@@ -39,15 +40,15 @@ export async function loadPublishedSite(
   }
 
   let products: Product[] = [];
+  let reviews: Review[] = [];
   if (site.category === "ecommerce") {
-    const { data } = await admin
-      .from("products")
-      .select("*")
-      .eq("site_id", site.id)
-      .eq("is_active", true)
-      .order("created_at", { ascending: false });
-    products = (data as Product[]) || [];
+    const [{ data: prod }, { data: revs }] = await Promise.all([
+      admin.from("products").select("*").eq("site_id", site.id).eq("is_active", true).order("created_at", { ascending: false }),
+      admin.from("reviews").select("*").eq("site_id", site.id).eq("is_published", true).order("created_at", { ascending: false }).limit(50),
+    ]);
+    products = (prod as Product[]) || [];
+    reviews = (revs as Review[]) || [];
   }
 
-  return { site: site as Site, products, isLive };
+  return { site: site as Site, products, reviews, isLive };
 }

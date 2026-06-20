@@ -25,7 +25,7 @@ export function ProductsManager({ initial }: { initial: Product[] }) {
 
   function startAdd() { setEditing({ ...empty }); setOpen(true); }
   function startEdit(p: Product) {
-    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active });
+    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, comparePrice: p.compare_price ?? undefined, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active });
     setOpen(true);
   }
 
@@ -141,8 +141,9 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
     <div className="space-y-4">
       <div className="space-y-2"><Label>Name</Label><Input value={form.name} onChange={(e) => set("name", e.target.value)} /></div>
       <div className="space-y-2"><Label>Description</Label><Textarea rows={3} value={form.description} onChange={(e) => set("description", e.target.value)} /></div>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2"><Label>Price (NGN)</Label><Input type="number" min={0} value={form.price} onChange={(e) => set("price", Number(e.target.value))} /></div>
+        <div className="space-y-2"><Label>Old price</Label><Input type="number" min={0} value={form.comparePrice ?? ""} onChange={(e) => set("comparePrice", e.target.value ? Number(e.target.value) : undefined)} placeholder="optional" /></div>
         <div className="space-y-2"><Label>Stock</Label><Input type="number" min={0} value={form.stock} onChange={(e) => set("stock", Number(e.target.value))} /></div>
       </div>
       <div className="space-y-2"><Label>Category</Label><Input value={form.category} onChange={(e) => set("category", e.target.value)} placeholder="e.g. Dresses" /></div>

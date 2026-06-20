@@ -21,6 +21,7 @@ export interface ProductInput {
   name: string;
   description?: string;
   price: number;
+  comparePrice?: number;
   images: string[];
   category?: string;
   stock: number;
@@ -38,6 +39,7 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
       name: input.name.trim(),
       description: input.description || null,
       price: Math.max(0, Math.round(input.price || 0)),
+      compare_price: input.comparePrice ? Math.max(0, Math.round(input.comparePrice)) : null,
       images: (input.images || []).slice(0, 5),
       category: input.category || null,
       stock: Math.max(0, Math.round(input.stock || 0)),

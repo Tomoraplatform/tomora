@@ -30,6 +30,6 @@ export default async function PublicSiteByPath({ params }: Params) {
   const data = await loadPublishedSite("subdomain", decodeURIComponent(params.subdomain));
   if (!data) notFound();
   return (
-    <PublishedSiteView site={data.site} products={data.products} isLive={data.isLive} />
+    <PublishedSiteView site={data.site} products={data.products} reviews={data.reviews} isLive={data.isLive} />
   );
 }

@@ -1,7 +1,7 @@
 import { OfflineSite } from "./offline";
 import { SiteRenderer } from "@/components/templates";
 import { PublishedStore } from "./published-store";
-import type { Product, Site } from "@/lib/database.types";
+import type { Product, Review, Site } from "@/lib/database.types";
 
 /**
  * Renders a published site: offline screen when not live (unless `preview`),
@@ -11,11 +11,13 @@ import type { Product, Site } from "@/lib/database.types";
 export function PublishedSiteView({
   site,
   products,
+  reviews = [],
   isLive,
   preview = false,
 }: {
   site: Site;
   products: Product[];
+  reviews?: Review[];
   isLive: boolean;
   preview?: boolean;
 }) {
@@ -32,6 +34,7 @@ export function PublishedSiteView({
         siteData={site.site_data}
         brandColor={brandColor}
         products={products}
+        reviews={reviews}
         siteId={site.id}
         paystackPublicKey={site.paystack_public_key}
       />

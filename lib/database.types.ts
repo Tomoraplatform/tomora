@@ -86,6 +86,18 @@ export interface Subscription {
   created_at: string;
 }
 
+export interface Review {
+  id: string;
+  site_id: string;
+  product_id: string | null;
+  reviewer_name: string;
+  reviewer_email: string | null;
+  rating: number;
+  comment: string | null;
+  is_published: boolean;
+  created_at: string;
+}
+
 export interface Product {
   id: string;
   user_id: string;
@@ -93,6 +105,7 @@ export interface Product {
   name: string;
   description: string | null;
   price: number;
+  compare_price: number | null;
   images: string[];
   category: string | null;
   stock: number;
