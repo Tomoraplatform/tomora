@@ -2,10 +2,64 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { currentSiteId } from "@/lib/dashboard";
 import { domainAccess } from "@/lib/domain-access";
+import { NEW_DOMAIN_TLDS } from "@/lib/constants";
 
 const DOMAIN_RE = /^(?!-)([a-z0-9-]{1,63}\.)+[a-z]{2,}$/i;
+
+/**
+ * Activates a NEW domain that's included in the user's plan (Growth/Pro) — no
+ * payment. Creates a domain_request for an admin to register at the registrar,
+ * just like the paid flow, but at ₦0.
+ */
+export async function activateIncludedDomain(domainRaw: string): Promise<{ ok: boolean; error?: string }> {
+  const domain = domainRaw.trim().toLowerCase();
+  const okTld = NEW_DOMAIN_TLDS.some((t) => domain.endsWith(`.${t}`));
+  if (!okTld || !DOMAIN_RE.test(domain)) {
+    return { ok: false, error: "That domain isn't available for activation." };
+  }
+
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not authenticated." };
+  const siteId = await currentSiteId(user.id);
+  if (!siteId) return { ok: false, error: "No site found." };
+
+  const [{ data: sites }, { data: sub }] = await Promise.all([
+    supabase.from("sites").select("*").eq("user_id", user.id).order("created_at", { ascending: true }),
+    supabase.from("subscriptions").select("*").eq("user_id", user.id).maybeSingle(),
+  ]);
+  const current = sites?.find((s: any) => s.id === siteId);
+  const access = domainAccess({
+    isPrimary: sites?.[0]?.id === siteId,
+    domainPurchased: !!current?.domain_purchased,
+    planId: sub?.plan,
+    subActive: sub?.status === "active",
+  });
+  // Only when the plan genuinely includes a domain for this site.
+  if (!access.included) {
+    return { ok: false, error: "Your plan doesn't include a free domain for this site." };
+  }
+  // Don't hand out a second free domain if one is already set up.
+  if (current?.custom_domain) {
+    return { ok: false, error: "This site already has a domain connected." };
+  }
+  const admin = createAdminClient();
+  const { data: existingReq } = await admin
+    .from("domain_requests").select("id").eq("site_id", siteId).neq("status", "cancelled").maybeSingle();
+  if (existingReq) {
+    return { ok: false, error: "A domain request is already in progress for this site." };
+  }
+
+  await admin.from("domain_requests").insert({
+    user_id: user.id, site_id: siteId, domain, amount: 0, reference: "included", status: "paid",
+  });
+  await admin.from("sites").update({ domain_purchased: true }).eq("id", siteId);
+  revalidatePath("/dashboard/domain");
+  return { ok: true };
+}
 
 export async function connectDomain(domainRaw: string): Promise<{ ok: boolean; error?: string }> {
   const domain = domainRaw.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { connectDomain, removeDomain } from "@/app/dashboard/(panel)/domain/actions";
+import { connectDomain, removeDomain, activateIncludedDomain } from "@/app/dashboard/(panel)/domain/actions";
 import { formatNaira } from "@/lib/utils";
 import type { DomainStatus, DomainRequest } from "@/lib/database.types";
 
@@ -57,9 +57,21 @@ export function DomainManager({
     }
   }
 
+  // A new domain is free when the plan includes one and the site has no domain
+  // (or pending request) yet — Growth/Pro primary site.
+  const hasPendingRequest = requests.some((r) => r.status !== "cancelled");
+  const freeNewDomain = included && !initialDomain && !hasPendingRequest;
+
   async function buyNewDomain(name: string) {
     setBuyingDomain(name); setError(null);
     try {
+      // Included in the plan → activate for free, no Paystack.
+      if (freeNewDomain) {
+        const res = await activateIncludedDomain(name);
+        if (!res.ok) throw new Error(res.error || "Could not activate domain.");
+        window.location.href = "/dashboard/domain?status=requested";
+        return;
+      }
       const res = await fetch("/api/billing/init", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -237,8 +249,11 @@ export function DomainManager({
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-ink/60">
-            Don&apos;t have a domain yet? Search for one and activate it for a one-time {formatNaira(newDomainAmount)}.
-            We register it for you and connect it to your site.
+            {freeNewDomain ? (
+              <>Don&apos;t have a domain yet? Your plan includes one — search for a <span className="font-medium text-ink">.com.ng</span> domain and activate it <span className="font-medium text-emerald-700">free</span>. We register it and connect it for you.</>
+            ) : (
+              <>Don&apos;t have a domain yet? Search for one and activate it for a one-time {formatNaira(newDomainAmount)}. We register it for you and connect it to your site.</>
+            )}
           </p>
           <div className="flex flex-col gap-2 sm:flex-row">
             <Input
@@ -259,7 +274,7 @@ export function DomainManager({
                   <div>
                     <p className="font-medium text-ink">{r.domain}</p>
                     <p className={`text-xs ${r.available ? "text-emerald-600" : "text-ink/40"}`}>
-                      {r.available ? `Available · ${formatNaira(r.amount)}` : "Taken"}
+                      {r.available ? (freeNewDomain ? "Available · included in your plan" : `Available · ${formatNaira(r.amount)}`) : "Taken"}
                     </p>
                   </div>
                   <Button
@@ -268,7 +283,7 @@ export function DomainManager({
                     onClick={() => buyNewDomain(r.domain)}
                   >
                     {buyingDomain === r.domain ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
-                    Buy &amp; activate
+                    {freeNewDomain ? "Activate free" : "Buy & activate"}
                   </Button>
                 </div>
               ))}
