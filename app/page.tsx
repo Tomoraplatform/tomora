@@ -23,6 +23,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { FAQS, PLANS } from "@/lib/constants";
+import { loadPlanDiscounts, discountedPrice } from "@/lib/discounts";
 import { CATALOG_TEMPLATES, CATALOG_CATEGORIES } from "@/lib/catalog";
 import { formatNaira } from "@/lib/utils";
 
@@ -30,7 +31,8 @@ const CATALOG_LABEL = Object.fromEntries(
   CATALOG_CATEGORIES.map((c) => [c.id, c.name])
 ) as Record<string, string>;
 
-export default function Home() {
+export default async function Home() {
+  const discounts = await loadPlanDiscounts();
   return (
     <div className="bg-cream text-ink">
       <MarketingNav />
@@ -38,7 +40,7 @@ export default function Home() {
       <SocialProof />
       <Features />
       <TemplateShowcase />
-      <Pricing />
+      <Pricing discounts={discounts} />
       <Testimonials />
       <Faq />
       <MarketingFooter />
@@ -309,7 +311,7 @@ function TemplateShowcase() {
 }
 
 /* ---------------------------- Pricing --------------------------- */
-function Pricing() {
+function Pricing({ discounts }: { discounts: Record<string, number> }) {
   return (
     <section id="pricing" className="container py-20 md:py-28">
       <div className="mx-auto max-w-2xl text-center">
@@ -346,11 +348,17 @@ function Pricing() {
                 ) : isCustom ? (
                   <span className="text-3xl font-bold">Let&apos;s talk</span>
                 ) : (
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold">{formatNaira(plan.price!)}</span>
+                  <div className="flex flex-wrap items-baseline gap-x-1.5">
+                    <span className="text-3xl font-bold">{formatNaira(discountedPrice(plan.price!, discounts[plan.id]))}</span>
+                    {discounts[plan.id] ? (
+                      <span className={`text-sm line-through ${popular ? "text-cream/50" : "text-ink/40"}`}>{formatNaira(plan.price!)}</span>
+                    ) : null}
                     <span className={popular ? "text-cream/60" : "text-ink/50"}>/{plan.period}</span>
                   </div>
                 )}
+                {discounts[plan.id] ? (
+                  <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${popular ? "bg-cream text-ink" : "bg-emerald-100 text-emerald-700"}`}>{discounts[plan.id]}% off</span>
+                ) : null}
                 {plan.id === "pro" && (
                   <p className={`mt-1 text-xs ${popular ? "text-cream/60" : "text-ink/50"}`}>
                     then {formatNaira(plan.renewal!)} every 4 months

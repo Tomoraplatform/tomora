@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { expireCompIfDue } from "@/lib/billing";
 import type { Profile, Site, Subscription } from "@/lib/database.types";
 
 export const SITE_COOKIE = "tomora_site";
@@ -35,6 +36,12 @@ export async function getDashboardData(opts?: { requireSite?: boolean }): Promis
     supabase.from("subscriptions").select("*").eq("user_id", user.id).maybeSingle(),
   ]);
 
+  const sub = (subscription as Subscription) ?? null;
+  // Expire a comped plan whose period has ended.
+  if (sub && (await expireCompIfDue(user.id, sub))) {
+    sub.status = "cancelled";
+  }
+
   const sites = (sitesData as Site[]) ?? [];
   if ((opts?.requireSite ?? true) && sites.length === 0) redirect("/onboarding");
 
@@ -47,7 +54,7 @@ export async function getDashboardData(opts?: { requireSite?: boolean }): Promis
     profile: (profile as Profile) ?? null,
     site,
     sites,
-    subscription: (subscription as Subscription) ?? null,
+    subscription: sub,
   };
 }
 

@@ -97,6 +97,25 @@ export async function disableSubscription(userId: string) {
   await admin.from("sites").update({ is_live: false }).eq("user_id", userId);
 }
 
+/** True when a comped subscription's expiry date has passed. */
+export function isCompExpired(
+  sub?: { status?: string | null; comp_expires_at?: string | null } | null
+): boolean {
+  return !!(sub && sub.status === "active" && sub.comp_expires_at && new Date(sub.comp_expires_at).getTime() < Date.now());
+}
+
+/** If a comp has expired, cancel it and take the user's site offline. Returns true if it did. */
+export async function expireCompIfDue(
+  userId: string,
+  sub?: { status?: string | null; comp_expires_at?: string | null } | null
+): Promise<boolean> {
+  if (!isCompExpired(sub)) return false;
+  const admin = createAdminClient();
+  await admin.from("subscriptions").update({ status: "cancelled" }).eq("user_id", userId);
+  await admin.from("sites").update({ is_live: false }).eq("user_id", userId);
+  return true;
+}
+
 /** Marks a site as having paid for an extra custom domain. */
 export async function applyDomainPurchase(userId: string, siteId: string) {
   const admin = createAdminClient();

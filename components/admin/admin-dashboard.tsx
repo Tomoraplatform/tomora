@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/utils";
-import { extendTrial, setSiteLive, grantPlan, revokePlan } from "@/app/admin/actions";
+import { extendTrial, setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount } from "@/app/admin/actions";
+import { PLANS } from "@/lib/constants";
 import type { DomainStatus } from "@/lib/database.types";
 
 export interface AdminUserRow {
@@ -30,13 +31,16 @@ export interface AdminDomainRow {
 }
 
 export function AdminDashboard({
-  rows, domains, stats,
+  rows, domains, stats, planDiscounts = {},
 }: {
   rows: AdminUserRow[];
   domains: AdminDomainRow[];
   stats: { totalUsers: number; liveSites: number; activeSubs: number; estAnnualRevenue: number; monthly: Record<string, number> };
+  planDiscounts?: Record<string, { percent: number; active: boolean }>;
 }) {
   const [busy, setBusy] = useState<string | null>(null);
+  // Per-row grant duration (days). 0 = no expiry.
+  const [grantDays, setGrantDays] = useState<Record<string, number>>({});
 
   async function run(key: string, fn: () => Promise<any>) {
     setBusy(key);
@@ -109,13 +113,25 @@ export function AdminDashboard({
                       <td className="p-3 text-ink/70">{r.trialEnd}</td>
                       <td className="p-3 text-ink/70">{r.lastPayment}</td>
                       <td className="p-3">
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap items-center gap-1">
+                          <select
+                            className="h-8 rounded-md border border-ink/15 bg-white px-1.5 text-xs"
+                            value={grantDays[r.userId] ?? 30}
+                            onChange={(e) => setGrantDays((d) => ({ ...d, [r.userId]: Number(e.target.value) }))}
+                            title="Comp duration"
+                          >
+                            <option value={30}>30 days</option>
+                            <option value={90}>90 days</option>
+                            <option value={180}>180 days</option>
+                            <option value={365}>1 year</option>
+                            <option value={0}>No expiry</option>
+                          </select>
                           <Button size="sm" variant="outline" disabled={busy === r.userId + "b"}
-                            onClick={() => run(r.userId + "b", () => grantPlan(r.userId, "basic"))}>
+                            onClick={() => run(r.userId + "b", () => grantPlan(r.userId, "basic", grantDays[r.userId] ?? 30))}>
                             {busy === r.userId + "b" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Grant Basic"}
                           </Button>
                           <Button size="sm" variant="outline" disabled={busy === r.userId + "s"}
-                            onClick={() => run(r.userId + "s", () => grantPlan(r.userId, "starter"))}>
+                            onClick={() => run(r.userId + "s", () => grantPlan(r.userId, "starter", grantDays[r.userId] ?? 30))}>
                             {busy === r.userId + "s" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Grant Starter"}
                           </Button>
                           {r.siteId && (
@@ -143,6 +159,9 @@ export function AdminDashboard({
             </div>
           </CardContent>
         </Card>
+
+        {/* Plan discounts */}
+        <PlanDiscounts discounts={planDiscounts} />
 
         {/* Domains */}
         <Card>
@@ -181,6 +200,67 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
         <div>
           <p className="text-xl font-bold text-ink">{value}</p>
           <p className="text-xs text-ink/50">{label}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+const DISCOUNTABLE = PLANS.filter((p) => p.id !== "trial" && p.id !== "custom");
+
+function PlanDiscounts({ discounts }: { discounts: Record<string, { percent: number; active: boolean }> }) {
+  const [vals, setVals] = useState<Record<string, string>>(() => {
+    const v: Record<string, string> = {};
+    DISCOUNTABLE.forEach((p) => { v[p.id] = String(discounts[p.id]?.percent || ""); });
+    return v;
+  });
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function apply(id: string) {
+    const pct = Number(vals[id]);
+    if (!pct) return;
+    setBusy(id); await setPlanDiscount(id, pct); setBusy(null);
+  }
+  async function remove(id: string) {
+    setBusy(id + "x"); await clearPlanDiscount(id); setBusy(null);
+  }
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>Plan discounts</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm text-ink/50">Set a percentage discount on any plan. It shows on the pricing pages and is applied at checkout.</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {DISCOUNTABLE.map((p) => {
+            const active = discounts[p.id]?.active && discounts[p.id]?.percent > 0;
+            return (
+              <div key={p.id} className="flex items-center gap-2 rounded-lg border border-ink/10 p-3">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-ink">{p.name}</p>
+                  <p className="text-xs text-ink/50">
+                    {active ? `${discounts[p.id].percent}% off active` : "No discount"}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number" min={0} max={100}
+                    className="h-8 w-16 rounded-md border border-ink/15 px-2 text-sm"
+                    placeholder="%"
+                    value={vals[p.id] || ""}
+                    onChange={(e) => setVals((v) => ({ ...v, [p.id]: e.target.value }))}
+                  />
+                  <Button size="sm" variant="outline" disabled={busy === p.id} onClick={() => apply(p.id)}>
+                    {busy === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Apply"}
+                  </Button>
+                  {active && (
+                    <Button size="sm" variant="ghost" className="text-destructive" disabled={busy === p.id + "x"} onClick={() => remove(p.id)}>
+                      {busy === p.id + "x" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Remove"}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </CardContent>
     </Card>

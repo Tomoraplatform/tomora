@@ -83,6 +83,7 @@ export interface Subscription {
   last_payment_date: string | null;
   last_reference: string | null;
   plan: string | null;
+  comp_expires_at: string | null;
   created_at: string;
 }
 

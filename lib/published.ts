@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { expireCompIfDue } from "@/lib/billing";
 import type { Site, Product, Subscription, Review } from "@/lib/database.types";
 
 export interface PublishedSite {
@@ -26,17 +27,22 @@ export async function loadPublishedSite(
   if (!site) return null;
 
   // Determine live status: explicit flag + trial / subscription guard.
+  const { data: sub } = await admin
+    .from("subscriptions")
+    .select("status, comp_expires_at")
+    .eq("user_id", site.user_id)
+    .maybeSingle<Pick<Subscription, "status" | "comp_expires_at">>();
+
+  // Expire any comp whose period has ended (takes the site offline).
+  const compExpired = await expireCompIfDue(site.user_id, sub);
+  const subActive = !compExpired && sub?.status === "active";
+
   let isLive = site.is_live as boolean;
-  if (isLive && site.trial_ends_at) {
+  if (compExpired) {
+    isLive = false;
+  } else if (isLive && site.trial_ends_at) {
     const trialOver = new Date(site.trial_ends_at).getTime() < Date.now();
-    if (trialOver) {
-      const { data: sub } = await admin
-        .from("subscriptions")
-        .select("status")
-        .eq("user_id", site.user_id)
-        .maybeSingle<Pick<Subscription, "status">>();
-      isLive = sub?.status === "active";
-    }
+    if (trialOver) isLive = subActive;
   }
 
   let products: Product[] = [];

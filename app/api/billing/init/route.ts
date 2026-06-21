@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { initTransaction } from "@/lib/paystack";
 import { getPlan, nextCharge, NEW_DOMAIN_AMOUNT, NEW_DOMAIN_TLDS } from "@/lib/constants";
+import { loadPlanDiscounts, discountedPrice } from "@/lib/discounts";
 
 /** Starts a Paystack checkout for a platform plan, Pro renewal, or a domain. */
 export async function POST(request: NextRequest) {
@@ -63,6 +64,10 @@ export async function POST(request: NextRequest) {
   if (planId === "pro" && sub?.plan === "pro") {
     amount = nextCharge(sub.billing_cycle_position ?? 0).amount;
   }
+
+  // Apply any active admin discount for this plan.
+  const discounts = await loadPlanDiscounts();
+  amount = discountedPrice(amount, discounts[planId]);
 
   const reference = `tomplat_${user.id.slice(0, 8)}_${Date.now()}`;
 

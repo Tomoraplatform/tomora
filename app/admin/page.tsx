@@ -11,13 +11,19 @@ export default async function AdminPage() {
   await requireAdmin();
   const admin = createAdminClient();
 
-  const [{ data: profiles }, { data: sites }, { data: subs }, { data: domains }, { data: domainReqs }] = await Promise.all([
+  const [{ data: profiles }, { data: sites }, { data: subs }, { data: domains }, { data: domainReqs }, { data: discountRows }] = await Promise.all([
     admin.from("profiles").select("*"),
     admin.from("sites").select("*"),
     admin.from("subscriptions").select("*"),
     admin.from("domains").select("*").order("created_at", { ascending: false }),
     admin.from("domain_requests").select("*").order("created_at", { ascending: false }),
+    admin.from("plan_discounts").select("*"),
   ]);
+
+  const planDiscounts: Record<string, { percent: number; active: boolean }> = {};
+  (discountRows as { plan_id: string; percent: number; active: boolean }[] | null)?.forEach((d) => {
+    planDiscounts[d.plan_id] = { percent: d.percent, active: d.active };
+  });
 
   const siteByUser = new Map<string, Site>();
   (sites as Site[] | null)?.forEach((s) => siteByUser.set(s.user_id, s));
@@ -83,6 +89,7 @@ export default async function AdminPage() {
       <AdminDashboard
         rows={rows}
         domains={domainRows}
+        planDiscounts={planDiscounts}
         stats={{
           totalUsers: profiles?.length ?? 0,
           liveSites,

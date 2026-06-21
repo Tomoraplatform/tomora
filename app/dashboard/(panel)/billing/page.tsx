@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { UpgradeButton } from "@/components/dashboard/upgrade-button";
 import { PLANS, getPlan, nextCharge, RENEWAL_INTERVAL_MONTHS } from "@/lib/constants";
+import { loadPlanDiscounts, discountedPrice } from "@/lib/discounts";
 import { formatNaira } from "@/lib/utils";
 
 export const metadata = { title: "Billing — Tomora" };
@@ -17,6 +18,7 @@ export default async function BillingPage({
   searchParams: { status?: string };
 }) {
   const { subscription } = await getDashboardData();
+  const discounts = await loadPlanDiscounts();
   const active = subscription?.status === "active";
   const pastDue = subscription?.status === "past_due";
   const currentPlan = getPlan(subscription?.plan || "");
@@ -80,9 +82,15 @@ export default async function BillingPage({
                   {plan.popular && <Badge className="shrink-0">Popular</Badge>}
                 </div>
                 <div className="mt-2 flex flex-wrap items-baseline gap-x-1">
-                  <span className="text-2xl font-bold text-ink sm:text-3xl">{formatNaira(plan.price!)}</span>
+                  <span className="text-2xl font-bold text-ink sm:text-3xl">{formatNaira(discountedPrice(plan.price!, discounts[plan.id]))}</span>
+                  {discounts[plan.id] ? (
+                    <span className="text-sm text-ink/40 line-through">{formatNaira(plan.price!)}</span>
+                  ) : null}
                   <span className="text-sm text-ink/50">/{plan.period}</span>
                 </div>
+                {discounts[plan.id] ? (
+                  <Badge variant="success" className="mt-1">{discounts[plan.id]}% off</Badge>
+                ) : null}
                 {plan.id === "pro" && (
                   <p className="text-xs text-ink/50">then {formatNaira(plan.renewal!)} every 4 months</p>
                 )}

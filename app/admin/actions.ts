@@ -31,7 +31,8 @@ export async function extendTrial(siteId: string, days = TRIAL_DAYS): Promise<{ 
  */
 export async function grantPlan(
   userId: string,
-  planId: "basic" | "starter"
+  planId: "basic" | "starter",
+  days = 30
 ): Promise<{ ok: boolean; error?: string }> {
   try {
     const admin = await guard();
@@ -41,6 +42,8 @@ export async function grantPlan(
     const now = new Date();
     const next = new Date(now);
     next.setMonth(next.getMonth() + 1);
+    // days = 0 means no expiry.
+    const compExpires = days > 0 ? new Date(now.getTime() + days * 86400000).toISOString() : null;
 
     const { data: sub } = await admin
       .from("subscriptions").select("id").eq("user_id", userId).maybeSingle();
@@ -55,6 +58,7 @@ export async function grantPlan(
       next_billing_date: next.toISOString(),
       last_payment_date: now.toISOString(),
       last_reference: `admin_grant_${Date.now()}`,
+      comp_expires_at: compExpires,
     };
 
     const { error } = sub
@@ -74,7 +78,36 @@ export async function revokePlan(userId: string): Promise<{ ok: boolean; error?:
   try {
     const admin = await guard();
     const { error } = await admin
-      .from("subscriptions").update({ status: "cancelled" }).eq("user_id", userId);
+      .from("subscriptions").update({ status: "cancelled", comp_expires_at: null }).eq("user_id", userId);
+    if (error) return { ok: false, error: error.message };
+    await admin.from("sites").update({ is_live: false }).eq("user_id", userId);
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/** Set (or update) a discount percentage on a plan. */
+export async function setPlanDiscount(planId: string, percent: number): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const admin = await guard();
+    const pct = Math.max(0, Math.min(100, Math.round(percent)));
+    if (!getPlan(planId) || pct <= 0) return { ok: false, error: "Enter a discount between 1 and 100." };
+    const { error } = await admin.from("plan_discounts").upsert({
+      plan_id: planId, percent: pct, active: true, updated_at: new Date().toISOString(),
+    });
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/** Remove a plan discount. */
+export async function clearPlanDiscount(planId: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const admin = await guard();
+    const { error } = await admin.from("plan_discounts").upsert({
+      plan_id: planId, percent: 0, active: false, updated_at: new Date().toISOString(),
+    });
     if (error) return { ok: false, error: error.message };
     revalidatePath("/admin");
     return { ok: true };
