@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { currentSiteId } from "@/lib/dashboard";
+import { resolveAccount, createSubaccount } from "@/lib/paystack";
 import type { OrderStatus } from "@/lib/database.types";
 
 async function requireUserAndSite() {
@@ -87,25 +88,49 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus): P
 }
 
 export async function savePayoutSettings(input: {
-  paystackPublicKey: string;
+  bankCode: string;
   bankName: string;
   accountNumber: string;
-  accountName: string;
-}): Promise<{ ok: boolean; error?: string }> {
+}): Promise<{ ok: boolean; error?: string; accountName?: string }> {
   try {
     const { supabase, siteId } = await requireUserAndSite();
+
+    const bankCode = (input.bankCode || "").trim();
+    const accountNumber = (input.accountNumber || "").trim();
+    if (!bankCode || !/^\d{10}$/.test(accountNumber)) {
+      return { ok: false, error: "Select your bank and enter a valid 10-digit account number." };
+    }
+
+    // Verify the account, then create a Paystack subaccount so sales settle
+    // straight to this bank.
+    let accountName: string;
+    let subaccountCode: string;
+    try {
+      accountName = await resolveAccount(accountNumber, bankCode);
+      const sub = await createSubaccount({
+        businessName: accountName,
+        bankCode,
+        accountNumber,
+        percentageCharge: 0,
+      });
+      subaccountCode = sub.subaccountCode;
+    } catch (e: any) {
+      return { ok: false, error: e.message || "Could not verify your bank account." };
+    }
+
     const { error } = await supabase
       .from("sites")
       .update({
-        paystack_public_key: input.paystackPublicKey || null,
+        bank_code: bankCode,
         bank_name: input.bankName || null,
-        account_number: input.accountNumber || null,
-        account_name: input.accountName || null,
+        account_number: accountNumber,
+        account_name: accountName,
+        paystack_subaccount: subaccountCode,
       })
       .eq("id", siteId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard/payouts");
-    return { ok: true };
+    return { ok: true, accountName };
   } catch (e: any) {
     return { ok: false, error: e.message };
   }

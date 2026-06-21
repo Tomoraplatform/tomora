@@ -37,6 +37,7 @@ export function PublishedSiteView({
         reviews={reviews}
         siteId={site.id}
         paystackPublicKey={site.paystack_public_key}
+        paystackSubaccount={site.paystack_subaccount}
       />
     );
   }

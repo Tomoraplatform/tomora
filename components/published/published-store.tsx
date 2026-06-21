@@ -25,7 +25,7 @@ function loadPaystack(): Promise<void> {
 }
 
 export function PublishedStore({
-  templateId, siteData, brandColor, products, reviews = [], siteId, paystackPublicKey,
+  templateId, siteData, brandColor, products, reviews = [], siteId, paystackPublicKey, paystackSubaccount,
 }: {
   templateId: string;
   siteData: SiteData;
@@ -34,7 +34,12 @@ export function PublishedStore({
   reviews?: Review[];
   siteId: string;
   paystackPublicKey: string | null;
+  paystackSubaccount?: string | null;
 }) {
+  // Preferred: platform key + subaccount split (settles to owner's bank).
+  // Legacy fallback: the owner's own public key.
+  const platformKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
+  const payKey = paystackSubaccount ? platformKey : paystackPublicKey;
   const [lines, setLines] = useState<Line[]>([]);
   const [open, setOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
@@ -73,7 +78,7 @@ export function PublishedStore({
 
   async function pay() {
     setError(null);
-    if (!paystackPublicKey) { setError("This store is not accepting payments yet."); return; }
+    if (!payKey) { setError("This store is not accepting payments yet."); return; }
     if (!buyer.name || !buyer.email) { setError("Please enter your name and email."); return; }
     setBusy(true);
     try {
@@ -92,10 +97,11 @@ export function PublishedStore({
 
       await loadPaystack();
       const handler = window.PaystackPop.setup({
-        key: paystackPublicKey,
+        key: payKey,
         email: buyer.email,
         amount: data.amount * 100,
         ref: data.reference,
+        ...(paystackSubaccount ? { subaccount: paystackSubaccount, bearer: "subaccount" } : {}),
         metadata: { custom_fields: [{ display_name: "Buyer", variable_name: "buyer", value: buyer.name }] },
         callback: (response: { reference: string }) => {
           fetch("/api/checkout/confirm", {

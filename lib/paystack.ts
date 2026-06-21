@@ -39,6 +39,53 @@ export async function initTransaction(params: {
   return json.data as InitResult;
 }
 
+/** Lists Nigerian banks (name + code) for the payout bank selector. */
+export async function listBanks(): Promise<{ name: string; code: string }[]> {
+  const res = await fetch(`${PAYSTACK_BASE}/bank?currency=NGN&perPage=100`, {
+    headers: { Authorization: `Bearer ${secret()}` },
+    next: { revalidate: 86400 },
+  });
+  const json = await res.json();
+  if (!json.status) throw new Error(json.message || "Could not load banks");
+  return (json.data as any[]).map((b) => ({ name: b.name, code: b.code }));
+}
+
+/** Resolves a bank account number to its account name (verifies it exists). */
+export async function resolveAccount(accountNumber: string, bankCode: string): Promise<string> {
+  const res = await fetch(
+    `${PAYSTACK_BASE}/bank/resolve?account_number=${encodeURIComponent(accountNumber)}&bank_code=${encodeURIComponent(bankCode)}`,
+    { headers: { Authorization: `Bearer ${secret()}` } }
+  );
+  const json = await res.json();
+  if (!json.status) throw new Error(json.message || "Could not verify account number.");
+  return json.data.account_name as string;
+}
+
+/**
+ * Creates a Paystack subaccount so a store's sales settle to the owner's bank
+ * automatically. percentageCharge is the platform's commission %.
+ */
+export async function createSubaccount(params: {
+  businessName: string;
+  bankCode: string;
+  accountNumber: string;
+  percentageCharge?: number;
+}): Promise<{ subaccountCode: string }> {
+  const res = await fetch(`${PAYSTACK_BASE}/subaccount`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${secret()}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      business_name: params.businessName,
+      settlement_bank: params.bankCode,
+      account_number: params.accountNumber,
+      percentage_charge: params.percentageCharge ?? 0,
+    }),
+  });
+  const json = await res.json();
+  if (!json.status) throw new Error(json.message || "Could not set up payouts.");
+  return { subaccountCode: json.data.subaccount_code as string };
+}
+
 /** Verify a Paystack transaction by reference. */
 export async function verifyTransaction(reference: string): Promise<{
   success: boolean;

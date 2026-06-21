@@ -11,10 +11,11 @@ export default async function PayoutsPage() {
   return (
     <PayoutsForm
       initial={{
-        paystackPublicKey: site!.paystack_public_key || "",
+        bankCode: site!.bank_code || "",
         bankName: site!.bank_name || "",
         accountNumber: site!.account_number || "",
         accountName: site!.account_name || "",
+        connected: !!site!.paystack_subaccount,
       }}
     />
   );

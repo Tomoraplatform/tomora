@@ -65,8 +65,10 @@ export interface Site {
   site_data: SiteData;
   paystack_public_key: string | null;
   bank_name: string | null;
+  bank_code: string | null;
   account_number: string | null;
   account_name: string | null;
+  paystack_subaccount: string | null;
   domain_purchased: boolean;
   created_at: string;
 }
