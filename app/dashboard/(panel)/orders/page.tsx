@@ -19,5 +19,9 @@ export default async function OrdersPage() {
   const names: Record<string, string> = {};
   (products as Pick<Product, "id" | "name">[] | null)?.forEach((p) => { names[p.id] = p.name; });
 
+  // Mark new orders as seen so the dashboard badge clears.
+  await supabase.from("orders").update({ seen: true })
+    .eq("site_id", site!.id).eq("status", "paid").eq("seen", false);
+
   return <OrdersManager initial={(orders as Order[]) || []} productNames={names} />;
 }

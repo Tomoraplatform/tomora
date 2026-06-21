@@ -127,6 +127,7 @@ export interface Order {
   amount: number;
   paystack_reference: string | null;
   status: OrderStatus;
+  seen: boolean;
   created_at: string;
 }
 

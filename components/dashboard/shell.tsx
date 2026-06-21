@@ -20,6 +20,7 @@ export interface NavItem {
   href: string;
   label: string;
   icon: keyof typeof ICONS;
+  badge?: number;
 }
 
 export function DashboardShell({
@@ -53,7 +54,15 @@ export function DashboardShell({
                 active ? "bg-ink text-cream" : "text-ink/70 hover:bg-ink/5"
               )}>
               <Icon className="h-[18px] w-[18px]" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.badge ? (
+                <span className={cn(
+                  "flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-semibold",
+                  active ? "bg-cream text-ink" : "bg-ink text-cream"
+                )}>
+                  {item.badge > 99 ? "99+" : item.badge}
+                </span>
+              ) : null}
             </Link>
           );
         })}
