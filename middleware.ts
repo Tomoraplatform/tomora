@@ -43,6 +43,9 @@ export async function middleware(request: NextRequest) {
 
   // ---- Tenant (published site) routing ----
   if (tenant) {
+    // API routes must run normally even on tenant hosts, otherwise forms,
+    // reviews and checkout posted from a published site get rewritten away.
+    if (url.pathname.startsWith("/api/")) return response;
     const rewriteUrl = url.clone();
     rewriteUrl.pathname = `/sites/${tenant.type}/${encodeURIComponent(
       tenant.value
