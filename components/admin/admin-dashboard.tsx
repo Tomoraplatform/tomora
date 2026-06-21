@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/utils";
-import { extendTrial, setSiteLive } from "@/app/admin/actions";
+import { extendTrial, setSiteLive, grantPlan, revokePlan } from "@/app/admin/actions";
 import type { DomainStatus } from "@/lib/database.types";
 
 export interface AdminUserRow {
@@ -104,23 +104,37 @@ export function AdminDashboard({
                     <tr key={r.userId}>
                       <td className="p-3 font-medium text-ink">{r.name}</td>
                       <td className="p-3 text-ink/70">{r.email}</td>
-                      <td className="p-3"><Badge variant={r.plan === "Pro" ? "success" : r.plan === "Trial" ? "warning" : "secondary"}>{r.plan}</Badge></td>
+                      <td className="p-3"><Badge variant={r.plan === "Trial" ? "warning" : (r.plan === "Offline" || r.plan === "No site") ? "secondary" : "success"}>{r.plan}</Badge></td>
                       <td className="p-3 text-ink/70">{r.domain}</td>
                       <td className="p-3 text-ink/70">{r.trialEnd}</td>
                       <td className="p-3 text-ink/70">{r.lastPayment}</td>
                       <td className="p-3">
-                        {r.siteId ? (
-                          <div className="flex gap-1">
-                            <Button size="sm" variant="outline" disabled={busy === r.userId + "t"}
-                              onClick={() => run(r.userId + "t", () => extendTrial(r.siteId!))}>
-                              {busy === r.userId + "t" ? <Loader2 className="h-3 w-3 animate-spin" /> : "+14d"}
-                            </Button>
-                            <Button size="sm" variant="outline" disabled={busy === r.userId + "a"}
-                              onClick={() => run(r.userId + "a", () => setSiteLive(r.siteId!, !r.isLive))}>
-                              {busy === r.userId + "a" ? <Loader2 className="h-3 w-3 animate-spin" /> : r.isLive ? "Disable" : "Activate"}
-                            </Button>
-                          </div>
-                        ) : <span className="text-ink/30">—</span>}
+                        <div className="flex flex-wrap gap-1">
+                          <Button size="sm" variant="outline" disabled={busy === r.userId + "b"}
+                            onClick={() => run(r.userId + "b", () => grantPlan(r.userId, "basic"))}>
+                            {busy === r.userId + "b" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Grant Basic"}
+                          </Button>
+                          <Button size="sm" variant="outline" disabled={busy === r.userId + "s"}
+                            onClick={() => run(r.userId + "s", () => grantPlan(r.userId, "starter"))}>
+                            {busy === r.userId + "s" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Grant Starter"}
+                          </Button>
+                          {r.siteId && (
+                            <>
+                              <Button size="sm" variant="outline" disabled={busy === r.userId + "t"}
+                                onClick={() => run(r.userId + "t", () => extendTrial(r.siteId!))}>
+                                {busy === r.userId + "t" ? <Loader2 className="h-3 w-3 animate-spin" /> : "+14d"}
+                              </Button>
+                              <Button size="sm" variant="outline" disabled={busy === r.userId + "a"}
+                                onClick={() => run(r.userId + "a", () => setSiteLive(r.siteId!, !r.isLive))}>
+                                {busy === r.userId + "a" ? <Loader2 className="h-3 w-3 animate-spin" /> : r.isLive ? "Disable" : "Activate"}
+                              </Button>
+                            </>
+                          )}
+                          <Button size="sm" variant="ghost" className="text-destructive" disabled={busy === r.userId + "r"}
+                            onClick={() => { if (confirm("Revoke this user's plan?")) run(r.userId + "r", () => revokePlan(r.userId)); }}>
+                            {busy === r.userId + "r" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Revoke"}
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}

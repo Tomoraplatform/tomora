@@ -2,7 +2,7 @@ import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminDashboard, type AdminUserRow, type AdminDomainRow } from "@/components/admin/admin-dashboard";
 import { DomainRequestsPanel, type DomainRequestRow } from "@/components/admin/domain-requests";
-import { APP_DOMAIN, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT } from "@/lib/constants";
+import { APP_DOMAIN, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, getPlan } from "@/lib/constants";
 import type { Profile, Site, Subscription, Domain, DomainRequest } from "@/lib/database.types";
 
 export const metadata = { title: "Admin — Tomora" };
@@ -28,14 +28,15 @@ export default async function AdminPage() {
   const rows: AdminUserRow[] = (profiles as Profile[] | null || []).map((p) => {
     const site = siteByUser.get(p.user_id);
     const sub = subByUser.get(p.user_id);
-    const isPro = sub?.status === "active";
-    const onTrial = !isPro && site?.is_live && site.trial_ends_at && new Date(site.trial_ends_at).getTime() > now;
+    const activeSub = sub?.status === "active";
+    const planName = activeSub ? getPlan(sub!.plan || "")?.name || "Active" : null;
+    const onTrial = !activeSub && site?.is_live && site.trial_ends_at && new Date(site.trial_ends_at).getTime() > now;
     return {
       userId: p.user_id,
       siteId: site?.id || null,
       name: p.business_name || "—",
       email: p.email || "—",
-      plan: isPro ? "Pro" : onTrial ? "Trial" : site ? "Offline" : "No site",
+      plan: planName || (onTrial ? "Trial" : site ? "Offline" : "No site"),
       domain: site
         ? site.custom_domain && site.domain_status === "active"
           ? site.custom_domain
