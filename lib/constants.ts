@@ -1,6 +1,6 @@
 import type { SiteCategory } from "./database.types";
 
-export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com";
+export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com.ng";
 
 /* ---------------- Billing ---------------- */
 export const TRIAL_DAYS = 14;

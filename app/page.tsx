@@ -79,7 +79,7 @@ function Hero() {
 
         <div className="relative">
           <div className="absolute -inset-6 -z-10 rounded-3xl bg-ink/5 blur-2xl" />
-          <BrowserFrame url="ada-styles.tomora.com" bodyClassName="h-[440px]">
+          <BrowserFrame url="ada-styles.tomora.com.ng" bodyClassName="h-[440px]">
             <TemplatePreview templateId="shop-01" brandColor="#022245" businessName="Ada Styles" autoScroll />
           </BrowserFrame>
         </div>
@@ -127,7 +127,7 @@ function Features() {
     {
       eyebrow: "Publishing",
       title: "Go live instantly",
-      body: "Publish to your free yourbrand.tomora.com subdomain in one click. Upgrade any time to connect a custom domain.",
+      body: "Publish to your free yourbrand.tomora.com.ng subdomain in one click. Upgrade any time to connect a custom domain.",
       visual: <PublishVisual />,
     },
     {
@@ -173,7 +173,7 @@ function VisualCard({ children }: { children: React.ReactNode }) {
 
 function TemplatesVisual() {
   return (
-    <BrowserFrame url="upskill.tomora.com" bodyClassName="h-72 sm:h-[22rem]" className="shadow-xl">
+    <BrowserFrame url="upskill.tomora.com.ng" bodyClassName="h-72 sm:h-[22rem]" className="shadow-xl">
       <TemplatePreview templateId="education-01" brandColor="#2B6CB0" businessName="Upskill Academy" />
     </BrowserFrame>
   );
@@ -215,7 +215,7 @@ function PublishVisual() {
       <div className="flex items-center gap-2 rounded-lg bg-cream/70 px-4 py-3">
         <Globe className="h-5 w-5 text-ink" />
         <span className="font-mono text-sm text-ink/80">yourbrand</span>
-        <span className="font-mono text-sm text-ink/50">.tomora.com</span>
+        <span className="font-mono text-sm text-ink/50">.tomora.com.ng</span>
         <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
           <Check className="h-3 w-3" /> Live
         </span>

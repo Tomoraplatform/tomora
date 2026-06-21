@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
-const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com";
+const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com.ng";
 const PROTECTED = ["/dashboard", "/onboarding", "/admin"];
 const AUTH_PAGES = ["/login", "/signup", "/forgot-password"];
 

@@ -10,7 +10,7 @@ export default function SiteNotFound() {
       <p className="mt-2 max-w-sm text-ink/60">
         There is no Tomora site at this address. It may have been moved or never existed.
       </p>
-      <a href={`https://${process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com"}`} className="mt-6 rounded-md bg-ink px-6 py-3 text-sm font-semibold text-cream">
+      <a href={`https://${process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com.ng"}`} className="mt-6 rounded-md bg-ink px-6 py-3 text-sm font-semibold text-cream">
         Go to Tomora
       </a>
     </div>

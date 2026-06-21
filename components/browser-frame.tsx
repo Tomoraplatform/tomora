@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 /** A pure-CSS browser chrome window. No external images. */
 export function BrowserFrame({
-  url = "yourbrand.tomora.com",
+  url = "yourbrand.tomora.com.ng",
   children,
   className,
   bodyClassName,

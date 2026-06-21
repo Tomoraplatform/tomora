@@ -13,7 +13,7 @@ export function OfflineSite({ businessName }: { businessName?: string }) {
         right now. If you are the owner, upgrade your plan to bring it back online.
       </p>
       <a
-        href={`https://${process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com"}/dashboard`}
+        href={`https://${process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com.ng"}/dashboard`}
         className="mt-6 rounded-md bg-ink px-6 py-3 text-sm font-semibold text-cream"
       >
         Upgrade to go live
