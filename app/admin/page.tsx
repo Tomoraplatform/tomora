@@ -49,6 +49,7 @@ export default async function AdminPage() {
           : `${site.subdomain}.${APP_DOMAIN}`
         : "—",
       trialEnd: site?.trial_ends_at ? new Date(site.trial_ends_at).toLocaleDateString() : "—",
+      compExpires: activeSub && sub?.comp_expires_at ? new Date(sub.comp_expires_at).toLocaleDateString() : null,
       lastPayment: sub?.last_payment_date ? new Date(sub.last_payment_date).toLocaleDateString() : "—",
       isLive: !!site?.is_live,
     };

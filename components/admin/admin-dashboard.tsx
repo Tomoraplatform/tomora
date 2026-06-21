@@ -22,6 +22,7 @@ export interface AdminUserRow {
   trialEnd: string;
   lastPayment: string;
   isLive: boolean;
+  compExpires?: string | null;
 }
 
 export interface AdminDomainRow {
@@ -108,7 +109,10 @@ export function AdminDashboard({
                     <tr key={r.userId}>
                       <td className="p-3 font-medium text-ink">{r.name}</td>
                       <td className="p-3 text-ink/70">{r.email}</td>
-                      <td className="p-3"><Badge variant={r.plan === "Trial" ? "warning" : (r.plan === "Offline" || r.plan === "No site") ? "secondary" : "success"}>{r.plan}</Badge></td>
+                      <td className="p-3">
+                        <Badge variant={r.plan === "Trial" ? "warning" : (r.plan === "Offline" || r.plan === "No site") ? "secondary" : "success"}>{r.plan}</Badge>
+                        {r.compExpires && <p className="mt-1 text-[11px] text-ink/50">Comp expires {r.compExpires}</p>}
+                      </td>
                       <td className="p-3 text-ink/70">{r.domain}</td>
                       <td className="p-3 text-ink/70">{r.trialEnd}</td>
                       <td className="p-3 text-ink/70">{r.lastPayment}</td>
