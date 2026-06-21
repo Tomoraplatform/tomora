@@ -9,7 +9,12 @@ export const RENEWAL_AMOUNT = 24800; // NGN — Pro renewals at positions 1,2,3
 export const RENEWAL_INTERVAL_MONTHS = 4;
 export const GRACE_PERIOD_DAYS = 7;
 /** One-time charge to add a custom domain to a site not covered by the plan. */
-export const EXTRA_DOMAIN_AMOUNT = 8000; // NGN — buy a custom domain for an extra site
+export const EXTRA_DOMAIN_AMOUNT = 8000; // NGN — connect a domain you already own
+
+/** Flat price to buy + activate a brand-new domain through Tomora (assisted). */
+export const NEW_DOMAIN_AMOUNT = 5000; // NGN — covers .com.ng / .ng registration
+/** TLDs offered in the assisted domain search (kept within the ₦4,000–5,000 band). */
+export const NEW_DOMAIN_TLDS = ["com.ng", "ng"] as const;
 
 /**
  * Given the current billing_cycle_position (0-3), returns the amount to charge

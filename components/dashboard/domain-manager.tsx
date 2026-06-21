@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Globe, Loader2, CheckCircle2, Copy, RefreshCw, Trash2, ShoppingCart } from "lucide-react";
+import { Globe, Loader2, CheckCircle2, Copy, RefreshCw, Trash2, ShoppingCart, Search, Clock } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,10 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { connectDomain, removeDomain } from "@/app/dashboard/(panel)/domain/actions";
 import { formatNaira } from "@/lib/utils";
-import type { DomainStatus } from "@/lib/database.types";
+import type { DomainStatus, DomainRequest } from "@/lib/database.types";
 
 export function DomainManager({
-  initialDomain, initialStatus, canConnect, included, domainPurchased, extraDomainAmount, siteId, subdomain, appDomain,
+  initialDomain, initialStatus, canConnect, included, domainPurchased, extraDomainAmount,
+  newDomainAmount, requests = [], siteId, subdomain, appDomain,
 }: {
   initialDomain: string | null;
   initialStatus: DomainStatus;
@@ -20,6 +21,8 @@ export function DomainManager({
   included: boolean;
   domainPurchased: boolean;
   extraDomainAmount: number;
+  newDomainAmount: number;
+  requests?: DomainRequest[];
   siteId: string;
   subdomain: string;
   appDomain: string;
@@ -31,6 +34,44 @@ export function DomainManager({
   const [buying, setBuying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const target = `cname.${appDomain}`;
+
+  // Assisted "buy a new domain" search state.
+  const [query, setQuery] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [results, setResults] = useState<{ domain: string; available: boolean; amount: number }[] | null>(null);
+  const [buyingDomain, setBuyingDomain] = useState<string | null>(null);
+
+  async function search() {
+    const q = query.trim();
+    if (q.length < 2) return;
+    setSearching(true); setError(null); setResults(null);
+    try {
+      const res = await fetch(`/api/domain/search?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not search.");
+      setResults(data.results || []);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setSearching(false);
+    }
+  }
+
+  async function buyNewDomain(name: string) {
+    setBuyingDomain(name); setError(null);
+    try {
+      const res = await fetch("/api/billing/init", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ purpose: "new_domain", siteId, domain: name }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not start payment.");
+      window.location.href = data.authorization_url;
+    } catch (e: any) {
+      setError(e.message); setBuyingDomain(null);
+    }
+  }
 
   useEffect(() => {
     if (status !== "pending" && status !== "verifying") return;
@@ -171,6 +212,72 @@ export function DomainManager({
           </CardContent>
         </Card>
       )}
+
+      {/* Pending assisted-domain requests */}
+      {requests.filter((r) => r.status === "paid" || r.status === "registered").map((r) => (
+        <Card key={r.id} className="border-amber-200 bg-amber-50/60">
+          <CardContent className="flex items-start gap-3 p-5">
+            <Clock className="mt-0.5 h-5 w-5 text-amber-600" />
+            <div className="text-sm">
+              <p className="font-medium text-ink">{r.domain}</p>
+              <p className="mt-0.5 text-ink/60">
+                {r.status === "paid"
+                  ? "Payment received — we're registering your domain. You'll be able to connect it here shortly (usually within 24 hours)."
+                  : "Registered — we're connecting it to your site now."}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+
+      {/* Buy a brand-new domain (assisted) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Search className="h-4 w-4" /> Get a new domain</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-ink/60">
+            Don&apos;t have a domain yet? Search for one and activate it for a one-time {formatNaira(newDomainAmount)}.
+            We register it for you and connect it to your site.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && search()}
+              placeholder="yourbrand"
+            />
+            <Button onClick={search} disabled={searching}>
+              {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />} Search
+            </Button>
+          </div>
+
+          {results && results.length > 0 && (
+            <div className="space-y-2">
+              {results.map((r) => (
+                <div key={r.domain} className="flex items-center justify-between rounded-lg border border-ink/10 px-4 py-3">
+                  <div>
+                    <p className="font-medium text-ink">{r.domain}</p>
+                    <p className={`text-xs ${r.available ? "text-emerald-600" : "text-ink/40"}`}>
+                      {r.available ? `Available · ${formatNaira(r.amount)}` : "Taken"}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    disabled={!r.available || buyingDomain === r.domain}
+                    onClick={() => buyNewDomain(r.domain)}
+                  >
+                    {buyingDomain === r.domain ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
+                    Buy &amp; activate
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+          {results && results.length === 0 && <p className="text-sm text-ink/50">No results. Try another name.</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
+        </CardContent>
+      </Card>
     </div>
   );
 }

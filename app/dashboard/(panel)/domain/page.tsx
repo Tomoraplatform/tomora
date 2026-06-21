@@ -1,7 +1,9 @@
 import { getDashboardData } from "@/lib/dashboard";
+import { createClient } from "@/lib/supabase/server";
 import { DomainManager } from "@/components/dashboard/domain-manager";
-import { APP_DOMAIN, EXTRA_DOMAIN_AMOUNT } from "@/lib/constants";
+import { APP_DOMAIN, EXTRA_DOMAIN_AMOUNT, NEW_DOMAIN_AMOUNT } from "@/lib/constants";
 import { domainAccess } from "@/lib/domain-access";
+import type { DomainRequest } from "@/lib/database.types";
 
 export const metadata = { title: "Custom Domain — Tomora" };
 
@@ -15,6 +17,15 @@ export default async function DomainPage() {
     subActive: subscription?.status === "active",
   });
 
+  const supabase = createClient();
+  const { data: reqs } = await supabase
+    .from("domain_requests")
+    .select("*")
+    .eq("site_id", site!.id)
+    .neq("status", "cancelled")
+    .order("created_at", { ascending: false });
+  const requests = (reqs as DomainRequest[]) || [];
+
   return (
     <DomainManager
       initialDomain={site!.custom_domain}
@@ -23,6 +34,8 @@ export default async function DomainPage() {
       included={access.included}
       domainPurchased={!!site!.domain_purchased}
       extraDomainAmount={EXTRA_DOMAIN_AMOUNT}
+      newDomainAmount={NEW_DOMAIN_AMOUNT}
+      requests={requests}
       siteId={site!.id}
       subdomain={site!.subdomain}
       appDomain={APP_DOMAIN}

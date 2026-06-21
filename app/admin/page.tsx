@@ -1,8 +1,9 @@
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminDashboard, type AdminUserRow, type AdminDomainRow } from "@/components/admin/admin-dashboard";
+import { DomainRequestsPanel, type DomainRequestRow } from "@/components/admin/domain-requests";
 import { APP_DOMAIN, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT } from "@/lib/constants";
-import type { Profile, Site, Subscription, Domain } from "@/lib/database.types";
+import type { Profile, Site, Subscription, Domain, DomainRequest } from "@/lib/database.types";
 
 export const metadata = { title: "Admin — Tomora" };
 
@@ -10,11 +11,12 @@ export default async function AdminPage() {
   await requireAdmin();
   const admin = createAdminClient();
 
-  const [{ data: profiles }, { data: sites }, { data: subs }, { data: domains }] = await Promise.all([
+  const [{ data: profiles }, { data: sites }, { data: subs }, { data: domains }, { data: domainReqs }] = await Promise.all([
     admin.from("profiles").select("*"),
     admin.from("sites").select("*"),
     admin.from("subscriptions").select("*"),
     admin.from("domains").select("*").order("created_at", { ascending: false }),
+    admin.from("domain_requests").select("*").order("created_at", { ascending: false }),
   ]);
 
   const siteByUser = new Map<string, Site>();
@@ -63,17 +65,32 @@ export default async function AdminPage() {
     expires: d.expires_at ? new Date(d.expires_at).toLocaleDateString() : "—",
   }));
 
+  const profileByUser = new Map<string, Profile>();
+  (profiles as Profile[] | null)?.forEach((p) => profileByUser.set(p.user_id, p));
+  const requestRows: DomainRequestRow[] = (domainReqs as DomainRequest[] | null || []).map((r) => ({
+    id: r.id,
+    domain: r.domain,
+    status: r.status,
+    amount: r.amount,
+    business: profileByUser.get(r.user_id)?.business_name || "—",
+    email: profileByUser.get(r.user_id)?.email || "—",
+    createdAt: new Date(r.created_at).toLocaleDateString(),
+  }));
+
   return (
-    <AdminDashboard
-      rows={rows}
-      domains={domainRows}
-      stats={{
-        totalUsers: profiles?.length ?? 0,
-        liveSites,
-        activeSubs,
-        estAnnualRevenue,
-        monthly,
-      }}
-    />
+    <>
+      <AdminDashboard
+        rows={rows}
+        domains={domainRows}
+        stats={{
+          totalUsers: profiles?.length ?? 0,
+          liveSites,
+          activeSubs,
+          estAnnualRevenue,
+          monthly,
+        }}
+      />
+      <DomainRequestsPanel requests={requestRows} />
+    </>
   );
 }

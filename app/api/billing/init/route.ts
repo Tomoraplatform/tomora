@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { initTransaction } from "@/lib/paystack";
-import { getPlan, nextCharge, EXTRA_DOMAIN_AMOUNT } from "@/lib/constants";
+import { getPlan, nextCharge, EXTRA_DOMAIN_AMOUNT, NEW_DOMAIN_AMOUNT, NEW_DOMAIN_TLDS } from "@/lib/constants";
 
 /** Starts a Paystack checkout for a platform plan, Pro renewal, or a domain. */
 export async function POST(request: NextRequest) {
@@ -33,6 +33,31 @@ export async function POST(request: NextRequest) {
         reference,
         callbackUrl: `${request.nextUrl.origin}/api/billing/callback`,
         metadata: { userId: user.id, purpose: "domain", siteId: body.siteId },
+      });
+      return NextResponse.json({ authorization_url: data.authorization_url });
+    } catch (e: any) {
+      return NextResponse.json({ error: e.message || "Could not start payment." }, { status: 500 });
+    }
+  }
+
+  // ---- Buy + activate a brand-new domain (assisted, ₦5,000) ----
+  if (body?.purpose === "new_domain" && body?.siteId && body?.domain) {
+    const domain = String(body.domain).trim().toLowerCase();
+    const okTld = NEW_DOMAIN_TLDS.some((t) => domain.endsWith(`.${t}`));
+    if (!okTld || !/^[a-z0-9-]+\.[a-z.]+$/.test(domain)) {
+      return NextResponse.json({ error: "That domain isn't available for purchase here." }, { status: 400 });
+    }
+    const { data: site } = await supabase
+      .from("sites").select("id").eq("id", body.siteId).eq("user_id", user.id).maybeSingle();
+    if (!site) return NextResponse.json({ error: "Site not found." }, { status: 400 });
+    const reference = `tomnew_${user.id.slice(0, 8)}_${Date.now()}`;
+    try {
+      const data = await initTransaction({
+        email: user.email,
+        amountNaira: NEW_DOMAIN_AMOUNT,
+        reference,
+        callbackUrl: `${request.nextUrl.origin}/api/billing/callback`,
+        metadata: { userId: user.id, purpose: "new_domain", siteId: body.siteId, domain },
       });
       return NextResponse.json({ authorization_url: data.authorization_url });
     } catch (e: any) {

@@ -33,3 +33,36 @@ export async function setSiteLive(siteId: string, live: boolean): Promise<{ ok: 
     return { ok: true };
   } catch (e: any) { return { ok: false, error: e.message }; }
 }
+
+/**
+ * Fulfil an assisted domain purchase.
+ *  - registered: bought at the registrar (DNS being pointed).
+ *  - connected: live — also attaches the domain to the site so it routes.
+ *  - cancelled: refunded / abandoned.
+ */
+export async function updateDomainRequest(
+  id: string,
+  status: "registered" | "connected" | "cancelled"
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const admin = await guard();
+    const { data: req } = await admin.from("domain_requests").select("*").eq("id", id).maybeSingle();
+    if (!req) return { ok: false, error: "Request not found." };
+
+    const { error } = await admin.from("domain_requests").update({ status }).eq("id", id);
+    if (error) return { ok: false, error: error.message };
+
+    if (status === "connected") {
+      // Attach the domain to the site so middleware routes it. (Add it in
+      // Vercel + point DNS first; this just flips the site to use it.)
+      await admin.from("sites")
+        .update({ custom_domain: req.domain, domain_status: "active" })
+        .eq("id", req.site_id);
+      const { data: existing } = await admin.from("domains").select("id").eq("site_id", req.site_id).maybeSingle();
+      if (existing) await admin.from("domains").update({ domain_name: req.domain, status: "active" }).eq("id", existing.id);
+      else await admin.from("domains").insert({ user_id: req.user_id, site_id: req.site_id, domain_name: req.domain, status: "active" });
+    }
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}

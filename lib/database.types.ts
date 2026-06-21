@@ -276,3 +276,16 @@ export interface Lead {
   source: string;
   created_at: string;
 }
+
+export type DomainRequestStatus = "paid" | "registered" | "connected" | "cancelled";
+
+export interface DomainRequest {
+  id: string;
+  site_id: string;
+  user_id: string;
+  domain: string;
+  amount: number;
+  reference: string | null;
+  status: DomainRequestStatus;
+  created_at: string;
+}

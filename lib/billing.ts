@@ -2,7 +2,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   nextCharge, RENEWAL_INTERVAL_MONTHS, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, GRACE_PERIOD_DAYS,
-  getPlan,
+  getPlan, NEW_DOMAIN_AMOUNT,
 } from "@/lib/constants";
 
 function addMonths(date: Date, months: number) {
@@ -105,4 +105,27 @@ export async function applyDomainPurchase(userId: string, siteId: string) {
     .update({ domain_purchased: true })
     .eq("id", siteId)
     .eq("user_id", userId);
+}
+
+/**
+ * Records a paid request to buy + activate a new domain. An admin then
+ * registers it at the registrar and connects it. We also flag the site as
+ * domain_purchased so the owner can connect it once it's registered.
+ */
+export async function applyNewDomainRequest(
+  userId: string,
+  siteId: string,
+  domain: string,
+  reference: string
+) {
+  const admin = createAdminClient();
+  await admin.from("domain_requests").insert({
+    user_id: userId,
+    site_id: siteId,
+    domain: String(domain).toLowerCase(),
+    amount: NEW_DOMAIN_AMOUNT,
+    reference,
+    status: "paid",
+  });
+  await admin.from("sites").update({ domain_purchased: true }).eq("id", siteId).eq("user_id", userId);
 }
