@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { currentSiteId } from "@/lib/dashboard";
 import { resolveAccount, createSubaccount } from "@/lib/paystack";
+import { STORE_COMMISSION_PERCENT } from "@/lib/constants";
 import type { OrderStatus } from "@/lib/database.types";
 
 async function requireUserAndSite() {
@@ -111,7 +112,7 @@ export async function savePayoutSettings(input: {
         businessName: accountName,
         bankCode,
         accountNumber,
-        percentageCharge: 0,
+        percentageCharge: STORE_COMMISSION_PERCENT,
       });
       subaccountCode = sub.subaccountCode;
     } catch (e: any) {

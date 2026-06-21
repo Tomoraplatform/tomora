@@ -10,6 +10,9 @@ export const RENEWAL_INTERVAL_MONTHS = 4;
 export const GRACE_PERIOD_DAYS = 7;
 /** Flat price to buy + activate a brand-new domain through Tomora (assisted). */
 export const NEW_DOMAIN_AMOUNT = 5000; // NGN — covers .com.ng registration (~₦2,500–3,500) + margin
+
+/** Tomora's commission on each storefront sale, taken via the Paystack subaccount split. */
+export const STORE_COMMISSION_PERCENT = 2;
 /**
  * TLDs offered in the assisted domain search. Only .com.ng is cheap enough to
  * sell profitably at the flat NEW_DOMAIN_AMOUNT; pricier TLDs (e.g. .ng, .com)
