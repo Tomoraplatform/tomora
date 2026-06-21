@@ -47,6 +47,7 @@ export function PublishedSiteView({
       siteData={site.site_data}
       brandColor={brandColor}
       products={products}
+      siteId={isLive ? site.id : undefined}
     />
   );
 }

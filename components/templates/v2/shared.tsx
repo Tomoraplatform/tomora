@@ -1,9 +1,32 @@
 "use client";
 
-import { Star, ShoppingCart, Zap, Instagram, Twitter, Facebook, Globe } from "lucide-react";
+import { useState } from "react";
+import { Star, ShoppingCart, Zap, Instagram, Twitter, Facebook, Globe, CheckCircle2 } from "lucide-react";
 import type { SiteData, CatalogProduct, CatalogTestimonial, Product, SocialLinks } from "@/lib/database.types";
 import { formatNaira, cn } from "@/lib/utils";
 import { useStore } from "../store-context";
+
+type LeadSource = "contact" | "newsletter" | "register";
+
+/** Posts a lead to the site owner. Returns true on success (or in preview). */
+async function submitLead(
+  siteId: string | undefined,
+  payload: { source: LeadSource; name?: string; email?: string; phone?: string; message?: string }
+): Promise<{ ok: boolean; error?: string }> {
+  if (!siteId) return { ok: true }; // preview / editor: pretend success, don't store
+  try {
+    const res = await fetch("/api/leads", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ siteId, ...payload }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) return { ok: false, error: json.error || "Could not submit. Please try again." };
+    return { ok: true };
+  } catch {
+    return { ok: false, error: "Network error. Please try again." };
+  }
+}
 
 export interface TemplateProps {
   siteData: SiteData;
@@ -123,29 +146,117 @@ export function ProductCardSplit({ product, siteData }: { product: CatalogProduc
   );
 }
 
-export function ContactFormV2({ submitText = "Send Message", phone = true }: { submitText?: string; phone?: boolean }) {
-  return (
-    <form className="grid gap-4" onSubmit={(e) => e.preventDefault()}>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <input className="rounded-md border border-black/15 bg-white px-4 py-3 text-sm" placeholder="Your name" />
-        <input className="rounded-md border border-black/15 bg-white px-4 py-3 text-sm" placeholder="Your email" />
+export function ContactFormV2({
+  submitText = "Send Message",
+  phone = true,
+  message = true,
+  source = "contact",
+  options,
+  optionLabel = "Select an option",
+}: {
+  submitText?: string;
+  phone?: boolean;
+  message?: boolean;
+  source?: LeadSource;
+  /** Optional dropdown (e.g. choose an event). Its value is added to the message. */
+  options?: string[];
+  optionLabel?: string;
+}) {
+  const { siteId } = useStore();
+  const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const [error, setError] = useState("");
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const choice = (fd.get("choice") as string) || "";
+    const msg = (fd.get("message") as string) || "";
+    setStatus("sending");
+    setError("");
+    const res = await submitLead(siteId, {
+      source,
+      name: (fd.get("name") as string) || undefined,
+      email: (fd.get("email") as string) || undefined,
+      phone: (fd.get("phone") as string) || undefined,
+      message: [choice && `${optionLabel}: ${choice}`, msg].filter(Boolean).join(" — ") || undefined,
+    });
+    if (res.ok) setStatus("done");
+    else { setError(res.error || "Something went wrong."); setStatus("error"); }
+  }
+
+  if (status === "done") {
+    return (
+      <div className="flex flex-col items-center gap-2 rounded-md bg-black/[0.03] px-4 py-8 text-center">
+        <CheckCircle2 className="h-8 w-8" style={{ color: "var(--brand-primary)" }} />
+        <p className="font-semibold">Thank you! Your message has been sent.</p>
+        <p className="text-sm text-black/50">We&apos;ll get back to you shortly.</p>
       </div>
-      {phone && <input className="rounded-md border border-black/15 bg-white px-4 py-3 text-sm" placeholder="Phone (optional)" />}
-      <textarea rows={4} className="rounded-md border border-black/15 bg-white px-4 py-3 text-sm" placeholder="Your message" />
-      <BrandButton>{submitText}</BrandButton>
+    );
+  }
+
+  return (
+    <form className="grid gap-4" onSubmit={onSubmit}>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <input name="name" required className="rounded-md border border-black/15 bg-white px-4 py-3 text-sm" placeholder="Your name" />
+        <input name="email" type="email" className="rounded-md border border-black/15 bg-white px-4 py-3 text-sm" placeholder="Your email" />
+      </div>
+      {phone && <input name="phone" className="rounded-md border border-black/15 bg-white px-4 py-3 text-sm" placeholder="Phone (optional)" />}
+      {options && options.length > 0 && (
+        <select name="choice" className="rounded-md border border-black/15 bg-white px-4 py-3 text-sm">
+          <option value="">{optionLabel}</option>
+          {options.map((o) => <option key={o} value={o}>{o}</option>)}
+        </select>
+      )}
+      {message && <textarea name="message" rows={4} className="rounded-md border border-black/15 bg-white px-4 py-3 text-sm" placeholder="Your message" />}
+      <button
+        type="submit"
+        disabled={status === "sending"}
+        className="inline-flex items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
+        style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}
+      >
+        {status === "sending" ? "Sending…" : submitText}
+      </button>
+      {status === "error" && <p className="text-sm text-red-600">{error}</p>}
     </form>
   );
 }
 
 export function NewsletterInput({ buttonText = "Subscribe", dark = false }: { buttonText?: string; dark?: boolean }) {
+  const { siteId } = useStore();
+  const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const email = (fd.get("email") as string) || "";
+    if (!email.trim()) return;
+    setStatus("sending");
+    const res = await submitLead(siteId, { source: "newsletter", email });
+    setStatus(res.ok ? "done" : "error");
+  }
+
+  if (status === "done") {
+    return <p className={`text-sm font-medium ${dark ? "text-white" : "text-black/70"}`}>Thanks for subscribing!</p>;
+  }
+
   return (
-    <div className="flex w-full max-w-md gap-2">
+    <form className="flex w-full max-w-md gap-2" onSubmit={onSubmit}>
       <input
+        name="email"
+        type="email"
+        required
         className={`flex-1 rounded-md px-4 py-3 text-sm outline-none ${dark ? "border border-white/20 bg-white/10 text-white placeholder:text-white/50" : "border border-black/15 bg-white"}`}
         placeholder="Enter your email"
       />
-      <BrandButton>{buttonText}</BrandButton>
-    </div>
+      <button
+        type="submit"
+        disabled={status === "sending"}
+        className="inline-flex items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60"
+        style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}
+      >
+        {status === "sending" ? "…" : buttonText}
+      </button>
+    </form>
   );
 }
 

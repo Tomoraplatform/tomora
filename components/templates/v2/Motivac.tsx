@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowRight, Search, MapPin, Mic, CalendarDays, Globe, Star, Ticket } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, Img, heading } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, Img, heading, ContactFormV2 } from "./shared";
 
 const PROGRESS = [["Full Rating", 92], ["Management", 80], ["Social Media", 74]] as const;
 const SCHED_TABS = ["All Events", "Presentation", "Evaluation", "Open Discussion"];
@@ -121,13 +121,9 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
       {siteData.contactForm !== false && (
         <section id="register" className="mx-auto max-w-xl px-5 py-16">
           <h2 className="text-center text-3xl font-bold">{heading(siteData, "register", "Register Here to Attend")}</h2>
-          <form className="mt-8 grid gap-4" onSubmit={(e) => e.preventDefault()}>
-            <input className="rounded-md border border-black/15 px-4 py-3 text-sm" placeholder="Full name" />
-            <input className="rounded-md border border-black/15 px-4 py-3 text-sm" placeholder="Email" />
-            <input className="rounded-md border border-black/15 px-4 py-3 text-sm" placeholder="Phone" />
-            <select className="rounded-md border border-black/15 px-4 py-3 text-sm"><option>Select event</option>{events.map((e) => <option key={e.id}>{e.title}</option>)}</select>
-            <BrandButton>Register</BrandButton>
-          </form>
+          <div className="mt-8">
+            <ContactFormV2 submitText="Register" source="register" message={false} options={events.map((e) => e.title)} optionLabel="Select event" />
+          </div>
         </section>
       )}
 

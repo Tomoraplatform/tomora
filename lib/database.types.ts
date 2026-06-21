@@ -265,3 +265,14 @@ export interface CatalogHour {
   label: string; // e.g. Sunday, Weekdays
   time: string;  // e.g. 9:00 AM
 }
+
+export interface Lead {
+  id: string;
+  site_id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  message: string | null;
+  source: string;
+  created_at: string;
+}

@@ -85,6 +85,7 @@ export function SiteRenderer({
   products,
   editApi,
   storeApi,
+  siteId,
 }: {
   templateId: string;
   siteData: SiteData;
@@ -92,6 +93,8 @@ export function SiteRenderer({
   products?: Product[];
   editApi?: TemplateEditApi;
   storeApi?: StoreApi;
+  /** When set (published site), forms submit leads to this site. */
+  siteId?: string;
 }) {
   const V2 = V2_REGISTRY[templateId];
   const Legacy = TEMPLATE_REGISTRY[templateId];
@@ -101,9 +104,14 @@ export function SiteRenderer({
   const v2Data: SiteData =
     V2 && liveProducts ? { ...siteData, products: liveProducts } : siteData;
 
+  const storeValue: StoreApi = {
+    ...(storeApi ?? { live: false, addToCart: () => {}, buyNow: () => {} }),
+    siteId,
+  };
+
   return (
     <TemplateEditContext.Provider value={editApi ?? { editing: false, update: () => {} }}>
-      <StoreContext.Provider value={storeApi ?? { live: false, addToCart: () => {}, buyNow: () => {} }}>
+      <StoreContext.Provider value={storeValue}>
         {V2 ? (
           <V2 siteData={v2Data} brandColor={brandColor} />
         ) : (

@@ -23,6 +23,7 @@ export default async function PanelLayout({
           { href: "/dashboard/payouts", label: "Payouts", icon: "Banknote" },
         ] as NavItem[])
       : []),
+    { href: "/dashboard/leads", label: "Leads", icon: "Inbox" },
     { href: "/dashboard/domain", label: "Custom Domain", icon: "Globe" },
     { href: "/dashboard/billing", label: "Billing", icon: "CreditCard" },
     { href: "/dashboard/account", label: "Account", icon: "Settings" },
