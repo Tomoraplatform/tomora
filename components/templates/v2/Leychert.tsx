@@ -2,7 +2,7 @@
 
 import { Search, Mail, Phone, FileText, PhoneCall, Users, Home as HomeIcon, Scale, MapPin, ArrowRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, CustomSections } from "./shared";
 
 const QUICK = [
   { icon: FileText, t: "Services & Forms" }, { icon: PhoneCall, t: "Useful Numbers" },
@@ -89,6 +89,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
+      <CustomSections sections={siteData.customSections} />
       <footer className="bg-[#1A1208] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-3">
           <div><p className="text-lg font-bold">{name}</p><p className="mt-2 text-sm text-white/50">{siteData.address || "Town Hall, Main Street"}</p></div>

@@ -2,7 +2,7 @@
 
 import { ArrowRight, TrendingUp, Building2, Briefcase, LineChart, Sparkles, Headphones, Star, Phone } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img, heading } from "./shared";
+import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img, heading, CustomSections } from "./shared";
 
 const GREEN = "#0D3B2A";
 const SERVICES = [
@@ -110,6 +110,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
         <BrandButton className="mt-6">Join Now</BrandButton>
       </section>
 
+      <CustomSections sections={siteData.customSections} />
       <footer style={{ background: GREEN }} className="text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2"><p className="text-lg font-bold">{name}</p><p className="mt-2 max-w-xs text-sm text-white/50">Trusted by 6+ million users in 175+ countries.</p><SocialIcons social={siteData.social} className="mt-4 text-white/70" /></div>

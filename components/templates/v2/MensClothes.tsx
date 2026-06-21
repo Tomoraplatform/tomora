@@ -2,7 +2,7 @@
 
 import { Search, ShoppingCart, ArrowRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira, heading } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira, heading, CustomSections } from "./shared";
 import { useStore } from "../store-context";
 import type { CatalogProduct, Product, SiteData } from "@/lib/database.types";
 
@@ -101,6 +101,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
         ))}
       </section>
 
+      <CustomSections sections={siteData.customSections} />
       <footer className="border-t border-neutral-200">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 text-sm">
           {[["Information", ["About Us", "Customer Service", "Site Map", "Advanced Search", "Orders and Returns"]], ["Why buy from us", ["Quality", "Fast Delivery", "Secure Payment"]], ["My account", ["Sign In", "Wish List", "My Orders", "Track Order", "Newsletter"]], ["Contacts", ["12 Marina Rd, Lagos", "+234 800 000 0000", "hello@store.com"]]].map(([h, items]: any) => (

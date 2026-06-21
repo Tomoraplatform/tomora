@@ -2,7 +2,7 @@
 
 import { Phone, Mail, ArrowRight, Quote } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, CustomSections } from "./shared";
 
 const MINISTRIES = [
   ["Education Ministry", "Equipping every generation with the Word."],
@@ -73,6 +73,7 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
+      <CustomSections sections={siteData.customSections} />
       <footer className="border-t border-black/5">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 text-sm">
           <div><p className="text-lg font-bold">{name}</p><p className="mt-2 text-black/50">A place to grow in faith and community.</p></div>

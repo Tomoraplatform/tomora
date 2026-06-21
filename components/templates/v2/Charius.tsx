@@ -2,7 +2,7 @@
 
 import { PlayCircle, HandHeart, Wallet, HeartHandshake, GraduationCap, Droplet, Utensils, Stethoscope, MapPin } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img, formatNaira, heading } from "./shared";
+import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img, formatNaira, heading, CustomSections } from "./shared";
 
 const ACTIONS = [{ icon: HeartHandshake, t: "Become a Volunteer" }, { icon: Wallet, t: "Quick Fundraising" }, { icon: HandHeart, t: "Start Donating" }];
 const WHATWEDO = [{ icon: GraduationCap, t: "Kids Education" }, { icon: Droplet, t: "Pure Water" }, { icon: Utensils, t: "Healthy Food" }, { icon: Stethoscope, t: "Medical Care" }];
@@ -115,6 +115,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
+      <CustomSections sections={siteData.customSections} />
       <footer className="bg-[#0D0D0D] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2"><p className="text-lg font-bold">{name}</p><p className="mt-2 max-w-xs text-sm text-white/50">Bringing hope, education and care to those who need it most.</p><SocialIcons social={siteData.social} className="mt-4 text-white/70" /></div>

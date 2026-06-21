@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Star, ShoppingCart, Zap, Instagram, Twitter, Facebook, Globe, CheckCircle2 } from "lucide-react";
-import type { SiteData, CatalogProduct, CatalogTestimonial, Product, SocialLinks } from "@/lib/database.types";
+import type { SiteData, CatalogProduct, CatalogTestimonial, Product, SocialLinks, CustomSection } from "@/lib/database.types";
 import { formatNaira, cn } from "@/lib/utils";
 import { useStore } from "../store-context";
 
@@ -306,4 +306,158 @@ export function SocialIcons({ social, className = "" }: { social?: SocialLinks; 
       ))}
     </div>
   );
+}
+
+/* ===================== User-added custom sections ===================== */
+function SectionButton({ text, href }: { text?: string; href?: string }) {
+  if (!text) return null;
+  return (
+    <a
+      href={href || "#"}
+      className="mt-5 inline-flex items-center justify-center rounded-md px-6 py-3 text-sm font-semibold"
+      style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}
+    >
+      {text}
+    </a>
+  );
+}
+
+/** Renders a single user-built section. Uses brand CSS vars from the template. */
+function CustomSectionBlock({ s }: { s: CustomSection }) {
+  const align = s.align === "center" ? "text-center items-center" : "text-left items-start";
+
+  switch (s.type) {
+    case "text":
+      return (
+        <section className="mx-auto max-w-3xl px-5 py-14">
+          <div className={cn("flex flex-col", align)}>
+            {s.headline && <h2 className="text-3xl font-bold">{s.headline}</h2>}
+            {s.body && <p className="mt-4 whitespace-pre-line text-black/60">{s.body}</p>}
+            <div className={s.align === "center" ? "mx-auto" : ""}><SectionButton text={s.buttonText} href={s.buttonHref} /></div>
+          </div>
+        </section>
+      );
+
+    case "image_text":
+      return (
+        <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 lg:grid-cols-2">
+          <div className={s.imageSide === "right" ? "lg:order-2" : ""}>
+            <Img src={s.image} className="aspect-[4/3] w-full rounded-2xl object-cover" />
+          </div>
+          <div className={s.imageSide === "right" ? "lg:order-1" : ""}>
+            {s.headline && <h2 className="text-3xl font-bold">{s.headline}</h2>}
+            {s.body && <p className="mt-4 whitespace-pre-line text-black/60">{s.body}</p>}
+            <SectionButton text={s.buttonText} href={s.buttonHref} />
+          </div>
+        </section>
+      );
+
+    case "image_overlay":
+      return (
+        <section className="relative">
+          <Img src={s.image} className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-black/55" />
+          <div className="relative mx-auto max-w-3xl px-5 py-28 text-center text-white">
+            {s.headline && <h2 className="text-3xl font-bold sm:text-4xl">{s.headline}</h2>}
+            {s.body && <p className="mt-4 whitespace-pre-line text-white/80">{s.body}</p>}
+            <SectionButton text={s.buttonText} href={s.buttonHref} />
+          </div>
+        </section>
+      );
+
+    case "cards":
+      return (
+        <section className="mx-auto max-w-6xl px-5 py-14">
+          {s.headline && <h2 className="text-center text-3xl font-bold">{s.headline}</h2>}
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {(s.cards || []).map((c) => (
+              <div key={c.id} className="overflow-hidden rounded-2xl border border-black/10 bg-white">
+                {c.image && <Img src={c.image} className="aspect-[4/3] w-full object-cover" />}
+                <div className="p-5">
+                  <h3 className="font-semibold">{c.title}</h3>
+                  {c.body && <p className="mt-1 text-sm text-black/60">{c.body}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+
+    case "products":
+      return (
+        <section className="mx-auto max-w-6xl px-5 py-14">
+          {s.headline && <h2 className="text-center text-3xl font-bold">{s.headline}</h2>}
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {(s.products || []).map((p) => (
+              <div key={p.id} className="overflow-hidden rounded-2xl border border-black/10 bg-white">
+                {p.image && <Img src={p.image} className="aspect-square w-full object-cover" />}
+                <div className="p-4">
+                  <h3 className="font-semibold">{p.name}</h3>
+                  {p.price && <p className="mt-1 font-bold" style={{ color: "var(--brand-primary)" }}>{p.price}</p>}
+                  {p.buttonText && (
+                    <a href={p.buttonHref || "#"} className="mt-3 block rounded-md px-4 py-2 text-center text-sm font-semibold"
+                      style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>{p.buttonText}</a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+
+    case "button":
+      return (
+        <section className="mx-auto max-w-3xl px-5 py-12 text-center">
+          <SectionButton text={s.buttonText || "Click here"} href={s.buttonHref} />
+        </section>
+      );
+
+    case "video":
+      return (
+        <section className="mx-auto max-w-4xl px-5 py-14">
+          {s.headline && <h2 className="mb-6 text-center text-3xl font-bold">{s.headline}</h2>}
+          {s.videoUrl && (
+            <video src={s.videoUrl} controls className="w-full rounded-2xl bg-black" />
+          )}
+        </section>
+      );
+
+    case "video_text":
+      return (
+        <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 lg:grid-cols-2">
+          <div className={s.imageSide === "right" ? "lg:order-2" : ""}>
+            {s.videoUrl && <video src={s.videoUrl} controls className="w-full rounded-2xl bg-black" />}
+          </div>
+          <div className={s.imageSide === "right" ? "lg:order-1" : ""}>
+            {s.headline && <h2 className="text-3xl font-bold">{s.headline}</h2>}
+            {s.body && <p className="mt-4 whitespace-pre-line text-black/60">{s.body}</p>}
+            <SectionButton text={s.buttonText} href={s.buttonHref} />
+          </div>
+        </section>
+      );
+
+    case "video_bg":
+      return (
+        <section className="relative overflow-hidden">
+          {s.videoUrl && (
+            <video src={s.videoUrl} autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover" />
+          )}
+          <div className="absolute inset-0 bg-black/55" />
+          <div className="relative mx-auto max-w-3xl px-5 py-28 text-center text-white">
+            {s.headline && <h2 className="text-3xl font-bold sm:text-4xl">{s.headline}</h2>}
+            {s.body && <p className="mt-4 whitespace-pre-line text-white/80">{s.body}</p>}
+            <SectionButton text={s.buttonText} href={s.buttonHref} />
+          </div>
+        </section>
+      );
+
+    default:
+      return null;
+  }
+}
+
+/** Renders all user-added custom sections for a site (before the footer). */
+export function CustomSections({ sections }: { sections?: CustomSection[] }) {
+  if (!sections?.length) return null;
+  return <>{sections.map((s) => <CustomSectionBlock key={s.id} s={s} />)}</>;
 }

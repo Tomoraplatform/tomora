@@ -6,7 +6,7 @@ import {
   Mail, Phone, MapPin, Quote, Bookmark,
 } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading, CustomSections } from "./shared";
 
 const SERVICES = [
   { icon: TrendingUp, t: "Business Strategy", d: "Plans that turn ideas into measurable growth." },
@@ -153,6 +153,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
         </section>
       )}
 
+      <CustomSections sections={siteData.customSections} />
       <footer className="bg-white py-8 text-center text-sm text-black/40"><SocialIcons social={siteData.social} className="mb-3 justify-center" />© {new Date().getFullYear()} {name}. Built with Tomora.</footer>
     </BrandStyle>
   );

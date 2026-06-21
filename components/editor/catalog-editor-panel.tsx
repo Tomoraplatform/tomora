@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { uploadImage } from "@/lib/upload";
 import { cn } from "@/lib/utils";
 import type { EditableList, SectionDef } from "@/lib/catalog";
-import type { SiteData } from "@/lib/database.types";
+import type { SiteData, CustomSection } from "@/lib/database.types";
+import { SectionsEditor } from "./sections-editor";
 
 const PRESET = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777", "#111111"];
 
@@ -172,6 +173,14 @@ export function CatalogEditorPanel({
           />
         );
       })}
+
+      <Section title="Add sections">
+        <p className="-mt-1 mb-1 text-xs text-ink/50">Add extra sections to your page — they appear above the footer.</p>
+        <SectionsEditor
+          sections={data.customSections || []}
+          onChange={(next: CustomSection[]) => patch({ customSections: next })}
+        />
+      </Section>
 
       <Section title="Contact details">
         <FieldRow label="Phone"><Input value={data.phone || ""} onChange={(e) => patch({ phone: e.target.value })} /></FieldRow>

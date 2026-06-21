@@ -2,7 +2,7 @@
 
 import { ArrowRight, Mic, Users, Calendar, Zap, ShieldCheck, Sparkles } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, CustomSections } from "./shared";
 
 const NAVY = "#0A0F2E";
 const ABOUT = [{ icon: Mic, t: "World-class Speakers" }, { icon: Users, t: "Global Network" }, { icon: Calendar, t: "Daily Sessions" }];
@@ -67,6 +67,7 @@ export function ConferenceDark({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
+      <CustomSections sections={siteData.customSections} />
       <footer style={{ background: NAVY }} className="text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-1"><p className="text-lg font-bold">{name}</p></div>

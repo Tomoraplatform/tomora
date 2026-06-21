@@ -2,7 +2,7 @@
 
 import { ArrowRight, PlayCircle, Truck, RotateCcw, ShieldCheck, Headphones, Instagram, Facebook } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading, CustomSections } from "./shared";
 
 export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "LUNORA";
@@ -122,6 +122,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
+      <CustomSections sections={siteData.customSections} />
       <footer className="bg-[#0A0A0A] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">

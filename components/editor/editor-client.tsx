@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import {
   Save, ExternalLink, Loader2, Check, Palette, UploadCloud,
-  ChevronDown, Eye, EyeOff, Rocket,
+  ChevronDown, Eye, EyeOff, Rocket, ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
@@ -132,6 +132,12 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
       {/* Top bar */}
       <header className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-ink/10 bg-white px-4 py-2.5">
         <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-1.5 rounded-md border border-ink/15 px-2.5 py-1.5 text-xs font-medium text-ink/70 hover:bg-ink/5"
+          >
+            <ArrowLeft className="h-4 w-4" /> <span className="hidden sm:inline">Dashboard</span>
+          </Link>
           <Link href="/dashboard"><Logo withWordmark={false} /></Link>
           <span className="hidden text-sm font-medium text-ink/70 sm:inline">Site Editor</span>
         </div>

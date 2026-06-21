@@ -2,7 +2,7 @@
 
 import { Search, Play, HandHeart, Users, CalendarDays, Plus, Phone, MapPin, Mail } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, Img, heading } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, Img, heading, CustomSections } from "./shared";
 
 const QUICK = [{ icon: Play, t: "Watch" }, { icon: HandHeart, t: "Give" }, { icon: Users, t: "Who We Are" }, { icon: CalendarDays, t: "Events" }];
 const MINISTRIES = ["Missional Communities", "Previous Sermons", "Our Weddings", "Special Events"];
@@ -76,6 +76,7 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
+      <CustomSections sections={siteData.customSections} />
       <footer className="bg-[#0D0D0D] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-3">
           <div><h4 className="text-sm font-semibold">Quick Links</h4><ul className="mt-3 space-y-2 text-sm text-white/50"><li>About</li><li>Sermons</li><li>Give</li><li>Events</li></ul></div>

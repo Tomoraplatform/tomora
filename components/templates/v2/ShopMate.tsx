@@ -2,7 +2,7 @@
 
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Quote, ShoppingCart } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, CustomSections } from "./shared";
 
 const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"];
 
@@ -131,6 +131,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
+      <CustomSections sections={siteData.customSections} />
       <ShopFooter name={name} social={siteData.social} />
     </BrandStyle>
   );
@@ -138,7 +139,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
 
 function ShopFooter({ name, social }: { name: string; social?: any }) {
   return (
-    <footer className="border-t border-black/5 bg-white">
+      <footer className="border-t border-black/5 bg-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div><p className="text-lg font-bold">{name}</p><p className="mt-2 text-sm text-black/50">Quality products delivered to your door, with secure Paystack checkout.</p><SocialIcons social={social} className="mt-3 text-black/60" /></div>
         <div><h4 className="text-sm font-semibold">Quick Links</h4><ul className="mt-3 space-y-2 text-sm text-black/50"><li>Home</li><li>Shop</li><li>Deals</li><li>About</li></ul></div>

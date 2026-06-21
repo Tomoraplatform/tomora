@@ -138,7 +138,7 @@ export function LeadsTable({ leads, siteName }: { leads: Lead[]; siteName: strin
                   <td className="px-4 py-3 text-ink">{l.name || "—"}</td>
                   <td className="px-4 py-3 text-ink/70">{l.email || "—"}</td>
                   <td className="whitespace-nowrap px-4 py-3 text-ink/70">{l.phone || "—"}</td>
-                  <td className="max-w-xs px-4 py-3 text-ink/70">{l.message || "—"}</td>
+                  <td className="min-w-[14rem] max-w-md whitespace-pre-wrap px-4 py-3 text-ink/70">{l.message || "—"}</td>
                 </tr>
               ))}
               {filtered.length === 0 && (

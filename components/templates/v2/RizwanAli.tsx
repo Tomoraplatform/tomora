@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, Linkedin, Instagram, Github, Layout, PenTool, Globe, Smartphone, Quote, Star } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading, CustomSections } from "./shared";
 
 const SERVICES = [
   { icon: Layout, t: "UX/UI", d: "Intuitive interfaces that delight users." },
@@ -123,6 +123,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
         </section>
       )}
 
+      <CustomSections sections={siteData.customSections} />
       <footer className="bg-[#F7F9FC] py-8 text-center text-sm text-black/40"><SocialIcons social={siteData.social} className="mb-3 justify-center" />© {new Date().getFullYear()} {name}. Built with Tomora.</footer>
     </BrandStyle>
   );

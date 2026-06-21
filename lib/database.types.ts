@@ -214,6 +214,8 @@ export interface SiteData {
   brandColors?: string[];
   /** Per-template editable section headings, keyed by section id. */
   sectionTitles?: Record<string, string>;
+  /** User-added custom sections, rendered before the footer on any template. */
+  customSections?: CustomSection[];
   testimonials?: CatalogTestimonial[];
   services?: CatalogServiceItem[];
   resume?: CatalogResumeItem[];
@@ -275,6 +277,49 @@ export interface Lead {
   message: string | null;
   source: string;
   created_at: string;
+}
+
+/* ---- User-added custom sections (page builder) ---- */
+export type CustomSectionType =
+  | "text"          // headline + description
+  | "image_text"    // image and text side by side
+  | "image_overlay" // background image with overlay + text
+  | "cards"         // section with cards
+  | "products"      // products with pricing
+  | "button"        // a call-to-action button
+  | "video"         // a video (uploaded, ≤10MB)
+  | "video_text"    // video and text side by side
+  | "video_bg";     // video as background with text on top
+
+export interface CustomSectionCard {
+  id: string;
+  image?: string;
+  title: string;
+  body?: string;
+}
+
+export interface CustomSectionProduct {
+  id: string;
+  image?: string;
+  name: string;
+  price?: string;
+  buttonText?: string;
+  buttonHref?: string;
+}
+
+export interface CustomSection {
+  id: string;
+  type: CustomSectionType;
+  headline?: string;
+  body?: string;
+  image?: string;
+  imageSide?: "left" | "right";
+  videoUrl?: string;
+  buttonText?: string;
+  buttonHref?: string;
+  align?: "left" | "center";
+  cards?: CustomSectionCard[];
+  products?: CustomSectionProduct[];
 }
 
 export type DomainRequestStatus = "paid" | "registered" | "connected" | "cancelled";
