@@ -12,9 +12,13 @@ export const GRACE_PERIOD_DAYS = 7;
 export const EXTRA_DOMAIN_AMOUNT = 8000; // NGN — connect a domain you already own
 
 /** Flat price to buy + activate a brand-new domain through Tomora (assisted). */
-export const NEW_DOMAIN_AMOUNT = 5000; // NGN — covers .com.ng / .ng registration
-/** TLDs offered in the assisted domain search (kept within the ₦4,000–5,000 band). */
-export const NEW_DOMAIN_TLDS = ["com.ng", "ng"] as const;
+export const NEW_DOMAIN_AMOUNT = 5000; // NGN — covers .com.ng registration (~₦2,500–3,500) + margin
+/**
+ * TLDs offered in the assisted domain search. Only .com.ng is cheap enough to
+ * sell profitably at the flat NEW_DOMAIN_AMOUNT; pricier TLDs (e.g. .ng, .com)
+ * would need per-TLD pricing before being added here.
+ */
+export const NEW_DOMAIN_TLDS = ["com.ng"] as const;
 
 /**
  * Given the current billing_cycle_position (0-3), returns the amount to charge
