@@ -75,13 +75,13 @@ export default async function BillingPage({
           return (
             <Card key={plan.id} className={plan.popular ? "border-2 border-ink" : ""}>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>{plan.name}</CardTitle>
-                  {plan.popular && <Badge>Popular</Badge>}
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="min-w-0 truncate">{plan.name}</CardTitle>
+                  {plan.popular && <Badge className="shrink-0">Popular</Badge>}
                 </div>
-                <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-ink">{formatNaira(plan.price!)}</span>
-                  <span className="text-ink/50">/{plan.period}</span>
+                <div className="mt-2 flex flex-wrap items-baseline gap-x-1">
+                  <span className="text-2xl font-bold text-ink sm:text-3xl">{formatNaira(plan.price!)}</span>
+                  <span className="text-sm text-ink/50">/{plan.period}</span>
                 </div>
                 {plan.id === "pro" && (
                   <p className="text-xs text-ink/50">then {formatNaira(plan.renewal!)} every 4 months</p>
@@ -92,7 +92,7 @@ export default async function BillingPage({
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-start gap-2">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                      <span className="text-ink/80">{f}</span>
+                      <span className="min-w-0 break-words text-ink/80">{f}</span>
                     </li>
                   ))}
                 </ul>

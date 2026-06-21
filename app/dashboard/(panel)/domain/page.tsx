@@ -1,7 +1,7 @@
 import { getDashboardData } from "@/lib/dashboard";
 import { createClient } from "@/lib/supabase/server";
 import { DomainManager } from "@/components/dashboard/domain-manager";
-import { APP_DOMAIN, EXTRA_DOMAIN_AMOUNT, NEW_DOMAIN_AMOUNT } from "@/lib/constants";
+import { APP_DOMAIN, NEW_DOMAIN_AMOUNT } from "@/lib/constants";
 import { domainAccess } from "@/lib/domain-access";
 import type { DomainRequest } from "@/lib/database.types";
 
@@ -30,10 +30,7 @@ export default async function DomainPage() {
     <DomainManager
       initialDomain={site!.custom_domain}
       initialStatus={site!.domain_status}
-      canConnect={access.canConnect}
       included={access.included}
-      domainPurchased={!!site!.domain_purchased}
-      extraDomainAmount={EXTRA_DOMAIN_AMOUNT}
       newDomainAmount={NEW_DOMAIN_AMOUNT}
       requests={requests}
       siteId={site!.id}
