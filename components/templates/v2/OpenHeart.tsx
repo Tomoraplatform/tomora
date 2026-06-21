@@ -33,6 +33,7 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
+      <CustomSections sections={siteData.customSections} at="top" />
 
       {/* Impact grid */}
       <section className="grid grid-cols-3 gap-1">
@@ -79,7 +80,7 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
-      <CustomSections sections={siteData.customSections} />
+      <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="bg-[#F9F7F4] border-t border-black/5">
         <div className="mx-auto flex max-w-6xl flex-col justify-between gap-8 px-5 py-12 md:flex-row">
           <div><p className="text-lg font-bold">{name}</p><p className="mt-2 text-sm text-black/50">{siteData.address || "Lagos, Nigeria"}<br />{siteData.phone || "+234 800 000 0000"}<br />{siteData.email || "hello@openheart.org"}</p><SocialIcons social={siteData.social} className="mt-3 text-black/60" /></div>

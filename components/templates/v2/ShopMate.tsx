@@ -55,6 +55,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
+      <CustomSections sections={siteData.customSections} at="top" />
 
       {/* Trust bar */}
       <section className="border-y border-black/5">
@@ -131,7 +132,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
-      <CustomSections sections={siteData.customSections} />
+      <CustomSections sections={siteData.customSections} at="bottom" />
       <ShopFooter name={name} social={siteData.social} />
     </BrandStyle>
   );

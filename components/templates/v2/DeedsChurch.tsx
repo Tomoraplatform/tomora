@@ -40,6 +40,7 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
           <a href="#" className="mt-6 inline-block rounded-md border-2 border-white px-6 py-3 text-sm font-semibold uppercase">Plan Your Visit</a>
         </div>
       </section>
+      <CustomSections sections={siteData.customSections} at="top" />
 
       {/* About */}
       <section id="about" className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-[40%_60%]">
@@ -73,7 +74,7 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
-      <CustomSections sections={siteData.customSections} />
+      <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="border-t border-black/5">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 text-sm">
           <div><p className="text-lg font-bold">{name}</p><p className="mt-2 text-black/50">A place to grow in faith and community.</p></div>

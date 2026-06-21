@@ -44,6 +44,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
+      <CustomSections sections={siteData.customSections} at="top" />
 
       {/* Credibility */}
       <section id="about" className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-16 lg:grid-cols-[40%_60%]">
@@ -110,7 +111,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
         <BrandButton className="mt-6">Join Now</BrandButton>
       </section>
 
-      <CustomSections sections={siteData.customSections} />
+      <CustomSections sections={siteData.customSections} at="bottom" />
       <footer style={{ background: GREEN }} className="text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2"><p className="text-lg font-bold">{name}</p><p className="mt-2 max-w-xs text-sm text-white/50">Trusted by 6+ million users in 175+ countries.</p><SocialIcons social={siteData.social} className="mt-4 text-white/70" /></div>

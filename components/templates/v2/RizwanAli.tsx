@@ -48,6 +48,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
           <Img src={siteData.heroImage} className="relative z-10 mx-auto aspect-square w-72 rounded-full object-cover sm:w-80" />
         </div>
       </section>
+      <CustomSections sections={siteData.customSections} at="top" />
 
       {/* About */}
       <section id="about" className="bg-[#F7F9FC]">
@@ -123,7 +124,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
         </section>
       )}
 
-      <CustomSections sections={siteData.customSections} />
+      <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="bg-[#F7F9FC] py-8 text-center text-sm text-black/40"><SocialIcons social={siteData.social} className="mb-3 justify-center" />© {new Date().getFullYear()} {name}. Built with Tomora.</footer>
     </BrandStyle>
   );

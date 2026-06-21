@@ -34,6 +34,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
+      <CustomSections sections={siteData.customSections} at="top" />
 
       {/* Quick access */}
       <section id="quick" className="mx-auto max-w-6xl px-5 py-14">
@@ -89,7 +90,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
-      <CustomSections sections={siteData.customSections} />
+      <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="bg-[#1A1208] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-3">
           <div><p className="text-lg font-bold">{name}</p><p className="mt-2 text-sm text-white/50">{siteData.address || "Town Hall, Main Street"}</p></div>

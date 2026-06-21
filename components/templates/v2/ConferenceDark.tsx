@@ -32,6 +32,7 @@ export function ConferenceDark({ siteData, brandColor }: TemplateProps) {
             <BrandButton as="a" href={siteData.ctaHref || "#"} className="mt-7">{siteData.ctaText || "Register"} <ArrowRight className="h-4 w-4" /></BrandButton>
           </div>
         </section>
+      <CustomSections sections={siteData.customSections} at="top" />
       </div>
 
       {/* About (light) */}
@@ -67,7 +68,7 @@ export function ConferenceDark({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
-      <CustomSections sections={siteData.customSections} />
+      <CustomSections sections={siteData.customSections} at="bottom" />
       <footer style={{ background: NAVY }} className="text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-1"><p className="text-lg font-bold">{name}</p></div>

@@ -53,6 +53,7 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
           <Img src={siteData.heroImage} className="hidden h-40 w-56 rounded-2xl object-cover lg:block" />
         </div>
       </section>
+      <CustomSections sections={siteData.customSections} at="top" />
 
       {/* Category row */}
       <section className="mx-auto max-w-6xl px-5 py-10">
@@ -126,7 +127,7 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
-      <CustomSections sections={siteData.customSections} />
+      <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="border-t border-black/5">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 text-sm">
           <div><p className="text-lg font-bold" style={{ color: "var(--brand-primary)" }}>{name}</p><p className="mt-2 text-black/50">Practical programs that get you hired.</p></div>

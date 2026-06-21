@@ -456,8 +456,14 @@ function CustomSectionBlock({ s }: { s: CustomSection }) {
   }
 }
 
-/** Renders all user-added custom sections for a site (before the footer). */
-export function CustomSections({ sections }: { sections?: CustomSection[] }) {
+/**
+ * Renders user-added custom sections for a given placement zone:
+ *  - "top"    → just below the hero
+ *  - "bottom" → above the footer (default)
+ */
+export function CustomSections({ sections, at = "bottom" }: { sections?: CustomSection[]; at?: "top" | "bottom" }) {
   if (!sections?.length) return null;
-  return <>{sections.map((s) => <CustomSectionBlock key={s.id} s={s} />)}</>;
+  const zone = sections.filter((s) => (s.placement || "bottom") === at);
+  if (!zone.length) return null;
+  return <>{zone.map((s) => <CustomSectionBlock key={s.id} s={s} />)}</>;
 }

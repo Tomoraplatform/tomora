@@ -36,6 +36,7 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
+      <CustomSections sections={siteData.customSections} at="top" />
 
       {/* Mission */}
       <section className="mx-auto max-w-3xl px-5 py-16 text-center"><p className="text-xl leading-relaxed text-black/70">{siteData.heroSubtext} We are a community committed to faith, hope and love — come as you are and grow with us.</p></section>
@@ -76,7 +77,7 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
-      <CustomSections sections={siteData.customSections} />
+      <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="bg-[#0D0D0D] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-3">
           <div><h4 className="text-sm font-semibold">Quick Links</h4><ul className="mt-3 space-y-2 text-sm text-white/50"><li>About</li><li>Sermons</li><li>Give</li><li>Events</li></ul></div>

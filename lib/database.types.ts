@@ -310,6 +310,8 @@ export interface CustomSectionProduct {
 export interface CustomSection {
   id: string;
   type: CustomSectionType;
+  /** Where on the page this section renders: just below the hero, or above the footer. */
+  placement?: "top" | "bottom";
   headline?: string;
   body?: string;
   image?: string;

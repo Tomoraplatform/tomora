@@ -67,6 +67,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
           <div className="absolute -bottom-4 left-6 rounded-xl bg-white px-4 py-3 shadow-lg"><p className="text-xs text-black/40">Status</p><p className="text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>Available for work</p></div>
         </div>
       </section>
+      <CustomSections sections={siteData.customSections} at="top" />
 
       {/* What I Do */}
       <section id="services" className="mx-auto max-w-6xl px-5 py-14">
@@ -153,7 +154,7 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
         </section>
       )}
 
-      <CustomSections sections={siteData.customSections} />
+      <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="bg-white py-8 text-center text-sm text-black/40"><SocialIcons social={siteData.social} className="mb-3 justify-center" />© {new Date().getFullYear()} {name}. Built with Tomora.</footer>
     </BrandStyle>
   );

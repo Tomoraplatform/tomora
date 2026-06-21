@@ -39,6 +39,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
+      <CustomSections sections={siteData.customSections} at="top" />
 
       {/* Search band */}
       <section className="border-b border-black/5 bg-white">
@@ -127,7 +128,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
         </section>
       )}
 
-      <CustomSections sections={siteData.customSections} />
+      <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="bg-[#1A0533] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2"><p className="text-lg font-bold">{name}</p><p className="mt-2 max-w-xs text-sm text-white/50">Bringing the world together, one event at a time.</p></div>

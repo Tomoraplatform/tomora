@@ -73,6 +73,17 @@ export function SectionsEditor({
               <button onClick={() => remove(i)} className="text-ink/40 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
             </div>
           </div>
+          <div className="mb-2">
+            <Label className="text-[11px] text-ink/50">Placement</Label>
+            <select
+              className="mt-1 h-8 w-full rounded-md border border-ink/15 bg-white px-2 text-xs"
+              value={s.placement || "bottom"}
+              onChange={(e) => update(i, { placement: e.target.value as "top" | "bottom" })}
+            >
+              <option value="top">Below the hero (top of page)</option>
+              <option value="bottom">Above the footer (bottom of page)</option>
+            </select>
+          </div>
           <SectionFields section={s} onPatch={(p) => update(i, p)} />
         </div>
       ))}

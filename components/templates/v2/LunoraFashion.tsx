@@ -50,6 +50,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
+      <CustomSections sections={siteData.customSections} at="top" />
 
       {/* Category circles */}
       <section className="border-y border-black/5 bg-white">
@@ -122,7 +123,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
 
-      <CustomSections sections={siteData.customSections} />
+      <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="bg-[#0A0A0A] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
