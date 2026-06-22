@@ -86,6 +86,17 @@ export async function createSubaccount(params: {
   return { subaccountCode: json.data.subaccount_code as string };
 }
 
+/** Updates a subaccount's commission split (percentage charge). */
+export async function updateSubaccount(code: string, percentageCharge: number): Promise<boolean> {
+  const res = await fetch(`${PAYSTACK_BASE}/subaccount/${encodeURIComponent(code)}`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${secret()}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ percentage_charge: percentageCharge }),
+  });
+  const json = await res.json();
+  return !!json.status;
+}
+
 /** Verify a Paystack transaction by reference. */
 export async function verifyTransaction(reference: string): Promise<{
   success: boolean;

@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { isAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { TRIAL_DAYS, getPlan } from "@/lib/constants";
+import { updateSubaccount } from "@/lib/paystack";
+import { TRIAL_DAYS, getPlan, STORE_COMMISSION_PERCENT } from "@/lib/constants";
 
 async function guard() {
   if (!(await isAdmin())) throw new Error("Forbidden");
@@ -83,6 +84,21 @@ export async function revokePlan(userId: string): Promise<{ ok: boolean; error?:
     await admin.from("sites").update({ is_live: false }).eq("user_id", userId);
     revalidatePath("/admin");
     return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/** Update every existing store subaccount to the current commission rate. */
+export async function syncStoreCommission(): Promise<{ ok: boolean; updated?: number; error?: string }> {
+  try {
+    const admin = await guard();
+    const { data: sites } = await admin
+      .from("sites").select("paystack_subaccount").not("paystack_subaccount", "is", null);
+    const codes = (sites || []).map((s: any) => s.paystack_subaccount).filter(Boolean);
+    let updated = 0;
+    for (const code of codes) {
+      if (await updateSubaccount(code, STORE_COMMISSION_PERCENT)) updated++;
+    }
+    return { ok: true, updated };
   } catch (e: any) { return { ok: false, error: e.message }; }
 }
 

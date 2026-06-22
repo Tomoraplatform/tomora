@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/utils";
-import { extendTrial, setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount } from "@/app/admin/actions";
+import { extendTrial, setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount, syncStoreCommission } from "@/app/admin/actions";
 import { PLANS } from "@/lib/constants";
 import type { DomainStatus } from "@/lib/database.types";
 
@@ -56,7 +56,20 @@ export function AdminDashboard({
           <Logo />
           <Badge>Admin</Badge>
         </div>
-        <Button asChild variant="outline" size="sm"><Link href="/dashboard">Back to app</Link></Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={busy === "sync"}
+            onClick={() => run("sync", async () => {
+              const res = await syncStoreCommission();
+              if (typeof window !== "undefined") window.alert(res.ok ? `Updated ${res.updated} store(s) to the current commission.` : (res.error || "Failed."));
+            })}
+          >
+            {busy === "sync" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Sync store commission
+          </Button>
+          <Button asChild variant="outline" size="sm"><Link href="/dashboard">Back to app</Link></Button>
+        </div>
       </header>
 
       <main className="mx-auto max-w-6xl space-y-8 px-5 py-8">
