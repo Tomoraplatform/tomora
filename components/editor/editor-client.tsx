@@ -38,7 +38,7 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
         businessName: base.businessName || "Your Brand",
         brandColor: base.brandColor,
       });
-      (["services", "portfolioItems", "courses", "causes", "events", "testimonials", "resume", "faqs", "stats", "hours", "shopCategories"] as const).forEach((k) => {
+      (["services", "portfolioItems", "courses", "causes", "events", "testimonials", "resume", "faqs", "stats", "hours", "shopCategories", "trustBadges"] as const).forEach((k) => {
         if (!(base as any)[k]?.length && (defaults as any)[k]?.length) (base as any)[k] = (defaults as any)[k];
       });
     }

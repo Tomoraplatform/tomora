@@ -71,6 +71,8 @@ function toCatalogProducts(products?: Product[]): CatalogProduct[] | undefined {
     comparePrice: p.compare_price ?? undefined,
     image: p.images?.[0] || "",
     category: p.category || undefined,
+    bestSeller: p.is_best_seller,
+    offer: p.is_offer,
   }));
 }
 

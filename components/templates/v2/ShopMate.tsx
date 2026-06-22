@@ -6,16 +6,36 @@ import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, Out
 
 const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"];
 
+const TRUST_ICONS = [Truck, ShieldCheck, RotateCcw, Headphones];
+const slug = (s: string) => (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
 export function ShopMate({ siteData, brandColor }: TemplateProps) {
-  const name = siteData.businessName || "ShopMate";
+  const name = siteData.businessName || "Ecommerce One";
   const products = siteData.products || [];
-  const trust = [
-    { icon: Truck, t: "Free Shipping", s: "On orders over ₦20,000" },
-    { icon: ShieldCheck, t: "Secure Payment", s: "100% secure payment" },
-    { icon: RotateCcw, t: "Easy Returns", s: "30 days return policy" },
-    { icon: Headphones, t: "24/7 Support", s: "Dedicated support" },
-  ];
-  const cats = ["Electronics", "Fashion", "Home & Kitchen", "Beauty", "Sports", "Accessories"];
+  const badges = siteData.trustBadges?.length
+    ? siteData.trustBadges
+    : [
+        { id: "1", title: "Free Shipping", subtitle: "On orders over ₦20,000" },
+        { id: "2", title: "Secure Payment", subtitle: "100% secure payment" },
+        { id: "3", title: "Easy Returns", subtitle: "30 days return policy" },
+        { id: "4", title: "24/7 Support", subtitle: "Dedicated support" },
+      ];
+  const cats = siteData.shopCategories?.length
+    ? siteData.shopCategories
+    : Array.from(new Set(products.map((p) => p.category).filter(Boolean))).map((c, i) => ({ id: String(i), name: c as string, image: "" }));
+
+  // All products grouped by category (matched to the category chips by slug).
+  const groups = cats
+    .map((c) => ({ name: c.name, items: products.filter((p) => slug(p.category || "") === slug(c.name)) }))
+    .filter((g) => g.items.length);
+  const grouped = new Set(groups.flatMap((g) => g.items.map((p) => p.id)));
+  const others = products.filter((p) => !grouped.has(p.id));
+  if (others.length) groups.push({ name: "More", items: others });
+
+  // Best sellers + offers are flagged by the store owner.
+  const bestSellers = products.filter((p) => p.bestSeller);
+  const offers = products.filter((p) => p.offer);
+  const BEST_LIMIT = 5;
 
   const blocks: Record<string, React.ReactNode> = {
     hero: (
@@ -26,7 +46,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
             <h1 className="mt-4 font-serif text-4xl font-bold leading-tight sm:text-5xl">{siteData.heroHeadline}</h1>
             <p className="mt-4 max-w-md text-black/60">{siteData.heroSubtext}</p>
             <div className="mt-7 flex flex-wrap gap-3">
-              <BrandButton as="a" href={siteData.ctaHref || "#products"}>{siteData.ctaText || "Shop Now"} <ArrowRight className="h-4 w-4" /></BrandButton>
+              <BrandButton as="a" href={siteData.ctaHref || "#allproducts"}>{siteData.ctaText || "Shop Now"} <ArrowRight className="h-4 w-4" /></BrandButton>
               <OutlineButton href="#offer">Explore Deals</OutlineButton>
             </div>
             <div className="mt-7 flex items-center gap-3">
@@ -47,12 +67,15 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
     trust: (
       <section className="border-y border-black/5">
         <div className="mx-auto grid max-w-6xl gap-6 px-5 py-8 sm:grid-cols-2 lg:grid-cols-4">
-          {trust.map(({ icon: Icon, t, s }) => (
-            <div key={t} className="flex items-center gap-3">
-              <Icon className="h-6 w-6" style={{ color: "var(--brand-primary)" }} />
-              <div><p className="text-sm font-semibold">{t}</p><p className="text-xs text-black/50">{s}</p></div>
-            </div>
-          ))}
+          {badges.map((b, i) => {
+            const Icon = TRUST_ICONS[i % TRUST_ICONS.length];
+            return (
+              <div key={b.id || i} className="flex items-center gap-3">
+                <Icon className="h-6 w-6" style={{ color: "var(--brand-primary)" }} />
+                <div><p className="text-sm font-semibold">{b.title}</p>{b.subtitle ? <p className="text-xs text-black/50">{b.subtitle}</p> : null}</div>
+              </div>
+            );
+          })}
         </div>
       </section>
     ),
@@ -60,43 +83,66 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
       <section id="categories" className="mx-auto max-w-6xl px-5 py-14">
         <div className="flex items-end justify-between">
           <h2 className="text-2xl font-bold">{heading(siteData, "categories", "Shop by Categories")}</h2>
-          <a href="#products" className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All <ArrowRight className="h-4 w-4" /></a>
+          <a href="#allproducts" className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All <ArrowRight className="h-4 w-4" /></a>
         </div>
         <div className="mt-8 flex gap-6 overflow-x-auto pb-2">
-          {(siteData.shopCategories?.length ? siteData.shopCategories : cats.map((c, i) => ({ id: String(i), name: c, image: "" }))).map((c, i) => (
-            <div key={c.id || i} className="flex w-24 shrink-0 flex-col items-center gap-2 text-center">
+          {cats.map((c, i) => (
+            <a key={c.id || i} href={`#cat-${slug(c.name)}`} className="flex w-24 shrink-0 flex-col items-center gap-2 text-center">
               <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full" style={{ background: TINTS[i % TINTS.length] }}>
                 <Img src={c.image || `https://picsum.photos/seed/cat${i}/120`} className="h-12 w-12 rounded-full object-cover" />
               </div>
               <span className="text-xs font-medium text-black/70">{c.name}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    ),
+    allproducts: (
+      <section id="allproducts" className="bg-[#FBFAF7]">
+        <div className="mx-auto max-w-6xl px-5 py-14">
+          <h2 className="text-2xl font-bold">{heading(siteData, "allproducts", "All Products")}</h2>
+          {groups.length === 0 && <p className="mt-4 text-sm text-black/50">Products you add in your dashboard will appear here, grouped by category.</p>}
+          {groups.map((g) => (
+            <div key={g.name} id={`cat-${slug(g.name)}`} className="scroll-mt-24 pt-10 first:pt-6">
+              <h3 className="text-lg font-semibold">{g.name}</h3>
+              <div className="mt-5 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
+                {g.items.map((p) => <ProductCardV2 key={p.id} product={p} siteData={siteData} />)}
+              </div>
             </div>
           ))}
         </div>
       </section>
     ),
     bestsellers: (
-      <section id="products" className="bg-[#FBFAF7]">
-        <div className="mx-auto max-w-6xl px-5 py-14">
-          <div className="flex items-end justify-between">
-            <h2 className="text-2xl font-bold">{heading(siteData, "bestsellers", "Best Selling Products")}</h2>
-            <a href="#products" className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All <ArrowRight className="h-4 w-4" /></a>
-          </div>
-          <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-5">
-            {products.slice(0, 5).map((p) => <ProductCardV2 key={p.id} product={p} siteData={siteData} />)}
-          </div>
+      <section id="bestsellers" className="mx-auto max-w-6xl px-5 py-14">
+        <div className="flex items-end justify-between">
+          <h2 className="text-2xl font-bold">{heading(siteData, "bestsellers", "Best Selling Products")}</h2>
+          {bestSellers.length > BEST_LIMIT && (
+            <a href="#allproducts" className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All <ArrowRight className="h-4 w-4" /></a>
+          )}
         </div>
+        {bestSellers.length === 0 ? (
+          <p className="mt-4 text-sm text-black/50">Mark products as “Best seller” in your dashboard to feature them here.</p>
+        ) : (
+          <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-5">
+            {bestSellers.slice(0, BEST_LIMIT).map((p) => <ProductCardV2 key={p.id} product={p} siteData={siteData} />)}
+          </div>
+        )}
       </section>
     ),
     offer: (
-      <section id="offer" className="mx-auto max-w-6xl px-5 py-14">
-        <div className="grid items-center gap-8 overflow-hidden rounded-3xl bg-[#F3EFE6] p-8 md:grid-cols-2 md:p-12">
-          <div>
-            <span className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--brand-primary)" }}>Special Offer</span>
-            <h2 className="mt-2 font-serif text-4xl font-bold">{heading(siteData, "sale", "Up to 50% Off")}</h2>
-            <p className="mt-3 max-w-sm text-black/60">{subheading(siteData, "sale", "Limited time savings across our best-selling categories. Don't miss out.")}</p>
-            <BrandButton as="a" href="#products" className="mt-6">Shop the Sale <ArrowRight className="h-4 w-4" /></BrandButton>
-          </div>
-          <div className="aspect-[4/3] overflow-hidden rounded-2xl"><Img src="https://picsum.photos/seed/shopmate-offer/800/600" className="h-full w-full object-cover" /></div>
+      <section id="offer" className="bg-[#F3EFE6]">
+        <div className="mx-auto max-w-6xl px-5 py-14">
+          <span className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--brand-primary)" }}>Special Offer</span>
+          <h2 className="mt-2 font-serif text-4xl font-bold">{heading(siteData, "sale", "Up to 50% Off")}</h2>
+          <p className="mt-3 max-w-xl text-black/60">{subheading(siteData, "sale", "Limited time savings across our best-selling categories. Don't miss out.")}</p>
+          {offers.length === 0 ? (
+            <p className="mt-6 text-sm text-black/50">Mark a product as “On offer” in your dashboard to feature it here.</p>
+          ) : (
+            <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
+              {offers.map((p) => <ProductCardV2 key={p.id} product={p} siteData={siteData} />)}
+            </div>
+          )}
         </div>
       </section>
     ),
@@ -110,8 +156,8 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
                 <Quote className="h-7 w-7" style={{ color: "var(--brand-primary)" }} />
                 <blockquote className="mt-3 text-sm text-black/70">{t.quote}</blockquote>
                 <figcaption className="mt-4 flex items-center gap-3">
-                  <Img src={`https://picsum.photos/seed/rev${i}/64`} className="h-10 w-10 rounded-full object-cover" />
-                  <span className="text-sm font-semibold">{t.name}</span>
+                  <Img src={t.image || `https://picsum.photos/seed/rev${i}/64`} className="h-10 w-10 rounded-full object-cover" />
+                  <div><span className="block text-sm font-semibold">{t.name}</span>{t.role ? <span className="block text-xs text-black/50">{t.role}</span> : null}</div>
                 </figcaption>
               </figure>
             ))}
@@ -128,14 +174,14 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-xl font-bold" />
           <nav className="hidden gap-7 text-sm text-black/60 md:flex">
-            <a href="#categories">Categories</a><a href="#products">Shop</a><a href="#offer">Deals</a>
+            <a href="#categories">Categories</a><a href="#allproducts">Shop</a><a href="#offer">Deals</a>
           </nav>
           <button className="relative" aria-label="Cart"><ShoppingCart className="h-5 w-5" /></button>
         </div>
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "trust", "categories", "bestsellers", "offer", "testimonials"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "trust", "categories", "allproducts", "bestsellers", "offer", "testimonials"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
       <ShopFooter name={name} social={siteData.social} />
     </BrandStyle>

@@ -113,6 +113,8 @@ export interface Product {
   category: string | null;
   stock: number;
   is_active: boolean;
+  is_best_seller: boolean;
+  is_offer: boolean;
   created_at: string;
 }
 
@@ -161,6 +163,8 @@ export interface CatalogProduct {
   rating?: number;
   reviews?: number;
   category?: string;
+  bestSeller?: boolean;
+  offer?: boolean;
 }
 export interface CatalogCourse {
   id: string;
@@ -230,6 +234,7 @@ export interface SiteData {
   faqs?: CatalogFaq[];
   stats?: CatalogStat[];
   shopCategories?: CatalogCategoryItem[];
+  trustBadges?: CatalogTrustBadge[];
   hours?: CatalogHour[];
   products?: CatalogProduct[];
   courses?: CatalogCourse[];
@@ -243,6 +248,7 @@ export interface CatalogTestimonial {
   name: string;
   role?: string;
   quote: string;
+  image?: string;
 }
 
 export interface CatalogServiceItem {
@@ -269,6 +275,12 @@ export interface CatalogCategoryItem {
   id: string;
   name: string;
   image?: string;
+}
+
+export interface CatalogTrustBadge {
+  id: string;
+  title: string;
+  subtitle?: string;
 }
 
 export interface CatalogStat {

@@ -36,7 +36,7 @@ export interface CatalogTemplate {
 }
 
 export const CATALOG_TEMPLATES: CatalogTemplate[] = [
-  { id: "shop-01", name: "ShopMate", category: "shop", component: "ShopMate", accent: "#5C6B3A", blurb: "Clean general store with categories and best sellers." },
+  { id: "shop-01", name: "Ecommerce One", category: "shop", component: "ShopMate", accent: "#5C6B3A", blurb: "Full online store: categories, best sellers, special offers and reviews." },
   { id: "shop-02", name: "Lunora Fashion", category: "shop", component: "LunoraFashion", accent: "#0A0A0A", dark: true, blurb: "Editorial fashion store with bold serif headlines." },
   { id: "shop-03", name: "Men's Clothes", category: "shop", component: "MensClothes", accent: "#1A1A1A", blurb: "Catalog-style menswear shop with category banners." },
   { id: "portfolio-01", name: "Inbio", category: "portfolio", component: "Inbio", accent: "#E74C6B", blurb: "Personal portfolio with services, resume and projects." },
@@ -53,9 +53,9 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
-  "shop-01": ["shopCategories", "testimonials"],
+  "shop-01": ["trustBadges", "shopCategories", "testimonials"],
   "shop-02": ["shopCategories"],
   "shop-03": ["shopCategories"],
   "portfolio-01": ["services", "portfolio", "resume", "testimonials"],
@@ -95,6 +95,7 @@ export type SectionDef = {
 export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   "shop-01": [
     { key: "categories", label: "Shop by Categories" },
+    { key: "allproducts", label: "All Products" },
     { key: "bestsellers", label: "Best Selling Products" },
     { key: "sale", label: "Up to 50% Off", text: true },
     { key: "testimonials", label: "What Our Customers Say" },
@@ -182,10 +183,11 @@ export function templateSections(id: string): SectionDef[] {
 export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
   "shop-01": [
     { key: "hero", label: "Hero", hero: true },
-    { key: "trust", label: "Trust badges" },
+    { key: "trust", label: "Trust badges", list: "trustBadges" },
     { key: "categories", label: "Categories", heading: "categories", list: "shopCategories" },
-    { key: "bestsellers", label: "Products", heading: "bestsellers", products: true },
-    { key: "offer", label: "Special offer", heading: "sale", text: true },
+    { key: "allproducts", label: "All products", heading: "allproducts", products: true },
+    { key: "bestsellers", label: "Best sellers", heading: "bestsellers", products: true },
+    { key: "offer", label: "Special offer", heading: "sale", text: true, products: true },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
   ],
   "shop-02": [
@@ -314,6 +316,7 @@ function demoProducts(seed: string): CatalogProduct[] {
     comparePrice: i % 2 === 0 ? [22000, 40000, 8000, 18000, 12000, 33000][i] : undefined,
     image: img(`${seed}-prod-${i}`), rating: 4 + (i % 2 ? 0.5 : 0.8), reviews: 24 + i * 13,
     category: ["Electronics", "Fashion", "Home & Kitchen", "Beauty", "Sports", "Accessories"][i],
+    bestSeller: i < 3, offer: i === 0,
   }));
 }
 function demoShopCategories(templateId: string, seed: string): import("./database.types").CatalogCategoryItem[] {
@@ -324,6 +327,14 @@ function demoShopCategories(templateId: string, seed: string): import("./databas
   };
   const names = sets[templateId] || sets["shop-01"];
   return names.map((name, i) => ({ id: `${seed}-cat${i}`, name, image: img(`${seed}-cat-${i}`, 240, 240) }));
+}
+function demoTrustBadges(seed: string): import("./database.types").CatalogTrustBadge[] {
+  return [
+    { id: `${seed}-tb1`, title: "Free Shipping", subtitle: "On orders over ₦20,000" },
+    { id: `${seed}-tb2`, title: "Secure Payment", subtitle: "100% secure payment" },
+    { id: `${seed}-tb3`, title: "Easy Returns", subtitle: "30 days return policy" },
+    { id: `${seed}-tb4`, title: "24/7 Support", subtitle: "Dedicated support" },
+  ];
 }
 function demoCourses(seed: string): CatalogCourse[] {
   const t = ["Product Design Bootcamp", "Full-Stack Development", "Digital Marketing", "Data Analytics"];
@@ -519,7 +530,7 @@ export function createCatalogContent(
   };
 
   switch (tpl?.category) {
-    case "shop": data.products = demoProducts(seed); data.shopCategories = demoShopCategories(templateId, seed); break;
+    case "shop": data.products = demoProducts(seed); data.shopCategories = demoShopCategories(templateId, seed); data.trustBadges = demoTrustBadges(seed); break;
     case "education": data.courses = demoCourses(seed); if (templateId === "education-01") data.faqs = demoFaqs(seed); break;
     case "organization": data.causes = demoCauses(seed); data.events = demoEvents(seed); break;
     case "events": data.events = demoEvents(seed); if (templateId === "events-02") data.hours = demoHours(seed); break;

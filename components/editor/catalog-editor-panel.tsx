@@ -44,8 +44,13 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
   },
   testimonials: {
     key: "testimonials", title: "Testimonials",
-    fields: [{ key: "name", label: "Name" }, { key: "role", label: "Role" }, { key: "quote", label: "Quote", type: "textarea" }],
-    make: () => ({ id: `t-${Date.now()}`, name: "New name", role: "Customer", quote: "Their words here." }),
+    fields: [{ key: "image", label: "Photo", type: "image" }, { key: "name", label: "Name" }, { key: "role", label: "Role" }, { key: "quote", label: "Quote", type: "textarea" }],
+    make: () => ({ id: `t-${Date.now()}`, name: "New name", role: "Customer", quote: "Their words here.", image: "" }),
+  },
+  trustBadges: {
+    key: "trustBadges", title: "Trust badge",
+    fields: [{ key: "title", label: "Title" }, { key: "subtitle", label: "Subtitle" }],
+    make: () => ({ id: `tb-${Date.now()}`, title: "New badge", subtitle: "Detail" }),
   },
   faqs: {
     key: "faqs", title: "FAQ",
