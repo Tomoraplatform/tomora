@@ -203,6 +203,24 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "testimonials", label: "Testimonials" },
     { key: "contact", label: "Contact" },
   ],
+  "education-01": [
+    { key: "hero", label: "Hero" },
+    { key: "categories", label: "Category row" },
+    { key: "advantages", label: "Advantages" },
+    { key: "courses", label: "Bootcamp / Courses" },
+    { key: "features", label: "Features" },
+    { key: "faq", label: "FAQ" },
+  ],
+  "education-02": [
+    { key: "hero", label: "Hero" },
+    { key: "search", label: "Search bar" },
+    { key: "about", label: "About / Why us" },
+    { key: "venues", label: "Venues" },
+    { key: "schedule", label: "Schedule" },
+    { key: "services", label: "Features" },
+    { key: "testimonials", label: "Testimonials" },
+    { key: "register", label: "Register" },
+  ],
 };
 export function templateReorder(id: string): SectionDef[] {
   return TEMPLATE_REORDER[id] ?? [];
