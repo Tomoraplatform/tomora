@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { TRIAL_DAYS, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, nextCharge, getPlan } from "@/lib/constants";
 import { siteLiveUrl } from "@/lib/site-url";
 import { formatNaira } from "@/lib/utils";
+import { GettingStarted } from "@/components/dashboard/getting-started";
 
 export const metadata = { title: "Dashboard — Tomora" };
 
@@ -44,6 +45,23 @@ export default async function DashboardHome() {
   const liveUrl = siteLiveUrl(site!);
   const liveHost = liveUrl.replace(/^https?:\/\//, "");
 
+  // ---- Store setup checklist (e-commerce) ----
+  const sd = site?.site_data;
+  const setupSteps = isEcommerce && site ? [
+    { key: "brand", label: "Customize your store", desc: "Add your logo and brand color.", href: "/dashboard/editor", cta: "Customize",
+      done: !!(sd?.logoUrl || profile?.logo_url) },
+    { key: "product", label: "Add your first product", desc: "Upload a product with photos and a price.", href: "/dashboard/products", cta: "Add product",
+      done: productCount > 0 },
+    { key: "payouts", label: "Set up payouts", desc: "Add your bank account to receive payments.", href: "/dashboard/payouts", cta: "Set up",
+      done: !!site.paystack_subaccount },
+    { key: "contact", label: "Add your contact details", desc: "Phone, email and address for your customers.", href: "/dashboard/editor", cta: "Add details",
+      done: !!(sd?.phone || sd?.email || sd?.address) },
+    { key: "publish", label: "Publish your store", desc: "Take your store live for customers to visit.", href: "/dashboard/editor", cta: "Publish",
+      done: !!site.is_live },
+    { key: "sale", label: "Make your first sale", desc: "Share your store link and start selling.", href: liveUrl, cta: "View store",
+      done: orderCount > 0 },
+  ] : [];
+
   const charge = nextCharge(subscription?.billing_cycle_position ?? 0);
   const currentPlan = getPlan(subscription?.plan || "");
   const isProPlan = currentPlan?.id === "pro";
@@ -55,6 +73,8 @@ export default async function DashboardHome() {
         <h1 className="text-2xl font-bold text-ink">Welcome back{profile?.business_name ? `, ${profile.business_name}` : ""}</h1>
         <p className="mt-1 text-ink/60">Here&apos;s how your site is doing.</p>
       </div>
+
+      {setupSteps.length > 0 && <GettingStarted steps={setupSteps} siteId={site!.id} />}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Site status */}
