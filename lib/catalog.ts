@@ -74,19 +74,19 @@ export function templateLists(id: string): EditableList[] {
   return TEMPLATE_LISTS[id] ?? [];
 }
 
-/** Editable section headings per template: [key, default label]. */
-export type SectionDef = { key: string; label: string };
+/** Editable section headings per template: [key, default label]. `text` = also has editable intro text. */
+export type SectionDef = { key: string; label: string; text?: boolean };
 export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   "shop-01": [
     { key: "categories", label: "Shop by Categories" },
     { key: "bestsellers", label: "Best Selling Products" },
-    { key: "sale", label: "Up to 50% Off" },
+    { key: "sale", label: "Up to 50% Off", text: true },
     { key: "testimonials", label: "What Our Customers Say" },
   ],
   "shop-02": [
     { key: "categories", label: "Find Your Perfect Style" },
     { key: "bestsellers", label: "Our Most Loved Picks" },
-    { key: "newsletter", label: "Join Our Style List" },
+    { key: "newsletter", label: "Join Our Style List", text: true },
   ],
   "shop-03": [
     { key: "new", label: "New products" },

@@ -273,6 +273,12 @@ export function heading(siteData: SiteData, key: string, fallback: string): stri
   return v && v.trim() ? v : fallback;
 }
 
+/** Editable section intro text. Returns the user's override or the template default. */
+export function subheading(siteData: SiteData, key: string, fallback: string): string {
+  const v = siteData.sectionText?.[key];
+  return v && v.trim() ? v : fallback;
+}
+
 /**
  * Returns the template's section keys in the user's saved order, with any
  * sections not present in the saved order appended in their natural order.

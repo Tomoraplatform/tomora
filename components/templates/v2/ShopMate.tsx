@@ -2,7 +2,7 @@
 
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Quote, ShoppingCart } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
 
 const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"];
 
@@ -93,7 +93,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
           <div>
             <span className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--brand-primary)" }}>Special Offer</span>
             <h2 className="mt-2 font-serif text-4xl font-bold">{heading(siteData, "sale", "Up to 50% Off")}</h2>
-            <p className="mt-3 max-w-sm text-black/60">Limited time savings across our best-selling categories. Don&apos;t miss out.</p>
+            <p className="mt-3 max-w-sm text-black/60">{subheading(siteData, "sale", "Limited time savings across our best-selling categories. Don't miss out.")}</p>
             <BrandButton as="a" href="#products" className="mt-6">Shop the Sale <ArrowRight className="h-4 w-4" /></BrandButton>
           </div>
           <div className="aspect-[4/3] overflow-hidden rounded-2xl"><Img src="https://picsum.photos/seed/shopmate-offer/800/600" className="h-full w-full object-cover" /></div>

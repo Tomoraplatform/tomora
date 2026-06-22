@@ -218,6 +218,8 @@ export interface SiteData {
   brandColors?: string[];
   /** Per-template editable section headings, keyed by section id. */
   sectionTitles?: Record<string, string>;
+  /** Per-template editable section intro text, keyed by section id. */
+  sectionText?: Record<string, string>;
   /** Custom order of the template's built-in sections (keys); missing = natural order. */
   sectionOrder?: string[];
   /** User-added custom sections, rendered before the footer on any template. */

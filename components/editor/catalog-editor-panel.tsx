@@ -194,17 +194,30 @@ export function CatalogEditorPanel({
       )}
 
       {sections.length > 0 && (
-        <Section title="Section headings">
-          <p className="mb-1 text-xs text-ink/50">Rename any section title on your page. Leave blank to keep the default.</p>
-          {sections.map((s) => (
-            <FieldRow key={s.key} label={s.label.replace("{name}", data.businessName || "your brand")}>
-              <Input
-                value={data.sectionTitles?.[s.key] ?? ""}
-                placeholder={s.label.replace("{name}", data.businessName || "your brand")}
-                onChange={(e) => patch({ sectionTitles: { ...(data.sectionTitles || {}), [s.key]: e.target.value } })}
-              />
-            </FieldRow>
-          ))}
+        <Section title="Section text">
+          <p className="mb-1 text-xs text-ink/50">Edit each section&apos;s title and intro text. Leave blank to keep the default.</p>
+          {sections.map((s) => {
+            const label = s.label.replace("{name}", data.businessName || "your brand");
+            return (
+              <div key={s.key} className="space-y-1.5 rounded-lg border border-ink/10 p-3">
+                <Label className="text-[11px] font-medium uppercase tracking-wide text-ink/40">{label}</Label>
+                <Input
+                  value={data.sectionTitles?.[s.key] ?? ""}
+                  placeholder={`Title: ${label}`}
+                  onChange={(e) => patch({ sectionTitles: { ...(data.sectionTitles || {}), [s.key]: e.target.value } })}
+                />
+                {s.text && (
+                  <Textarea
+                    rows={2}
+                    className="text-xs"
+                    value={data.sectionText?.[s.key] ?? ""}
+                    placeholder="Intro text (optional)"
+                    onChange={(e) => patch({ sectionText: { ...(data.sectionText || {}), [s.key]: e.target.value } })}
+                  />
+                )}
+              </div>
+            );
+          })}
         </Section>
       )}
 

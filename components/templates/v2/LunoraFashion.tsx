@@ -2,7 +2,7 @@
 
 import { ArrowRight, PlayCircle, Truck, RotateCcw, ShieldCheck, Headphones, Instagram, Facebook } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading, subheading, CustomSections, OrderedSections } from "./shared";
 
 export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "LUNORA";
@@ -102,7 +102,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
           <div>
             <span className="text-xs uppercase tracking-[0.3em] text-black/40">Get 10% off your first order</span>
             <h2 className="mt-2 font-serif text-3xl font-bold">{heading(siteData, "newsletter", "Join Our Style List")}</h2>
-            <p className="mt-3 text-black/60">Be first to know about new arrivals, sales and style tips.</p>
+            <p className="mt-3 text-black/60">{subheading(siteData, "newsletter", "Be first to know about new arrivals, sales and style tips.")}</p>
             <div className="mt-5 flex gap-2"><input className="min-w-0 flex-1 rounded-md border border-black/15 px-4 py-3 text-sm" placeholder="Email address" /><BrandButton>Subscribe</BrandButton></div>
           </div>
         </div>
