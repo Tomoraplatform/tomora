@@ -328,8 +328,8 @@ function demoShopCategories(templateId: string, seed: string): import("./databas
   const sets: Record<string, string[]> = {
     // Placeholders — the store owner renames these to their own categories.
     "shop-01": ["Category 1", "Category 2", "Category 3", "Category 4", "Category 5", "Category 6"],
-    "shop-02": ["Women", "Men", "Dresses", "Tops", "Shoes", "Bags", "Accessories", "Sale"],
-    "shop-03": ["Coats & Jackets", "Sports Jackets", "Suits & Blazers"],
+    "shop-02": ["Category 1", "Category 2", "Category 3", "Category 4", "Category 5", "Category 6"],
+    "shop-03": ["Category 1", "Category 2", "Category 3"],
   };
   const names = sets[templateId] || sets["shop-01"];
   return names.map((name, i) => ({ id: `${seed}-cat${i}`, name, image: img(`${seed}-cat-${i}`, 240, 240) }));
