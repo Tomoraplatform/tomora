@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, UploadCloud, Loader2, X } from "lucide-react";
+import { Plus, Trash2, UploadCloud, Loader2, X, Package } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -79,11 +79,13 @@ export function CatalogEditorPanel({
   patch,
   lists,
   sections = [],
+  isEcommerce = false,
 }: {
   data: SiteData;
   patch: (p: Partial<SiteData>) => void;
   lists: EditableList[];
   sections?: SectionDef[];
+  isEcommerce?: boolean;
 }) {
   const [hex, setHex] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
@@ -143,6 +145,20 @@ export function CatalogEditorPanel({
           <FieldRow label="Button link"><Input value={data.ctaHref || ""} onChange={(e) => patch({ ctaHref: e.target.value })} placeholder="# or https://" /></FieldRow>
         </div>
       </Section>
+
+      {isEcommerce && (
+        <Section title="Products & prices">
+          <p className="-mt-1 mb-2 text-xs text-ink/50">
+            Your store products, images, prices and stock are managed on the Products page. Changes show on your store automatically.
+          </p>
+          <a
+            href="/dashboard/products"
+            className="flex items-center justify-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-cream hover:opacity-90"
+          >
+            <Package className="h-4 w-4" /> Manage products &amp; prices
+          </a>
+        </Section>
+      )}
 
       {sections.length > 0 && (
         <Section title="Section headings">
