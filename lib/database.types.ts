@@ -115,6 +115,7 @@ export interface Product {
   is_active: boolean;
   is_best_seller: boolean;
   is_offer: boolean;
+  is_new_arrival: boolean;
   created_at: string;
 }
 
@@ -165,6 +166,7 @@ export interface CatalogProduct {
   category?: string;
   bestSeller?: boolean;
   offer?: boolean;
+  newArrival?: boolean;
 }
 export interface CatalogCourse {
   id: string;
@@ -224,6 +226,12 @@ export interface SiteData {
   sectionTitles?: Record<string, string>;
   /** Per-template editable section intro text, keyed by section id. */
   sectionText?: Record<string, string>;
+  /** Per-template editable section images, keyed by section id. */
+  sectionImages?: Record<string, string>;
+  /** Optional owner/intro video link shown in the hero of some templates. */
+  heroVideoUrl?: string;
+  /** Toggle the newsletter signup form on storefront templates (default on). */
+  showNewsletter?: boolean;
   /** Custom order of the template's built-in sections (keys); missing = natural order. */
   sectionOrder?: string[];
   /** User-added custom sections, rendered before the footer on any template. */

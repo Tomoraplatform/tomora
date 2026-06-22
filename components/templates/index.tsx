@@ -73,6 +73,7 @@ function toCatalogProducts(products?: Product[]): CatalogProduct[] | undefined {
     category: p.category || undefined,
     bestSeller: p.is_best_seller,
     offer: p.is_offer,
+    newArrival: p.is_new_arrival,
   }));
 }
 

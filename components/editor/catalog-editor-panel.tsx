@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { uploadImage } from "@/lib/upload";
 import { cn } from "@/lib/utils";
 import type { EditableList, SectionDef } from "@/lib/catalog";
@@ -191,7 +192,7 @@ export function CatalogEditorPanel({
 
       {orderedDefs.map((def, i) => {
         const hkey = def.heading;
-        const hasControls = def.hero || def.heading || def.text || def.list || (def.products && isEcommerce);
+        const hasControls = def.hero || def.heading || def.text || def.list || def.image || def.formToggle || (def.products && isEcommerce);
         return (
           <SectionGroup
             key={def.key}
@@ -199,7 +200,17 @@ export function CatalogEditorPanel({
             onUp={reorder.length > 1 && i > 0 ? () => moveSection(i, -1) : undefined}
             onDown={reorder.length > 1 && i < orderedDefs.length - 1 ? () => moveSection(i, 1) : undefined}
           >
-            {def.hero ? heroFields : (
+            {def.hero ? (
+              <>
+                {heroFields}
+                {def.video && (
+                  <FieldRow label="Owner video link (optional)">
+                    <Input value={data.heroVideoUrl || ""} placeholder="https://youtu.be/…" onChange={(e) => patch({ heroVideoUrl: e.target.value })} />
+                  </FieldRow>
+                )}
+                {def.list && <ListBody cfg={LIST_CONFIG[def.list]} data={data} patch={patch} />}
+              </>
+            ) : (
               <>
                 {hkey && (
                   <FieldRow label="Title">
@@ -215,6 +226,18 @@ export function CatalogEditorPanel({
                     <Textarea rows={2} value={data.sectionText?.[hkey] ?? ""} placeholder="Optional"
                       onChange={(e) => patch({ sectionText: { ...(data.sectionText || {}), [hkey]: e.target.value } })} />
                   </FieldRow>
+                )}
+                {def.image && (
+                  <FieldRow label="Section image">
+                    <ItemField field={{ key: "img", label: "", type: "image" }} value={data.sectionImages?.[def.key]}
+                      onChange={(v) => patch({ sectionImages: { ...(data.sectionImages || {}), [def.key]: v } })} />
+                  </FieldRow>
+                )}
+                {def.formToggle && (
+                  <div className="flex items-center justify-between rounded-md border border-ink/10 px-3 py-2">
+                    <span className="text-xs text-ink/70">Show signup form</span>
+                    <Switch checked={data.showNewsletter !== false} onCheckedChange={(v) => patch({ showNewsletter: v })} />
+                  </div>
                 )}
                 {def.list && (
                   <ListBody cfg={LIST_CONFIG[def.list]} data={data} patch={patch} />

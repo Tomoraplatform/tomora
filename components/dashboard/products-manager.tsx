@@ -16,7 +16,7 @@ import { uploadImage } from "@/lib/upload";
 import { saveProduct, deleteProduct, type ProductInput } from "@/app/dashboard/store-actions";
 import type { Product } from "@/lib/database.types";
 
-const empty: ProductInput = { name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isBestSeller: false, isOffer: false };
+const empty: ProductInput = { name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isBestSeller: false, isOffer: false, isNewArrival: false };
 
 export function ProductsManager({ initial }: { initial: Product[] }) {
   const [products, setProducts] = useState<Product[]>(initial);
@@ -25,7 +25,7 @@ export function ProductsManager({ initial }: { initial: Product[] }) {
 
   function startAdd() { setEditing({ ...empty }); setOpen(true); }
   function startEdit(p: Product) {
-    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, comparePrice: p.compare_price ?? undefined, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active, isBestSeller: p.is_best_seller, isOffer: p.is_offer });
+    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, comparePrice: p.compare_price ?? undefined, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active, isBestSeller: p.is_best_seller, isOffer: p.is_offer, isNewArrival: p.is_new_arrival });
     setOpen(true);
   }
 
@@ -178,6 +178,10 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
       <div className="flex items-center justify-between rounded-lg border border-ink/10 px-4 py-3">
         <div><span className="text-sm font-medium">On offer</span><p className="text-xs text-ink/50">Feature in Special Offer. Set the offer price as Price and the original as Old price.</p></div>
         <Switch checked={!!form.isOffer} onCheckedChange={(v) => set("isOffer", v)} />
+      </div>
+      <div className="flex items-center justify-between rounded-lg border border-ink/10 px-4 py-3">
+        <div><span className="text-sm font-medium">New arrival</span><p className="text-xs text-ink/50">Feature this product as a new arrival.</p></div>
+        <Switch checked={!!form.isNewArrival} onCheckedChange={(v) => set("isNewArrival", v)} />
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}

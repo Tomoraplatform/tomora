@@ -1,14 +1,38 @@
 "use client";
 
-import { ArrowRight, PlayCircle, Truck, RotateCcw, ShieldCheck, Headphones, Instagram, Facebook } from "lucide-react";
+import { ArrowRight, PlayCircle, Truck, RotateCcw, ShieldCheck } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading, subheading, CustomSections, OrderedSections, NewsletterInput } from "./shared";
+import { useStore } from "../store-context";
+import { formatNaira } from "@/lib/utils";
+import type { Product } from "@/lib/database.types";
+
+const TRUST_ICONS = [Truck, RotateCcw, ShieldCheck];
+const slug = (s: string) => (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
-  const name = siteData.businessName || "LUNORA";
+  const name = siteData.businessName || "Ecommerce 2";
   const products = siteData.products || [];
-  const cats = ["Women", "Men", "Dresses", "Tops", "Shoes", "Bags", "Accessories", "Sale"];
-  const grid = ["Women's Collection", "Men's Collection", "Dresses", "Accessories"];
+  const store = useStore();
+  const badges = siteData.trustBadges?.length
+    ? siteData.trustBadges
+    : [{ id: "1", title: "Free Shipping" }, { id: "2", title: "Easy Returns" }, { id: "3", title: "Secure Payment" }];
+  const catList = siteData.shopCategories?.length
+    ? siteData.shopCategories
+    : ["Women", "Men", "Dresses", "Tops", "Shoes", "Bags", "Accessories", "Sale"].map((c, i) => ({ id: String(i), name: c, image: "" }));
+
+  const groups = catList
+    .map((c) => ({ name: c.name, items: products.filter((p) => slug(p.category || "") === slug(c.name)) }))
+    .filter((g) => g.items.length);
+  const grouped = new Set(groups.flatMap((g) => g.items.map((p) => p.id)));
+  const others = products.filter((p) => !grouped.has(p.id));
+  if (others.length) groups.push({ name: "More", items: others });
+
+  const bestSellers = products.filter((p) => p.bestSeller);
+  const offer = products.find((p) => p.offer);
+  const newArrival = products.find((p) => p.newArrival);
+  const addToCart = (p: typeof products[number]) =>
+    store.addToCart({ id: p.id, name: p.name, price: p.price, images: p.image ? [p.image] : [], stock: 99, is_active: true } as Product);
 
   const blocks: Record<string, React.ReactNode> = {
     hero: (
@@ -19,20 +43,20 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
             <h1 className="mt-4 font-serif text-5xl font-bold leading-[1.05] sm:text-6xl">{siteData.heroHeadline}</h1>
             <p className="mt-5 max-w-md text-lg italic text-black/60">{siteData.heroSubtext}</p>
             <div className="mt-7 flex flex-wrap items-center gap-4">
-              <BrandButton as="a" href={siteData.ctaHref || "#products"}>{siteData.ctaText || "Shop Now"} <ArrowRight className="h-4 w-4" /></BrandButton>
-              <a href="#" className="flex items-center gap-2 text-sm font-medium"><PlayCircle className="h-5 w-5" /> Watch Lookbook</a>
+              <BrandButton as="a" href={siteData.ctaHref || "#allproducts"}>{siteData.ctaText || "Shop Now"} <ArrowRight className="h-4 w-4" /></BrandButton>
+              {siteData.heroVideoUrl && (
+                <a href={siteData.heroVideoUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm font-medium"><PlayCircle className="h-5 w-5" /> Hear from the store owner</a>
+              )}
             </div>
             <div className="mt-8 grid max-w-md grid-cols-3 gap-4">
-              {[[Truck, "Free Shipping"], [RotateCcw, "Easy Returns"], [ShieldCheck, "Secure Payment"]].map(([Icon, t]: any, i) => (
-                <div key={i} className="flex items-center gap-2"><Icon className="h-5 w-5 text-black/50" /><span className="text-xs text-black/60">{t}</span></div>
-              ))}
+              {badges.map((b, i) => {
+                const Icon = TRUST_ICONS[i % TRUST_ICONS.length];
+                return <div key={b.id || i} className="flex items-center gap-2"><Icon className="h-5 w-5 text-black/50" /><span className="text-xs text-black/60">{b.title}</span></div>;
+              })}
             </div>
           </div>
           <div className="relative">
             <div className="aspect-[4/5] overflow-hidden rounded-2xl"><Img src={siteData.heroImage} className="h-full w-full object-cover" /></div>
-            <div className="absolute right-3 top-1/2 flex -translate-y-1/2 flex-col gap-2 text-xs text-black/50">
-              {["01", "02", "03"].map((n, i) => <span key={n} className={i === 0 ? "font-bold text-black" : ""}>{n}</span>)}
-            </div>
           </div>
         </div>
       </section>
@@ -40,15 +64,15 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
     catcircles: (
       <section className="border-y border-black/5 bg-white">
         <div className="mx-auto flex max-w-6xl gap-6 overflow-x-auto px-5 py-6">
-          {(siteData.shopCategories?.length ? siteData.shopCategories : cats.map((c, i) => ({ id: String(i), name: c, image: "" }))).map((c, i) => (
-            <div key={c.id || i} className="flex w-20 shrink-0 flex-col items-center gap-2 text-center">
+          {catList.map((c, i) => (
+            <a key={c.id || i} href={`#cat-${slug(c.name)}`} className="flex w-20 shrink-0 flex-col items-center gap-2 text-center">
               {c.name === "Sale" ? (
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-black text-xs font-bold text-white">SALE</div>
               ) : (
                 <div className="h-16 w-16 overflow-hidden rounded-full bg-black/5"><Img src={c.image || `https://picsum.photos/seed/lun-cat${i}/120`} className="h-full w-full object-cover" /></div>
               )}
               <span className="text-xs text-black/60">{c.name}</span>
-            </div>
+            </a>
           ))}
         </div>
       </section>
@@ -57,11 +81,11 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
       <section id="collections" className="mx-auto max-w-6xl px-5 py-14">
         <div className="flex items-end justify-between">
           <div><span className="text-xs uppercase tracking-[0.3em] text-black/40">Shop by Category</span><h2 className="mt-2 font-serif text-3xl font-bold">{heading(siteData, "categories", "Find Your Perfect Style")}</h2></div>
-          <a href="#" className="text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All →</a>
+          <a href="#allproducts" className="text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All →</a>
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
-          {(siteData.shopCategories?.length ? siteData.shopCategories : grid.map((g, i) => ({ id: String(i), name: g, image: "" }))).map((c, i) => (
-            <a key={c.id || i} href="#" className="group relative aspect-[16/10] overflow-hidden rounded-2xl">
+          {catList.map((c, i) => (
+            <a key={c.id || i} href={`#cat-${slug(c.name)}`} className="group relative aspect-[16/10] overflow-hidden rounded-2xl">
               <Img src={c.image || `https://picsum.photos/seed/lun-grid${i}/900/560`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               <div className="absolute bottom-5 left-5 text-white"><p className="text-xl font-semibold">{c.name}</p><p className="text-sm">Explore Now →</p></div>
@@ -70,40 +94,78 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
     ),
-    promo: (
-      <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-14 md:grid-cols-2">
-        {[["Limited Time Offer", "Spring Sale Up to 50% Off", "Shop The Sale →"], ["New Arrivals", "Fresh Styles Just Landed", "Explore New In →"]].map(([label, head, cta], i) => (
-          <div key={i} className="flex items-center gap-4 overflow-hidden rounded-2xl bg-[#F3EFE9] p-6">
-            <div className="flex-1">
-              <span className="text-xs font-semibold uppercase tracking-wide text-black/40">{label}</span>
-              <h3 className="mt-2 font-serif text-2xl font-bold">{head}</h3>
-              <a href="#products" className="mt-3 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>{cta}</a>
+    allproducts: (
+      <section id="allproducts" className="mx-auto max-w-6xl px-5 py-14">
+        <h2 className="font-serif text-3xl font-bold">{heading(siteData, "allproducts", "All Products")}</h2>
+        {groups.length === 0 && <p className="mt-4 text-sm text-black/50">Products you add in your dashboard appear here, grouped by category.</p>}
+        {groups.map((g) => (
+          <div key={g.name} id={`cat-${slug(g.name)}`} className="scroll-mt-24 pt-10 first:pt-6">
+            <h3 className="text-lg font-semibold">{g.name}</h3>
+            <div className="mt-5 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
+              {g.items.map((p) => <ProductCardV2 key={p.id} product={p} siteData={siteData} />)}
             </div>
-            <div className="hidden h-28 w-28 shrink-0 overflow-hidden rounded-xl sm:block"><Img src={`https://picsum.photos/seed/lun-promo${i}/240`} className="h-full w-full object-cover" /></div>
           </div>
         ))}
+      </section>
+    ),
+    promo: (
+      <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-14 md:grid-cols-2">
+        {/* Limited time offer */}
+        <div className="flex items-center gap-4 overflow-hidden rounded-2xl bg-[#F3EFE9] p-6">
+          <div className="flex-1">
+            <span className="text-xs font-semibold uppercase tracking-wide text-black/40">Limited Time Offer</span>
+            {offer ? (
+              <>
+                <h3 className="mt-2 font-serif text-2xl font-bold">{offer.name}</h3>
+                <p className="mt-1 text-sm"><span className="font-semibold">{formatNaira(offer.price)}</span>{offer.comparePrice ? <span className="ml-2 text-black/40 line-through">{formatNaira(offer.comparePrice)}</span> : null}</p>
+                <button onClick={() => addToCart(offer)} className="mt-3 inline-block rounded-md px-4 py-2 text-sm font-semibold" style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>Shop the Sale</button>
+              </>
+            ) : (
+              <p className="mt-2 text-sm text-black/50">Mark a product as “On offer” to feature it here.</p>
+            )}
+          </div>
+          {offer?.image && <div className="hidden h-28 w-28 shrink-0 overflow-hidden rounded-xl sm:block"><Img src={offer.image} className="h-full w-full object-cover" /></div>}
+        </div>
+        {/* New arrival */}
+        <div className="flex items-center gap-4 overflow-hidden rounded-2xl bg-[#F3EFE9] p-6">
+          <div className="flex-1">
+            <span className="text-xs font-semibold uppercase tracking-wide text-black/40">New Arrivals</span>
+            {newArrival ? (
+              <>
+                <h3 className="mt-2 font-serif text-2xl font-bold">{newArrival.name}</h3>
+                <a href={`#cat-${slug(newArrival.category || "")}`} className="mt-3 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>Explore New In →</a>
+              </>
+            ) : (
+              <p className="mt-2 text-sm text-black/50">Mark a product as “New arrival” to feature it here.</p>
+            )}
+          </div>
+          {newArrival?.image && <div className="hidden h-28 w-28 shrink-0 overflow-hidden rounded-xl sm:block"><Img src={newArrival.image} className="h-full w-full object-cover" /></div>}
+        </div>
       </section>
     ),
     bestsellers: (
       <section id="products" className="mx-auto max-w-6xl px-5 pb-14">
         <div className="flex items-end justify-between">
           <div><span className="text-xs uppercase tracking-[0.3em] text-black/40">Best Sellers</span><h2 className="mt-2 font-serif text-3xl font-bold">{heading(siteData, "bestsellers", "Our Most Loved Picks")}</h2></div>
-          <a href="#" className="text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All →</a>
         </div>
-        <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-6">
-          {products.slice(0, 6).map((p) => <ProductCardV2 key={p.id} product={p} siteData={siteData} />)}
-        </div>
+        {bestSellers.length === 0 ? (
+          <p className="mt-4 text-sm text-black/50">Mark products as “Best seller” in your dashboard to feature them here.</p>
+        ) : (
+          <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-6">
+            {bestSellers.map((p) => <ProductCardV2 key={p.id} product={p} siteData={siteData} />)}
+          </div>
+        )}
       </section>
     ),
     newsletter: (
       <section className="bg-white">
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-14 md:grid-cols-2">
-          <div className="aspect-[16/10] overflow-hidden rounded-2xl"><Img src="https://picsum.photos/seed/lun-news/900/560" className="h-full w-full object-cover" /></div>
+          <div className="aspect-[16/10] overflow-hidden rounded-2xl"><Img src={siteData.sectionImages?.newsletter || "https://picsum.photos/seed/lun-news/900/560"} className="h-full w-full object-cover" /></div>
           <div>
             <span className="text-xs uppercase tracking-[0.3em] text-black/40">Get 10% off your first order</span>
             <h2 className="mt-2 font-serif text-3xl font-bold">{heading(siteData, "newsletter", "Join Our Style List")}</h2>
             <p className="mt-3 text-black/60">{subheading(siteData, "newsletter", "Be first to know about new arrivals, sales and style tips.")}</p>
-            <div className="mt-5 flex gap-2"><input className="min-w-0 flex-1 rounded-md border border-black/15 px-4 py-3 text-sm" placeholder="Email address" /><BrandButton>Subscribe</BrandButton></div>
+            {siteData.showNewsletter !== false && <div className="mt-5"><NewsletterInput buttonText="Subscribe" /></div>}
           </div>
         </div>
       </section>
@@ -116,7 +178,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-sm font-semibold uppercase tracking-[0.2em]" />
           <nav className="hidden gap-6 text-sm text-black/60 lg:flex">
-            {[["Home","#"],["Shop","#products"],["Collections","#collections"],["Lookbook","#products"],["Blog","#products"],["Contact","#products"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}
+            {[["Home","#"],["Shop","#allproducts"],["Collections","#collections"],["Best Sellers","#products"],["Offers","#promo"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}
           </nav>
           <div className="flex items-center gap-2">
             <a href="#" className="rounded-md border border-black/20 px-4 py-2 text-sm">Login</a>
@@ -126,7 +188,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "catcircles", "categories", "promo", "bestsellers", "newsletter"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "catcircles", "categories", "allproducts", "promo", "bestsellers", "newsletter"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="bg-[#0A0A0A] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-5">

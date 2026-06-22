@@ -56,7 +56,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["trustBadges", "shopCategories", "testimonials"],
-  "shop-02": ["shopCategories"],
+  "shop-02": ["trustBadges", "shopCategories"],
   "shop-03": ["shopCategories"],
   "portfolio-01": ["services", "portfolio", "resume", "testimonials"],
   "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
@@ -91,6 +91,9 @@ export type SectionDef = {
   list?: EditableList;
   products?: boolean;
   hero?: boolean;
+  image?: boolean;        // editable section image (sectionImages[key])
+  video?: boolean;        // hero: editable owner video link
+  formToggle?: boolean;   // newsletter: show/hide the signup form
 };
 export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   "shop-01": [
@@ -102,6 +105,7 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   ],
   "shop-02": [
     { key: "categories", label: "Find Your Perfect Style" },
+    { key: "allproducts", label: "All Products" },
     { key: "bestsellers", label: "Our Most Loved Picks" },
     { key: "newsletter", label: "Join Our Style List", text: true },
   ],
@@ -191,12 +195,13 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
   ],
   "shop-02": [
-    { key: "hero", label: "Hero", hero: true },
+    { key: "hero", label: "Hero", hero: true, video: true, list: "trustBadges" },
     { key: "catcircles", label: "Category circles" },
     { key: "categories", label: "Shop by category", heading: "categories", list: "shopCategories" },
-    { key: "promo", label: "Promo banners" },
+    { key: "allproducts", label: "All products", heading: "allproducts", products: true },
+    { key: "promo", label: "Offer & New arrival", products: true },
     { key: "bestsellers", label: "Best sellers", heading: "bestsellers", products: true },
-    { key: "newsletter", label: "Newsletter", heading: "newsletter", text: true },
+    { key: "newsletter", label: "Newsletter", heading: "newsletter", text: true, image: true, formToggle: true },
   ],
   "shop-03": [
     { key: "hero", label: "Hero banner", hero: true },
@@ -316,7 +321,7 @@ function demoProducts(seed: string): CatalogProduct[] {
     comparePrice: i % 2 === 0 ? [22000, 40000, 8000, 18000, 12000, 33000][i] : undefined,
     image: img(`${seed}-prod-${i}`), rating: 4 + (i % 2 ? 0.5 : 0.8), reviews: 24 + i * 13,
     category: ["Electronics", "Fashion", "Home & Kitchen", "Beauty", "Sports", "Accessories"][i],
-    bestSeller: i < 3, offer: i === 0,
+    bestSeller: i < 3, offer: i === 0, newArrival: i === 1,
   }));
 }
 function demoShopCategories(templateId: string, seed: string): import("./database.types").CatalogCategoryItem[] {
