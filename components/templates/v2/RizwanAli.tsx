@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, Linkedin, Instagram, Github, Layout, PenTool, Globe, Smartphone, Quote, Star } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading, CustomSections } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading, subheading, CustomSections, OrderedSections } from "./shared";
 
 const SERVICES = [
   { icon: Layout, t: "UX/UI", d: "Intuitive interfaces that delight users." },
@@ -20,17 +20,8 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
   const [filter, setFilter] = useState("All");
   const shown = filter === "All" ? items : items.filter((p) => p.category.toLowerCase().includes(filter.toLowerCase()));
 
-  return (
-    <BrandStyle brandColor={brandColor} className="bg-white font-sans text-neutral-900">
-      <header className="border-b border-black/5">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Home","#"],["About Me","#about"],["Services","#services"],["Portfolio","#projects"],["Testimonials","#testimonials"],["Contact","#contact"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
-          <BrandButton className="px-4 py-2">Contact Me</BrandButton>
-        </div>
-      </header>
-
-      {/* Hero */}
+  const blocks: Record<string, React.ReactNode> = {
+    hero: (
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-[45%_55%]">
         <div>
           <p className="text-black/50">Hi! I am</p>
@@ -48,9 +39,8 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
           <Img src={siteData.heroImage} className="relative z-10 mx-auto aspect-square w-72 rounded-full object-cover sm:w-80" />
         </div>
       </section>
-      <CustomSections sections={siteData.customSections} at="top" />
-
-      {/* About */}
+    ),
+    about: (
       <section id="about" className="bg-[#F7F9FC]">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
           <Img src="https://picsum.photos/seed/riz-about/700/700" className="mx-auto aspect-square w-72 rounded-full object-cover" />
@@ -65,8 +55,8 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
-
-      {/* Services */}
+    ),
+    services: (
       <section id="services" className="mx-auto max-w-6xl px-5 py-16">
         <h2 className="text-center text-3xl font-bold">{heading(siteData, "services", "Services")}</h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -81,8 +71,8 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
           })}
         </div>
       </section>
-
-      {/* Projects */}
+    ),
+    portfolio: (
       <section id="projects" className="bg-[#F7F9FC]">
         <div className="mx-auto max-w-6xl px-5 py-16">
           <h2 className="text-center text-3xl font-bold">{heading(siteData, "portfolio", "My Projects")}</h2>
@@ -99,8 +89,8 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
-
-      {/* Testimonials */}
+    ),
+    testimonials: (
       <section id="testimonials" className="mx-auto max-w-4xl px-5 py-16">
         <h2 className="text-center text-3xl font-bold">{heading(siteData, "testimonials", "Testimonials")}</h2>
         {testimonialsOf(siteData).slice(0, 1).map((t, i) => (
@@ -112,18 +102,30 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
           </figure>
         ))}
       </section>
+    ),
+    contact: siteData.contactForm !== false ? (
+      <section id="contact" className="bg-[#F7F9FC]">
+        <div className="mx-auto max-w-xl px-5 py-16">
+          <h2 className="text-center text-3xl font-bold">{heading(siteData, "contact", "Contact Me")}</h2>
+          <p className="mt-2 text-center text-black/60">{subheading(siteData, "contact", "Have a project in mind? Let's build it together.")}</p>
+          <div className="mt-8"><ContactFormV2 submitText="Subscribe Me" phone={false} /></div>
+        </div>
+      </section>
+    ) : null,
+  };
 
-      {/* Contact */}
-      {siteData.contactForm !== false && (
-        <section id="contact" className="bg-[#F7F9FC]">
-          <div className="mx-auto max-w-xl px-5 py-16">
-            <h2 className="text-center text-3xl font-bold">{heading(siteData, "contact", "Contact Me")}</h2>
-            <p className="mt-2 text-center text-black/60">Have a project in mind? Let&apos;s build it together.</p>
-            <div className="mt-8"><ContactFormV2 submitText="Subscribe Me" phone={false} /></div>
-          </div>
-        </section>
-      )}
+  return (
+    <BrandStyle brandColor={brandColor} className="bg-white font-sans text-neutral-900">
+      <header className="border-b border-black/5">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+          <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Home","#"],["About Me","#about"],["Services","#services"],["Portfolio","#projects"],["Testimonials","#testimonials"],["Contact","#contact"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
+          <BrandButton className="px-4 py-2">Contact Me</BrandButton>
+        </div>
+      </header>
 
+      <CustomSections sections={siteData.customSections} at="top" />
+      <OrderedSections siteData={siteData} natural={["hero", "about", "services", "portfolio", "testimonials", "contact"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="bg-[#F7F9FC] py-8 text-center text-sm text-black/40"><SocialIcons social={siteData.social} className="mb-3 justify-center" />© {new Date().getFullYear()} {name}. Built with Tomora.</footer>
     </BrandStyle>

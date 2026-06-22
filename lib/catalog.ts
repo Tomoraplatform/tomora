@@ -104,7 +104,7 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "services", label: "Services" },
     { key: "portfolio", label: "My Projects" },
     { key: "testimonials", label: "Testimonials" },
-    { key: "contact", label: "Contact Me" },
+    { key: "contact", label: "Contact Me", text: true },
   ],
   "education-01": [
     { key: "advantages", label: "The Advantages of the {name} Program" },
@@ -185,6 +185,23 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "new", label: "New products" },
     { key: "special", label: "Special products" },
     { key: "catbanners", label: "Category banners" },
+  ],
+  "portfolio-01": [
+    { key: "hero", label: "Hero" },
+    { key: "services", label: "What I Do" },
+    { key: "portfolio", label: "Portfolio" },
+    { key: "resume", label: "Resume" },
+    { key: "testimonials", label: "Testimonial" },
+    { key: "clients", label: "Client logos" },
+    { key: "contact", label: "Contact" },
+  ],
+  "portfolio-02": [
+    { key: "hero", label: "Hero" },
+    { key: "about", label: "About Me" },
+    { key: "services", label: "Services" },
+    { key: "portfolio", label: "Projects" },
+    { key: "testimonials", label: "Testimonials" },
+    { key: "contact", label: "Contact" },
   ],
 };
 export function templateReorder(id: string): SectionDef[] {
