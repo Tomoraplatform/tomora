@@ -262,6 +262,21 @@ export function NewsletterInput({ buttonText = "Subscribe", dark = false }: { bu
 
 export { formatNaira, Zap };
 
+/**
+ * Distinct product categories derived from the store's products (the owner
+ * sets a product's Category when uploading it). Each entry carries a
+ * representative image (the first product's image in that category).
+ */
+export function productCategories(products: CatalogProduct[]): { name: string; image: string }[] {
+  const map = new Map<string, string>();
+  for (const p of products) {
+    const c = (p.category || "").trim();
+    if (!c) continue;
+    if (!map.get(c)) map.set(c, p.image || "");
+  }
+  return Array.from(map, ([name, image]) => ({ name, image }));
+}
+
 /** Editable testimonials, with a fallback so an un-edited site still looks full. */
 export function testimonialsOf(siteData: SiteData): CatalogTestimonial[] {
   return siteData.testimonials?.length ? siteData.testimonials : [];

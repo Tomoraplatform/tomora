@@ -2,7 +2,7 @@
 
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Quote, ShoppingCart } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, subheading, productCategories, CustomSections, OrderedSections } from "./shared";
 
 const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"];
 
@@ -20,9 +20,8 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
         { id: "3", title: "Easy Returns", subtitle: "30 days return policy" },
         { id: "4", title: "24/7 Support", subtitle: "Dedicated support" },
       ];
-  const cats = siteData.shopCategories?.length
-    ? siteData.shopCategories
-    : Array.from(new Set(products.map((p) => p.category).filter(Boolean))).map((c, i) => ({ id: String(i), name: c as string, image: "" }));
+  // Categories come from the products' Category field, set in the Products backend.
+  const cats = productCategories(products);
 
   // All products grouped by category (matched to the category chips by slug).
   const groups = cats
@@ -87,7 +86,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
         </div>
         <div className="mt-8 flex gap-6 overflow-x-auto pb-2">
           {cats.map((c, i) => (
-            <a key={c.id || i} href={`#cat-${slug(c.name)}`} className="flex w-24 shrink-0 flex-col items-center gap-2 text-center">
+            <a key={c.name || i} href={`#cat-${slug(c.name)}`} className="flex w-24 shrink-0 flex-col items-center gap-2 text-center">
               <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full" style={{ background: TINTS[i % TINTS.length] }}>
                 <Img src={c.image || `https://picsum.photos/seed/cat${i}/120`} className="h-12 w-12 rounded-full object-cover" />
               </div>

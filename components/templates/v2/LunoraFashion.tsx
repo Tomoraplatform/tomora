@@ -2,7 +2,7 @@
 
 import { ArrowRight, PlayCircle, Truck, RotateCcw, ShieldCheck } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading, subheading, CustomSections, OrderedSections, NewsletterInput } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading, subheading, productCategories, CustomSections, OrderedSections, NewsletterInput } from "./shared";
 import { useStore } from "../store-context";
 import { formatNaira } from "@/lib/utils";
 import type { Product } from "@/lib/database.types";
@@ -17,9 +17,8 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
   const badges = siteData.trustBadges?.length
     ? siteData.trustBadges
     : [{ id: "1", title: "Free Shipping" }, { id: "2", title: "Easy Returns" }, { id: "3", title: "Secure Payment" }];
-  const catList = siteData.shopCategories?.length
-    ? siteData.shopCategories
-    : ["Women", "Men", "Dresses", "Tops", "Shoes", "Bags", "Accessories", "Sale"].map((c, i) => ({ id: String(i), name: c, image: "" }));
+  // Categories come from the products' Category field, set in the Products backend.
+  const catList = productCategories(products);
 
   const groups = catList
     .map((c) => ({ name: c.name, items: products.filter((p) => slug(p.category || "") === slug(c.name)) }))
@@ -65,7 +64,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
       <section className="border-y border-black/5 bg-white">
         <div className="mx-auto flex max-w-6xl gap-6 overflow-x-auto px-5 py-6">
           {catList.map((c, i) => (
-            <a key={c.id || i} href={`#cat-${slug(c.name)}`} className="flex w-20 shrink-0 flex-col items-center gap-2 text-center">
+            <a key={c.name || i} href={`#cat-${slug(c.name)}`} className="flex w-20 shrink-0 flex-col items-center gap-2 text-center">
               {c.name === "Sale" ? (
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-black text-xs font-bold text-white">SALE</div>
               ) : (
@@ -85,7 +84,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
           {catList.map((c, i) => (
-            <a key={c.id || i} href={`#cat-${slug(c.name)}`} className="group relative aspect-[16/10] overflow-hidden rounded-2xl">
+            <a key={c.name || i} href={`#cat-${slug(c.name)}`} className="group relative aspect-[16/10] overflow-hidden rounded-2xl">
               <Img src={c.image || `https://picsum.photos/seed/lun-grid${i}/900/560`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               <div className="absolute bottom-5 left-5 text-white"><p className="text-xl font-semibold">{c.name}</p><p className="text-sm">Explore Now →</p></div>

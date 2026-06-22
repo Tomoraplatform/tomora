@@ -2,11 +2,12 @@
 
 import { Search, ShoppingCart, ArrowRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira, heading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira, heading, productCategories, CustomSections, OrderedSections } from "./shared";
 import { useStore } from "../store-context";
 import type { CatalogProduct, Product, SiteData } from "@/lib/database.types";
 
 const TABS = ["Tops", "Sweaters", "Jeans", "Coats & Jackets", "Activewear", "Shorts", "Pants"];
+const slug = (s: string) => (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 function Card({ product, siteData }: { product: CatalogProduct; siteData: SiteData }) {
   const store = useStore();
@@ -27,6 +28,15 @@ function Card({ product, siteData }: { product: CatalogProduct; siteData: SiteDa
 export function MensClothes({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "Men's Clothes";
   const products = siteData.products || [];
+
+  // Categories come from the products' Category field (set in Products backend).
+  const cats = productCategories(products);
+  const groups = cats
+    .map((c) => ({ name: c.name, items: products.filter((p) => (p.category || "").trim() === c.name) }))
+    .filter((g) => g.items.length);
+  const grouped = new Set(groups.flatMap((g) => g.items.map((p) => p.id)));
+  const others = products.filter((p) => !grouped.has(p.id));
+  if (others.length) groups.push({ name: "More", items: others });
 
   const blocks: Record<string, React.ReactNode> = {
     hero: (
@@ -68,11 +78,25 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
     ),
     catbanners: (
       <section className="mx-auto grid max-w-6xl gap-3 px-5 py-10 md:grid-cols-3">
-        {(siteData.shopCategories?.length ? siteData.shopCategories : ["Coats & Jackets", "Sports Jackets", "Suits & Blazers"].map((t, i) => ({ id: String(i), name: t, image: "" }))).map((c, i) => (
-          <div key={c.id || i} className="relative overflow-hidden rounded-lg">
+        {cats.map((c, i) => (
+          <a key={c.name} href={`#cat-${slug(c.name)}`} className="relative overflow-hidden rounded-lg">
             <Img src={c.image || `https://picsum.photos/seed/men-cat${i}/600/400`} className="h-56 w-full object-cover" />
             <div className="absolute inset-0 bg-black/40" />
             <div className="absolute bottom-5 left-5 text-white"><p className="text-lg font-bold uppercase">{c.name}</p><p className="text-xs text-white/80">Explore the collection</p></div>
+          </a>
+        ))}
+      </section>
+    ),
+    allproducts: (
+      <section id="allproducts" className="mx-auto max-w-6xl px-5 py-10">
+        <h2 className="text-xl font-bold">{heading(siteData, "allproducts", "All Products")}</h2>
+        {groups.length === 0 && <p className="mt-3 text-sm text-neutral-500">Products you add appear here, grouped by category.</p>}
+        {groups.map((g) => (
+          <div key={g.name} id={`cat-${slug(g.name)}`} className="scroll-mt-24 pt-8 first:pt-4">
+            <h3 className="text-base font-semibold">{g.name}</h3>
+            <div className="mt-4 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
+              {g.items.map((p) => <Card key={p.id} product={p} siteData={siteData} />)}
+            </div>
           </div>
         ))}
       </section>
@@ -105,7 +129,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "new", "special", "catbanners"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "new", "special", "catbanners", "allproducts"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="border-t border-neutral-200">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 text-sm">

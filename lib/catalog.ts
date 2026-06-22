@@ -55,9 +55,9 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 /** Which content lists each template renders from site_data (so the editor can expose them). */
 export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
-  "shop-01": ["trustBadges", "shopCategories", "testimonials"],
-  "shop-02": ["trustBadges", "shopCategories"],
-  "shop-03": ["shopCategories"],
+  "shop-01": ["trustBadges", "testimonials"],
+  "shop-02": ["trustBadges"],
+  "shop-03": [],
   "portfolio-01": ["services", "portfolio", "resume", "testimonials"],
   "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
   "education-01": ["courses", "faqs"],
@@ -112,6 +112,7 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   "shop-03": [
     { key: "new", label: "New products" },
     { key: "special", label: "Special products" },
+    { key: "allproducts", label: "All Products" },
   ],
   "portfolio-01": [
     { key: "services", label: "What I Do" },
@@ -188,7 +189,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
   "shop-01": [
     { key: "hero", label: "Hero", hero: true },
     { key: "trust", label: "Trust badges", list: "trustBadges" },
-    { key: "categories", label: "Categories", heading: "categories", list: "shopCategories" },
+    { key: "categories", label: "Categories", heading: "categories" },
     { key: "allproducts", label: "All products", heading: "allproducts", products: true },
     { key: "bestsellers", label: "Best sellers", heading: "bestsellers", products: true },
     { key: "offer", label: "Special offer", heading: "sale", text: true, products: true },
@@ -197,7 +198,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
   "shop-02": [
     { key: "hero", label: "Hero", hero: true, video: true, list: "trustBadges" },
     { key: "catcircles", label: "Category circles" },
-    { key: "categories", label: "Shop by category", heading: "categories", list: "shopCategories" },
+    { key: "categories", label: "Shop by category", heading: "categories" },
     { key: "allproducts", label: "All products", heading: "allproducts", products: true },
     { key: "promo", label: "Offer & New arrival", products: true },
     { key: "bestsellers", label: "Best sellers", heading: "bestsellers", products: true },
@@ -207,7 +208,8 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "hero", label: "Hero banner", hero: true },
     { key: "new", label: "New products", heading: "new", products: true },
     { key: "special", label: "Special products", heading: "special", products: true },
-    { key: "catbanners", label: "Category banners", list: "shopCategories" },
+    { key: "catbanners", label: "Category banners" },
+    { key: "allproducts", label: "All products", heading: "allproducts", products: true },
   ],
   "portfolio-01": [
     { key: "hero", label: "Hero", hero: true },
@@ -536,7 +538,7 @@ export function createCatalogContent(
   };
 
   switch (tpl?.category) {
-    case "shop": data.products = demoProducts(seed); data.shopCategories = demoShopCategories(templateId, seed); data.trustBadges = demoTrustBadges(seed); break;
+    case "shop": data.products = demoProducts(seed); data.trustBadges = demoTrustBadges(seed); break;
     case "education": data.courses = demoCourses(seed); if (templateId === "education-01") data.faqs = demoFaqs(seed); break;
     case "organization": data.causes = demoCauses(seed); data.events = demoEvents(seed); break;
     case "events": data.events = demoEvents(seed); if (templateId === "events-02") data.hours = demoHours(seed); break;
