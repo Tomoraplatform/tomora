@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, Loader2, X, UploadCloud, ImageOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,10 +18,13 @@ import type { Product } from "@/lib/database.types";
 
 const empty: ProductInput = { name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isBestSeller: false, isOffer: false, isNewArrival: false };
 
-export function ProductsManager({ initial }: { initial: Product[] }) {
+export function ProductsManager({ initial, embedded, onChanged }: { initial: Product[]; embedded?: boolean; onChanged?: () => void }) {
   const [products, setProducts] = useState<Product[]>(initial);
   const [editing, setEditing] = useState<ProductInput | null>(null);
   const [open, setOpen] = useState(false);
+
+  // Keep in sync when the parent refetches (embedded in the editor).
+  useEffect(() => { setProducts(initial); }, [initial]);
 
   function startAdd() { setEditing({ ...empty }); setOpen(true); }
   function startEdit(p: Product) {
@@ -32,16 +35,18 @@ export function ProductsManager({ initial }: { initial: Product[] }) {
   async function onDelete(id: string) {
     if (!confirm("Delete this product?")) return;
     const res = await deleteProduct(id);
-    if (res.ok) setProducts((ps) => ps.filter((p) => p.id !== id));
+    if (res.ok) { setProducts((ps) => ps.filter((p) => p.id !== id)); onChanged?.(); }
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-ink">Products</h1>
-          <p className="mt-1 text-ink/60">Products sync automatically to your published store.</p>
-        </div>
+        {embedded ? <span /> : (
+          <div>
+            <h1 className="text-2xl font-bold text-ink">Products</h1>
+            <p className="mt-1 text-ink/60">Products sync automatically to your published store.</p>
+          </div>
+        )}
         <Button onClick={startAdd}><Plus className="h-4 w-4" /> Add Product</Button>
       </div>
 
@@ -102,8 +107,9 @@ export function ProductsManager({ initial }: { initial: Product[] }) {
               onClose={() => setOpen(false)}
               onSaved={() => {
                 setOpen(false);
-                // Reload to pull the fresh server snapshot (incl. new ids/images).
-                window.location.reload();
+                // Embedded in the editor: refetch via callback (keeps the modal/editor).
+                if (onChanged) onChanged();
+                else window.location.reload();
               }}
             />
           )}

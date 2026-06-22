@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Save, ExternalLink, Loader2, Check, Palette, UploadCloud,
   ChevronDown, Eye, EyeOff, Rocket, ArrowLeft,
@@ -14,12 +14,15 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { SiteRenderer } from "@/components/templates";
 import { CatalogEditorPanel } from "./catalog-editor-panel";
+import { ProductsManager } from "@/components/dashboard/products-manager";
+import { createClient } from "@/lib/supabase/client";
+import { X } from "lucide-react";
 import { BLOCK_LABELS, supportedBlocks, type BlockType } from "@/lib/site-data";
 import { isCatalogTemplate, templateLists, templateSections, templateReorder, createCatalogContent } from "@/lib/catalog";
 import { uploadImage } from "@/lib/upload";
 import { saveSite } from "@/app/dashboard/editor/actions";
 import { cn } from "@/lib/utils";
-import type { Site, SiteData } from "@/lib/database.types";
+import type { Site, SiteData, Product } from "@/lib/database.types";
 
 const PRESET_COLORS = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777", "#111111"];
 
@@ -50,6 +53,18 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
   const [uploading, setUploading] = useState(false);
   const [showPublish, setShowPublish] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const isStore = site.category === "ecommerce";
+  const [dbProducts, setDbProducts] = useState<Product[]>([]);
+  const [showProducts, setShowProducts] = useState(false);
+
+  const reloadProducts = useCallback(async () => {
+    if (!isStore) return;
+    const { data: rows } = await createClient()
+      .from("products").select("*").eq("site_id", site.id).order("created_at", { ascending: false });
+    setDbProducts((rows as Product[]) || []);
+  }, [isStore, site.id]);
+
+  useEffect(() => { reloadProducts(); }, [reloadProducts]);
 
   const dirty = () => setSaved(false);
 
@@ -172,7 +187,7 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
         {/* Left panel */}
         <aside className="w-full shrink-0 overflow-y-auto border-b border-ink/10 bg-white p-4 lg:w-80 lg:border-b-0 lg:border-r">
           {isCatalog ? (
-            <CatalogEditorPanel data={data} patch={patch} lists={lists} sections={sections} reorder={reorder} isEcommerce={site.category === "ecommerce"} />
+            <CatalogEditorPanel data={data} patch={patch} lists={lists} sections={sections} reorder={reorder} isEcommerce={isStore} onManageProducts={() => setShowProducts(true)} />
           ) : (
           <>
           <Section title="Brand">
@@ -222,10 +237,26 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
         {/* Preview */}
         <div className="min-h-0 flex-1 overflow-y-auto bg-slate-200 p-3 sm:p-6">
           <div className="mx-auto max-w-5xl overflow-hidden rounded-lg border border-ink/10 bg-white shadow-xl">
-            <SiteRenderer templateId={site.template_id} siteData={data} brandColor={data.brandColor} editApi={editApi} />
+            <SiteRenderer templateId={site.template_id} siteData={data} brandColor={data.brandColor} editApi={editApi} products={isStore ? dbProducts : undefined} />
           </div>
         </div>
       </div>
+
+      {/* Product backend — glass overlay over the editor */}
+      {showProducts && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/30 p-4 backdrop-blur-md sm:p-8" onMouseDown={(e) => { if (e.target === e.currentTarget) setShowProducts(false); }}>
+          <div className="relative w-full max-w-3xl rounded-2xl border border-white/40 bg-white/95 p-6 shadow-2xl ring-1 ring-black/5">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-ink">Products</h2>
+                <p className="text-sm text-ink/60">Add or edit products — your store updates automatically.</p>
+              </div>
+              <button onClick={() => setShowProducts(false)} className="rounded-md p-1 text-ink/50 hover:bg-ink/5 hover:text-ink" aria-label="Close"><X className="h-5 w-5" /></button>
+            </div>
+            <ProductsManager initial={dbProducts} embedded onChanged={reloadProducts} />
+          </div>
+        </div>
+      )}
 
       <Dialog open={showPublish} onOpenChange={setShowPublish}>
         <DialogContent className="max-w-sm">

@@ -92,6 +92,7 @@ export function CatalogEditorPanel({
   sections = [],
   reorder = [],
   isEcommerce = false,
+  onManageProducts,
 }: {
   data: SiteData;
   patch: (p: Partial<SiteData>) => void;
@@ -99,6 +100,7 @@ export function CatalogEditorPanel({
   sections?: SectionDef[];
   reorder?: SectionDef[];
   isEcommerce?: boolean;
+  onManageProducts?: () => void;
 }) {
   // Current section order (saved order first, then any new sections).
   const orderKeys = (() => {
@@ -243,9 +245,15 @@ export function CatalogEditorPanel({
                   <ListBody cfg={LIST_CONFIG[def.list]} data={data} patch={patch} />
                 )}
                 {def.products && isEcommerce && (
-                  <a href="/dashboard/products" className="flex items-center justify-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-cream hover:opacity-90">
-                    <Package className="h-4 w-4" /> Manage products &amp; prices
-                  </a>
+                  onManageProducts ? (
+                    <button type="button" onClick={onManageProducts} className="flex w-full items-center justify-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-cream hover:opacity-90">
+                      <Package className="h-4 w-4" /> Manage products &amp; prices
+                    </button>
+                  ) : (
+                    <a href="/dashboard/products" className="flex items-center justify-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-cream hover:opacity-90">
+                      <Package className="h-4 w-4" /> Manage products &amp; prices
+                    </a>
+                  )
                 )}
                 {!hasControls && (
                   <p className="text-xs text-ink/40">This section&apos;s content is styled by the template. Use the arrows to move it.</p>

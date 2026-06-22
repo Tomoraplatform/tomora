@@ -326,7 +326,8 @@ function demoProducts(seed: string): CatalogProduct[] {
 }
 function demoShopCategories(templateId: string, seed: string): import("./database.types").CatalogCategoryItem[] {
   const sets: Record<string, string[]> = {
-    "shop-01": ["Electronics", "Fashion", "Home & Kitchen", "Beauty", "Sports", "Accessories"],
+    // Placeholders — the store owner renames these to their own categories.
+    "shop-01": ["Category 1", "Category 2", "Category 3", "Category 4", "Category 5", "Category 6"],
     "shop-02": ["Women", "Men", "Dresses", "Tops", "Shoes", "Bags", "Accessories", "Sale"],
     "shop-03": ["Coats & Jackets", "Sports Jackets", "Suits & Blazers"],
   };
