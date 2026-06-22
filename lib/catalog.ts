@@ -140,7 +140,7 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "join", label: "Ready to make a difference? Join the {name} team today." },
   ],
   "events-01": [
-    { key: "mission", label: "Our Mission" },
+    { key: "mission", label: "Our Mission", text: true },
     { key: "why", label: "Why Choose Us" },
   ],
   "events-02": [
@@ -150,7 +150,7 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   "events-03": [
     { key: "banner", label: "Top banner notice (e.g. Upcoming Event: …)" },
     { key: "sermons", label: "We Preach the Gospel in Every Sermon" },
-    { key: "ministries", label: "Explore Our Church Ministries" },
+    { key: "ministries", label: "Explore Our Church Ministries", text: true },
   ],
   "events-04": [
     { key: "news", label: "News" },
@@ -247,6 +247,30 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "features", label: "Features" },
     { key: "stats", label: "Stats" },
     { key: "join", label: "Join CTA" },
+  ],
+  "events-01": [
+    { key: "hero", label: "Hero" },
+    { key: "about", label: "About cards" },
+    { key: "mission", label: "Mission" },
+    { key: "why", label: "Why choose us" },
+  ],
+  "events-02": [
+    { key: "hero", label: "Hero" },
+    { key: "mission", label: "Mission statement" },
+    { key: "ministries", label: "Ministries" },
+    { key: "news", label: "What's new" },
+  ],
+  "events-03": [
+    { key: "hero", label: "Hero" },
+    { key: "about", label: "About / Sermons" },
+    { key: "ministries", label: "Ministries" },
+  ],
+  "events-04": [
+    { key: "hero", label: "Hero" },
+    { key: "quick", label: "Quick access" },
+    { key: "news", label: "News" },
+    { key: "events", label: "Events" },
+    { key: "territory", label: "Territory" },
   ],
 };
 export function templateReorder(id: string): SectionDef[] {
