@@ -191,7 +191,7 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
             <Label>Discount (% off)</Label>
             <Input type="number" min={0} max={100} value={form.offerPercent ?? 0} onChange={(e) => set("offerPercent", Number(e.target.value))} placeholder="e.g. 30" />
             {form.price > 0 && (form.offerPercent ?? 0) > 0 && (
-              <p className="text-xs text-ink/60">Customers pay <span className="font-semibold text-ink">{formatNaira(Math.round((form.price * (1 - (form.offerPercent || 0) / 100)) / 100) * 100)}</span> <span className="text-ink/40 line-through">{formatNaira(form.price)}</span></p>
+              <p className="text-xs text-ink/60">Customers pay <span className="font-semibold text-ink">{formatNaira(Math.round(form.price * (1 - (form.offerPercent || 0) / 100)))}</span> <span className="text-ink/40 line-through">{formatNaira(form.price)}</span></p>
             )}
           </div>
         )}

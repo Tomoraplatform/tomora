@@ -90,7 +90,7 @@ export function Img({ src, alt = "", className = "" }: { src?: string; alt?: str
 /** The price the customer actually pays — applies an active offer discount. */
 export function sellingPrice(p: CatalogProduct): number {
   if (p.offer && p.offerPercent && p.offerPercent > 0) {
-    return Math.round((p.price * (1 - p.offerPercent / 100)) / 100) * 100;
+    return Math.round(p.price * (1 - p.offerPercent / 100));
   }
   return p.price;
 }

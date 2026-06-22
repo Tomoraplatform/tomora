@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       const p = (products || []).find((x: any) => x.id === item.productId);
       if (p && p.is_active) {
         // Apply the offer discount server-side so the charged price is trusted.
-        price = p.is_offer && p.offer_percent > 0 ? Math.round((p.price * (1 - p.offer_percent / 100)) / 100) * 100 : p.price;
+        price = p.is_offer && p.offer_percent > 0 ? Math.round(p.price * (1 - p.offer_percent / 100)) : p.price;
         productId = p.id;
       }
     }
