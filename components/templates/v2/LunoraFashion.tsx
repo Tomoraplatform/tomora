@@ -40,14 +40,14 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
     catcircles: (
       <section className="border-y border-black/5 bg-white">
         <div className="mx-auto flex max-w-6xl gap-6 overflow-x-auto px-5 py-6">
-          {cats.map((c, i) => (
-            <div key={c} className="flex w-20 shrink-0 flex-col items-center gap-2 text-center">
-              {c === "Sale" ? (
+          {(siteData.shopCategories?.length ? siteData.shopCategories : cats.map((c, i) => ({ id: String(i), name: c, image: "" }))).map((c, i) => (
+            <div key={c.id || i} className="flex w-20 shrink-0 flex-col items-center gap-2 text-center">
+              {c.name === "Sale" ? (
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-black text-xs font-bold text-white">SALE</div>
               ) : (
-                <div className="h-16 w-16 overflow-hidden rounded-full bg-black/5"><Img src={`https://picsum.photos/seed/lun-cat${i}/120`} className="h-full w-full object-cover" /></div>
+                <div className="h-16 w-16 overflow-hidden rounded-full bg-black/5"><Img src={c.image || `https://picsum.photos/seed/lun-cat${i}/120`} className="h-full w-full object-cover" /></div>
               )}
-              <span className="text-xs text-black/60">{c}</span>
+              <span className="text-xs text-black/60">{c.name}</span>
             </div>
           ))}
         </div>
@@ -60,11 +60,11 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
           <a href="#" className="text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All →</a>
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
-          {grid.map((g, i) => (
-            <a key={g} href="#" className="group relative aspect-[16/10] overflow-hidden rounded-2xl">
-              <Img src={`https://picsum.photos/seed/lun-grid${i}/900/560`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+          {(siteData.shopCategories?.length ? siteData.shopCategories : grid.map((g, i) => ({ id: String(i), name: g, image: "" }))).map((c, i) => (
+            <a key={c.id || i} href="#" className="group relative aspect-[16/10] overflow-hidden rounded-2xl">
+              <Img src={c.image || `https://picsum.photos/seed/lun-grid${i}/900/560`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-              <div className="absolute bottom-5 left-5 text-white"><p className="text-xl font-semibold">{g}</p><p className="text-sm">Explore Now →</p></div>
+              <div className="absolute bottom-5 left-5 text-white"><p className="text-xl font-semibold">{c.name}</p><p className="text-sm">Explore Now →</p></div>
             </a>
           ))}
         </div>

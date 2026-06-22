@@ -68,11 +68,11 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
     ),
     catbanners: (
       <section className="mx-auto grid max-w-6xl gap-3 px-5 py-10 md:grid-cols-3">
-        {["Coats & Jackets", "Sports Jackets", "Suits & Blazers"].map((t, i) => (
-          <div key={t} className="relative overflow-hidden rounded-lg">
-            <Img src={`https://picsum.photos/seed/men-cat${i}/600/400`} className="h-56 w-full object-cover" />
+        {(siteData.shopCategories?.length ? siteData.shopCategories : ["Coats & Jackets", "Sports Jackets", "Suits & Blazers"].map((t, i) => ({ id: String(i), name: t, image: "" }))).map((c, i) => (
+          <div key={c.id || i} className="relative overflow-hidden rounded-lg">
+            <Img src={c.image || `https://picsum.photos/seed/men-cat${i}/600/400`} className="h-56 w-full object-cover" />
             <div className="absolute inset-0 bg-black/40" />
-            <div className="absolute bottom-5 left-5 text-white"><p className="text-lg font-bold uppercase">{t}</p><p className="text-xs text-white/80">Explore the collection</p></div>
+            <div className="absolute bottom-5 left-5 text-white"><p className="text-lg font-bold uppercase">{c.name}</p><p className="text-xs text-white/80">Explore the collection</p></div>
           </div>
         ))}
       </section>

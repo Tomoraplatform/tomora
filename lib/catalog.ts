@@ -53,11 +53,11 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
-  "shop-01": ["testimonials"],
-  "shop-02": [],
-  "shop-03": [],
+  "shop-01": ["shopCategories", "testimonials"],
+  "shop-02": ["shopCategories"],
+  "shop-03": ["shopCategories"],
   "portfolio-01": ["services", "portfolio", "resume", "testimonials"],
   "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
   "education-01": ["courses", "faqs"],
@@ -213,6 +213,15 @@ function demoProducts(seed: string): CatalogProduct[] {
     image: img(`${seed}-prod-${i}`), rating: 4 + (i % 2 ? 0.5 : 0.8), reviews: 24 + i * 13,
     category: ["Electronics", "Fashion", "Home & Kitchen", "Beauty", "Sports", "Accessories"][i],
   }));
+}
+function demoShopCategories(templateId: string, seed: string): import("./database.types").CatalogCategoryItem[] {
+  const sets: Record<string, string[]> = {
+    "shop-01": ["Electronics", "Fashion", "Home & Kitchen", "Beauty", "Sports", "Accessories"],
+    "shop-02": ["Women", "Men", "Dresses", "Tops", "Shoes", "Bags", "Accessories", "Sale"],
+    "shop-03": ["Coats & Jackets", "Sports Jackets", "Suits & Blazers"],
+  };
+  const names = sets[templateId] || sets["shop-01"];
+  return names.map((name, i) => ({ id: `${seed}-cat${i}`, name, image: img(`${seed}-cat-${i}`, 240, 240) }));
 }
 function demoCourses(seed: string): CatalogCourse[] {
   const t = ["Product Design Bootcamp", "Full-Stack Development", "Digital Marketing", "Data Analytics"];
@@ -408,7 +417,7 @@ export function createCatalogContent(
   };
 
   switch (tpl?.category) {
-    case "shop": data.products = demoProducts(seed); break;
+    case "shop": data.products = demoProducts(seed); data.shopCategories = demoShopCategories(templateId, seed); break;
     case "education": data.courses = demoCourses(seed); if (templateId === "education-01") data.faqs = demoFaqs(seed); break;
     case "organization": data.causes = demoCauses(seed); data.events = demoEvents(seed); break;
     case "events": data.events = demoEvents(seed); if (templateId === "events-02") data.hours = demoHours(seed); break;

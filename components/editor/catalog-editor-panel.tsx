@@ -62,6 +62,11 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     fields: [{ key: "label", label: "Day (e.g. Sunday)" }, { key: "time", label: "Time (e.g. 9:00 AM)" }],
     make: () => ({ id: `h-${Date.now()}`, label: "Sunday", time: "9:00 AM" }),
   },
+  shopCategories: {
+    key: "shopCategories", title: "Categories",
+    fields: [{ key: "image", label: "Image", type: "image" }, { key: "name", label: "Name" }],
+    make: () => ({ id: `cat-${Date.now()}`, name: "New category", image: "" }),
+  },
   resume: {
     key: "resume", title: "Resume (Education / Experience / Skills)",
     fields: [

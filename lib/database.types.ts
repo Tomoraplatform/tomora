@@ -229,6 +229,7 @@ export interface SiteData {
   resume?: CatalogResumeItem[];
   faqs?: CatalogFaq[];
   stats?: CatalogStat[];
+  shopCategories?: CatalogCategoryItem[];
   hours?: CatalogHour[];
   products?: CatalogProduct[];
   courses?: CatalogCourse[];
@@ -262,6 +263,12 @@ export interface CatalogFaq {
   id: string;
   question: string;
   answer: string;
+}
+
+export interface CatalogCategoryItem {
+  id: string;
+  name: string;
+  image?: string;
 }
 
 export interface CatalogStat {

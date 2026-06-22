@@ -63,12 +63,12 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
           <a href="#products" className="flex items-center gap-1 text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All <ArrowRight className="h-4 w-4" /></a>
         </div>
         <div className="mt-8 flex gap-6 overflow-x-auto pb-2">
-          {cats.map((c, i) => (
-            <div key={c} className="flex w-24 shrink-0 flex-col items-center gap-2 text-center">
+          {(siteData.shopCategories?.length ? siteData.shopCategories : cats.map((c, i) => ({ id: String(i), name: c, image: "" }))).map((c, i) => (
+            <div key={c.id || i} className="flex w-24 shrink-0 flex-col items-center gap-2 text-center">
               <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full" style={{ background: TINTS[i % TINTS.length] }}>
-                <Img src={`https://picsum.photos/seed/cat${i}/120`} className="h-12 w-12 rounded-full object-cover" />
+                <Img src={c.image || `https://picsum.photos/seed/cat${i}/120`} className="h-12 w-12 rounded-full object-cover" />
               </div>
-              <span className="text-xs font-medium text-black/70">{c}</span>
+              <span className="text-xs font-medium text-black/70">{c.name}</span>
             </div>
           ))}
         </div>
