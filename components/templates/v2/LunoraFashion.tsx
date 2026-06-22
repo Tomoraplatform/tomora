@@ -2,7 +2,7 @@
 
 import { ArrowRight, PlayCircle, Truck, RotateCcw, ShieldCheck, Headphones, Instagram, Facebook } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading, CustomSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading, CustomSections, OrderedSections } from "./shared";
 
 export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "LUNORA";
@@ -10,22 +10,8 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
   const cats = ["Women", "Men", "Dresses", "Tops", "Shoes", "Bags", "Accessories", "Sale"];
   const grid = ["Women's Collection", "Men's Collection", "Dresses", "Accessories"];
 
-  return (
-    <BrandStyle brandColor={brandColor} className="bg-[#FAF8F5] font-sans text-[#0A0A0A]">
-      <header className="border-b border-black/5 bg-[#FAF8F5]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <Brandmark siteData={siteData} name={name} className="text-sm font-semibold uppercase tracking-[0.2em]" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">
-            {[["Home","#"],["Shop","#products"],["Collections","#collections"],["Lookbook","#products"],["Blog","#products"],["Contact","#products"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}
-          </nav>
-          <div className="flex items-center gap-2">
-            <a href="#" className="rounded-md border border-black/20 px-4 py-2 text-sm">Login</a>
-            <BrandButton className="px-4 py-2">Register</BrandButton>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero */}
+  const blocks: Record<string, React.ReactNode> = {
+    hero: (
       <section className="relative">
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-14 lg:grid-cols-[55%_45%]">
           <div>
@@ -50,9 +36,8 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
-      <CustomSections sections={siteData.customSections} at="top" />
-
-      {/* Category circles */}
+    ),
+    catcircles: (
       <section className="border-y border-black/5 bg-white">
         <div className="mx-auto flex max-w-6xl gap-6 overflow-x-auto px-5 py-6">
           {cats.map((c, i) => (
@@ -67,8 +52,8 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
           ))}
         </div>
       </section>
-
-      {/* Shop by category grid */}
+    ),
+    categories: (
       <section id="collections" className="mx-auto max-w-6xl px-5 py-14">
         <div className="flex items-end justify-between">
           <div><span className="text-xs uppercase tracking-[0.3em] text-black/40">Shop by Category</span><h2 className="mt-2 font-serif text-3xl font-bold">{heading(siteData, "categories", "Find Your Perfect Style")}</h2></div>
@@ -84,8 +69,8 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
           ))}
         </div>
       </section>
-
-      {/* Promo double */}
+    ),
+    promo: (
       <section className="mx-auto grid max-w-6xl gap-5 px-5 pb-14 md:grid-cols-2">
         {[["Limited Time Offer", "Spring Sale Up to 50% Off", "Shop The Sale →"], ["New Arrivals", "Fresh Styles Just Landed", "Explore New In →"]].map(([label, head, cta], i) => (
           <div key={i} className="flex items-center gap-4 overflow-hidden rounded-2xl bg-[#F3EFE9] p-6">
@@ -98,19 +83,19 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
           </div>
         ))}
       </section>
-
-      {/* Best sellers */}
+    ),
+    bestsellers: (
       <section id="products" className="mx-auto max-w-6xl px-5 pb-14">
         <div className="flex items-end justify-between">
           <div><span className="text-xs uppercase tracking-[0.3em] text-black/40">Best Sellers</span><h2 className="mt-2 font-serif text-3xl font-bold">{heading(siteData, "bestsellers", "Our Most Loved Picks")}</h2></div>
           <a href="#" className="text-sm font-medium" style={{ color: "var(--brand-primary)" }}>View All →</a>
         </div>
         <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-6">
-          {products.slice(0, 6).map((p) => <ProductCardV2 key={p.id} product={p} siteData={siteData} showButton={false} />)}
+          {products.slice(0, 6).map((p) => <ProductCardV2 key={p.id} product={p} siteData={siteData} />)}
         </div>
       </section>
-
-      {/* Newsletter split */}
+    ),
+    newsletter: (
       <section className="bg-white">
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-14 md:grid-cols-2">
           <div className="aspect-[16/10] overflow-hidden rounded-2xl"><Img src="https://picsum.photos/seed/lun-news/900/560" className="h-full w-full object-cover" /></div>
@@ -122,7 +107,26 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
+    ),
+  };
 
+  return (
+    <BrandStyle brandColor={brandColor} className="bg-[#FAF8F5] font-sans text-[#0A0A0A]">
+      <header className="border-b border-black/5 bg-[#FAF8F5]">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+          <Brandmark siteData={siteData} name={name} className="text-sm font-semibold uppercase tracking-[0.2em]" />
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">
+            {[["Home","#"],["Shop","#products"],["Collections","#collections"],["Lookbook","#products"],["Blog","#products"],["Contact","#products"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}
+          </nav>
+          <div className="flex items-center gap-2">
+            <a href="#" className="rounded-md border border-black/20 px-4 py-2 text-sm">Login</a>
+            <BrandButton className="px-4 py-2">Register</BrandButton>
+          </div>
+        </div>
+      </header>
+
+      <CustomSections sections={siteData.customSections} at="top" />
+      <OrderedSections siteData={siteData} natural={["hero", "catcircles", "categories", "promo", "bestsellers", "newsletter"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="bg-[#0A0A0A] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-5">

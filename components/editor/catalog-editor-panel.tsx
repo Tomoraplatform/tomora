@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, UploadCloud, Loader2, X, Package } from "lucide-react";
+import { Plus, Trash2, UploadCloud, Loader2, X, Package, ChevronUp, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -79,14 +79,30 @@ export function CatalogEditorPanel({
   patch,
   lists,
   sections = [],
+  reorder = [],
   isEcommerce = false,
 }: {
   data: SiteData;
   patch: (p: Partial<SiteData>) => void;
   lists: EditableList[];
   sections?: SectionDef[];
+  reorder?: SectionDef[];
   isEcommerce?: boolean;
 }) {
+  // Current section order (saved order first, then any new sections).
+  const orderKeys = (() => {
+    const natural = reorder.map((r) => r.key);
+    const saved = (data.sectionOrder || []).filter((k) => natural.includes(k));
+    return [...saved, ...natural.filter((k) => !saved.includes(k))];
+  })();
+  const labelFor = (k: string) => reorder.find((r) => r.key === k)?.label || k;
+  function moveSection(i: number, dir: -1 | 1) {
+    const j = i + dir;
+    if (j < 0 || j >= orderKeys.length) return;
+    const next = [...orderKeys];
+    [next[i], next[j]] = [next[j], next[i]];
+    patch({ sectionOrder: next });
+  }
   const [hex, setHex] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
   const custom = data.brandColors || [];
@@ -145,6 +161,23 @@ export function CatalogEditorPanel({
           <FieldRow label="Button link"><Input value={data.ctaHref || ""} onChange={(e) => patch({ ctaHref: e.target.value })} placeholder="# or https://" /></FieldRow>
         </div>
       </Section>
+
+      {reorder.length > 1 && (
+        <Section title="Reorder sections">
+          <p className="-mt-1 mb-2 text-xs text-ink/50">Move sections up or down to change their order on your page.</p>
+          <div className="space-y-1.5">
+            {orderKeys.map((k, i) => (
+              <div key={k} className="flex items-center justify-between rounded-md border border-ink/10 px-3 py-2">
+                <span className="text-sm text-ink/80">{labelFor(k)}</span>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => moveSection(i, -1)} disabled={i === 0} className="text-ink/40 hover:text-ink disabled:opacity-30"><ChevronUp className="h-4 w-4" /></button>
+                  <button onClick={() => moveSection(i, 1)} disabled={i === orderKeys.length - 1} className="text-ink/40 hover:text-ink disabled:opacity-30"><ChevronDown className="h-4 w-4" /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
 
       {isEcommerce && (
         <Section title="Products & prices">

@@ -273,6 +273,36 @@ export function heading(siteData: SiteData, key: string, fallback: string): stri
   return v && v.trim() ? v : fallback;
 }
 
+/**
+ * Returns the template's section keys in the user's saved order, with any
+ * sections not present in the saved order appended in their natural order.
+ */
+export function orderedSectionKeys(order: string[] | undefined, natural: string[]): string[] {
+  if (!order?.length) return natural;
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const k of order) if (natural.includes(k) && !seen.has(k)) { result.push(k); seen.add(k); }
+  for (const k of natural) if (!seen.has(k)) result.push(k);
+  return result;
+}
+
+/** Renders a template's built-in sections in the user-defined order. */
+export function OrderedSections({
+  siteData, natural, blocks,
+}: {
+  siteData: SiteData;
+  natural: string[];
+  blocks: Record<string, React.ReactNode>;
+}) {
+  return (
+    <>
+      {orderedSectionKeys(siteData.sectionOrder, natural).map((k) =>
+        blocks[k] ? <div key={k} className="contents">{blocks[k]}</div> : null
+      )}
+    </>
+  );
+}
+
 /** Editable services/features. Falls back to the template's built-in defaults. */
 export function servicesOf(
   siteData: SiteData,

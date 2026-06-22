@@ -162,6 +162,35 @@ export function templateSections(id: string): SectionDef[] {
   return TEMPLATE_SECTIONS[id] ?? [];
 }
 
+/** Reorderable built-in sections per template: [key, label] in natural order. */
+export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
+  "shop-01": [
+    { key: "hero", label: "Hero" },
+    { key: "trust", label: "Trust badges" },
+    { key: "categories", label: "Categories" },
+    { key: "bestsellers", label: "Products" },
+    { key: "offer", label: "Special offer" },
+    { key: "testimonials", label: "Testimonials" },
+  ],
+  "shop-02": [
+    { key: "hero", label: "Hero" },
+    { key: "catcircles", label: "Category circles" },
+    { key: "categories", label: "Shop by category" },
+    { key: "promo", label: "Promo banners" },
+    { key: "bestsellers", label: "Best sellers" },
+    { key: "newsletter", label: "Newsletter" },
+  ],
+  "shop-03": [
+    { key: "hero", label: "Hero banner" },
+    { key: "new", label: "New products" },
+    { key: "special", label: "Special products" },
+    { key: "catbanners", label: "Category banners" },
+  ],
+};
+export function templateReorder(id: string): SectionDef[] {
+  return TEMPLATE_REORDER[id] ?? [];
+}
+
 export function catalogTemplate(id: string) {
   return CATALOG_TEMPLATES.find((t) => t.id === id);
 }

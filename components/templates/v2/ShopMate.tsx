@@ -2,7 +2,7 @@
 
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Quote, ShoppingCart } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, CustomSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, CustomSections, OrderedSections } from "./shared";
 
 const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"];
 
@@ -17,20 +17,8 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
   ];
   const cats = ["Electronics", "Fashion", "Home & Kitchen", "Beauty", "Sports", "Accessories"];
 
-  return (
-    <BrandStyle brandColor={brandColor} className="bg-white font-sans text-neutral-900">
-      {/* Nav */}
-      <header className="sticky top-0 z-20 border-b border-black/5 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <Brandmark siteData={siteData} name={name} className="text-xl font-bold" />
-          <nav className="hidden gap-7 text-sm text-black/60 md:flex">
-            <a href="#categories">Categories</a><a href="#products">Shop</a><a href="#offer">Deals</a>
-          </nav>
-          <button className="relative" aria-label="Cart"><ShoppingCart className="h-5 w-5" /></button>
-        </div>
-      </header>
-
-      {/* Hero */}
+  const blocks: Record<string, React.ReactNode> = {
+    hero: (
       <section className="bg-[#FBFAF7]">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
           <div>
@@ -55,9 +43,8 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
-      <CustomSections sections={siteData.customSections} at="top" />
-
-      {/* Trust bar */}
+    ),
+    trust: (
       <section className="border-y border-black/5">
         <div className="mx-auto grid max-w-6xl gap-6 px-5 py-8 sm:grid-cols-2 lg:grid-cols-4">
           {trust.map(({ icon: Icon, t, s }) => (
@@ -68,8 +55,8 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
           ))}
         </div>
       </section>
-
-      {/* Categories */}
+    ),
+    categories: (
       <section id="categories" className="mx-auto max-w-6xl px-5 py-14">
         <div className="flex items-end justify-between">
           <h2 className="text-2xl font-bold">{heading(siteData, "categories", "Shop by Categories")}</h2>
@@ -86,8 +73,8 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
           ))}
         </div>
       </section>
-
-      {/* Best selling */}
+    ),
+    bestsellers: (
       <section id="products" className="bg-[#FBFAF7]">
         <div className="mx-auto max-w-6xl px-5 py-14">
           <div className="flex items-end justify-between">
@@ -99,8 +86,8 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
-
-      {/* Special offer */}
+    ),
+    offer: (
       <section id="offer" className="mx-auto max-w-6xl px-5 py-14">
         <div className="grid items-center gap-8 overflow-hidden rounded-3xl bg-[#F3EFE6] p-8 md:grid-cols-2 md:p-12">
           <div>
@@ -112,8 +99,8 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
           <div className="aspect-[4/3] overflow-hidden rounded-2xl"><Img src="https://picsum.photos/seed/shopmate-offer/800/600" className="h-full w-full object-cover" /></div>
         </div>
       </section>
-
-      {/* Testimonials */}
+    ),
+    testimonials: (
       <section className="bg-[#FBFAF7]">
         <div className="mx-auto max-w-6xl px-5 py-14">
           <h2 className="text-center text-2xl font-bold">{heading(siteData, "testimonials", "What Our Customers Say")}</h2>
@@ -131,7 +118,24 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
           </div>
         </div>
       </section>
+    ),
+  };
 
+  return (
+    <BrandStyle brandColor={brandColor} className="bg-white font-sans text-neutral-900">
+      {/* Nav */}
+      <header className="sticky top-0 z-20 border-b border-black/5 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
+          <Brandmark siteData={siteData} name={name} className="text-xl font-bold" />
+          <nav className="hidden gap-7 text-sm text-black/60 md:flex">
+            <a href="#categories">Categories</a><a href="#products">Shop</a><a href="#offer">Deals</a>
+          </nav>
+          <button className="relative" aria-label="Cart"><ShoppingCart className="h-5 w-5" /></button>
+        </div>
+      </header>
+
+      <CustomSections sections={siteData.customSections} at="top" />
+      <OrderedSections siteData={siteData} natural={["hero", "trust", "categories", "bestsellers", "offer", "testimonials"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
       <ShopFooter name={name} social={siteData.social} />
     </BrandStyle>
