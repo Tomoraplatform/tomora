@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, Plus, Loader2, Lock, X } from "lucide-react";
+import { Eye, Plus, Loader2, Lock, X, Pencil, Trash2, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -10,17 +10,29 @@ import { SiteRenderer } from "@/components/templates";
 import {
   CATALOG_CATEGORIES, catalogTemplatesByCategory, createCatalogContent, type CatalogTemplate,
 } from "@/lib/catalog";
-import { createAdditionalSite } from "@/app/dashboard/(panel)/templates/actions";
+import { createAdditionalSite, editSite, deleteSite } from "@/app/dashboard/(panel)/templates/actions";
+
+export interface MySite {
+  id: string;
+  name: string;
+  templateId: string;
+  templateName: string;
+  accent: string;
+  isLive: boolean;
+  isCurrent: boolean;
+}
 
 export function TemplatesBrowser({
-  siteCount, siteLimit, planName,
+  siteCount, siteLimit, planName, mySites = [],
 }: {
   siteCount: number;
   siteLimit: number;
   planName: string;
+  mySites?: MySite[];
 }) {
   const [preview, setPreview] = useState<CatalogTemplate | null>(null);
   const [creating, setCreating] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const atLimit = siteCount >= siteLimit;
 
@@ -30,6 +42,15 @@ export function TemplatesBrowser({
     const res = await createAdditionalSite(id);
     // On success the server action redirects; only errors return here.
     if (res && !res.ok) { setError(res.error || "Could not create site."); setCreating(null); }
+  }
+
+  async function remove(id: string, name: string) {
+    if (!confirm(`Delete "${name}"? This permanently removes the website and its content. This cannot be undone.`)) return;
+    setBusy(id); setError(null);
+    const res = await deleteSite(id);
+    setBusy(null);
+    if (res.ok) window.location.reload();
+    else setError(res.error || "Could not delete site.");
   }
 
   return (
@@ -51,6 +72,51 @@ export function TemplatesBrowser({
           <Link href="/dashboard/billing" className="font-semibold text-ink underline">Upgrade</Link> to add more.
         </div>
       )}
+
+      {/* The user's own websites */}
+      {mySites.length > 0 && (
+        <div>
+          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink/50">
+            Your websites ({mySites.length} of {siteLimit})
+          </h2>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {mySites.map((s) => (
+              <div key={s.id} className="overflow-hidden rounded-2xl border-2 border-ink/10 bg-white">
+                <div className="relative h-48 overflow-hidden border-b border-ink/5">
+                  <TemplatePreview templateId={s.templateId} brandColor={s.accent} businessName={s.name} />
+                  {s.isCurrent && (
+                    <span className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded-full bg-ink px-2 py-0.5 text-xs font-medium text-cream">
+                      <CheckCircle2 className="h-3 w-3" /> Editing
+                    </span>
+                  )}
+                  <span className={`absolute right-2 top-2 z-10 rounded-full px-2 py-0.5 text-xs font-medium ${s.isLive ? "bg-emerald-100 text-emerald-700" : "bg-ink/10 text-ink/60"}`}>
+                    {s.isLive ? "Live" : "Draft"}
+                  </span>
+                </div>
+                <div className="p-4">
+                  <h3 className="truncate font-semibold text-ink">{s.name}</h3>
+                  <p className="mt-1 text-sm text-ink/50">{s.templateName}</p>
+                  <div className="mt-3 flex gap-2">
+                    <Button size="sm" disabled={busy === s.id} onClick={() => editSite(s.id)}>
+                      <Pencil className="h-4 w-4" /> Edit
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-destructive" disabled={busy === s.id} onClick={() => remove(s.id, s.name)}>
+                      {busy === s.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />} Delete
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="border-t border-ink/10 pt-2">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-ink/50">Add another website</h2>
+        <p className="mt-1 text-sm text-ink/50">
+          {atLimit ? "You've reached your plan limit — delete one above to add a different template." : "Pick a template to spin up another website."}
+        </p>
+      </div>
 
       {CATALOG_CATEGORIES.map((cat) => (
         <div key={cat.id}>

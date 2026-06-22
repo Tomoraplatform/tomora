@@ -29,6 +29,36 @@ export async function setCurrentSite(siteId: string) {
   redirect("/dashboard");
 }
 
+/** Select a site and jump straight into its editor. */
+export async function editSite(siteId: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const { data: site } = await supabase
+    .from("sites").select("id").eq("id", siteId).eq("user_id", user.id).maybeSingle();
+  if (site) cookies().set(SITE_COOKIE, siteId, { path: "/", maxAge: 60 * 60 * 24 * 365 });
+  redirect("/dashboard/editor");
+}
+
+/** Delete one of the user's sites, freeing a slot. Cascades products/orders/etc. */
+export async function deleteSite(siteId: string): Promise<{ ok: boolean; error?: string }> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not authenticated." };
+
+  const { error } = await supabase
+    .from("sites").delete().eq("id", siteId).eq("user_id", user.id);
+  if (error) return { ok: false, error: error.message };
+
+  // If the deleted site was the active one, clear the selector cookie.
+  if (cookies().get(SITE_COOKIE)?.value === siteId) {
+    cookies().delete(SITE_COOKIE);
+  }
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/templates");
+  return { ok: true };
+}
+
 export interface CreateSiteResult { ok: boolean; error?: string }
 
 /** Create an additional site from a template, respecting the plan's site limit. */
