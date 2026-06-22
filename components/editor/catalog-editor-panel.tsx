@@ -128,6 +128,27 @@ export function CatalogEditorPanel({
     setHex("");
   }
 
+  // Sections in the page's current order; each carries its own controls.
+  const orderedDefs = orderKeys
+    .map((k) => reorder.find((r) => r.key === k))
+    .filter(Boolean) as SectionDef[];
+  const headingDefault = (key?: string) =>
+    (sections.find((s) => s.key === key)?.label || "").replace("{name}", data.businessName || "your brand");
+
+  const heroFields = (
+    <>
+      <FieldRow label="Headline"><Textarea rows={2} value={data.heroHeadline || ""} onChange={(e) => patch({ heroHeadline: e.target.value })} /></FieldRow>
+      <FieldRow label="Subtext"><Textarea rows={2} value={data.heroSubtext || ""} onChange={(e) => patch({ heroSubtext: e.target.value })} /></FieldRow>
+      <FieldRow label="Image">
+        <UploadRow label={data.heroImage ? "Replace image" : "Upload image"} preview={data.heroImage} busy={uploading === "heroImage"} onFile={(f) => upload("heroImage", f)} />
+      </FieldRow>
+      <div className="grid grid-cols-2 gap-3">
+        <FieldRow label="Button text"><Input value={data.ctaText || ""} onChange={(e) => patch({ ctaText: e.target.value })} /></FieldRow>
+        <FieldRow label="Button link"><Input value={data.ctaHref || ""} onChange={(e) => patch({ ctaHref: e.target.value })} placeholder="# or https://" /></FieldRow>
+      </div>
+    </>
+  );
+
   return (
     <div>
       <Section title="Brand">
@@ -155,89 +176,55 @@ export function CatalogEditorPanel({
         )}
       </Section>
 
-      <Section title="Hero">
-        <FieldRow label="Headline"><Textarea rows={2} value={data.heroHeadline || ""} onChange={(e) => patch({ heroHeadline: e.target.value })} /></FieldRow>
-        <FieldRow label="Subtext"><Textarea rows={2} value={data.heroSubtext || ""} onChange={(e) => patch({ heroSubtext: e.target.value })} /></FieldRow>
-        <FieldRow label="Hero image">
-          <UploadRow label={data.heroImage ? "Replace image" : "Upload image"} preview={data.heroImage} busy={uploading === "heroImage"} onFile={(f) => upload("heroImage", f)} />
-        </FieldRow>
-        <div className="grid grid-cols-2 gap-3">
-          <FieldRow label="Button text"><Input value={data.ctaText || ""} onChange={(e) => patch({ ctaText: e.target.value })} /></FieldRow>
-          <FieldRow label="Button link"><Input value={data.ctaHref || ""} onChange={(e) => patch({ ctaHref: e.target.value })} placeholder="# or https://" /></FieldRow>
-        </div>
-      </Section>
+      <div className="mb-2 mt-4 border-t border-ink/10 pt-4">
+        <p className="text-xs text-ink/50">Page sections — edit each one; use the arrows to reorder them on your page.</p>
+      </div>
 
-      {reorder.length > 1 && (
-        <Section title="Reorder sections">
-          <p className="-mt-1 mb-2 text-xs text-ink/50">Move sections up or down to change their order on your page.</p>
-          <div className="space-y-1.5">
-            {orderKeys.map((k, i) => (
-              <div key={k} className="flex items-center justify-between rounded-md border border-ink/10 px-3 py-2">
-                <span className="text-sm text-ink/80">{labelFor(k)}</span>
-                <div className="flex items-center gap-1">
-                  <button onClick={() => moveSection(i, -1)} disabled={i === 0} className="text-ink/40 hover:text-ink disabled:opacity-30"><ChevronUp className="h-4 w-4" /></button>
-                  <button onClick={() => moveSection(i, 1)} disabled={i === orderKeys.length - 1} className="text-ink/40 hover:text-ink disabled:opacity-30"><ChevronDown className="h-4 w-4" /></button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Section>
+      {orderedDefs.length === 0 && (
+        <SectionGroup label="Hero">{heroFields}</SectionGroup>
       )}
 
-      {isEcommerce && (
-        <Section title="Products & prices">
-          <p className="-mt-1 mb-2 text-xs text-ink/50">
-            Your store products, images, prices and stock are managed on the Products page. Changes show on your store automatically.
-          </p>
-          <a
-            href="/dashboard/products"
-            className="flex items-center justify-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-cream hover:opacity-90"
-          >
-            <Package className="h-4 w-4" /> Manage products &amp; prices
-          </a>
-        </Section>
-      )}
-
-      {sections.length > 0 && (
-        <Section title="Section text">
-          <p className="mb-1 text-xs text-ink/50">Edit each section&apos;s title and intro text. Leave blank to keep the default.</p>
-          {sections.map((s) => {
-            const label = s.label.replace("{name}", data.businessName || "your brand");
-            return (
-              <div key={s.key} className="space-y-1.5 rounded-lg border border-ink/10 p-3">
-                <Label className="text-[11px] font-medium uppercase tracking-wide text-ink/40">{label}</Label>
-                <Input
-                  value={data.sectionTitles?.[s.key] ?? ""}
-                  placeholder={`Title: ${label}`}
-                  onChange={(e) => patch({ sectionTitles: { ...(data.sectionTitles || {}), [s.key]: e.target.value } })}
-                />
-                {s.text && (
-                  <Textarea
-                    rows={2}
-                    className="text-xs"
-                    value={data.sectionText?.[s.key] ?? ""}
-                    placeholder="Intro text (optional)"
-                    onChange={(e) => patch({ sectionText: { ...(data.sectionText || {}), [s.key]: e.target.value } })}
-                  />
-                )}
-              </div>
-            );
-          })}
-        </Section>
-      )}
-
-      {lists.map((l) => {
-        const cfg = LIST_CONFIG[l];
-        const items = (data[cfg.key] as any[]) || [];
+      {orderedDefs.map((def, i) => {
+        const hkey = def.heading;
+        const hasControls = def.hero || def.heading || def.text || def.list || (def.products && isEcommerce);
         return (
-          <ListEditor
-            key={l}
-            title={cfg.title}
-            items={items}
-            fields={cfg.fields}
-            onChange={(next) => patch({ [cfg.key]: next } as Partial<SiteData>)}
-            onAdd={() => patch({ [cfg.key]: [...items, cfg.make()] } as Partial<SiteData>)}
-          />
+          <SectionGroup
+            key={def.key}
+            label={def.label}
+            onUp={reorder.length > 1 && i > 0 ? () => moveSection(i, -1) : undefined}
+            onDown={reorder.length > 1 && i < orderedDefs.length - 1 ? () => moveSection(i, 1) : undefined}
+          >
+            {def.hero ? heroFields : (
+              <>
+                {hkey && (
+                  <FieldRow label="Title">
+                    <Input
+                      value={data.sectionTitles?.[hkey] ?? ""}
+                      placeholder={headingDefault(hkey) || def.label}
+                      onChange={(e) => patch({ sectionTitles: { ...(data.sectionTitles || {}), [hkey]: e.target.value } })}
+                    />
+                  </FieldRow>
+                )}
+                {def.text && hkey && (
+                  <FieldRow label="Intro text">
+                    <Textarea rows={2} value={data.sectionText?.[hkey] ?? ""} placeholder="Optional"
+                      onChange={(e) => patch({ sectionText: { ...(data.sectionText || {}), [hkey]: e.target.value } })} />
+                  </FieldRow>
+                )}
+                {def.list && (
+                  <ListBody cfg={LIST_CONFIG[def.list]} data={data} patch={patch} />
+                )}
+                {def.products && isEcommerce && (
+                  <a href="/dashboard/products" className="flex items-center justify-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-cream hover:opacity-90">
+                    <Package className="h-4 w-4" /> Manage products &amp; prices
+                  </a>
+                )}
+                {!hasControls && (
+                  <p className="text-xs text-ink/40">This section&apos;s content is styled by the template. Use the arrows to move it.</p>
+                )}
+              </>
+            )}
+          </SectionGroup>
         );
       })}
 
@@ -267,36 +254,57 @@ export function CatalogEditorPanel({
   );
 }
 
-function ListEditor({
-  title, items, fields, onChange, onAdd,
+/** A collapsible-styled group for one page section, with reorder arrows. */
+function SectionGroup({
+  label, children, onUp, onDown,
 }: {
-  title: string;
-  items: any[];
-  fields: Field[];
-  onChange: (next: any[]) => void;
-  onAdd: () => void;
+  label: string;
+  children: React.ReactNode;
+  onUp?: () => void;
+  onDown?: () => void;
 }) {
+  return (
+    <div className="mb-4 rounded-xl border border-ink/10">
+      <div className="flex items-center justify-between border-b border-ink/10 bg-cream/40 px-3 py-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-ink/60">{label}</h3>
+        {(onUp || onDown) && (
+          <div className="flex items-center gap-1">
+            <button onClick={onUp} disabled={!onUp} className="text-ink/40 hover:text-ink disabled:opacity-25" aria-label="Move up"><ChevronUp className="h-4 w-4" /></button>
+            <button onClick={onDown} disabled={!onDown} className="text-ink/40 hover:text-ink disabled:opacity-25" aria-label="Move down"><ChevronDown className="h-4 w-4" /></button>
+          </div>
+        )}
+      </div>
+      <div className="space-y-3 p-3">{children}</div>
+    </div>
+  );
+}
+
+/** Renders an editable list's items + add button (no section wrapper). */
+function ListBody({ cfg, data, patch }: {
+  cfg: { key: keyof SiteData; title: string; fields: Field[]; make: () => any };
+  data: SiteData;
+  patch: (p: Partial<SiteData>) => void;
+}) {
+  const items = (data[cfg.key] as any[]) || [];
+  const onChange = (next: any[]) => patch({ [cfg.key]: next } as Partial<SiteData>);
   const set = (i: number, key: string, value: any) =>
     onChange(items.map((it, idx) => (idx === i ? { ...it, [key]: value } : it)));
   const remove = (i: number) => onChange(items.filter((_, idx) => idx !== i));
-
   return (
-    <Section title={title}>
-      <div className="space-y-3">
-        {items.map((item, i) => (
-          <div key={item.id || i} className="space-y-2 rounded-lg border border-ink/10 p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-ink/60">Item {i + 1}</span>
-              <button onClick={() => remove(i)} className="text-ink/40 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
-            </div>
-            {fields.map((f) => (
-              <ItemField key={f.key} field={f} value={item[f.key]} onChange={(v) => set(i, f.key, v)} />
-            ))}
+    <div className="space-y-3">
+      {items.map((item, i) => (
+        <div key={item.id || i} className="space-y-2 rounded-lg border border-ink/10 p-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium text-ink/60">{cfg.title} {i + 1}</span>
+            <button onClick={() => remove(i)} className="text-ink/40 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
           </div>
-        ))}
-      </div>
-      <Button type="button" variant="outline" size="sm" className="mt-2 w-full" onClick={onAdd}><Plus className="h-4 w-4" /> Add item</Button>
-    </Section>
+          {cfg.fields.map((f) => (
+            <ItemField key={f.key} field={f} value={item[f.key]} onChange={(v) => set(i, f.key, v)} />
+          ))}
+        </div>
+      ))}
+      <Button type="button" variant="outline" size="sm" className="w-full" onClick={() => onChange([...items, cfg.make()])}><Plus className="h-4 w-4" /> Add item</Button>
+    </div>
   );
 }
 

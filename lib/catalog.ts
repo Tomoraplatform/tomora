@@ -74,8 +74,24 @@ export function templateLists(id: string): EditableList[] {
   return TEMPLATE_LISTS[id] ?? [];
 }
 
-/** Editable section headings per template: [key, default label]. `text` = also has editable intro text. */
-export type SectionDef = { key: string; label: string; text?: boolean };
+/**
+ * A template section for the editor. `key` is the reorder id; `label` is shown
+ * in the panel. Optional flags describe which controls this section exposes:
+ *  - heading: sectionTitles key for an editable title
+ *  - text:    has an editable intro paragraph (sectionText, keyed by heading||key)
+ *  - list:    an associated editable content list
+ *  - products: an e-commerce products section (links to the Products page)
+ *  - hero:    the hero section (headline / subtext / image / button fields)
+ */
+export type SectionDef = {
+  key: string;
+  label: string;
+  text?: boolean;
+  heading?: string;
+  list?: EditableList;
+  products?: boolean;
+  hero?: boolean;
+};
 export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   "shop-01": [
     { key: "categories", label: "Shop by Categories" },
@@ -165,112 +181,112 @@ export function templateSections(id: string): SectionDef[] {
 /** Reorderable built-in sections per template: [key, label] in natural order. */
 export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
   "shop-01": [
-    { key: "hero", label: "Hero" },
+    { key: "hero", label: "Hero", hero: true },
     { key: "trust", label: "Trust badges" },
-    { key: "categories", label: "Categories" },
-    { key: "bestsellers", label: "Products" },
-    { key: "offer", label: "Special offer" },
-    { key: "testimonials", label: "Testimonials" },
+    { key: "categories", label: "Categories", heading: "categories", list: "shopCategories" },
+    { key: "bestsellers", label: "Products", heading: "bestsellers", products: true },
+    { key: "offer", label: "Special offer", heading: "sale", text: true },
+    { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
   ],
   "shop-02": [
-    { key: "hero", label: "Hero" },
+    { key: "hero", label: "Hero", hero: true },
     { key: "catcircles", label: "Category circles" },
-    { key: "categories", label: "Shop by category" },
+    { key: "categories", label: "Shop by category", heading: "categories", list: "shopCategories" },
     { key: "promo", label: "Promo banners" },
-    { key: "bestsellers", label: "Best sellers" },
-    { key: "newsletter", label: "Newsletter" },
+    { key: "bestsellers", label: "Best sellers", heading: "bestsellers", products: true },
+    { key: "newsletter", label: "Newsletter", heading: "newsletter", text: true },
   ],
   "shop-03": [
-    { key: "hero", label: "Hero banner" },
-    { key: "new", label: "New products" },
-    { key: "special", label: "Special products" },
-    { key: "catbanners", label: "Category banners" },
+    { key: "hero", label: "Hero banner", hero: true },
+    { key: "new", label: "New products", heading: "new", products: true },
+    { key: "special", label: "Special products", heading: "special", products: true },
+    { key: "catbanners", label: "Category banners", list: "shopCategories" },
   ],
   "portfolio-01": [
-    { key: "hero", label: "Hero" },
-    { key: "services", label: "What I Do" },
-    { key: "portfolio", label: "Portfolio" },
-    { key: "resume", label: "Resume" },
-    { key: "testimonials", label: "Testimonial" },
+    { key: "hero", label: "Hero", hero: true },
+    { key: "services", label: "What I Do", heading: "services", list: "services" },
+    { key: "portfolio", label: "Portfolio", heading: "portfolio", list: "portfolio" },
+    { key: "resume", label: "Resume", heading: "resume", list: "resume" },
+    { key: "testimonials", label: "Testimonial", heading: "testimonials", list: "testimonials" },
     { key: "clients", label: "Client logos" },
-    { key: "contact", label: "Contact" },
+    { key: "contact", label: "Contact", heading: "contact" },
   ],
   "portfolio-02": [
-    { key: "hero", label: "Hero" },
-    { key: "about", label: "About Me" },
-    { key: "services", label: "Services" },
-    { key: "portfolio", label: "Projects" },
-    { key: "testimonials", label: "Testimonials" },
-    { key: "contact", label: "Contact" },
+    { key: "hero", label: "Hero", hero: true },
+    { key: "about", label: "About Me", heading: "about", list: "stats" },
+    { key: "services", label: "Services", heading: "services", list: "services" },
+    { key: "portfolio", label: "Projects", heading: "portfolio", list: "portfolio" },
+    { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
+    { key: "contact", label: "Contact", heading: "contact", text: true },
   ],
   "education-01": [
-    { key: "hero", label: "Hero" },
+    { key: "hero", label: "Hero", hero: true },
     { key: "categories", label: "Category row" },
-    { key: "advantages", label: "Advantages" },
-    { key: "courses", label: "Bootcamp / Courses" },
+    { key: "advantages", label: "Advantages", heading: "advantages" },
+    { key: "courses", label: "Bootcamp / Courses", heading: "courses", list: "courses" },
     { key: "features", label: "Features" },
-    { key: "faq", label: "FAQ" },
+    { key: "faq", label: "FAQ", heading: "faq", list: "faqs" },
   ],
   "education-02": [
-    { key: "hero", label: "Hero" },
+    { key: "hero", label: "Hero", hero: true },
     { key: "search", label: "Search bar" },
-    { key: "about", label: "About / Why us" },
-    { key: "venues", label: "Venues" },
-    { key: "schedule", label: "Schedule" },
-    { key: "services", label: "Features" },
-    { key: "testimonials", label: "Testimonials" },
-    { key: "register", label: "Register" },
+    { key: "about", label: "About / Why us", heading: "about" },
+    { key: "venues", label: "Venues", heading: "venues", list: "events" },
+    { key: "schedule", label: "Schedule", heading: "schedule" },
+    { key: "services", label: "Features", heading: "services" },
+    { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
+    { key: "register", label: "Register", heading: "register" },
   ],
   "org-01": [
-    { key: "hero", label: "Hero" },
+    { key: "hero", label: "Hero", hero: true },
     { key: "impact", label: "Impact images" },
-    { key: "mission", label: "Mission" },
-    { key: "services", label: "What we do" },
-    { key: "volunteers", label: "Volunteers" },
-    { key: "stories", label: "Success stories" },
+    { key: "mission", label: "Mission", heading: "hero2" },
+    { key: "services", label: "What we do", list: "services" },
+    { key: "volunteers", label: "Volunteers", heading: "volunteers", text: true },
+    { key: "stories", label: "Success stories", heading: "stories", list: "testimonials" },
   ],
   "org-02": [
-    { key: "hero", label: "Hero" },
+    { key: "hero", label: "Hero", hero: true },
     { key: "actions", label: "Quick actions" },
-    { key: "about", label: "About" },
-    { key: "causes", label: "Causes" },
-    { key: "donate", label: "Donation band" },
-    { key: "services", label: "What we do" },
-    { key: "events", label: "Events" },
+    { key: "about", label: "About", heading: "hope", text: true },
+    { key: "causes", label: "Causes", heading: "causes", list: "causes" },
+    { key: "donate", label: "Donation band", heading: "donate" },
+    { key: "services", label: "What we do", heading: "services", list: "services" },
+    { key: "events", label: "Events", heading: "events", list: "events" },
   ],
   "org-03": [
-    { key: "hero", label: "Hero" },
-    { key: "about", label: "Experience" },
-    { key: "services", label: "Services" },
-    { key: "cta", label: "Growth banner" },
-    { key: "projects", label: "Projects" },
-    { key: "features", label: "Features" },
+    { key: "hero", label: "Hero", hero: true },
+    { key: "about", label: "Experience", heading: "experience", text: true },
+    { key: "services", label: "Services", heading: "services", list: "services" },
+    { key: "cta", label: "Growth banner", heading: "cta" },
+    { key: "projects", label: "Projects", heading: "values" },
+    { key: "features", label: "Features", heading: "invest" },
     { key: "stats", label: "Stats" },
-    { key: "join", label: "Join CTA" },
+    { key: "join", label: "Join CTA", heading: "join" },
   ],
   "events-01": [
-    { key: "hero", label: "Hero" },
+    { key: "hero", label: "Hero", hero: true },
     { key: "about", label: "About cards" },
-    { key: "mission", label: "Mission" },
-    { key: "why", label: "Why choose us" },
+    { key: "mission", label: "Mission", heading: "mission", text: true },
+    { key: "why", label: "Why choose us", heading: "why" },
   ],
   "events-02": [
-    { key: "hero", label: "Hero" },
+    { key: "hero", label: "Hero", hero: true },
     { key: "mission", label: "Mission statement" },
     { key: "ministries", label: "Ministries" },
-    { key: "news", label: "What's new" },
+    { key: "news", label: "What's new", heading: "news", list: "events" },
   ],
   "events-03": [
-    { key: "hero", label: "Hero" },
-    { key: "about", label: "About / Sermons" },
-    { key: "ministries", label: "Ministries" },
+    { key: "hero", label: "Hero", hero: true },
+    { key: "about", label: "About / Sermons", heading: "sermons" },
+    { key: "ministries", label: "Ministries", heading: "ministries", text: true },
   ],
   "events-04": [
-    { key: "hero", label: "Hero" },
+    { key: "hero", label: "Hero", hero: true },
     { key: "quick", label: "Quick access" },
-    { key: "news", label: "News" },
-    { key: "events", label: "Events" },
-    { key: "territory", label: "Territory" },
+    { key: "news", label: "News", heading: "news", list: "events" },
+    { key: "events", label: "Events", heading: "events" },
+    { key: "territory", label: "Territory", heading: "territory" },
   ],
 };
 export function templateReorder(id: string): SectionDef[] {
