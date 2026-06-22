@@ -22,22 +22,29 @@ export async function POST(request: NextRequest) {
 
   const { data: site } = await admin
     .from("sites")
-    .select("id, is_live, category")
+    .select("id, is_live, category, site_data")
     .eq("id", siteId)
     .maybeSingle();
   if (!site || !site.is_live || site.category !== "ecommerce") {
     return NextResponse.json({ error: "Store unavailable." }, { status: 400 });
   }
 
-  const ids = items.map((i: any) => i.productId);
-  const { data: products } = await admin
-    .from("products")
-    .select("id, price, stock, is_active, name")
-    .in("id", ids)
-    .eq("site_id", siteId);
+  // Real DB products.
+  const realIds = items.map((i: any) => i.productId).filter((id: string) => id && !String(id).startsWith("custom:"));
+  const { data: products } = realIds.length
+    ? await admin.from("products").select("id, price, stock, is_active, name").in("id", realIds).eq("site_id", siteId)
+    : { data: [] as any[] };
 
-  if (!products || !products.length) {
-    return NextResponse.json({ error: "Products not found." }, { status: 400 });
+  // Custom-section products: price is trusted from the site's saved data, never the client.
+  const customPrices = new Map<string, number>();
+  const sections = (site.site_data as any)?.customSections || [];
+  for (const sec of sections) {
+    if (sec?.type === "products" && Array.isArray(sec.products)) {
+      for (const p of sec.products) {
+        const amt = Number(String(p.price ?? "").replace(/[^0-9.]/g, "")) || 0;
+        customPrices.set(`custom:${sec.id}:${p.id}`, Math.round(amt));
+      }
+    }
   }
 
   const reference = `tom_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -45,14 +52,25 @@ export async function POST(request: NextRequest) {
   const rows: any[] = [];
 
   for (const item of items) {
-    const p = products.find((x) => x.id === item.productId);
     const qty = Math.max(1, Math.min(99, Number(item.qty) || 1));
-    if (!p || !p.is_active) continue;
-    const lineTotal = p.price * qty;
+    const id = String(item.productId);
+    let price: number | null = null;
+    let productId: string | null = null;
+
+    if (id.startsWith("custom:")) {
+      const amt = customPrices.get(id);
+      if (amt && amt > 0) price = amt; // product_id stays null for custom items
+    } else {
+      const p = (products || []).find((x: any) => x.id === item.productId);
+      if (p && p.is_active) { price = p.price; productId = p.id; }
+    }
+    if (price == null || price <= 0) continue;
+
+    const lineTotal = price * qty;
     total += lineTotal;
     rows.push({
       site_id: siteId,
-      product_id: p.id,
+      product_id: productId,
       buyer_name: buyer.name,
       buyer_email: buyer.email,
       buyer_phone: buyer.phone || null,

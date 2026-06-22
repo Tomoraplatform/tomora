@@ -14,6 +14,12 @@ export function formatNaira(amount: number): string {
   }).format(amount || 0);
 }
 
+/** Parses a price string like "₦5,000" or "5000.50" into a number. */
+export function parseNaira(value: unknown): number {
+  const n = Number(String(value ?? "").replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) ? Math.round(n) : 0;
+}
+
 /** Returns black or white depending on which contrasts better with `hex`. */
 export function contrastText(hex: string): "#000000" | "#ffffff" {
   const h = hex.replace("#", "");

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Star, ShoppingCart, Zap, Instagram, Twitter, Facebook, Globe, CheckCircle2 } from "lucide-react";
 import type { SiteData, CatalogProduct, CatalogTestimonial, Product, SocialLinks, CustomSection } from "@/lib/database.types";
-import { formatNaira, cn } from "@/lib/utils";
+import { formatNaira, parseNaira, cn } from "@/lib/utils";
 import { useStore } from "../store-context";
 
 type LeadSource = "contact" | "newsletter" | "register";
@@ -325,6 +325,7 @@ function SectionButton({ text, href }: { text?: string; href?: string }) {
 /** Renders a single user-built section. Uses brand CSS vars from the template. */
 function CustomSectionBlock({ s }: { s: CustomSection }) {
   const align = s.align === "center" ? "text-center items-center" : "text-left items-start";
+  const store = useStore();
 
   switch (s.type) {
     case "text":
@@ -388,19 +389,38 @@ function CustomSectionBlock({ s }: { s: CustomSection }) {
         <section className="mx-auto max-w-6xl px-5 py-14">
           {s.headline && <h2 className="text-center text-3xl font-bold">{s.headline}</h2>}
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {(s.products || []).map((p) => (
-              <div key={p.id} className="overflow-hidden rounded-2xl border border-black/10 bg-white">
-                {p.image && <Img src={p.image} className="aspect-square w-full object-cover" />}
-                <div className="p-4">
-                  <h3 className="font-semibold">{p.name}</h3>
-                  {p.price && <p className="mt-1 font-bold" style={{ color: "var(--brand-primary)" }}>{p.price}</p>}
-                  {p.buttonText && (
-                    <a href={p.buttonHref || "#"} className="mt-3 block rounded-md px-4 py-2 text-center text-sm font-semibold"
-                      style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>{p.buttonText}</a>
-                  )}
+            {(s.products || []).map((p) => {
+              const amount = parseNaira(p.price);
+              // On a live store with a cart, these are purchasable.
+              const cartProduct: Product = {
+                id: `custom:${s.id}:${p.id}`, user_id: "", site_id: "", name: p.name,
+                description: null, price: amount, images: p.image ? [p.image] : [],
+                category: null, stock: 99, is_active: true, created_at: "",
+              } as Product;
+              return (
+                <div key={p.id} className="flex flex-col overflow-hidden rounded-2xl border border-black/10 bg-white">
+                  {p.image && <Img src={p.image} className="aspect-square w-full object-cover" />}
+                  <div className="flex flex-1 flex-col p-4">
+                    <h3 className="font-semibold">{p.name}</h3>
+                    {p.price && <p className="mt-1 font-bold" style={{ color: "var(--brand-primary)" }}>{p.price}</p>}
+                    <div className="mt-3">
+                      {store.live && amount > 0 ? (
+                        <button
+                          onClick={() => store.addToCart(cartProduct)}
+                          className="flex w-full items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold"
+                          style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}
+                        >
+                          <ShoppingCart className="h-4 w-4" /> Add to Cart
+                        </button>
+                      ) : p.buttonText ? (
+                        <a href={p.buttonHref || "#"} className="block rounded-md px-4 py-2 text-center text-sm font-semibold"
+                          style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>{p.buttonText}</a>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       );
