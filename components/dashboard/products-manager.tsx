@@ -16,7 +16,7 @@ import { uploadImage } from "@/lib/upload";
 import { saveProduct, deleteProduct, type ProductInput } from "@/app/dashboard/store-actions";
 import type { Product } from "@/lib/database.types";
 
-const empty: ProductInput = { name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isBestSeller: false, isOffer: false, isNewArrival: false };
+const empty: ProductInput = { name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isBestSeller: false, isOffer: false, isNewArrival: false, offerPercent: 0 };
 
 export function ProductsManager({ initial, embedded, onChanged }: { initial: Product[]; embedded?: boolean; onChanged?: () => void }) {
   const [products, setProducts] = useState<Product[]>(initial);
@@ -28,7 +28,7 @@ export function ProductsManager({ initial, embedded, onChanged }: { initial: Pro
 
   function startAdd() { setEditing({ ...empty }); setOpen(true); }
   function startEdit(p: Product) {
-    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, comparePrice: p.compare_price ?? undefined, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active, isBestSeller: p.is_best_seller, isOffer: p.is_offer, isNewArrival: p.is_new_arrival });
+    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, comparePrice: p.compare_price ?? undefined, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active, isBestSeller: p.is_best_seller, isOffer: p.is_offer, isNewArrival: p.is_new_arrival, offerPercent: p.offer_percent });
     setOpen(true);
   }
 
@@ -181,9 +181,20 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
         <div><span className="text-sm font-medium">Best seller</span><p className="text-xs text-ink/50">Show this product in the Best Selling section.</p></div>
         <Switch checked={!!form.isBestSeller} onCheckedChange={(v) => set("isBestSeller", v)} />
       </div>
-      <div className="flex items-center justify-between rounded-lg border border-ink/10 px-4 py-3">
-        <div><span className="text-sm font-medium">On offer</span><p className="text-xs text-ink/50">Feature in Special Offer. Set the offer price as Price and the original as Old price.</p></div>
-        <Switch checked={!!form.isOffer} onCheckedChange={(v) => set("isOffer", v)} />
+      <div className="rounded-lg border border-ink/10 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div><span className="text-sm font-medium">On offer</span><p className="text-xs text-ink/50">Feature this product in the Special Offer section.</p></div>
+          <Switch checked={!!form.isOffer} onCheckedChange={(v) => set("isOffer", v)} />
+        </div>
+        {form.isOffer && (
+          <div className="mt-3 space-y-1">
+            <Label>Discount (% off)</Label>
+            <Input type="number" min={0} max={100} value={form.offerPercent ?? 0} onChange={(e) => set("offerPercent", Number(e.target.value))} placeholder="e.g. 30" />
+            {form.price > 0 && (form.offerPercent ?? 0) > 0 && (
+              <p className="text-xs text-ink/60">Customers pay <span className="font-semibold text-ink">{formatNaira(Math.round((form.price * (1 - (form.offerPercent || 0) / 100)) / 100) * 100)}</span> <span className="text-ink/40 line-through">{formatNaira(form.price)}</span></p>
+            )}
+          </div>
+        )}
       </div>
       <div className="flex items-center justify-between rounded-lg border border-ink/10 px-4 py-3">
         <div><span className="text-sm font-medium">New arrival</span><p className="text-xs text-ink/50">Feature this product as a new arrival.</p></div>

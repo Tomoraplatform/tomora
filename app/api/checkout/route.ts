@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
   // Real DB products.
   const realIds = items.map((i: any) => i.productId).filter((id: string) => id && !String(id).startsWith("custom:"));
   const { data: products } = realIds.length
-    ? await admin.from("products").select("id, price, stock, is_active, name").in("id", realIds).eq("site_id", siteId)
+    ? await admin.from("products").select("id, price, stock, is_active, name, is_offer, offer_percent").in("id", realIds).eq("site_id", siteId)
     : { data: [] as any[] };
 
   // Custom-section products: price is trusted from the site's saved data, never the client.
@@ -62,7 +62,11 @@ export async function POST(request: NextRequest) {
       if (amt && amt > 0) price = amt; // product_id stays null for custom items
     } else {
       const p = (products || []).find((x: any) => x.id === item.productId);
-      if (p && p.is_active) { price = p.price; productId = p.id; }
+      if (p && p.is_active) {
+        // Apply the offer discount server-side so the charged price is trusted.
+        price = p.is_offer && p.offer_percent > 0 ? Math.round((p.price * (1 - p.offer_percent / 100)) / 100) * 100 : p.price;
+        productId = p.id;
+      }
     }
     if (price == null || price <= 0) continue;
 

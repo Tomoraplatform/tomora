@@ -116,6 +116,7 @@ export interface Product {
   is_best_seller: boolean;
   is_offer: boolean;
   is_new_arrival: boolean;
+  offer_percent: number;
   created_at: string;
 }
 
@@ -167,6 +168,7 @@ export interface CatalogProduct {
   bestSeller?: boolean;
   offer?: boolean;
   newArrival?: boolean;
+  offerPercent?: number;
 }
 export interface CatalogCourse {
   id: string;

@@ -74,6 +74,7 @@ function toCatalogProducts(products?: Product[]): CatalogProduct[] | undefined {
     bestSeller: p.is_best_seller,
     offer: p.is_offer,
     newArrival: p.is_new_arrival,
+    offerPercent: p.offer_percent,
   }));
 }
 

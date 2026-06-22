@@ -87,11 +87,24 @@ export function Img({ src, alt = "", className = "" }: { src?: string; alt?: str
   return <img src={src} alt={alt} loading="lazy" className={className} />;
 }
 
+/** The price the customer actually pays — applies an active offer discount. */
+export function sellingPrice(p: CatalogProduct): number {
+  if (p.offer && p.offerPercent && p.offerPercent > 0) {
+    return Math.round((p.price * (1 - p.offerPercent / 100)) / 100) * 100;
+  }
+  return p.price;
+}
+/** The crossed-out original price, if the product is discounted. */
+export function originalPrice(p: CatalogProduct): number | undefined {
+  if (p.offer && p.offerPercent && p.offerPercent > 0) return p.price;
+  return p.comparePrice;
+}
+
 /** Maps a catalog product into the cart Product shape and fires store actions. */
 function toProduct(p: CatalogProduct, siteData: SiteData): Product {
   return {
     id: p.id, user_id: "", site_id: "", name: p.name, description: null,
-    price: p.price, images: p.image ? [p.image] : [], category: p.category || null,
+    price: sellingPrice(p), images: p.image ? [p.image] : [], category: p.category || null,
     stock: 99, is_active: true, created_at: "",
   } as Product;
 }
@@ -104,15 +117,18 @@ export function ProductCardV2({
   const store = useStore();
   return (
     <div className="group flex flex-col overflow-hidden rounded-xl border border-black/10 bg-white">
-      <div className="aspect-square overflow-hidden bg-black/5">
+      <div className="relative aspect-square overflow-hidden bg-black/5">
         <Img src={product.image} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+        {product.offer && product.offerPercent ? (
+          <span className="absolute left-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-bold text-white" style={{ background: "var(--brand-primary)" }}>-{product.offerPercent}%</span>
+        ) : null}
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <h3 className="line-clamp-1 font-medium text-black/90">{product.name}</h3>
         {product.rating != null && <StarRow rating={product.rating} count={product.reviews} />}
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-black/90">{formatNaira(product.price)}</span>
-          {product.comparePrice && <span className="text-sm text-black/40 line-through">{formatNaira(product.comparePrice)}</span>}
+          <span className="font-semibold text-black/90">{formatNaira(sellingPrice(product))}</span>
+          {originalPrice(product) && <span className="text-sm text-black/40 line-through">{formatNaira(originalPrice(product)!)}</span>}
         </div>
         {showButton && (
           <button

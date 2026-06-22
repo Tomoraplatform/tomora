@@ -2,7 +2,7 @@
 
 import { ArrowRight, PlayCircle, Truck, RotateCcw, ShieldCheck } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading, subheading, productCategories, CustomSections, OrderedSections, NewsletterInput } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading, subheading, productCategories, sellingPrice, originalPrice, CustomSections, OrderedSections, NewsletterInput } from "./shared";
 import { useStore } from "../store-context";
 import { formatNaira } from "@/lib/utils";
 import type { Product } from "@/lib/database.types";
@@ -31,7 +31,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
   const offer = products.find((p) => p.offer);
   const newArrival = products.find((p) => p.newArrival);
   const addToCart = (p: typeof products[number]) =>
-    store.addToCart({ id: p.id, name: p.name, price: p.price, images: p.image ? [p.image] : [], stock: 99, is_active: true } as Product);
+    store.addToCart({ id: p.id, name: p.name, price: sellingPrice(p), images: p.image ? [p.image] : [], stock: 99, is_active: true } as Product);
 
   const blocks: Record<string, React.ReactNode> = {
     hero: (
@@ -116,7 +116,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
             {offer ? (
               <>
                 <h3 className="mt-2 font-serif text-2xl font-bold">{offer.name}</h3>
-                <p className="mt-1 text-sm"><span className="font-semibold">{formatNaira(offer.price)}</span>{offer.comparePrice ? <span className="ml-2 text-black/40 line-through">{formatNaira(offer.comparePrice)}</span> : null}</p>
+                <p className="mt-1 text-sm"><span className="font-semibold">{formatNaira(sellingPrice(offer))}</span>{originalPrice(offer) ? <span className="ml-2 text-black/40 line-through">{formatNaira(originalPrice(offer)!)}</span> : null}{offer.offerPercent ? <span className="ml-2 font-semibold" style={{ color: "var(--brand-primary)" }}>-{offer.offerPercent}%</span> : null}</p>
                 <button onClick={() => addToCart(offer)} className="mt-3 inline-block rounded-md px-4 py-2 text-sm font-semibold" style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>Shop the Sale</button>
               </>
             ) : (

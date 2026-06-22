@@ -323,7 +323,7 @@ function demoProducts(seed: string): CatalogProduct[] {
     comparePrice: i % 2 === 0 ? [22000, 40000, 8000, 18000, 12000, 33000][i] : undefined,
     image: img(`${seed}-prod-${i}`), rating: 4 + (i % 2 ? 0.5 : 0.8), reviews: 24 + i * 13,
     category: ["Electronics", "Fashion", "Home & Kitchen", "Beauty", "Sports", "Accessories"][i],
-    bestSeller: i < 3, offer: i === 0, newArrival: i === 1,
+    bestSeller: i < 3, offer: i === 0, newArrival: i === 1, offerPercent: i === 0 ? 30 : 0,
   }));
 }
 function demoShopCategories(templateId: string, seed: string): import("./database.types").CatalogCategoryItem[] {

@@ -2,7 +2,7 @@
 
 import { Search, ShoppingCart, ArrowRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira, heading, productCategories, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira, heading, productCategories, sellingPrice, originalPrice, CustomSections, OrderedSections } from "./shared";
 import { useStore } from "../store-context";
 import type { CatalogProduct, Product, SiteData } from "@/lib/database.types";
 
@@ -11,14 +11,14 @@ const slug = (s: string) => (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").
 
 function Card({ product, siteData }: { product: CatalogProduct; siteData: SiteData }) {
   const store = useStore();
-  const add = () => store.addToCart({ id: product.id, name: product.name, price: product.price, images: product.image ? [product.image] : [], stock: 99, is_active: true } as Product);
+  const add = () => store.addToCart({ id: product.id, name: product.name, price: sellingPrice(product), images: product.image ? [product.image] : [], stock: 99, is_active: true } as Product);
   return (
     <div className="group">
-      <div className="aspect-[3/4] overflow-hidden bg-neutral-100"><Img src={product.image} className="h-full w-full object-cover transition-transform group-hover:scale-105" /></div>
+      <div className="relative aspect-[3/4] overflow-hidden bg-neutral-100"><Img src={product.image} className="h-full w-full object-cover transition-transform group-hover:scale-105" />{product.offer && product.offerPercent ? <span className="absolute left-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-bold text-white" style={{ background: "var(--brand-primary)" }}>-{product.offerPercent}%</span> : null}</div>
       <p className="mt-3 line-clamp-1 text-sm text-neutral-700">{product.name}</p>
       <div className="mt-1 flex items-center gap-2">
-        <span className="font-semibold">{formatNaira(product.price)}</span>
-        {product.comparePrice && <span className="text-sm text-neutral-400 line-through">{formatNaira(product.comparePrice)}</span>}
+        <span className="font-semibold">{formatNaira(sellingPrice(product))}</span>
+        {originalPrice(product) && <span className="text-sm text-neutral-400 line-through">{formatNaira(originalPrice(product)!)}</span>}
       </div>
       <button onClick={add} className="mt-2 w-full rounded py-2 text-sm font-semibold text-white" style={{ background: "var(--brand-primary)" }}>Add to cart</button>
     </div>
