@@ -180,6 +180,8 @@ export interface CatalogCourse {
   level: string;
   rating?: number;
   image: string;
+  /** External link the course's button opens (e.g. enrolment / detail page). */
+  linkUrl?: string;
 }
 export interface CatalogCause {
   id: string;
@@ -242,6 +244,12 @@ export interface SiteData {
   customSections?: CustomSection[];
   testimonials?: CatalogTestimonial[];
   services?: CatalogServiceItem[];
+  /** Education template: editable category row (name + optional icon image). */
+  eduCategories?: CatalogCategoryItem[];
+  /** Education template: editable "advantages" list (title + description). */
+  advantages?: CatalogServiceItem[];
+  /** Education template: editable career-support "features" list. */
+  eduFeatures?: CatalogServiceItem[];
   resume?: CatalogResumeItem[];
   faqs?: CatalogFaq[];
   stats?: CatalogStat[];

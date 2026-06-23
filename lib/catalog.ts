@@ -53,14 +53,14 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["trustBadges", "testimonials"],
   "shop-02": ["trustBadges"],
   "shop-03": [],
   "portfolio-01": ["services", "portfolio", "resume", "testimonials", "clientLogos"],
   "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
-  "education-01": ["courses", "faqs"],
+  "education-01": ["eduCategories", "advantages", "courses", "eduFeatures", "faqs"],
   "education-02": ["events", "testimonials"],
   "org-01": ["services", "testimonials"],
   "org-02": ["services", "causes", "events"],
@@ -133,8 +133,10 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "contact", label: "Contact Me", text: true },
   ],
   "education-01": [
+    { key: "categories", label: "Browse Top Categories" },
     { key: "advantages", label: "The Advantages of the {name} Program" },
     { key: "courses", label: "Bootcamp Program" },
+    { key: "features", label: "Career Support" },
     { key: "faq", label: "Frequently Asked Questions" },
   ],
   "education-02": [
@@ -236,10 +238,10 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
   ],
   "education-01": [
     { key: "hero", label: "Hero", hero: true },
-    { key: "categories", label: "Category row" },
-    { key: "advantages", label: "Advantages", heading: "advantages" },
+    { key: "categories", label: "Categories", heading: "categories", list: "eduCategories" },
+    { key: "advantages", label: "Advantages", heading: "advantages", text: true, image: true, list: "advantages" },
     { key: "courses", label: "Bootcamp / Courses", heading: "courses", list: "courses" },
-    { key: "features", label: "Features" },
+    { key: "features", label: "Features", heading: "features", text: true, list: "eduFeatures" },
     { key: "faq", label: "FAQ", heading: "faq", list: "faqs" },
   ],
   "education-02": [
@@ -355,8 +357,31 @@ function demoCourses(seed: string): CatalogCourse[] {
   return t.map((title, i) => ({
     id: `${seed}-c${i}`, title, instructor: ["Ada Obi", "Tunde Bello", "Grace Mwangi", "Sam Okafor"][i],
     category: ["Design", "Development", "Marketing", "Finance"][i], level: i ? "Intermediate" : "Beginner",
-    rating: 4.6 + (i % 3) * 0.1, image: img(`${seed}-course-${i}`, 800, 600),
+    rating: 4.6 + (i % 3) * 0.1, image: img(`${seed}-course-${i}`, 800, 600), linkUrl: "",
   }));
+}
+
+function demoEduCategories(seed: string): import("./database.types").CatalogCategoryItem[] {
+  return ["Business", "Development", "Language", "Marketing", "Finance", "Design", "Photography", "Office"]
+    .map((name, i) => ({ id: `${seed}-ec${i}`, name }));
+}
+
+function demoAdvantages(seed: string): CatalogServiceItem[] {
+  return [
+    { id: `${seed}-adv0`, title: "Relevant Skill Set", description: "Learn what employers actually hire for." },
+    { id: `${seed}-adv1`, title: "Growth Mindset", description: "Build habits that compound over time." },
+    { id: `${seed}-adv2`, title: "1-on-1 Mentoring", description: "Guidance from industry practitioners." },
+    { id: `${seed}-adv3`, title: "Hiring Partners", description: "Get introduced to companies hiring now." },
+  ];
+}
+
+function demoEduFeatures(seed: string): CatalogServiceItem[] {
+  return [
+    { id: `${seed}-ef0`, title: "CV & Resume Prep", description: "Stand out with a polished application." },
+    { id: `${seed}-ef1`, title: "Interview Coaching", description: "Practice with real interview scenarios." },
+    { id: `${seed}-ef2`, title: "Buddy System", description: "Learn alongside a supportive peer." },
+    { id: `${seed}-ef3`, title: "Career Opportunity", description: "Get matched with hiring partners." },
+  ];
 }
 function demoCauses(seed: string): CatalogCause[] {
   const t = ["Clean Water for All", "Educate a Child", "Healthy Meals Program", "Medical Outreach"];
@@ -551,7 +576,16 @@ export function createCatalogContent(
 
   switch (tpl?.category) {
     case "shop": data.products = demoProducts(seed); data.trustBadges = demoTrustBadges(seed); break;
-    case "education": data.courses = demoCourses(seed); if (templateId === "education-01") data.faqs = demoFaqs(seed); break;
+    case "education":
+      data.courses = demoCourses(seed);
+      if (templateId === "education-01") {
+        data.faqs = demoFaqs(seed);
+        data.eduCategories = demoEduCategories(seed);
+        data.advantages = demoAdvantages(seed);
+        data.eduFeatures = demoEduFeatures(seed);
+        data.sectionImages = { ...(data.sectionImages || {}), advantages: img(`${seed}-adv`, 700, 600) };
+      }
+      break;
     case "organization": data.causes = demoCauses(seed); data.events = demoEvents(seed); break;
     case "events": data.events = demoEvents(seed); if (templateId === "events-02") data.hours = demoHours(seed); break;
     case "portfolio":

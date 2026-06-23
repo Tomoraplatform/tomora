@@ -30,8 +30,23 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
   },
   courses: {
     key: "courses", title: "Courses",
-    fields: [{ key: "image", label: "Image", type: "image" }, { key: "title", label: "Title" }, { key: "instructor", label: "Instructor" }, { key: "category", label: "Category" }, { key: "level", label: "Level" }],
-    make: () => ({ id: `c-${Date.now()}`, title: "New course", instructor: "You", category: "General", level: "Beginner", image: "" }),
+    fields: [{ key: "image", label: "Image", type: "image" }, { key: "title", label: "Title" }, { key: "instructor", label: "Instructor" }, { key: "category", label: "Category" }, { key: "level", label: "Level" }, { key: "linkUrl", label: "Button link (URL)" }],
+    make: () => ({ id: `c-${Date.now()}`, title: "New course", instructor: "You", category: "General", level: "Beginner", image: "", linkUrl: "" }),
+  },
+  eduCategories: {
+    key: "eduCategories", title: "Categories",
+    fields: [{ key: "name", label: "Name" }],
+    make: () => ({ id: `ec-${Date.now()}`, name: "New category" }),
+  },
+  advantages: {
+    key: "advantages", title: "Advantages",
+    fields: [{ key: "title", label: "Title" }, { key: "description", label: "Description", type: "textarea" }],
+    make: () => ({ id: `adv-${Date.now()}`, title: "New advantage", description: "Why it matters." }),
+  },
+  eduFeatures: {
+    key: "eduFeatures", title: "Features",
+    fields: [{ key: "title", label: "Title" }, { key: "description", label: "Description", type: "textarea" }],
+    make: () => ({ id: `ef-${Date.now()}`, title: "New feature", description: "Support that gets you hired." }),
   },
   causes: {
     key: "causes", title: "Causes / Campaigns",

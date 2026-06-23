@@ -6,7 +6,7 @@ import {
   Users, MessageSquare, Award,
 } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
 
 const CATS = [
   { icon: Briefcase, t: "Business" }, { icon: Code, t: "Development" }, { icon: Languages, t: "Language" },
@@ -34,6 +34,9 @@ const FAQS = [
 export function Upskill({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "upskill.";
   const courses = siteData.courses || [];
+  const cats = (siteData.eduCategories?.length ? siteData.eduCategories.map((c) => c.name) : CATS.map((c) => c.t));
+  const advItems = siteData.advantages?.length ? siteData.advantages : ADV.map((a, i) => ({ id: `adv${i}`, title: a.t, description: a.d }));
+  const featItems = siteData.eduFeatures?.length ? siteData.eduFeatures : FEATURES.map((f, i) => ({ id: `f${i}`, title: f.t, description: "Support that gets you hired." }));
   const [open, setOpen] = useState<number | null>(0);
 
   return (
@@ -58,13 +61,17 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
         ),
         categories: (
           <section className="mx-auto max-w-6xl px-5 py-10">
+            <h2 className="mb-5 text-2xl font-bold">{heading(siteData, "categories", "Browse Top Categories")}</h2>
             <div className="flex gap-4 overflow-x-auto pb-2">
-              {CATS.map(({ icon: Icon, t }) => (
-                <div key={t} className="flex w-24 shrink-0 flex-col items-center gap-2">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span>
-                  <span className="text-xs text-black/60">{t}</span>
-                </div>
-              ))}
+              {cats.map((label, i) => {
+                const Icon = CATS[i % CATS.length].icon;
+                return (
+                  <div key={`${label}-${i}`} className="flex w-24 shrink-0 flex-col items-center gap-2">
+                    <span className="flex h-12 w-12 items-center justify-center rounded-xl" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span>
+                    <span className="text-center text-xs text-black/60">{label}</span>
+                  </div>
+                );
+              })}
             </div>
           </section>
         ),
@@ -72,13 +79,14 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
           <section id="advantages" className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 lg:grid-cols-2">
             <div>
               <h2 className="text-3xl font-bold">{heading(siteData, "advantages", `The Advantages of the ${name} Program`)}</h2>
+              {subheading(siteData, "advantages", "") && <p className="mt-3 max-w-md text-black/60">{subheading(siteData, "advantages", "")}</p>}
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                {ADV.map((a) => (
-                  <div key={a.t} className="flex gap-3"><Check className="mt-0.5 h-5 w-5 shrink-0" style={{ color: "var(--brand-primary)" }} /><div><p className="font-semibold">{a.t}</p><p className="text-sm text-black/60">{a.d}</p></div></div>
+                {advItems.map((a) => (
+                  <div key={a.id} className="flex gap-3"><Check className="mt-0.5 h-5 w-5 shrink-0" style={{ color: "var(--brand-primary)" }} /><div><p className="font-semibold">{a.title}</p>{a.description && <p className="text-sm text-black/60">{a.description}</p>}</div></div>
                 ))}
               </div>
             </div>
-            <div className="relative"><div className="absolute inset-6 -z-0 rounded-3xl" style={{ background: "var(--brand-primary-light)" }} /><Img src="https://picsum.photos/seed/upskill-adv/700/600" className="relative z-10 aspect-[7/6] w-full rounded-3xl object-cover" /></div>
+            <div className="relative"><div className="absolute inset-6 -z-0 rounded-3xl" style={{ background: "var(--brand-primary-light)" }} /><Img src={siteData.sectionImages?.advantages || "https://picsum.photos/seed/upskill-adv/700/600"} className="relative z-10 aspect-[7/6] w-full rounded-3xl object-cover" /></div>
           </section>
         ),
         courses: (
@@ -93,7 +101,7 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
                       <h3 className="font-semibold leading-snug">{c.title}</h3>
                       <p className="mt-1 text-sm text-black/50">{c.instructor} · {c.category}</p>
                       <div className="mt-2 flex items-center gap-1 text-sm" style={{ color: "var(--brand-primary)" }}><Star className="h-4 w-4 fill-current" />{c.rating}</div>
-                      <a href="#" className="mt-3 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>Start Learning →</a>
+                      <a href={c.linkUrl?.trim() || "#"} {...(c.linkUrl?.trim() ? { target: "_blank", rel: "noreferrer" } : {})} className="mt-3 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>Start Learning →</a>
                     </div>
                   </div>
                 ))}
@@ -103,13 +111,20 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
         ),
         features: (
           <section className="mx-auto max-w-6xl px-5 py-14">
+            <div className="mb-8 text-center">
+              <h2 className="text-3xl font-bold">{heading(siteData, "features", "Career Support")}</h2>
+              {subheading(siteData, "features", "") && <p className="mx-auto mt-3 max-w-xl text-black/60">{subheading(siteData, "features", "")}</p>}
+            </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {FEATURES.map(({ icon: Icon, t }) => (
-                <div key={t} className="text-center">
-                  <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-6 w-6" /></span>
-                  <h3 className="mt-3 font-semibold">{t}</h3><p className="mt-1 text-sm text-black/60">Support that gets you hired.</p>
-                </div>
-              ))}
+              {featItems.map((f, i) => {
+                const Icon = FEATURES[i % FEATURES.length].icon;
+                return (
+                  <div key={f.id} className="text-center">
+                    <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-6 w-6" /></span>
+                    <h3 className="mt-3 font-semibold">{f.title}</h3>{f.description && <p className="mt-1 text-sm text-black/60">{f.description}</p>}
+                  </div>
+                );
+              })}
             </div>
           </section>
         ),
