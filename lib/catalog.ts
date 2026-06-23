@@ -53,7 +53,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints" | "ministries";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["trustBadges", "testimonials"],
   "shop-02": ["trustBadges"],
@@ -66,7 +66,7 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "org-02": ["avatars", "quickActions", "aboutImages", "aboutPoints", "services", "causes", "events"],
   "org-03": ["avatars", "services", "portfolio", "eduFeatures", "stats"],
   "events-01": ["quickActions", "eduFeatures", "services"],
-  "events-02": ["events", "hours"],
+  "events-02": ["quickActions", "ministries", "events", "hours"],
   "events-03": [],
   "events-04": ["events"],
 };
@@ -104,6 +104,8 @@ export type SectionDef = {
   button?: boolean;       // editable section button (text + link), keyed by section
   color?: boolean;        // editable section background color, keyed by section
   stat?: boolean;         // hero: editable highlighted stat (label + value)
+  heroSearch?: boolean;   // hero: editable single search field (toggle + placeholder)
+  extraText?: { key: string; label: string }[]; // extra editable labels (sectionText keys)
 };
 export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   "shop-01": [
@@ -182,6 +184,8 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "why", label: "Why Choose Us" },
   ],
   "events-02": [
+    { key: "mission", label: "Our Mission" },
+    { key: "ministries", label: "Our Ministries" },
     { key: "news", label: "What's New at {name}" },
     { key: "worshipTimes", label: "Worship Times (footer heading)" },
   ],
@@ -298,10 +302,10 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "why", label: "Why choose us", heading: "why", text: true, list: "services" },
   ],
   "events-02": [
-    { key: "hero", label: "Hero", hero: true },
-    { key: "mission", label: "Mission statement" },
-    { key: "ministries", label: "Ministries" },
-    { key: "news", label: "What's new", heading: "news", list: "events" },
+    { key: "hero", label: "Hero", hero: true, overlay: true, eyebrow: true, heroSearch: true, list: "quickActions" },
+    { key: "mission", label: "Mission statement", heading: "mission", text: true },
+    { key: "ministries", label: "Ministries", heading: "ministries", text: true, list: "ministries" },
+    { key: "news", label: "What's new", heading: "news", text: true, list: "events", extraText: [{ key: "newsFeatured", label: "Featured column label" }, { key: "newsBlog", label: "Blog column label" }] },
   ],
   "events-03": [
     { key: "hero", label: "Hero", hero: true },

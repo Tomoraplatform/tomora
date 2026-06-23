@@ -2,14 +2,20 @@
 
 import { Search, Play, HandHeart, Users, CalendarDays, Plus, Phone, MapPin, Mail } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, Img, heading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
 
 const QUICK = [{ icon: Play, t: "Watch" }, { icon: HandHeart, t: "Give" }, { icon: Users, t: "Who We Are" }, { icon: CalendarDays, t: "Events" }];
+const QUICK_ICONS = [Play, HandHeart, Users, CalendarDays];
 const MINISTRIES = ["Missional Communities", "Previous Sermons", "Our Weddings", "Special Events"];
 
 export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "Bellevue";
   const events = siteData.events || [];
+  const overlay = siteData.heroOverlayColor || "#1A1208";
+  const quickItems = siteData.quickActions?.length ? siteData.quickActions : QUICK.map((q, i) => ({ id: `q${i}`, title: q.t, description: "" }));
+  const ministryItems = siteData.ministries?.length ? siteData.ministries : MINISTRIES.map((m, i) => ({ id: `m${i}`, name: m, image: `https://picsum.photos/seed/bel-min${i}/900/500` }));
+  const featuredLabel = siteData.sectionText?.newsFeatured || "Featured Event";
+  const blogLabel = siteData.sectionText?.newsBlog || "The Messenger Blog";
 
   return (
     <BrandStyle brandColor={brandColor} className="bg-white font-sans text-neutral-900">
@@ -26,30 +32,40 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
         hero: (
           <section className="relative">
             <Img src={siteData.heroImage} className="absolute inset-0 h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-[#1A1208]/70" />
+            <div className="absolute inset-0" style={{ background: `${overlay}B3` }} />
             <div className="relative mx-auto max-w-3xl px-5 py-28 text-center text-white">
               <h1 className="text-4xl font-bold uppercase sm:text-5xl">{siteData.heroHeadline}</h1>
-              <p className="mt-3 text-lg font-semibold" style={{ color: "var(--brand-primary)" }}>What can we help you find?</p>
-              <div className="mx-auto mt-6 flex max-w-md items-center rounded-full bg-white px-4 py-2"><input className="flex-1 bg-transparent text-sm text-neutral-900 outline-none" placeholder="Search..." /><Search className="h-4 w-4 text-black/40" /></div>
+              {(siteData.sectionEyebrows?.hero ?? "What can we help you find?") && <p className="mt-3 text-lg font-semibold" style={{ color: "var(--brand-primary)" }}>{siteData.sectionEyebrows?.hero ?? "What can we help you find?"}</p>}
+              {siteData.showSearch !== false && (
+                <div className="mx-auto mt-6 flex max-w-md items-center rounded-full bg-white px-4 py-2"><input className="flex-1 bg-transparent text-sm text-neutral-900 outline-none" placeholder={siteData.searchPlaceholders?.[0] || "Search..."} /><Search className="h-4 w-4 text-black/40" /></div>
+              )}
               <div className="mx-auto mt-8 grid max-w-lg grid-cols-2 gap-3 sm:grid-cols-4">
-                {QUICK.map(({ icon: Icon, t }) => (
-                  <div key={t} className="flex flex-col items-center gap-2 rounded-xl bg-white/10 py-4 backdrop-blur"><Icon className="h-6 w-6" style={{ color: "var(--brand-primary)" }} /><span className="text-sm">{t}</span></div>
-                ))}
+                {quickItems.map((q, i) => {
+                  const Icon = QUICK_ICONS[i % QUICK_ICONS.length];
+                  return (
+                    <div key={q.id} className="flex flex-col items-center gap-2 rounded-xl bg-white/10 py-4 backdrop-blur"><Icon className="h-6 w-6" style={{ color: "var(--brand-primary)" }} /><span className="text-sm">{q.title}</span></div>
+                  );
+                })}
               </div>
             </div>
           </section>
         ),
         mission: (
-          <section className="mx-auto max-w-3xl px-5 py-16 text-center"><p className="text-xl leading-relaxed text-black/70">{siteData.heroSubtext} We are a community committed to faith, hope and love — come as you are and grow with us.</p></section>
+          <section className="mx-auto max-w-3xl px-5 py-16 text-center">
+            {siteData.sectionTitles?.mission && <h2 className="mb-4 text-3xl font-bold">{siteData.sectionTitles.mission}</h2>}
+            <p className="text-xl leading-relaxed text-black/70">{subheading(siteData, "mission", `${siteData.heroSubtext || ""} We are a community committed to faith, hope and love — come as you are and grow with us.`.trim())}</p>
+          </section>
         ),
         ministries: (
-          <section id="ministries" className="mx-auto max-w-6xl px-5 pb-16">
+          <section id="ministries" className="mx-auto max-w-6xl px-5 pb-16 pt-4">
+            {siteData.sectionTitles?.ministries && <h2 className="mb-2 text-2xl font-bold">{siteData.sectionTitles.ministries}</h2>}
+            {subheading(siteData, "ministries", "") && <p className="mb-6 max-w-2xl text-black/60">{subheading(siteData, "ministries", "")}</p>}
             <div className="grid gap-4 sm:grid-cols-2">
-              {MINISTRIES.map((m, i) => (
-                <a key={m} href="#" className="group relative aspect-[16/9] overflow-hidden rounded-2xl">
-                  <Img src={`https://picsum.photos/seed/bel-min${i}/900/500`} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+              {ministryItems.map((m) => (
+                <a key={m.id} href="#" className="group relative aspect-[16/9] overflow-hidden rounded-2xl">
+                  <Img src={m.image} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
                   <div className="absolute inset-0 bg-black/45" />
-                  <span className="absolute left-5 bottom-5 text-lg font-semibold text-white">{m}</span>
+                  <span className="absolute left-5 bottom-5 text-lg font-semibold text-white">{m.name}</span>
                   <span className="absolute right-5 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90"><Plus className="h-5 w-5" /></span>
                 </a>
               ))}
@@ -59,13 +75,14 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
         news: (
           <section id="news" className="mx-auto max-w-6xl px-5 pb-16">
             <h2 className="text-2xl font-bold uppercase" style={{ color: "var(--brand-primary)" }}>{heading(siteData, "news", `What's New at ${name}`)}</h2>
+            {subheading(siteData, "news", "") && <p className="mt-2 max-w-2xl text-black/60">{subheading(siteData, "news", "")}</p>}
             <div className="mt-6 grid gap-8 lg:grid-cols-2">
               <div>
-                <p className="text-xs font-semibold uppercase text-black/40">Featured Event</p>
+                <p className="text-xs font-semibold uppercase text-black/40">{featuredLabel}</p>
                 {events[0] && (<div className="mt-2 overflow-hidden rounded-2xl border border-black/10"><Img src={events[0].image} className="aspect-[16/9] w-full object-cover" /><div className="p-5"><h3 className="font-semibold">{events[0].title}</h3><p className="text-sm text-black/50">{events[0].date} · {events[0].location}</p></div></div>)}
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase text-black/40">The Messenger Blog</p>
+                <p className="text-xs font-semibold uppercase text-black/40">{blogLabel}</p>
                 <div className="mt-2 space-y-4">
                   {events.slice(1).map((e) => (
                     <div key={e.id} className="flex gap-4 border-b border-black/5 pb-4">

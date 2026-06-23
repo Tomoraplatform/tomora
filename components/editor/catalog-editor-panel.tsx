@@ -123,6 +123,11 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     fields: [{ key: "title", label: "Title" }, { key: "description", label: "Description", type: "textarea" }],
     make: () => ({ id: `ap-${Date.now()}`, title: "Our Mission", description: "What we strive for." }),
   },
+  ministries: {
+    key: "ministries", title: "Tiles / ministries",
+    fields: [{ key: "image", label: "Image", type: "image" }, { key: "name", label: "Label" }],
+    make: () => ({ id: `mn-${Date.now()}`, name: "New tile", image: "" }),
+  },
   resume: {
     key: "resume", title: "Resume (Education / Experience / Skills)",
     fields: [
@@ -253,7 +258,7 @@ export function CatalogEditorPanel({
 
       {orderedDefs.map((def, i) => {
         const hkey = def.heading;
-        const hasControls = def.hero || def.heading || def.text || def.list || (def.lists && def.lists.length) || def.image || def.formToggle || def.search || def.eyebrow || def.button || def.color || (def.products && isEcommerce);
+        const hasControls = def.hero || def.heading || def.text || def.list || (def.lists && def.lists.length) || def.image || def.formToggle || def.search || def.eyebrow || def.button || def.color || def.heroSearch || (def.extraText && def.extraText.length) || (def.products && isEcommerce);
         return (
           <SectionGroup
             key={def.key}
@@ -327,6 +332,18 @@ export function CatalogEditorPanel({
                     </FieldRow>
                   </div>
                 )}
+                {def.heroSearch && (
+                  <>
+                    <div className="flex items-center justify-between rounded-md border border-ink/10 px-3 py-2">
+                      <span className="text-xs text-ink/70">Show search bar</span>
+                      <Switch checked={data.showSearch !== false} onCheckedChange={(v) => patch({ showSearch: v })} />
+                    </div>
+                    <FieldRow label="Search placeholder">
+                      <Input value={data.searchPlaceholders?.[0] ?? ""} placeholder="Search..."
+                        onChange={(e) => patch({ searchPlaceholders: [e.target.value] })} />
+                    </FieldRow>
+                  </>
+                )}
                 {[...(def.list ? [def.list] : []), ...(def.lists || [])].map((lk) => <ListBody key={lk} cfg={LIST_CONFIG[lk]} data={data} patch={patch} />)}
               </>
             ) : def.search ? (
@@ -372,6 +389,12 @@ export function CatalogEditorPanel({
                       onChange={(e) => patch({ sectionText: { ...(data.sectionText || {}), [hkey]: e.target.value } })} />
                   </FieldRow>
                 )}
+                {def.extraText?.map((ex) => (
+                  <FieldRow key={ex.key} label={ex.label}>
+                    <Input value={data.sectionText?.[ex.key] ?? ""}
+                      onChange={(e) => patch({ sectionText: { ...(data.sectionText || {}), [ex.key]: e.target.value } })} />
+                  </FieldRow>
+                ))}
                 {def.image && (
                   <FieldRow label="Section image">
                     <ItemField field={{ key: "img", label: "", type: "image" }} value={data.sectionImages?.[def.key]}

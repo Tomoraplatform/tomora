@@ -265,6 +265,8 @@ export interface SiteData {
   aboutImages?: CatalogCategoryItem[];
   /** Editable About-section points (e.g. Mission / Vision). */
   aboutPoints?: CatalogServiceItem[];
+  /** Editable ministry / feature tiles (image + label). */
+  ministries?: CatalogCategoryItem[];
   /** Progress / skill bars (label + percentage) for "Why us" style sections. */
   progress?: CatalogProgress[];
   /** Toggle the newsletter signup form on storefront templates (default on). */
