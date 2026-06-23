@@ -65,7 +65,7 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "org-01": ["impactImages", "services", "testimonials"],
   "org-02": ["avatars", "quickActions", "aboutImages", "aboutPoints", "services", "causes", "events"],
   "org-03": ["avatars", "services", "portfolio", "eduFeatures", "stats"],
-  "events-01": ["services"],
+  "events-01": ["quickActions", "eduFeatures", "services"],
   "events-02": ["events", "hours"],
   "events-03": [],
   "events-04": ["events"],
@@ -292,10 +292,10 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "join", label: "Join CTA", heading: "join", text: true, button: true },
   ],
   "events-01": [
-    { key: "hero", label: "Hero", hero: true },
-    { key: "about", label: "About cards" },
-    { key: "mission", label: "Mission", heading: "mission", text: true },
-    { key: "why", label: "Why choose us", heading: "why" },
+    { key: "hero", label: "Hero", hero: true, overlay: true },
+    { key: "about", label: "About cards", list: "quickActions" },
+    { key: "mission", label: "Mission", heading: "mission", text: true, image: true, list: "eduFeatures" },
+    { key: "why", label: "Why choose us", heading: "why", text: true, list: "services" },
   ],
   "events-02": [
     { key: "hero", label: "Hero", hero: true },
@@ -680,7 +680,24 @@ export function createCatalogContent(
         data.sectionImages = { ...(data.sectionImages || {}), cta: img(`${seed}-growth`, 1200, 500) };
       }
       break;
-    case "events": data.events = demoEvents(seed); if (templateId === "events-02") data.hours = demoHours(seed); break;
+    case "events":
+      data.events = demoEvents(seed);
+      if (templateId === "events-02") data.hours = demoHours(seed);
+      if (templateId === "events-01") {
+        data.heroOverlayColor = "#0A0F2E";
+        data.quickActions = [
+          { id: `${seed}-ab0`, title: "World-class Speakers", description: "Everything you need for a great event." },
+          { id: `${seed}-ab1`, title: "Global Network", description: "Everything you need for a great event." },
+          { id: `${seed}-ab2`, title: "Daily Sessions", description: "Everything you need for a great event." },
+        ];
+        data.eduFeatures = [
+          { id: `${seed}-mb0`, title: "50+ speakers", description: "" },
+          { id: `${seed}-mb1`, title: "20 workshops", description: "" },
+          { id: `${seed}-mb2`, title: "3000 attendees", description: "" },
+        ];
+        data.sectionImages = { ...(data.sectionImages || {}), mission: img(`${seed}-mission`, 700, 500) };
+      }
+      break;
     case "portfolio":
       data.portfolioItems = demoPortfolio(seed);
       if (templateId === "portfolio-01") {
