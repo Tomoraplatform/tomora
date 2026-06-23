@@ -53,12 +53,12 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["trustBadges", "testimonials"],
   "shop-02": ["trustBadges"],
   "shop-03": [],
-  "portfolio-01": ["services", "portfolio", "resume", "testimonials"],
+  "portfolio-01": ["services", "portfolio", "resume", "testimonials", "clientLogos"],
   "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
   "education-01": ["courses", "faqs"],
   "education-02": ["events", "testimonials"],
@@ -94,6 +94,7 @@ export type SectionDef = {
   image?: boolean;        // editable section image (sectionImages[key])
   video?: boolean;        // hero: editable owner video link
   formToggle?: boolean;   // newsletter: show/hide the signup form
+  book?: boolean;         // booking section: editable scheduling link (bookingUrl)
 };
 export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   "shop-01": [
@@ -115,10 +116,12 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "allproducts", label: "All Products" },
   ],
   "portfolio-01": [
+    { key: "about", label: "About Me" },
     { key: "services", label: "What I Do" },
     { key: "portfolio", label: "My Portfolio" },
     { key: "resume", label: "My Resume" },
     { key: "testimonials", label: "Testimonial" },
+    { key: "booking", label: "Book a Session With Me" },
     { key: "contact", label: "Contact With Me" },
   ],
   "portfolio-02": [
@@ -213,11 +216,13 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
   ],
   "portfolio-01": [
     { key: "hero", label: "Hero", hero: true },
+    { key: "about", label: "About Me", heading: "about", text: true, image: true },
     { key: "services", label: "What I Do", heading: "services", list: "services" },
     { key: "portfolio", label: "Portfolio", heading: "portfolio", list: "portfolio" },
     { key: "resume", label: "Resume", heading: "resume", list: "resume" },
     { key: "testimonials", label: "Testimonial", heading: "testimonials", list: "testimonials" },
-    { key: "clients", label: "Client logos" },
+    { key: "clients", label: "Client logos", list: "clientLogos" },
+    { key: "booking", label: "Book a session", heading: "booking", text: true, book: true },
     { key: "contact", label: "Contact", heading: "contact" },
   ],
   "portfolio-02": [
@@ -458,6 +463,12 @@ function demoPortfolio(seed: string): CatalogPortfolioItem[] {
   }));
 }
 
+function demoClientLogos(seed: string): import("./database.types").CatalogCategoryItem[] {
+  return ["Acme", "Globex", "Initech", "Umbrella", "Stark"].map((name, i) => ({
+    id: `${seed}-cl${i}`, name, image: `https://picsum.photos/seed/${seed}-client${i}/160/64`,
+  }));
+}
+
 function demoResume(seed: string): import("./database.types").CatalogResumeItem[] {
   return [
     { id: `${seed}-r1`, group: "Education", title: "2016 - 2020", subtitle: "University of Lagos", detail: "BSc Computer Science" },
@@ -544,7 +555,16 @@ export function createCatalogContent(
     case "events": data.events = demoEvents(seed); if (templateId === "events-02") data.hours = demoHours(seed); break;
     case "portfolio":
       data.portfolioItems = demoPortfolio(seed);
-      if (templateId === "portfolio-01") data.resume = demoResume(seed);
+      if (templateId === "portfolio-01") {
+        data.resume = demoResume(seed);
+        data.clientLogos = demoClientLogos(seed);
+        data.sectionText = {
+          ...(data.sectionText || {}),
+          about: "I'm a multidisciplinary designer with 8+ years turning ideas into products people love. I partner with founders and teams to ship work that looks great and performs even better.",
+          booking: "Have a project in mind or just want to talk? Book a free 30-minute call and let's explore how I can help.",
+        };
+        data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-about`, 800, 800) };
+      }
       if (templateId === "portfolio-02") data.stats = demoStats(seed);
       break;
   }

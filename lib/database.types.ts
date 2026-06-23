@@ -244,6 +244,10 @@ export interface SiteData {
   faqs?: CatalogFaq[];
   stats?: CatalogStat[];
   shopCategories?: CatalogCategoryItem[];
+  /** Editable client / partner logos (image + optional name). */
+  clientLogos?: CatalogCategoryItem[];
+  /** Booking / scheduling link (Calendly, WhatsApp, etc.) for the "Book me" section. */
+  bookingUrl?: string;
   trustBadges?: CatalogTrustBadge[];
   hours?: CatalogHour[];
   products?: CatalogProduct[];

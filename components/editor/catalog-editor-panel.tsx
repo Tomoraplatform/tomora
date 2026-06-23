@@ -73,6 +73,11 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     fields: [{ key: "image", label: "Image", type: "image" }, { key: "name", label: "Name" }],
     make: () => ({ id: `cat-${Date.now()}`, name: "New category", image: "" }),
   },
+  clientLogos: {
+    key: "clientLogos", title: "Client / partner logos",
+    fields: [{ key: "image", label: "Logo", type: "image" }, { key: "name", label: "Name (optional)" }],
+    make: () => ({ id: `cl-${Date.now()}`, name: "Client", image: "" }),
+  },
   resume: {
     key: "resume", title: "Resume (Education / Experience / Skills)",
     fields: [
@@ -240,6 +245,12 @@ export function CatalogEditorPanel({
                     <span className="text-xs text-ink/70">Show signup form</span>
                     <Switch checked={data.showNewsletter !== false} onCheckedChange={(v) => patch({ showNewsletter: v })} />
                   </div>
+                )}
+                {def.book && (
+                  <FieldRow label="Booking link (Calendly, WhatsApp, etc.)">
+                    <Input value={data.bookingUrl || ""} placeholder="https://calendly.com/you"
+                      onChange={(e) => patch({ bookingUrl: e.target.value })} />
+                  </FieldRow>
                 )}
                 {def.list && (
                   <ListBody cfg={LIST_CONFIG[def.list]} data={data} patch={patch} />

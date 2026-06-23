@@ -3,10 +3,10 @@
 import { useState } from "react";
 import {
   Heart, Facebook, Instagram, Linkedin, Briefcase, Smartphone, PenTool, TrendingUp, Layout, Globe,
-  Mail, Phone, MapPin, Quote, Bookmark,
+  Mail, Phone, MapPin, Quote, Bookmark, CalendarCheck, X as XIcon,
 } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading, subheading, CustomSections, OrderedSections } from "./shared";
 
 const SERVICES = [
   { icon: TrendingUp, t: "Business Strategy", d: "Plans that turn ideas into measurable growth." },
@@ -27,6 +27,9 @@ const RESUME: Record<string, { a: string; b: string; c: string }[]> = {
 export function Inbio({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "Alex Morgan";
   const items = siteData.portfolioItems || [];
+  const clientLogos = siteData.clientLogos || [];
+  const bookingUrl = (siteData.bookingUrl || "").trim();
+  const [lightbox, setLightbox] = useState<{ image?: string; title?: string } | null>(null);
 
   // Build resume tabs from editable siteData.resume, falling back to demo content.
   const resumeGroups: Record<string, { a: string; b: string; c: string }[]> = {};
@@ -59,6 +62,21 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
     ),
+    about: (
+      <section id="about" className="mx-auto max-w-6xl px-5 py-14">
+        <div className="grid items-center gap-10 lg:grid-cols-2">
+          <div className="relative mx-auto w-full max-w-sm">
+            <div className="overflow-hidden rounded-3xl bg-white p-3 shadow-lg">
+              <Img src={siteData.sectionImages?.about || siteData.heroImage} className="aspect-square w-full rounded-2xl object-cover" />
+            </div>
+          </div>
+          <div>
+            <h2 className="text-3xl font-bold">{heading(siteData, "about", "About Me")}</h2>
+            <p className="mt-4 whitespace-pre-line text-black/60">{subheading(siteData, "about", "Tell visitors who you are, what you do, and why you love it.")}</p>
+          </div>
+        </div>
+      </section>
+    ),
     services: (
       <section id="services" className="mx-auto max-w-6xl px-5 py-14">
         <h2 className="text-3xl font-bold">{heading(siteData, "services", "What I Do")}</h2>
@@ -80,14 +98,19 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
         <h2 className="text-3xl font-bold">{heading(siteData, "portfolio", "My Portfolio")}</h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((p) => (
-            <div key={p.id} className="group relative overflow-hidden rounded-2xl">
-              <Img src={p.image} className="aspect-[4/3] w-full object-cover" />
+            <button
+              key={p.id} type="button" onClick={() => setLightbox({ image: p.image, title: p.title })}
+              className="group relative block overflow-hidden rounded-2xl text-left focus:outline-none focus:ring-2 focus:ring-offset-2"
+              style={{ ["--tw-ring-color" as any]: "var(--brand-primary)" }}
+              aria-label={`View ${p.title}`}
+            >
+              <Img src={p.image} className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
               <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold uppercase">{p.category}</span>
               <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white">
                 <p className="font-semibold">{p.title}</p><Bookmark className="h-4 w-4" />
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </section>
@@ -122,10 +145,28 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
         ))}
       </section>
     ),
-    clients: (
+    clients: clientLogos.length ? (
       <section className="mx-auto max-w-6xl px-5 py-10">
-        <div className="flex flex-wrap items-center justify-center gap-10 opacity-50">
-          {[0,1,2,3,4].map((i) => <Img key={i} src={`https://picsum.photos/seed/client${i}/120/48`} className="h-8 grayscale" />)}
+        <div className="flex flex-wrap items-center justify-center gap-10 opacity-60">
+          {clientLogos.map((c) => (
+            <Img key={c.id} src={c.image} alt={c.name} className="h-8 w-auto object-contain grayscale transition hover:grayscale-0" />
+          ))}
+        </div>
+      </section>
+    ) : null,
+    booking: (
+      <section id="booking" className="mx-auto max-w-5xl px-5 py-14">
+        <div className="overflow-hidden rounded-3xl p-8 text-center sm:p-12" style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>
+          <CalendarCheck className="mx-auto h-9 w-9 opacity-90" />
+          <h2 className="mt-4 text-3xl font-bold">{heading(siteData, "booking", "Book a Session With Me")}</h2>
+          <p className="mx-auto mt-3 max-w-xl opacity-90">{subheading(siteData, "booking", "Have a project in mind? Book a free call and let's talk about how I can help.")}</p>
+          <a
+            href={bookingUrl || "#contact"}
+            {...(bookingUrl ? { target: "_blank", rel: "noreferrer" } : {})}
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-neutral-900 transition hover:opacity-90"
+          >
+            <CalendarCheck className="h-4 w-4" /> {siteData.ctaText || "Schedule a session"}
+          </a>
         </div>
       </section>
     ),
@@ -155,9 +196,28 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "services", "portfolio", "resume", "testimonials", "clients", "contact"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "about", "services", "portfolio", "resume", "testimonials", "clients", "booking", "contact"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="bg-white py-8 text-center text-sm text-black/40"><SocialIcons social={siteData.social} className="mb-3 justify-center" />© {new Date().getFullYear()} {name}. Built with Tomora.</footer>
+
+      {/* Portfolio image lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setLightbox(null)}
+        >
+          <button
+            className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+            onClick={() => setLightbox(null)} aria-label="Close"
+          >
+            <XIcon className="h-5 w-5" />
+          </button>
+          <figure className="max-h-[90vh] max-w-4xl" onClick={(e) => e.stopPropagation()}>
+            <Img src={lightbox.image} alt={lightbox.title} className="max-h-[80vh] w-auto rounded-xl object-contain" />
+            {lightbox.title && <figcaption className="mt-3 text-center text-sm text-white/80">{lightbox.title}</figcaption>}
+          </figure>
+        </div>
+      )}
     </BrandStyle>
   );
 }
