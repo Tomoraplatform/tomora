@@ -17,7 +17,7 @@ function loadPaystack(): Promise<void> {
   return new Promise((resolve, reject) => {
     if (window.PaystackPop) return resolve();
     const s = document.createElement("script");
-    s.src = "https://js.paystack.co/v1/inline.js";
+    s.src = "https://js.paystack.co/v2/inline.js";
     s.onload = () => resolve();
     s.onerror = () => reject(new Error("Could not load Paystack."));
     document.body.appendChild(s);
@@ -36,10 +36,9 @@ export function PublishedStore({
   paystackPublicKey: string | null;
   paystackSubaccount?: string | null;
 }) {
-  // Preferred: platform key + subaccount split (settles to owner's bank).
-  // Legacy fallback: the owner's own public key.
-  const platformKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY;
-  const payKey = paystackSubaccount ? platformKey : paystackPublicKey;
+  // Payments settle to the owner's Paystack subaccount. The transaction is
+  // initialized server-side (platform secret key) and resumed in the popup.
+  const canCheckout = !!paystackSubaccount;
   const [lines, setLines] = useState<Line[]>([]);
   const [open, setOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
@@ -78,11 +77,12 @@ export function PublishedStore({
 
   async function pay() {
     setError(null);
-    if (!payKey) { setError("This store is not accepting payments yet."); return; }
+    if (!canCheckout) { setError("This store is not accepting payments yet."); return; }
     if (!buyer.name || !buyer.email) { setError("Please enter your name and email."); return; }
     setBusy(true);
     try {
-      // 1. Create pending order(s) server-side (amount validated against DB).
+      // 1. Create pending order(s) and initialize the transaction server-side
+      // (amount validated against DB; settles to the owner's subaccount).
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -94,25 +94,25 @@ export function PublishedStore({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Checkout failed.");
+      if (!data.accessCode) throw new Error("Could not start this transaction.");
 
+      // 2. Resume the server-initialized transaction in the popup.
       await loadPaystack();
-      const handler = window.PaystackPop.setup({
-        key: payKey,
-        email: buyer.email,
-        amount: data.amount * 100,
-        ref: data.reference,
-        ...(paystackSubaccount ? { subaccount: paystackSubaccount, bearer: "subaccount" } : {}),
-        metadata: { custom_fields: [{ display_name: "Buyer", variable_name: "buyer", value: buyer.name }] },
-        callback: (response: { reference: string }) => {
+      const popup = new window.PaystackPop();
+      popup.resumeTransaction(data.accessCode, {
+        onSuccess: (txn: { reference: string }) => {
           fetch("/api/checkout/confirm", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reference: response.reference }),
+            body: JSON.stringify({ reference: txn.reference || data.reference }),
           }).finally(() => { setBusy(false); setDone(true); });
         },
-        onClose: () => setBusy(false),
+        onCancel: () => setBusy(false),
+        onError: (err: { message?: string }) => {
+          setBusy(false);
+          setError(err?.message || "Payment failed. Please try again.");
+        },
       });
-      handler.openIframe();
     } catch (e: any) {
       setBusy(false);
       setError(e.message || "Checkout failed.");

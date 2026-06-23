@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { initTransaction } from "@/lib/paystack";
 
 /**
  * Creates pending order rows for a storefront checkout. Amounts are computed
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
 
   const { data: site } = await admin
     .from("sites")
-    .select("id, is_live, category, site_data")
+    .select("id, is_live, category, site_data, paystack_subaccount")
     .eq("id", siteId)
     .maybeSingle();
   if (!site || !site.is_live || site.category !== "ecommerce") {
@@ -92,5 +93,22 @@ export async function POST(request: NextRequest) {
   const { error } = await admin.from("orders").insert(rows);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ reference, amount: total });
+  // Initialize the transaction server-side with the platform secret key — the
+  // same integration that created the subaccount. This avoids the inline popup's
+  // "Invalid subaccount" error that happens when the public key can't validate a
+  // subaccount created by the secret key. The popup just resumes the access code.
+  try {
+    const origin = request.headers.get("origin") || new URL(request.url).origin;
+    const init = await initTransaction({
+      email: buyer.email,
+      amountNaira: total,
+      reference,
+      callbackUrl: `${origin}/?paid=1`,
+      subaccount: site.paystack_subaccount || undefined,
+      metadata: { custom_fields: [{ display_name: "Buyer", variable_name: "buyer", value: buyer.name }] },
+    });
+    return NextResponse.json({ reference: init.reference, amount: total, accessCode: init.access_code });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message || "Could not start this transaction." }, { status: 502 });
+  }
 }

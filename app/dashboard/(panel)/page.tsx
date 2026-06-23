@@ -11,14 +11,32 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { TRIAL_DAYS, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, nextCharge, getPlan } from "@/lib/constants";
 import { siteLiveUrl } from "@/lib/site-url";
+import { catalogTemplate } from "@/lib/catalog";
 import { formatNaira } from "@/lib/utils";
 import { GettingStarted } from "@/components/dashboard/getting-started";
+import { MySites, type MySite } from "@/components/dashboard/my-sites";
 
 export const metadata = { title: "Dashboard — Tomora" };
 
 export default async function DashboardHome() {
-  const { site, subscription, profile } = await getDashboardData();
+  const { site, sites, subscription, profile } = await getDashboardData();
   const supabase = createClient();
+
+  // All of the user's websites (live + draft) for the overview list.
+  const mySites: MySite[] = sites.map((s) => {
+    const url = siteLiveUrl(s);
+    return {
+      id: s.id,
+      name: s.site_data?.businessName || s.subdomain,
+      templateName: catalogTemplate(s.template_id)?.name || s.template_id,
+      accent: catalogTemplate(s.template_id)?.accent || "#022245",
+      isLive: !!s.is_live,
+      isEcommerce: s.category === "ecommerce",
+      isCurrent: s.id === site?.id,
+      liveUrl: url,
+      liveHost: url.replace(/^https?:\/\//, ""),
+    };
+  });
 
   let productCount = 0;
   let orderCount = 0;
@@ -137,6 +155,9 @@ export default async function DashboardHome() {
           </CardContent>
         </Card>
       </div>
+
+      {/* All websites (live + draft) */}
+      {mySites.length > 0 && <MySites sites={mySites} />}
 
       {/* Quick actions */}
       <div>

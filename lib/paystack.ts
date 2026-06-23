@@ -19,6 +19,10 @@ export async function initTransaction(params: {
   reference: string;
   callbackUrl: string;
   metadata?: Record<string, unknown>;
+  /** Settle to a store owner's subaccount (split payment). */
+  subaccount?: string;
+  /** Who bears Paystack's fees when a subaccount is used. */
+  bearer?: "account" | "subaccount";
 }): Promise<InitResult> {
   const res = await fetch(`${PAYSTACK_BASE}/transaction/initialize`, {
     method: "POST",
@@ -32,6 +36,7 @@ export async function initTransaction(params: {
       reference: params.reference,
       callback_url: params.callbackUrl,
       metadata: params.metadata,
+      ...(params.subaccount ? { subaccount: params.subaccount, bearer: params.bearer || "subaccount" } : {}),
     }),
   });
   const json = await res.json();
