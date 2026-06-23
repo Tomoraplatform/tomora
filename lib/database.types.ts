@@ -312,6 +312,8 @@ export interface CatalogServiceItem {
   id: string;
   title: string;
   description?: string;
+  /** Optional external link for the item's button (templates that show one). */
+  linkUrl?: string;
 }
 
 export interface CatalogResumeItem {

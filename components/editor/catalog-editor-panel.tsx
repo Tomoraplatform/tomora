@@ -20,7 +20,7 @@ type Field = { key: string; label: string; type?: "text" | "textarea" | "number"
 const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fields: Field[]; make: () => any }> = {
   services: {
     key: "services", title: "Services / Features",
-    fields: [{ key: "title", label: "Title" }, { key: "description", label: "Description", type: "textarea" }],
+    fields: [{ key: "title", label: "Title" }, { key: "description", label: "Description", type: "textarea" }, { key: "linkUrl", label: "Button link (optional)" }],
     make: () => ({ id: `s-${Date.now()}`, title: "New item", description: "Describe it here." }),
   },
   portfolio: {
@@ -313,6 +313,18 @@ export function CatalogEditorPanel({
                   <div className="grid grid-cols-2 gap-3">
                     <FieldRow label="Stat label"><Input value={data.heroStatLabel ?? ""} placeholder="Donation so far" onChange={(e) => patch({ heroStatLabel: e.target.value })} /></FieldRow>
                     <FieldRow label="Stat value"><Input value={data.heroStatValue ?? ""} placeholder="₦45,000,000" onChange={(e) => patch({ heroStatValue: e.target.value })} /></FieldRow>
+                  </div>
+                )}
+                {def.button && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <FieldRow label="Secondary button text">
+                      <Input value={data.sectionButtons?.[def.key]?.text ?? ""} placeholder="e.g. Learn More"
+                        onChange={(e) => patch({ sectionButtons: { ...(data.sectionButtons || {}), [def.key]: { ...(data.sectionButtons?.[def.key] || {}), text: e.target.value } } })} />
+                    </FieldRow>
+                    <FieldRow label="Secondary button link">
+                      <Input value={data.sectionButtons?.[def.key]?.url ?? ""} placeholder="# or https://"
+                        onChange={(e) => patch({ sectionButtons: { ...(data.sectionButtons || {}), [def.key]: { ...(data.sectionButtons?.[def.key] || {}), url: e.target.value } } })} />
+                    </FieldRow>
                   </div>
                 )}
                 {[...(def.list ? [def.list] : []), ...(def.lists || [])].map((lk) => <ListBody key={lk} cfg={LIST_CONFIG[lk]} data={data} patch={patch} />)}

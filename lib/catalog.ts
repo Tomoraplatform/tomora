@@ -64,7 +64,7 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "education-02": ["progress", "events", "services", "testimonials"],
   "org-01": ["impactImages", "services", "testimonials"],
   "org-02": ["avatars", "quickActions", "aboutImages", "aboutPoints", "services", "causes", "events"],
-  "org-03": ["services"],
+  "org-03": ["avatars", "services", "portfolio", "eduFeatures", "stats"],
   "events-01": ["services"],
   "events-02": ["events", "hours"],
   "events-03": [],
@@ -174,6 +174,7 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "cta", label: "Think fresh, work faster, grow smarter, save money." },
     { key: "values", label: "We bring your business to new heights." },
     { key: "invest", label: "Unlocking Investment Opportunities Together." },
+    { key: "stats", label: "By the Numbers" },
     { key: "join", label: "Ready to make a difference? Join the {name} team today." },
   ],
   "events-01": [
@@ -281,14 +282,14 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "events", label: "Events", heading: "events", list: "events" },
   ],
   "org-03": [
-    { key: "hero", label: "Hero", hero: true },
-    { key: "about", label: "Experience", heading: "experience", text: true },
-    { key: "services", label: "Services", heading: "services", list: "services" },
-    { key: "cta", label: "Growth banner", heading: "cta" },
-    { key: "projects", label: "Projects", heading: "values" },
-    { key: "features", label: "Features", heading: "invest" },
-    { key: "stats", label: "Stats" },
-    { key: "join", label: "Join CTA", heading: "join" },
+    { key: "hero", label: "Hero", hero: true, overlay: true, eyebrow: true, button: true },
+    { key: "about", label: "Experience", heading: "experience", text: true, button: true, list: "avatars" },
+    { key: "services", label: "Services", heading: "services", text: true, list: "services" },
+    { key: "cta", label: "Growth banner", heading: "cta", image: true, button: true, color: true },
+    { key: "projects", label: "Projects", heading: "values", text: true, list: "portfolio" },
+    { key: "features", label: "Features", heading: "invest", text: true, list: "eduFeatures" },
+    { key: "stats", label: "Stats", heading: "stats", color: true, list: "stats" },
+    { key: "join", label: "Join CTA", heading: "join", text: true, button: true },
   ],
   "events-01": [
     { key: "hero", label: "Hero", hero: true },
@@ -650,6 +651,33 @@ export function createCatalogContent(
           volunteers: { text: "Join Now", url: "" },
         };
         data.sectionImages = { ...(data.sectionImages || {}), volunteers: img(`${seed}-vol`, 800, 600) };
+      }
+      if (templateId === "org-03") {
+        data.heroOverlayColor = "#0D3B2A";
+        data.sectionEyebrows = { ...(data.sectionEyebrows || {}), hero: "A long-term investment in your future" };
+        data.sectionButtons = {
+          ...(data.sectionButtons || {}),
+          hero: { text: "Learn More", url: "" },
+          about: { text: "Discover Work", url: "" },
+          cta: { text: "Get Started", url: "" },
+          join: { text: "Join Now", url: "" },
+        };
+        data.heroAvatars = [0, 1, 2].map((i) => ({ id: `${seed}-fc${i}`, name: "", image: `https://picsum.photos/seed/fin-c${i}/48` }));
+        data.portfolioItems = ["Project Finance", "Investment Consulting", "International Financing", "Residential Property", "Lending & Financing", "Construction Finance"]
+          .map((title, i) => ({ id: `${seed}-fp${i}`, title, category: "", description: "", image: img(`${seed}-fin-proj-${i}`, 600, 400) }));
+        data.eduFeatures = [
+          { id: `${seed}-ff0`, title: "Financial Control", description: "Built around your needs." },
+          { id: `${seed}-ff1`, title: "Asset Appreciation", description: "Built around your needs." },
+          { id: `${seed}-ff2`, title: "Smart Solutions", description: "Built around your needs." },
+          { id: `${seed}-ff3`, title: "24/7 Premium Support", description: "Built around your needs." },
+        ];
+        data.stats = [
+          { id: `${seed}-fs0`, value: "52K+", label: "Happy Clients" },
+          { id: `${seed}-fs1`, value: "81K+", label: "Projects Done" },
+          { id: `${seed}-fs2`, value: "271+", label: "Professionals" },
+          { id: `${seed}-fs3`, value: "4.7", label: "Rating" },
+        ];
+        data.sectionImages = { ...(data.sectionImages || {}), cta: img(`${seed}-growth`, 1200, 500) };
       }
       break;
     case "events": data.events = demoEvents(seed); if (templateId === "events-02") data.hours = demoHours(seed); break;

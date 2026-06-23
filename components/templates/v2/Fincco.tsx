@@ -2,7 +2,7 @@
 
 import { ArrowRight, TrendingUp, Building2, Briefcase, LineChart, Sparkles, Headphones, Star, Phone } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
 
 const GREEN = "#0D3B2A";
 const SERVICES = [
@@ -15,9 +15,22 @@ const FEATURES = [
 ];
 const PROJECTS = ["Project Finance", "Investment Consulting", "International Financing", "Residential Property", "Lending & Financing", "Construction Finance"];
 const STATS = [["52K+", "Happy Clients"], ["81K+", "Projects Done"], ["271+", "Professionals"], ["4.7", "Rating"]];
+const FEATURE_ICONS = [LineChart, TrendingUp, Sparkles, Headphones];
 
 export function Fincco({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "Fincco";
+  const overlay = siteData.heroOverlayColor || GREEN;
+  const heroBtn = siteData.sectionButtons?.hero || {};
+  const aboutBtn = siteData.sectionButtons?.about || {};
+  const ctaBtn = siteData.sectionButtons?.cta || {};
+  const joinBtn = siteData.sectionButtons?.join || {};
+  const ctaColor = siteData.sectionColors?.cta || GREEN;
+  const statsColor = siteData.sectionColors?.stats || GREEN;
+  const aboutAvatars = siteData.heroAvatars?.length ? siteData.heroAvatars : [0, 1, 2].map((i) => ({ id: `fc${i}`, name: "", image: `https://picsum.photos/seed/fin-c${i}/48` }));
+  const projectItems = siteData.portfolioItems?.length ? siteData.portfolioItems : PROJECTS.map((title, i) => ({ id: `fp${i}`, title, category: "", description: "", image: `https://picsum.photos/seed/fin-proj${i}/600/400` }));
+  const serviceItems = siteData.services?.length ? siteData.services : SERVICES.map((s, i) => ({ id: `sv${i}`, title: s.t, description: "Tailored strategies for your goals." }));
+  const featItems = siteData.eduFeatures?.length ? siteData.eduFeatures : FEATURES.map((f, i) => ({ id: `ff${i}`, title: f.t, description: "Built around your needs." }));
+  const statItems = siteData.stats?.length ? siteData.stats : STATS.map(([value, label], i) => ({ id: `fs${i}`, value: value as string, label: label as string }));
 
   return (
     <BrandStyle brandColor={brandColor} className="bg-white font-sans text-neutral-900">
@@ -35,14 +48,16 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
         hero: (
           <section className="relative">
             <Img src={siteData.heroImage} className="absolute inset-0 h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0D3B2A]/95 to-[#0D3B2A]/50" />
+            <div className="absolute inset-0" style={{ backgroundImage: `linear-gradient(to right, ${overlay}F2, ${overlay}80)` }} />
             <div className="relative mx-auto max-w-6xl px-5 py-28 text-white">
-              <span className="text-sm font-semibold uppercase tracking-wide opacity-80">A long-term investment in your future</span>
+              {(siteData.sectionEyebrows?.hero ?? "A long-term investment in your future") && <span className="text-sm font-semibold uppercase tracking-wide opacity-80">{siteData.sectionEyebrows?.hero ?? "A long-term investment in your future"}</span>}
               <h1 className="mt-3 max-w-2xl text-4xl font-bold leading-tight sm:text-5xl">{siteData.heroHeadline}</h1>
               <p className="mt-4 max-w-md text-white/80">{siteData.heroSubtext}</p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <BrandButton as="a" href={siteData.ctaHref || "#"}>{siteData.ctaText || "Free Consultation"} <ArrowRight className="h-4 w-4" /></BrandButton>
-                <a href="#" className="inline-flex items-center gap-2 rounded-md border border-white/40 px-6 py-3 text-sm font-semibold">Learn More</a>
+                {(heroBtn.text ?? "Learn More") && (
+                  <a href={heroBtn.url?.trim() || "#"} {...(heroBtn.url?.trim() ? { target: "_blank", rel: "noreferrer" } : {})} className="inline-flex items-center gap-2 rounded-md border border-white/40 px-6 py-3 text-sm font-semibold">{heroBtn.text || "Learn More"}</a>
+                )}
               </div>
             </div>
           </section>
@@ -52,19 +67,21 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
             <h2 className="text-3xl font-bold">{heading(siteData, "experience", "15+ Years of Financial Experience")}</h2>
             <div>
               <p className="text-black/60">{subheading(siteData, "experience", "We are the magic behind the company's best days — combining data, strategy and human insight to grow your wealth.")}</p>
-              <div className="mt-4 flex items-center gap-4"><div className="flex" style={{ color: "var(--brand-primary)" }}>{[0,1,2,3,4].map((i) => <Star key={i} className="h-4 w-4 fill-current" />)}</div><div className="flex -space-x-2">{[0,1,2].map((i) => <Img key={i} src={`https://picsum.photos/seed/fin-c${i}/48`} className="h-8 w-8 rounded-full border-2 border-white object-cover" />)}</div></div>
-              <BrandButton className="mt-5">Discover Work</BrandButton>
+              <div className="mt-4 flex items-center gap-4"><div className="flex" style={{ color: "var(--brand-primary)" }}>{[0,1,2,3,4].map((i) => <Star key={i} className="h-4 w-4 fill-current" />)}</div><div className="flex -space-x-2">{aboutAvatars.slice(0, 6).map((a) => <Img key={a.id} src={a.image} className="h-8 w-8 rounded-full border-2 border-white object-cover" />)}</div></div>
+              {(aboutBtn.text ?? "Discover Work") && <BrandButton as="a" href={aboutBtn.url?.trim() || "#"} className="mt-5">{aboutBtn.text || "Discover Work"}</BrandButton>}
             </div>
           </section>
         ),
         services: (
-          <section id="services" className="mx-auto max-w-6xl px-5 pb-16">
+          <section id="services" className="mx-auto max-w-6xl px-5 pb-16 pt-4">
             <h2 className="text-center text-3xl font-bold">{heading(siteData, "services", "The largest truly global wealth manager")}</h2>
+            {subheading(siteData, "services", "") && <p className="mx-auto mt-3 max-w-xl text-center text-black/60">{subheading(siteData, "services", "")}</p>}
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {servicesOf(siteData, SERVICES.map((s) => ({ title: s.t, description: "Tailored strategies for your goals." }))).map((s, i) => {
+              {serviceItems.map((s, i) => {
                 const Icon = SERVICES[i % SERVICES.length].icon;
+                const link = (s as { linkUrl?: string }).linkUrl?.trim();
                 return (
-                  <div key={i} className="rounded-2xl border border-black/10 p-6"><span className="flex h-11 w-11 items-center justify-center rounded-lg" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span><h3 className="mt-4 font-semibold">{s.title}</h3><p className="mt-1 text-sm text-black/60">{s.description}</p><a href="#" className="mt-3 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>Learn More →</a></div>
+                  <div key={s.id || i} className="rounded-2xl border border-black/10 p-6"><span className="flex h-11 w-11 items-center justify-center rounded-lg" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span><h3 className="mt-4 font-semibold">{s.title}</h3>{s.description && <p className="mt-1 text-sm text-black/60">{s.description}</p>}<a href={link || "#"} {...(link ? { target: "_blank", rel: "noreferrer" } : {})} className="mt-3 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>Learn More →</a></div>
                 );
               })}
             </div>
@@ -72,17 +89,18 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
         ),
         cta: (
           <section className="relative">
-            <Img src="https://picsum.photos/seed/fin-growth/1200/500" className="absolute inset-0 h-full w-full object-cover" />
-            <div className="absolute inset-0" style={{ background: `${GREEN}E6` }} />
-            <div className="relative mx-auto max-w-3xl px-5 py-16 text-center text-white"><h2 className="text-3xl font-bold">{heading(siteData, "cta", "Think fresh, work faster, grow smarter, save money.")}</h2><a href="#" className="mt-6 inline-block rounded-md border border-white/40 px-6 py-3 text-sm font-semibold">Get Started</a></div>
+            <Img src={siteData.sectionImages?.cta || "https://picsum.photos/seed/fin-growth/1200/500"} className="absolute inset-0 h-full w-full object-cover" />
+            <div className="absolute inset-0" style={{ background: `${ctaColor}E6` }} />
+            <div className="relative mx-auto max-w-3xl px-5 py-16 text-center text-white"><h2 className="text-3xl font-bold">{heading(siteData, "cta", "Think fresh, work faster, grow smarter, save money.")}</h2>{(ctaBtn.text ?? "Get Started") && <a href={ctaBtn.url?.trim() || "#"} {...(ctaBtn.url?.trim() ? { target: "_blank", rel: "noreferrer" } : {})} className="mt-6 inline-block rounded-md border border-white/40 px-6 py-3 text-sm font-semibold">{ctaBtn.text || "Get Started"}</a>}</div>
           </section>
         ),
         projects: (
           <section id="projects" className="mx-auto max-w-6xl px-5 py-16">
             <h2 className="text-center text-3xl font-bold">{heading(siteData, "values", "We bring your business to new heights.")}</h2>
+            {subheading(siteData, "values", "") && <p className="mx-auto mt-3 max-w-xl text-center text-black/60">{subheading(siteData, "values", "")}</p>}
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {PROJECTS.map((p, i) => (
-                <div key={p} className="group relative overflow-hidden rounded-2xl"><Img src={`https://picsum.photos/seed/fin-proj${i}/600/400`} className="aspect-[3/2] w-full object-cover" /><div className="absolute inset-0 bg-black/40" /><p className="absolute bottom-4 left-4 font-semibold text-white">{p}</p></div>
+              {projectItems.map((p) => (
+                <div key={p.id} className="group relative overflow-hidden rounded-2xl"><Img src={p.image} className="aspect-[3/2] w-full object-cover" /><div className="absolute inset-0 bg-black/40" /><p className="absolute bottom-4 left-4 font-semibold text-white">{p.title}</p></div>
               ))}
             </div>
           </section>
@@ -90,26 +108,36 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
         features: (
           <section className="bg-[#F4F8F6]">
             <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
-              <h2 className="text-3xl font-bold">{heading(siteData, "invest", "Unlocking Investment Opportunities Together.")}</h2>
+              <div>
+                <h2 className="text-3xl font-bold">{heading(siteData, "invest", "Unlocking Investment Opportunities Together.")}</h2>
+                {subheading(siteData, "invest", "") && <p className="mt-3 max-w-md text-black/60">{subheading(siteData, "invest", "")}</p>}
+              </div>
               <div className="grid gap-5 sm:grid-cols-2">
-                {FEATURES.map(({ icon: Icon, t }) => (
-                  <div key={t} className="flex gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span><div><p className="font-semibold">{t}</p><p className="text-sm text-black/60">Built around your needs.</p></div></div>
-                ))}
+                {featItems.map((f, i) => {
+                  const Icon = FEATURE_ICONS[i % FEATURE_ICONS.length];
+                  return (
+                    <div key={f.id} className="flex gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span><div><p className="font-semibold">{f.title}</p>{f.description && <p className="text-sm text-black/60">{f.description}</p>}</div></div>
+                  );
+                })}
               </div>
             </div>
           </section>
         ),
         stats: (
-          <section style={{ background: GREEN }} className="text-white">
-            <div className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-5 py-12 sm:grid-cols-4 text-center">
-              {STATS.map(([n, l]) => <div key={l}><p className="text-3xl font-bold" style={{ color: "var(--brand-primary-light)" }}>{n}</p><p className="mt-1 text-sm text-white/60">{l}</p></div>)}
+          <section style={{ background: statsColor }} className="text-white">
+            <div className="mx-auto max-w-5xl px-5 py-12">
+              {siteData.sectionTitles?.stats && <h2 className="mb-8 text-center text-2xl font-bold">{siteData.sectionTitles.stats}</h2>}
+              <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 text-center">
+                {statItems.map((s) => <div key={s.id}><p className="text-3xl font-bold" style={{ color: "var(--brand-primary-light)" }}>{s.value}</p><p className="mt-1 text-sm text-white/60">{s.label}</p></div>)}
+              </div>
             </div>
           </section>
         ),
         join: (
           <section className="mx-auto max-w-3xl px-5 py-16 text-center">
             <h2 className="text-3xl font-bold">{heading(siteData, "join", `Ready to make a difference? Join the ${name} team today.`)}</h2>
-            <BrandButton className="mt-6">Join Now</BrandButton>
+            {subheading(siteData, "join", "") && <p className="mx-auto mt-3 max-w-xl text-black/60">{subheading(siteData, "join", "")}</p>}
+            {(joinBtn.text ?? "Join Now") && <BrandButton as="a" href={joinBtn.url?.trim() || "#"} className="mt-6">{joinBtn.text || "Join Now"}</BrandButton>}
           </section>
         ),
       }} />
