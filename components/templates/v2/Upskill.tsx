@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, subheading, navItems, headerCta, CustomSections, OrderedSections } from "./shared";
+import { DonationSection } from "./DonationSection";
 
 const CATS = [
   { icon: Briefcase, t: "Business" }, { icon: Code, t: "Development" }, { icon: Languages, t: "Language" },
@@ -50,7 +51,8 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "categories", "advantages", "courses", "features", "faq"]} blocks={{
+      <OrderedSections siteData={siteData} natural={["hero", "categories", "advantages", "courses", "features", "faq", "donation"]} blocks={{
+        donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
         hero: (
           <section className="relative overflow-hidden bg-[#EEF3FF]">
             <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-14">

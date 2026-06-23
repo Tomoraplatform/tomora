@@ -3,6 +3,7 @@
 import { Search, ShoppingCart, ArrowRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira, heading, navItems, productCategories, sellingPrice, originalPrice, CustomSections, OrderedSections } from "./shared";
+import { DonationSection } from "./DonationSection";
 import { useStore } from "../store-context";
 import type { CatalogProduct, Product, SiteData } from "@/lib/database.types";
 
@@ -39,6 +40,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
   if (others.length) groups.push({ name: "More", items: others });
 
   const blocks: Record<string, React.ReactNode> = {
+    donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
     hero: (
       <section className="mx-auto grid max-w-6xl gap-3 px-5 py-6 md:grid-cols-3">
         <div className="relative overflow-hidden rounded-lg md:col-span-2 md:row-span-2">
@@ -129,7 +131,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "new", "special", "catbanners", "allproducts"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "new", "special", "catbanners", "allproducts", "donation"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="border-t border-neutral-200">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 text-sm">

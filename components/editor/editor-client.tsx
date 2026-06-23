@@ -188,7 +188,7 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
         {/* Left panel */}
         <aside className="w-full shrink-0 overflow-y-auto border-b border-ink/10 bg-white p-4 lg:w-80 lg:border-b-0 lg:border-r">
           {isCatalog ? (
-            <CatalogEditorPanel data={data} patch={patch} lists={lists} sections={sections} reorder={reorder} isEcommerce={isStore} onManageProducts={() => setShowProducts(true)} navDefaults={navDefaults} />
+            <CatalogEditorPanel data={data} patch={patch} lists={lists} sections={sections} reorder={reorder} isEcommerce={isStore} onManageProducts={() => setShowProducts(true)} navDefaults={navDefaults} payoutConnected={!!site.paystack_subaccount} />
           ) : (
           <>
           <Section title="Brand">

@@ -238,6 +238,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "bestsellers", label: "Best sellers", heading: "bestsellers", products: true },
     { key: "offer", label: "Special offer", heading: "sale", text: true, products: true },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "shop-02": [
     { key: "hero", label: "Hero", hero: true, video: true, list: "trustBadges" },
@@ -247,6 +248,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "promo", label: "Offer & New arrival", products: true },
     { key: "bestsellers", label: "Best sellers", heading: "bestsellers", products: true },
     { key: "newsletter", label: "Newsletter", heading: "newsletter", text: true, image: true, formToggle: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "shop-03": [
     { key: "hero", label: "Hero banner", hero: true },
@@ -254,6 +256,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "special", label: "Special products", heading: "special", products: true },
     { key: "catbanners", label: "Category banners" },
     { key: "allproducts", label: "All products", heading: "allproducts", products: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "portfolio-01": [
     { key: "hero", label: "Hero", hero: true },
@@ -265,6 +268,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "clients", label: "Client logos", list: "clientLogos" },
     { key: "booking", label: "Book a session", heading: "booking", text: true, book: true },
     { key: "contact", label: "Contact", heading: "contact" },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "portfolio-02": [
     { key: "hero", label: "Hero", hero: true, cv: true },
@@ -281,6 +285,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "courses", label: "Bootcamp / Courses", heading: "courses", list: "courses" },
     { key: "features", label: "Features", heading: "features", text: true, list: "eduFeatures" },
     { key: "faq", label: "FAQ", heading: "faq", list: "faqs" },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "education-02": [
     { key: "hero", label: "Hero", hero: true, overlay: true, ticket: true },
@@ -291,6 +296,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "services", label: "Features", heading: "services", text: true, list: "services" },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
     { key: "register", label: "Register", heading: "register" },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "org-01": [
     { key: "hero", label: "Hero", hero: true, overlay: true, stat: true },

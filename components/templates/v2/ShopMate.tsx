@@ -3,6 +3,7 @@
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Quote, ShoppingCart } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, subheading, navItems, productCategories, CustomSections, OrderedSections } from "./shared";
+import { DonationSection } from "./DonationSection";
 
 const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"];
 
@@ -37,6 +38,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
   const BEST_LIMIT = 5;
 
   const blocks: Record<string, React.ReactNode> = {
+    donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
     hero: (
       <section className="bg-[#FBFAF7]">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
@@ -180,7 +182,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "trust", "categories", "allproducts", "bestsellers", "offer", "testimonials"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "trust", "categories", "allproducts", "bestsellers", "offer", "testimonials", "donation"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
       <ShopFooter name={name} social={siteData.social} />
     </BrandStyle>

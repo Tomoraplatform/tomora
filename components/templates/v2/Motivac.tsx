@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowRight, Search, MapPin, Mic, CalendarDays, Globe, Star, Ticket } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, Img, heading, subheading, navItems, headerCta, ContactFormV2, CustomSections, OrderedSections } from "./shared";
+import { DonationSection } from "./DonationSection";
 
 const PROGRESS = [["Full Rating", 92], ["Management", 80], ["Social Media", 74]] as const;
 const SCHED_TABS = ["All Events", "Presentation", "Evaluation", "Open Discussion"];
@@ -32,7 +33,8 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "search", "about", "venues", "schedule", "services", "testimonials", "register"]} blocks={{
+      <OrderedSections siteData={siteData} natural={["hero", "search", "about", "venues", "schedule", "services", "testimonials", "register", "donation"]} blocks={{
+        donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
         hero: (
           <section className="relative">
             <Img src={siteData.heroImage} className="absolute inset-0 h-full w-full object-cover" />

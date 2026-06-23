@@ -149,6 +149,7 @@ export function CatalogEditorPanel({
   isEcommerce = false,
   onManageProducts,
   navDefaults = [],
+  payoutConnected = false,
 }: {
   data: SiteData;
   patch: (p: Partial<SiteData>) => void;
@@ -158,6 +159,7 @@ export function CatalogEditorPanel({
   isEcommerce?: boolean;
   onManageProducts?: () => void;
   navDefaults?: [string, string][];
+  payoutConnected?: boolean;
 }) {
   // Working nav links: saved links, or the template defaults until edited.
   const navWorking = (data.navLinks?.length ? data.navLinks : navDefaults.map((p, i) => ({ id: `nav-${i}`, label: p[0], target: p[1] })));
@@ -430,7 +432,16 @@ export function CatalogEditorPanel({
                       <FieldRow label="Goal amount (₦)"><Input type="number" min={0} value={data.donationGoal ?? 0} onChange={(e) => patch({ donationGoal: Math.max(0, Math.round(Number(e.target.value) || 0)) })} /></FieldRow>
                       <FieldRow label="Manually added (₦)"><Input type="number" min={0} value={data.donationManual ?? 0} onChange={(e) => patch({ donationManual: Math.max(0, Math.round(Number(e.target.value) || 0)) })} /></FieldRow>
                     </div>
-                    <p className="text-xs text-ink/50">Online gifts add to the bar automatically. Use “Manually added” for offline/cash gifts. To accept online donations, add your bank under <a href="/dashboard/payouts" className="underline">Payouts</a>.</p>
+                    {payoutConnected ? (
+                      <p className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">✓ Payout bank connected — online donations will settle to your account.</p>
+                    ) : (
+                      <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2.5">
+                        <p className="text-xs font-medium text-amber-800">Connect your bank to receive donations</p>
+                        <p className="mt-0.5 text-xs text-amber-700">Visitors can’t give online until you add the bank account where donations should be paid out.</p>
+                        <a href="/dashboard/payouts" className="mt-1.5 inline-block text-xs font-semibold text-amber-900 underline">Set up payouts →</a>
+                      </div>
+                    )}
+                    <p className="text-xs text-ink/50">Online gifts add to the bar automatically. Use “Manually added” for offline/cash gifts.</p>
                   </>
                 )}
                 {hkey && (

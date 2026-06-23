@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Download, Layout, PenTool, Globe, Smartphone, Quote, Star } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading, subheading, navItems, CustomSections, OrderedSections } from "./shared";
+import { DonationSection } from "./DonationSection";
 
 const SERVICES = [
   { icon: Layout, t: "UX/UI", d: "Intuitive interfaces that delight users." },
@@ -21,6 +22,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
   const shown = filter === "All" ? items : items.filter((p) => p.category.toLowerCase().includes(filter.toLowerCase()));
 
   const blocks: Record<string, React.ReactNode> = {
+    donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
     hero: (
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-[45%_55%]">
         <div>
@@ -127,7 +129,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "about", "services", "portfolio", "testimonials", "contact"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "about", "services", "portfolio", "testimonials", "contact", "donation"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="bg-[#F7F9FC] py-8 text-center text-sm text-black/40"><SocialIcons social={siteData.social} className="mb-3 justify-center" />© {new Date().getFullYear()} {name}. Built with Tomora.</footer>
     </BrandStyle>
