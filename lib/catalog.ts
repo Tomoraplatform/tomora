@@ -95,6 +95,7 @@ export type SectionDef = {
   video?: boolean;        // hero: editable owner video link
   formToggle?: boolean;   // newsletter: show/hide the signup form
   book?: boolean;         // booking section: editable scheduling link (bookingUrl)
+  cv?: boolean;           // hero: uploadable downloadable CV/resume file (cvUrl)
 };
 export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   "shop-01": [
@@ -226,7 +227,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "contact", label: "Contact", heading: "contact" },
   ],
   "portfolio-02": [
-    { key: "hero", label: "Hero", hero: true },
+    { key: "hero", label: "Hero", hero: true, cv: true },
     { key: "about", label: "About Me", heading: "about", list: "stats" },
     { key: "services", label: "Services", heading: "services", list: "services" },
     { key: "portfolio", label: "Projects", heading: "portfolio", list: "portfolio" },

@@ -16,6 +16,8 @@ export interface SocialLinks {
   instagram?: string;
   twitter?: string;
   facebook?: string;
+  linkedin?: string;
+  github?: string;
   website?: string;
   [key: string]: string | undefined;
 }
@@ -248,6 +250,8 @@ export interface SiteData {
   clientLogos?: CatalogCategoryItem[];
   /** Booking / scheduling link (Calendly, WhatsApp, etc.) for the "Book me" section. */
   bookingUrl?: string;
+  /** Uploaded CV/resume file (PDF/DOC) made downloadable from the hero. */
+  cvUrl?: string;
   trustBadges?: CatalogTrustBadge[];
   hours?: CatalogHour[];
   products?: CatalogProduct[];

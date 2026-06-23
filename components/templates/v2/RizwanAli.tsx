@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Linkedin, Instagram, Github, Layout, PenTool, Globe, Smartphone, Quote, Star } from "lucide-react";
+import { Download, Layout, PenTool, Globe, Smartphone, Quote, Star } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading, subheading, CustomSections, OrderedSections } from "./shared";
 
@@ -29,10 +29,12 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
           <p className="mt-2 text-xl font-medium text-black/70">Professional UI/UX & Website Designer</p>
           <p className="mt-4 max-w-md text-black/60">{siteData.heroSubtext}</p>
           <div className="mt-6 flex flex-wrap items-center gap-4">
-            <BrandButton>Hire Me</BrandButton>
-            <a href="#" className="flex items-center gap-2 text-sm font-semibold"><Download className="h-4 w-4" /> Download CV</a>
+            <BrandButton as="a" href="#contact">Hire Me</BrandButton>
+            {siteData.cvUrl && (
+              <a href={siteData.cvUrl} target="_blank" rel="noreferrer" download className="flex items-center gap-2 text-sm font-semibold"><Download className="h-4 w-4" /> Download CV</a>
+            )}
           </div>
-          <div className="mt-6 flex gap-3 text-black/50">{[Linkedin, Instagram, Github].map((I, i) => <span key={i} className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10"><I className="h-4 w-4" /></span>)}</div>
+          <SocialIcons social={siteData.social} circle className="mt-6 text-black/50" />
         </div>
         <div className="relative mx-auto">
           <div className="absolute inset-0 -z-0 rounded-full" style={{ background: "var(--brand-primary-light)" }} />

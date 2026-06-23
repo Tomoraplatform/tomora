@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { uploadImage } from "@/lib/upload";
+import { uploadImage, uploadMedia } from "@/lib/upload";
 import { cn } from "@/lib/utils";
 import type { EditableList, SectionDef } from "@/lib/catalog";
 import type { SiteData, CustomSection } from "@/lib/database.types";
@@ -133,6 +133,15 @@ export function CatalogEditorPanel({
     if (url) patch({ [field]: url } as Partial<SiteData>);
   }
 
+  async function uploadCv(file?: File) {
+    if (!file) return;
+    setUploading("cvUrl");
+    const { url, error } = await uploadMedia(file, "branding", 10 * 1024 * 1024);
+    setUploading(null);
+    if (url) patch({ cvUrl: url });
+    else if (error) alert(error);
+  }
+
   function addHex() {
     const v = hex.trim();
     if (!/^#?[0-9a-fA-F]{6}$/.test(v)) return;
@@ -215,6 +224,23 @@ export function CatalogEditorPanel({
                     <Input value={data.heroVideoUrl || ""} placeholder="https://youtu.be/…" onChange={(e) => patch({ heroVideoUrl: e.target.value })} />
                   </FieldRow>
                 )}
+                {def.cv && (
+                  <FieldRow label="Downloadable CV / resume (PDF or DOC)">
+                    <div className="space-y-1.5">
+                      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-ink/25 px-4 py-2.5 text-sm font-medium text-ink/70 hover:bg-ink/5">
+                        {uploading === "cvUrl" ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
+                        {data.cvUrl ? "Replace CV file" : "Upload CV file"}
+                        <input type="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" className="hidden" onChange={(e) => uploadCv(e.target.files?.[0])} />
+                      </label>
+                      {data.cvUrl && (
+                        <div className="flex items-center justify-between gap-2 text-xs">
+                          <a href={data.cvUrl} target="_blank" rel="noreferrer" className="truncate text-ink/60 underline">Current file</a>
+                          <button type="button" className="text-destructive hover:underline" onClick={() => patch({ cvUrl: "" })}>Remove</button>
+                        </div>
+                      )}
+                    </div>
+                  </FieldRow>
+                )}
                 {def.list && <ListBody cfg={LIST_CONFIG[def.list]} data={data} patch={patch} />}
               </>
             ) : (
@@ -291,7 +317,7 @@ export function CatalogEditorPanel({
 
       <Section title="Social links">
         <p className="mb-1 text-xs text-ink/50">Only the ones you fill in will show on your site.</p>
-        {(["instagram", "twitter", "facebook", "website"] as const).map((k) => (
+        {(["instagram", "twitter", "facebook", "linkedin", "github", "website"] as const).map((k) => (
           <FieldRow key={k} label={k[0].toUpperCase() + k.slice(1)}>
             <Input value={data.social?.[k] || ""} onChange={(e) => patch({ social: { ...(data.social || {}), [k]: e.target.value } })} placeholder={k === "website" ? "https://" : "@handle or URL"} />
           </FieldRow>

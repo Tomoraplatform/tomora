@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Star, ShoppingCart, Zap, Instagram, Twitter, Facebook, Globe, CheckCircle2 } from "lucide-react";
+import { Star, ShoppingCart, Zap, Instagram, Twitter, Facebook, Globe, CheckCircle2, Linkedin, Github } from "lucide-react";
 import type { SiteData, CatalogProduct, CatalogTestimonial, Product, SocialLinks, CustomSection } from "@/lib/database.types";
 import { formatNaira, parseNaira, cn } from "@/lib/utils";
 import { useStore } from "../store-context";
@@ -356,19 +356,23 @@ function normalizeUrl(url: string, base: string): string {
 }
 
 /** Renders social icons for whichever links the user provided (editable). */
-export function SocialIcons({ social, className = "" }: { social?: SocialLinks; className?: string }) {
+export function SocialIcons({ social, className = "", circle = false }: { social?: SocialLinks; className?: string; circle?: boolean }) {
   const items = [
     { url: social?.instagram, Icon: Instagram, base: "https://instagram.com/" },
     { url: social?.twitter, Icon: Twitter, base: "https://twitter.com/" },
     { url: social?.facebook, Icon: Facebook, base: "https://facebook.com/" },
+    { url: social?.linkedin, Icon: Linkedin, base: "https://linkedin.com/in/" },
+    { url: social?.github, Icon: Github, base: "https://github.com/" },
     { url: social?.website, Icon: Globe, base: "" },
   ].filter((i) => i.url);
   if (!items.length) return null;
   return (
     <div className={cn("flex gap-3", className)}>
       {items.map(({ url, Icon, base }, i) => (
-        <a key={i} href={normalizeUrl(url as string, base)} target="_blank" rel="noreferrer" className="opacity-70 transition-opacity hover:opacity-100">
-          <Icon className="h-5 w-5" />
+        <a key={i} href={normalizeUrl(url as string, base)} target="_blank" rel="noreferrer"
+          className={cn("transition-opacity hover:opacity-100",
+            circle ? "flex h-9 w-9 items-center justify-center rounded-full border border-black/10 opacity-100" : "opacity-70")}>
+          <Icon className={circle ? "h-4 w-4" : "h-5 w-5"} />
         </a>
       ))}
     </div>
