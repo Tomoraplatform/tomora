@@ -74,6 +74,27 @@ export function templateLists(id: string): EditableList[] {
   return TEMPLATE_LISTS[id] ?? [];
 }
 
+/** Default nav-bar links per template: [label, target] in order. */
+export const TEMPLATE_NAV: Record<string, [string, string][]> = {
+  "shop-01": [["Categories", "#categories"], ["Shop", "#allproducts"], ["Deals", "#offer"]],
+  "shop-02": [["Home", "#"], ["Shop", "#allproducts"], ["Best Sellers", "#bestsellers"], ["Offers", "#promo"]],
+  "shop-03": [["New", "#new"], ["Special", "#special"], ["Shop", "#allproducts"]],
+  "portfolio-01": [["Home", "#"], ["About", "#about"], ["Portfolio", "#portfolio"], ["Resume", "#resume"], ["Contact", "#contact"]],
+  "portfolio-02": [["Home", "#"], ["About Me", "#about"], ["Services", "#services"], ["Portfolio", "#projects"], ["Testimonials", "#testimonials"], ["Contact", "#contact"]],
+  "education-01": [["Home", "#"], ["Courses", "#bootcamp"], ["Advantages", "#advantages"], ["FAQ", "#faq"]],
+  "education-02": [["Home", "#"], ["Events", "#venues"], ["Speakers", "#schedules"], ["Register", "#register"]],
+  "org-01": [["Home", "#"], ["Who We Are", "#mission"], ["What We Do", "#services"], ["Stories", "#stories"]],
+  "org-02": [["Home", "#"], ["Donations", "#causes"], ["Events", "#events"], ["About", "#about"]],
+  "org-03": [["Home", "#"], ["About Us", "#about"], ["Case Study", "#projects"], ["Services", "#services"]],
+  "events-01": [["Home", "#"], ["About", "#about"], ["Speakers", "#mission"], ["Why Us", "#why"]],
+  "events-02": [["Mission", "#mission"], ["Ministries", "#ministries"], ["What's New", "#news"]],
+  "events-03": [["Home", "#"], ["Sermons", "#about"], ["Ministries", "#ministries"]],
+  "events-04": [["About", "#news"], ["Living Here", "#events"], ["Heritage", "#territory"], ["Services", "#quick"]],
+};
+export function templateNav(id: string): [string, string][] {
+  return TEMPLATE_NAV[id] ?? [];
+}
+
 /**
  * A template section for the editor. `key` is the reorder id; `label` is shown
  * in the panel. Optional flags describe which controls this section exposes:
@@ -597,6 +618,7 @@ export function createCatalogContent(
     social: { instagram: "", twitter: "", facebook: "", website: "" },
     testimonials: tpl ? demoTestimonials(tpl.category) : [],
     services: demoServices(templateId),
+    navLinks: templateNav(templateId).map((p, i) => ({ id: `nav-${i}`, label: p[0], target: p[1] })),
   };
 
   switch (tpl?.category) {

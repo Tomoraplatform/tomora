@@ -6,7 +6,7 @@ import {
   Users, MessageSquare, Award,
 } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, subheading, navItems, headerCta, CustomSections, OrderedSections } from "./shared";
 
 const CATS = [
   { icon: Briefcase, t: "Business" }, { icon: Code, t: "Development" }, { icon: Languages, t: "Language" },
@@ -44,8 +44,8 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-xl font-bold" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Home","#"],["Course","#bootcamp"],["Bootcamp","#bootcamp"],["Blog","#advantages"],["Contact","#faq"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
-          <div className="flex items-center gap-2"><a href="#" className="rounded-md border border-black/15 px-4 py-2 text-sm">Login</a><BrandButton className="px-4 py-2">Register</BrandButton></div>
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{navItems(siteData, [["Home","#"],["Course","#bootcamp"],["Bootcamp","#bootcamp"],["Blog","#advantages"],["Contact","#faq"]]).map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
+          <div className="flex items-center gap-2"><a href="#" className="rounded-md border border-black/15 px-4 py-2 text-sm">Login</a>{(() => { const c = headerCta(siteData, "Register"); return <BrandButton as="a" href={c.href} className="px-4 py-2">{c.text}</BrandButton>; })()}</div>
         </div>
       </header>
 

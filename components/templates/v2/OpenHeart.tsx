@@ -2,7 +2,7 @@
 
 import { HandHeart, GraduationCap, Baby, Users, Quote, ChevronRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, heading, subheading, navItems, CustomSections, OrderedSections } from "./shared";
 import { DonationSection } from "./DonationSection";
 
 const SERVICES = [
@@ -25,7 +25,7 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
       <header className="bg-[#F9F7F4]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
           <Brandmark siteData={siteData} name={name} className="text-sm font-bold uppercase tracking-wide" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Home","#"],["Who We Are","#mission"],["Where We Work","#services"],["Blog","#stories"],["Contact","#stories"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{navItems(siteData, [["Home","#"],["Who We Are","#mission"],["Where We Work","#services"],["Blog","#stories"],["Contact","#stories"]]).map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
         </div>
       </header>
 

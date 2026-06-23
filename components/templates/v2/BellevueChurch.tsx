@@ -2,7 +2,7 @@
 
 import { Search, Play, HandHeart, Users, CalendarDays, Plus, Phone, MapPin, Mail } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, Img, heading, subheading, navItems, CustomSections, OrderedSections } from "./shared";
 import { DonationSection } from "./DonationSection";
 
 const QUICK = [{ icon: Play, t: "Watch" }, { icon: HandHeart, t: "Give" }, { icon: Users, t: "Who We Are" }, { icon: CalendarDays, t: "Events" }];
@@ -24,7 +24,7 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-          <nav className="hidden gap-5 text-sm text-black/60 lg:flex">{[["Belong & Grow","#ministries"],["Mission & Serve","#ministries"],["Prayer & Care","#news"],["Worship & Music","#news"],["Giving","#news"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
+          <nav className="hidden gap-5 text-sm text-black/60 lg:flex">{navItems(siteData, [["Belong & Grow","#ministries"],["Mission & Serve","#ministries"],["Prayer & Care","#news"],["Worship & Music","#news"],["Giving","#news"]]).map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
         </div>
       </header>
 

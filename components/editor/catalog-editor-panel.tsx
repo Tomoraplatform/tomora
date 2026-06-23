@@ -148,6 +148,7 @@ export function CatalogEditorPanel({
   reorder = [],
   isEcommerce = false,
   onManageProducts,
+  navDefaults = [],
 }: {
   data: SiteData;
   patch: (p: Partial<SiteData>) => void;
@@ -156,7 +157,12 @@ export function CatalogEditorPanel({
   reorder?: SectionDef[];
   isEcommerce?: boolean;
   onManageProducts?: () => void;
+  navDefaults?: [string, string][];
 }) {
+  // Working nav links: saved links, or the template defaults until edited.
+  const navWorking = (data.navLinks?.length ? data.navLinks : navDefaults.map((p, i) => ({ id: `nav-${i}`, label: p[0], target: p[1] })));
+  const setNav = (next: { id: string; label: string; target: string }[]) => patch({ navLinks: next });
+  const anchorOptions = Array.from(new Set(reorder.map((r) => `#${r.key}`)));
   // Current section order (saved order first, then any new sections).
   const orderKeys = (() => {
     const natural = reorder.map((r) => r.key);
@@ -246,6 +252,34 @@ export function CatalogEditorPanel({
             <Button type="button" variant="outline" size="sm" onClick={addHex}>Add</Button>
           </div>
         )}
+      </Section>
+
+      <Section title="Navigation bar">
+        <p className="-mt-1 text-xs text-ink/50">Set your menu links and the header button. Point each to a section (e.g. <code>#about</code>) or a full URL.</p>
+        <datalist id="nav-anchors">{anchorOptions.map((a) => <option key={a} value={a} />)}</datalist>
+        <div className="space-y-2">
+          {navWorking.map((link, i) => (
+            <div key={link.id} className="flex items-center gap-2">
+              <Input value={link.label} placeholder="Label" className="h-9 flex-1"
+                onChange={(e) => setNav(navWorking.map((l, j) => j === i ? { ...l, label: e.target.value } : l))} />
+              <Input value={link.target} placeholder="#section or URL" list="nav-anchors" className="h-9 flex-1"
+                onChange={(e) => setNav(navWorking.map((l, j) => j === i ? { ...l, target: e.target.value } : l))} />
+              <button type="button" aria-label="Remove" className="text-ink/40 hover:text-destructive" onClick={() => setNav(navWorking.filter((_, j) => j !== i))}><Trash2 className="h-4 w-4" /></button>
+            </div>
+          ))}
+        </div>
+        <Button type="button" variant="outline" size="sm" onClick={() => setNav([...navWorking, { id: `nav-${Date.now()}`, label: "New link", target: "#" }])}>
+          <Plus className="h-4 w-4" /> Add link
+        </Button>
+        <div className="mt-3 border-t border-ink/10 pt-3">
+          <p className="mb-1 text-xs font-medium text-ink/60">Header button</p>
+          <div className="grid grid-cols-2 gap-3">
+            <FieldRow label="Text"><Input value={data.sectionButtons?.header?.text ?? ""} placeholder="e.g. Register"
+              onChange={(e) => patch({ sectionButtons: { ...(data.sectionButtons || {}), header: { ...(data.sectionButtons?.header || {}), text: e.target.value } } })} /></FieldRow>
+            <FieldRow label="Link"><Input value={data.sectionButtons?.header?.url ?? ""} placeholder="#section or URL"
+              onChange={(e) => patch({ sectionButtons: { ...(data.sectionButtons || {}), header: { ...(data.sectionButtons?.header || {}), url: e.target.value } } })} /></FieldRow>
+          </div>
+        </div>
       </Section>
 
       <div className="mb-2 mt-4 border-t border-ink/10 pt-4">

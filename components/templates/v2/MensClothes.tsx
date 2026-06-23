@@ -2,7 +2,7 @@
 
 import { Search, ShoppingCart, ArrowRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira, heading, productCategories, sellingPrice, originalPrice, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira, heading, navItems, productCategories, sellingPrice, originalPrice, CustomSections, OrderedSections } from "./shared";
 import { useStore } from "../store-context";
 import type { CatalogProduct, Product, SiteData } from "@/lib/database.types";
 
@@ -123,7 +123,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
         </div>
         <div className="border-t border-neutral-100">
           <div className="mx-auto flex max-w-6xl gap-5 overflow-x-auto px-5 py-2.5 text-sm text-neutral-600">
-            {TABS.map((t) => <a key={t} href="#" className="whitespace-nowrap hover:text-black">{t}</a>)}
+            {navItems(siteData, [["New","#new"],["Special","#special"],["Shop","#allproducts"]]).map(([l, h]) => <a key={l} href={h} className="whitespace-nowrap hover:text-black">{l}</a>)}
           </div>
         </div>
       </header>

@@ -2,7 +2,7 @@
 
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Quote, ShoppingCart } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, subheading, productCategories, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, subheading, navItems, productCategories, CustomSections, OrderedSections } from "./shared";
 
 const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"];
 
@@ -173,7 +173,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-xl font-bold" />
           <nav className="hidden gap-7 text-sm text-black/60 md:flex">
-            <a href="#categories">Categories</a><a href="#allproducts">Shop</a><a href="#offer">Deals</a>
+            {navItems(siteData, [["Categories","#categories"],["Shop","#allproducts"],["Deals","#offer"]]).map(([l, h]) => <a key={l} href={h}>{l}</a>)}
           </nav>
           <button className="relative" aria-label="Cart"><ShoppingCart className="h-5 w-5" /></button>
         </div>

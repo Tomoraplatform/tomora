@@ -6,7 +6,7 @@ import {
   Mail, Phone, MapPin, Quote, Bookmark, CalendarCheck, X as XIcon,
 } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, ContactFormV2, heading, subheading, navItems, headerCta, CustomSections, OrderedSections } from "./shared";
 
 const SERVICES = [
   { icon: TrendingUp, t: "Business Strategy", d: "Plans that turn ideas into measurable growth." },
@@ -190,8 +190,8 @@ export function Inbio({ siteData, brandColor }: TemplateProps) {
       <header className="bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Home","#"],["Features","#services"],["Portfolio","#portfolio"],["Resume","#resume"],["Pricing","#services"],["Contact","#contact"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
-          <div className="flex items-center gap-3"><Heart className="h-5 w-5 text-black/40" /><BrandButton className="px-4 py-2">Buy Now</BrandButton></div>
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{navItems(siteData, [["Home","#"],["Features","#services"],["Portfolio","#portfolio"],["Resume","#resume"],["Pricing","#services"],["Contact","#contact"]]).map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
+          <div className="flex items-center gap-3"><Heart className="h-5 w-5 text-black/40" />{(() => { const c = headerCta(siteData, "Buy Now"); return <BrandButton as="a" href={c.href} className="px-4 py-2">{c.text}</BrandButton>; })()}</div>
         </div>
       </header>
 

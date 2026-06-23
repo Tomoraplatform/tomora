@@ -298,6 +298,19 @@ export function testimonialsOf(siteData: SiteData): CatalogTestimonial[] {
   return siteData.testimonials?.length ? siteData.testimonials : [];
 }
 
+/** Editable nav-bar links. Returns [label, target] pairs (user's or template default). */
+export function navItems(siteData: SiteData, fallback: [string, string][]): [string, string][] {
+  if (siteData.navLinks?.length) return siteData.navLinks.map((n) => [n.label, n.target || "#"]);
+  return fallback;
+}
+
+/** Editable header call-to-action button (text + link). */
+export function headerCta(siteData: SiteData, defaultText: string): { text: string; href: string; external: boolean } {
+  const b = siteData.sectionButtons?.header || {};
+  const href = (b.url || "").trim();
+  return { text: b.text || defaultText, href: href || "#", external: /^https?:\/\//.test(href) };
+}
+
 /** Editable section heading. Returns the user's override or the template default. */
 export function heading(siteData: SiteData, key: string, fallback: string): string {
   const v = siteData.sectionTitles?.[key];

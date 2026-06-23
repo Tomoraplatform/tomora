@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowRight, Search, MapPin, Mic, CalendarDays, Globe, Star, Ticket } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, Img, heading, subheading, ContactFormV2, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, Img, heading, subheading, navItems, headerCta, ContactFormV2, CustomSections, OrderedSections } from "./shared";
 
 const PROGRESS = [["Full Rating", 92], ["Management", 80], ["Social Media", 74]] as const;
 const SCHED_TABS = ["All Events", "Presentation", "Evaluation", "Open Discussion"];
@@ -26,8 +26,8 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
       <header className="bg-[#1A0533] text-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-          <nav className="hidden gap-6 text-sm text-white/70 lg:flex">{[["Home","#"],["Events","#venues"],["Speakers","#schedules"],["Blog","#venues"],["Contact","#register"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
-          <BrandButton className="px-4 py-2">Register</BrandButton>
+          <nav className="hidden gap-6 text-sm text-white/70 lg:flex">{navItems(siteData, [["Home","#"],["Events","#venues"],["Speakers","#schedules"],["Blog","#venues"],["Contact","#register"]]).map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
+          {(() => { const c = headerCta(siteData, "Register"); return <BrandButton as="a" href={c.href} className="px-4 py-2">{c.text}</BrandButton>; })()}
         </div>
       </header>
 

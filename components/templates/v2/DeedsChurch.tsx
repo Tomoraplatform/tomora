@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Phone, Mail, ArrowRight, Quote } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, subheading, navItems, headerCta, CustomSections, OrderedSections } from "./shared";
 import { DonationSection } from "./DonationSection";
 
 const MINISTRIES = [
@@ -55,8 +55,8 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Home","#"],["Sermons","#about"],["Events","#ministries"],["Stories","#ministries"],["About","#about"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
-          <BrandButton className="px-4 py-2">Donate Now</BrandButton>
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{navItems(siteData, [["Home","#"],["Sermons","#about"],["Events","#ministries"],["Stories","#ministries"],["About","#about"]]).map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
+          {(() => { const c = headerCta(siteData, "Donate Now"); return <BrandButton as="a" href={c.href} className="px-4 py-2">{c.text}</BrandButton>; })()}
         </div>
       </header>
 

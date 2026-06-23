@@ -18,7 +18,7 @@ import { ProductsManager } from "@/components/dashboard/products-manager";
 import { createClient } from "@/lib/supabase/client";
 import { X } from "lucide-react";
 import { BLOCK_LABELS, supportedBlocks, type BlockType } from "@/lib/site-data";
-import { isCatalogTemplate, templateLists, templateSections, templateReorder, createCatalogContent } from "@/lib/catalog";
+import { isCatalogTemplate, templateLists, templateSections, templateReorder, templateNav, createCatalogContent } from "@/lib/catalog";
 import { uploadImage } from "@/lib/upload";
 import { saveSite } from "@/app/dashboard/editor/actions";
 import { cn } from "@/lib/utils";
@@ -110,6 +110,7 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
   const lists = isCatalog ? templateLists(site.template_id) : [];
   const sections = isCatalog ? templateSections(site.template_id) : [];
   const reorder = isCatalog ? templateReorder(site.template_id) : [];
+  const navDefaults = isCatalog ? templateNav(site.template_id) : [];
 
   async function onLogo(file?: File) {
     if (!file) return;
@@ -187,7 +188,7 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
         {/* Left panel */}
         <aside className="w-full shrink-0 overflow-y-auto border-b border-ink/10 bg-white p-4 lg:w-80 lg:border-b-0 lg:border-r">
           {isCatalog ? (
-            <CatalogEditorPanel data={data} patch={patch} lists={lists} sections={sections} reorder={reorder} isEcommerce={isStore} onManageProducts={() => setShowProducts(true)} />
+            <CatalogEditorPanel data={data} patch={patch} lists={lists} sections={sections} reorder={reorder} isEcommerce={isStore} onManageProducts={() => setShowProducts(true)} navDefaults={navDefaults} />
           ) : (
           <>
           <Section title="Brand">

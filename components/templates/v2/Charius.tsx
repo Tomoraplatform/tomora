@@ -2,7 +2,7 @@
 
 import { PlayCircle, HandHeart, Wallet, HeartHandshake, GraduationCap, Droplet, Utensils, Stethoscope, MapPin } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img, formatNaira, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img, formatNaira, heading, subheading, navItems, headerCta, CustomSections, OrderedSections } from "./shared";
 import { DonationSection } from "./DonationSection";
 
 const ACTIONS = [{ icon: HeartHandshake, t: "Become a Volunteer" }, { icon: Wallet, t: "Quick Fundraising" }, { icon: HandHeart, t: "Start Donating" }];
@@ -26,8 +26,8 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
-          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{[["Home","#"],["Donations","#causes"],["Events","#events"],["Blog","#whatwedo"],["Contact","#events"]].map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
-          <BrandButton className="px-4 py-2">Donate Now</BrandButton>
+          <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{navItems(siteData, [["Home","#"],["Donations","#causes"],["Events","#events"],["Blog","#whatwedo"],["Contact","#events"]]).map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
+          {(() => { const c = headerCta(siteData, "Donate Now"); return <BrandButton as="a" href={c.href} className="px-4 py-2">{c.text}</BrandButton>; })()}
         </div>
       </header>
 

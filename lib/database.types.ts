@@ -232,6 +232,8 @@ export interface SiteData {
   contactForm?: boolean;
   /** Custom brand color hex codes the user saved (max 3). First is primary. */
   brandColors?: string[];
+  /** Editable navigation-bar links (label + target anchor/URL). */
+  navLinks?: { id: string; label: string; target: string }[];
   /** Per-template editable section headings, keyed by section id. */
   sectionTitles?: Record<string, string>;
   /** Per-template editable section intro text, keyed by section id. */
