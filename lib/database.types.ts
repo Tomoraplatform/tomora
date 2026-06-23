@@ -236,6 +236,20 @@ export interface SiteData {
   sectionImages?: Record<string, string>;
   /** Optional owner/intro video link shown in the hero of some templates. */
   heroVideoUrl?: string;
+  /** Hero overlay color over the background image (templates with an overlay). */
+  heroOverlayColor?: string;
+  /** Secondary hero "Get Ticket" button text + link. */
+  ticketText?: string;
+  ticketUrl?: string;
+  /** Toggle the search bar on event templates (default on). */
+  showSearch?: boolean;
+  /** Editable search-bar field placeholders + button text. */
+  searchPlaceholders?: string[];
+  searchButtonText?: string;
+  /** Per-section editable eyebrow / kicker label, keyed by section key. */
+  sectionEyebrows?: Record<string, string>;
+  /** Progress / skill bars (label + percentage) for "Why us" style sections. */
+  progress?: CatalogProgress[];
   /** Toggle the newsletter signup form on storefront templates (default on). */
   showNewsletter?: boolean;
   /** Custom order of the template's built-in sections (keys); missing = natural order. */
@@ -313,6 +327,12 @@ export interface CatalogStat {
   id: string;
   value: string;
   label: string;
+}
+
+export interface CatalogProgress {
+  id: string;
+  label: string;
+  value: number; // percentage 0-100
 }
 
 export interface CatalogHour {

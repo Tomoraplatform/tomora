@@ -3,15 +3,20 @@
 import { useState } from "react";
 import { ArrowRight, Search, MapPin, Mic, CalendarDays, Globe, Star, Ticket } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, Img, heading, ContactFormV2, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, Img, heading, subheading, ContactFormV2, CustomSections, OrderedSections } from "./shared";
 
 const PROGRESS = [["Full Rating", 92], ["Management", 80], ["Social Media", 74]] as const;
 const SCHED_TABS = ["All Events", "Presentation", "Evaluation", "Open Discussion"];
 const FEATURES = [{ icon: Mic, t: "Advanced Speakers" }, { icon: CalendarDays, t: "Daily Workshops" }, { icon: Globe, t: "Global Community" }];
+const FEATURE_ICONS = [Mic, CalendarDays, Globe];
 
 export function Motivac({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "Motivac";
   const events = siteData.events || [];
+  const overlay = siteData.heroOverlayColor || "#1A0533";
+  const progressItems = siteData.progress?.length ? siteData.progress : PROGRESS.map(([label, value], i) => ({ id: `pg${i}`, label: label as string, value: value as number }));
+  const featItems = siteData.services?.length ? siteData.services : FEATURES.map((f, i) => ({ id: `f${i}`, title: f.t, description: "" }));
+  const searchPh = siteData.searchPlaceholders || ["Search category", "Search date", "Search range"];
   const [tab, setTab] = useState(0);
 
   return (
@@ -31,40 +36,43 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
         hero: (
           <section className="relative">
             <Img src={siteData.heroImage} className="absolute inset-0 h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-[#1A0533]/85" />
+            <div className="absolute inset-0" style={{ background: overlay, opacity: 0.85 }} />
             <div className="relative mx-auto max-w-6xl px-5 py-28 text-white">
               <span className="text-sm font-semibold uppercase tracking-[0.25em]" style={{ color: "var(--brand-primary)" }}>Worldwide Conference</span>
               <h1 className="mt-4 max-w-2xl font-serif text-5xl font-bold leading-tight sm:text-6xl">{siteData.heroHeadline}</h1>
               <div className="mt-8 flex flex-wrap gap-3">
                 <BrandButton as="a" href={siteData.ctaHref || "#register"}>{siteData.ctaText || "Registration"} <ArrowRight className="h-4 w-4" /></BrandButton>
-                <a href="#register" className="inline-flex items-center gap-2 rounded-md border border-white/40 px-6 py-3 text-sm font-semibold"><Ticket className="h-4 w-4" /> Get Ticket</a>
+                <a href={siteData.ticketUrl?.trim() || "#register"} {...(siteData.ticketUrl?.trim() ? { target: "_blank", rel: "noreferrer" } : {})} className="inline-flex items-center gap-2 rounded-md border border-white/40 px-6 py-3 text-sm font-semibold"><Ticket className="h-4 w-4" /> {siteData.ticketText || "Get Ticket"}</a>
               </div>
             </div>
           </section>
         ),
-        search: (
+        search: siteData.showSearch !== false ? (
           <section className="border-b border-black/5 bg-white">
             <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-6 md:flex-row">
-              <input className="flex-1 rounded-md border border-black/15 px-4 py-3 text-sm" placeholder="Search category" />
-              <input className="flex-1 rounded-md border border-black/15 px-4 py-3 text-sm" placeholder="Search date" />
-              <input className="flex-1 rounded-md border border-black/15 px-4 py-3 text-sm" placeholder="Search range" />
-              <BrandButton><Search className="h-4 w-4" /> Search Now</BrandButton>
+              {[0, 1, 2].map((i) => (
+                <input key={i} className="flex-1 rounded-md border border-black/15 px-4 py-3 text-sm" placeholder={searchPh[i] || ""} />
+              ))}
+              <BrandButton><Search className="h-4 w-4" /> {siteData.searchButtonText || "Search Now"}</BrandButton>
             </div>
           </section>
-        ),
+        ) : null,
         about: (
           <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
             <div>
-              <span className="text-sm font-semibold uppercase" style={{ color: "var(--brand-primary)" }}>Why us</span>
+              {(siteData.sectionEyebrows?.about ?? "Why us") && <span className="text-sm font-semibold uppercase" style={{ color: "var(--brand-primary)" }}>{siteData.sectionEyebrows?.about ?? "Why us"}</span>}
               <h2 className="mt-2 text-3xl font-bold">{heading(siteData, "about", "Plan Your Events with Us")}</h2>
-              <p className="mt-3 text-black/60">{siteData.heroSubtext}</p>
+              <p className="mt-3 text-black/60">{subheading(siteData, "about", siteData.heroSubtext || "")}</p>
               <div className="mt-6 space-y-4">
-                {PROGRESS.map(([label, pct]) => (
-                  <div key={label}><div className="mb-1 flex justify-between text-sm"><span>{label}</span><span>{pct}%</span></div><div className="h-2 rounded-full bg-black/10"><div className="h-full rounded-full" style={{ width: `${pct}%`, background: "var(--brand-primary)" }} /></div></div>
-                ))}
+                {progressItems.map((p) => {
+                  const pct = Math.max(0, Math.min(100, p.value || 0));
+                  return (
+                    <div key={p.id}><div className="mb-1 flex justify-between text-sm"><span>{p.label}</span><span>{pct}%</span></div><div className="h-2 rounded-full bg-black/10"><div className="h-full rounded-full" style={{ width: `${pct}%`, background: "var(--brand-primary)" }} /></div></div>
+                  );
+                })}
               </div>
             </div>
-            <Img src="https://picsum.photos/seed/motivac-plan/800/600" className="aspect-[4/3] w-full rounded-2xl object-cover" />
+            <Img src={siteData.sectionImages?.about || "https://picsum.photos/seed/motivac-plan/800/600"} className="aspect-[4/3] w-full rounded-2xl object-cover" />
           </section>
         ),
         venues: (
@@ -85,7 +93,8 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
         schedule: (
           <section id="schedules" className="mx-auto max-w-6xl px-5 py-16">
             <h2 className="text-3xl font-bold">{heading(siteData, "schedule", "Information of Event Schedules")}</h2>
-            <div className="mt-6 flex flex-wrap gap-2">{SCHED_TABS.map((t, i) => <button key={t} onClick={() => setTab(i)} className="rounded-full px-4 py-2 text-sm font-medium" style={tab === i ? { background: "var(--brand-primary)", color: "var(--brand-on-primary)" } : { background: "#F3F4F6" }}>{t}</button>)}</div>
+            {subheading(siteData, "schedule", "") && <p className="mt-3 max-w-2xl text-black/60">{subheading(siteData, "schedule", "")}</p>}
+            <div className="mt-6 flex flex-wrap gap-2">{SCHED_TABS.map((t, i) =><button key={t} onClick={() => setTab(i)} className="rounded-full px-4 py-2 text-sm font-medium" style={tab === i ? { background: "var(--brand-primary)", color: "var(--brand-on-primary)" } : { background: "#F3F4F6" }}>{t}</button>)}</div>
             <div className="mt-6 divide-y divide-black/5 overflow-hidden rounded-2xl border border-black/10">
               {events.map((e, i) => (
                 <div key={e.id} className="flex items-center justify-between px-5 py-4"><div><p className="font-semibold">{e.title}</p><p className="text-sm text-black/50">{e.location}</p></div><span className="text-sm font-medium" style={{ color: "var(--brand-primary)" }}>{e.date}</span></div>
@@ -97,10 +106,14 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
           <section className="bg-[#FBF7FC]">
             <div className="mx-auto max-w-6xl px-5 py-16">
               <h2 className="text-center text-3xl font-bold">{heading(siteData, "services", "We Bring The Best Things for You")}</h2>
+              {subheading(siteData, "services", "") && <p className="mx-auto mt-3 max-w-xl text-center text-black/60">{subheading(siteData, "services", "")}</p>}
               <div className="mt-8 grid gap-6 sm:grid-cols-3">
-                {FEATURES.map(({ icon: Icon, t }) => (
-                  <div key={t} className="rounded-2xl bg-white p-6 text-center shadow-sm"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-6 w-6" /></span><h3 className="mt-3 font-semibold">{t}</h3></div>
-                ))}
+                {featItems.map((f, i) => {
+                  const Icon = FEATURE_ICONS[i % FEATURE_ICONS.length];
+                  return (
+                    <div key={f.id} className="rounded-2xl bg-white p-6 text-center shadow-sm"><span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-6 w-6" /></span><h3 className="mt-3 font-semibold">{f.title}</h3>{f.description && <p className="mt-1 text-sm text-black/60">{f.description}</p>}</div>
+                  );
+                })}
               </div>
             </div>
           </section>

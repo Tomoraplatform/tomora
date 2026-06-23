@@ -53,7 +53,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["trustBadges", "testimonials"],
   "shop-02": ["trustBadges"],
@@ -61,7 +61,7 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "portfolio-01": ["services", "portfolio", "resume", "testimonials", "clientLogos"],
   "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
   "education-01": ["eduCategories", "advantages", "courses", "eduFeatures", "faqs"],
-  "education-02": ["events", "testimonials"],
+  "education-02": ["progress", "events", "services", "testimonials"],
   "org-01": ["services", "testimonials"],
   "org-02": ["services", "causes", "events"],
   "org-03": ["services"],
@@ -96,6 +96,10 @@ export type SectionDef = {
   formToggle?: boolean;   // newsletter: show/hide the signup form
   book?: boolean;         // booking section: editable scheduling link (bookingUrl)
   cv?: boolean;           // hero: uploadable downloadable CV/resume file (cvUrl)
+  overlay?: boolean;      // hero: editable overlay color over the background image
+  ticket?: boolean;       // hero: editable secondary "Get Ticket" button text + link
+  search?: boolean;       // search bar: toggle + editable placeholders + button text
+  eyebrow?: boolean;      // editable small kicker label above the heading
 };
 export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   "shop-01": [
@@ -245,12 +249,12 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "faq", label: "FAQ", heading: "faq", list: "faqs" },
   ],
   "education-02": [
-    { key: "hero", label: "Hero", hero: true },
-    { key: "search", label: "Search bar" },
-    { key: "about", label: "About / Why us", heading: "about" },
+    { key: "hero", label: "Hero", hero: true, overlay: true, ticket: true },
+    { key: "search", label: "Search bar", search: true },
+    { key: "about", label: "About / Why us", heading: "about", eyebrow: true, text: true, image: true, list: "progress" },
     { key: "venues", label: "Venues", heading: "venues", list: "events" },
-    { key: "schedule", label: "Schedule", heading: "schedule" },
-    { key: "services", label: "Features", heading: "services" },
+    { key: "schedule", label: "Schedule", heading: "schedule", text: true },
+    { key: "services", label: "Features", heading: "services", text: true, list: "services" },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
     { key: "register", label: "Register", heading: "register" },
   ],
@@ -584,6 +588,26 @@ export function createCatalogContent(
         data.advantages = demoAdvantages(seed);
         data.eduFeatures = demoEduFeatures(seed);
         data.sectionImages = { ...(data.sectionImages || {}), advantages: img(`${seed}-adv`, 700, 600) };
+      }
+      if (templateId === "education-02") {
+        data.events = demoEvents(seed);
+        data.heroOverlayColor = "#1A0533";
+        data.ticketText = "Get Ticket";
+        data.ticketUrl = "";
+        data.searchPlaceholders = ["Search category", "Search date", "Search range"];
+        data.searchButtonText = "Search Now";
+        data.sectionEyebrows = { ...(data.sectionEyebrows || {}), about: "Why us" };
+        data.progress = [
+          { id: `${seed}-pg0`, label: "Full Rating", value: 92 },
+          { id: `${seed}-pg1`, label: "Management", value: 80 },
+          { id: `${seed}-pg2`, label: "Social Media", value: 74 },
+        ];
+        data.services = [
+          { id: `${seed}-sv0`, title: "Advanced Speakers", description: "Learn from industry-leading voices." },
+          { id: `${seed}-sv1`, title: "Daily Workshops", description: "Hands-on sessions every day." },
+          { id: `${seed}-sv2`, title: "Global Community", description: "Connect with attendees worldwide." },
+        ];
+        data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-plan`, 800, 600) };
       }
       break;
     case "organization": data.causes = demoCauses(seed); data.events = demoEvents(seed); break;

@@ -78,6 +78,11 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     fields: [{ key: "value", label: "Value (e.g. 120+)" }, { key: "label", label: "Label" }],
     make: () => ({ id: `st-${Date.now()}`, value: "10+", label: "Metric" }),
   },
+  progress: {
+    key: "progress", title: "Progress bars",
+    fields: [{ key: "label", label: "Label" }, { key: "value", label: "Percentage (0-100)", type: "number" }],
+    make: () => ({ id: `pg-${Date.now()}`, label: "New metric", value: 80 }),
+  },
   hours: {
     key: "hours", title: "Service / Opening Times",
     fields: [{ key: "label", label: "Day (e.g. Sunday)" }, { key: "time", label: "Time (e.g. 9:00 AM)" }],
@@ -223,7 +228,7 @@ export function CatalogEditorPanel({
 
       {orderedDefs.map((def, i) => {
         const hkey = def.heading;
-        const hasControls = def.hero || def.heading || def.text || def.list || def.image || def.formToggle || (def.products && isEcommerce);
+        const hasControls = def.hero || def.heading || def.text || def.list || def.image || def.formToggle || def.search || def.eyebrow || (def.products && isEcommerce);
         return (
           <SectionGroup
             key={def.key}
@@ -256,10 +261,53 @@ export function CatalogEditorPanel({
                     </div>
                   </FieldRow>
                 )}
+                {def.overlay && (
+                  <FieldRow label="Overlay color (over the hero image)">
+                    <div className="flex flex-wrap gap-2">
+                      {[...PRESET, ...custom].map((c) => (
+                        <button key={c} type="button" onClick={() => patch({ heroOverlayColor: c })}
+                          className={cn("h-7 w-7 rounded-full", (data.heroOverlayColor || "").toLowerCase() === c.toLowerCase() && "ring-2 ring-ink ring-offset-2")}
+                          style={{ background: c }} aria-label={c} />
+                      ))}
+                    </div>
+                  </FieldRow>
+                )}
+                {def.ticket && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <FieldRow label="Get Ticket text"><Input value={data.ticketText ?? ""} placeholder="Get Ticket" onChange={(e) => patch({ ticketText: e.target.value })} /></FieldRow>
+                    <FieldRow label="Get Ticket link"><Input value={data.ticketUrl ?? ""} placeholder="# or https://" onChange={(e) => patch({ ticketUrl: e.target.value })} /></FieldRow>
+                  </div>
+                )}
                 {def.list && <ListBody cfg={LIST_CONFIG[def.list]} data={data} patch={patch} />}
+              </>
+            ) : def.search ? (
+              <>
+                <div className="flex items-center justify-between rounded-md border border-ink/10 px-3 py-2">
+                  <span className="text-xs text-ink/70">Show search bar</span>
+                  <Switch checked={data.showSearch !== false} onCheckedChange={(v) => patch({ showSearch: v })} />
+                </div>
+                {[0, 1, 2].map((i) => (
+                  <FieldRow key={i} label={`Field ${i + 1} placeholder`}>
+                    <Input
+                      value={data.searchPlaceholders?.[i] ?? ""}
+                      placeholder={["Search category", "Search date", "Search range"][i]}
+                      onChange={(e) => {
+                        const next = [...(data.searchPlaceholders || ["", "", ""])];
+                        next[i] = e.target.value;
+                        patch({ searchPlaceholders: next });
+                      }} />
+                  </FieldRow>
+                ))}
+                <FieldRow label="Button text"><Input value={data.searchButtonText ?? ""} placeholder="Search Now" onChange={(e) => patch({ searchButtonText: e.target.value })} /></FieldRow>
               </>
             ) : (
               <>
+                {def.eyebrow && (
+                  <FieldRow label="Eyebrow / small label">
+                    <Input value={data.sectionEyebrows?.[def.key] ?? ""} placeholder="e.g. Why us"
+                      onChange={(e) => patch({ sectionEyebrows: { ...(data.sectionEyebrows || {}), [def.key]: e.target.value } })} />
+                  </FieldRow>
+                )}
                 {hkey && (
                   <FieldRow label="Title">
                     <Input
