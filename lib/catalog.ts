@@ -53,7 +53,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["trustBadges", "testimonials"],
   "shop-02": ["trustBadges"],
@@ -62,7 +62,7 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
   "education-01": ["eduCategories", "advantages", "courses", "eduFeatures", "faqs"],
   "education-02": ["progress", "events", "services", "testimonials"],
-  "org-01": ["services", "testimonials"],
+  "org-01": ["impactImages", "services", "testimonials"],
   "org-02": ["services", "causes", "events"],
   "org-03": ["services"],
   "events-01": ["services"],
@@ -100,6 +100,9 @@ export type SectionDef = {
   ticket?: boolean;       // hero: editable secondary "Get Ticket" button text + link
   search?: boolean;       // search bar: toggle + editable placeholders + button text
   eyebrow?: boolean;      // editable small kicker label above the heading
+  button?: boolean;       // editable section button (text + link), keyed by section
+  color?: boolean;        // editable section background color, keyed by section
+  stat?: boolean;         // hero: editable highlighted stat (label + value)
 };
 export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   "shop-01": [
@@ -153,6 +156,7 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   ],
   "org-01": [
     { key: "hero2", label: "Give a helping hand to those who need it!" },
+    { key: "services", label: "What We Do" },
     { key: "volunteers", label: "We Need Volunteers", text: true },
     { key: "stories", label: "Success Stories" },
   ],
@@ -259,11 +263,11 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "register", label: "Register", heading: "register" },
   ],
   "org-01": [
-    { key: "hero", label: "Hero", hero: true },
-    { key: "impact", label: "Impact images" },
-    { key: "mission", label: "Mission", heading: "hero2" },
-    { key: "services", label: "What we do", list: "services" },
-    { key: "volunteers", label: "Volunteers", heading: "volunteers", text: true },
+    { key: "hero", label: "Hero", hero: true, overlay: true, stat: true },
+    { key: "impact", label: "Impact images", list: "impactImages" },
+    { key: "mission", label: "Mission", heading: "hero2", text: true, button: true },
+    { key: "services", label: "What we do", heading: "services", text: true, list: "services" },
+    { key: "volunteers", label: "Get involved", heading: "volunteers", eyebrow: true, text: true, image: true, button: true, color: true },
     { key: "stories", label: "Success stories", heading: "stories", list: "testimonials" },
   ],
   "org-02": [
@@ -610,7 +614,22 @@ export function createCatalogContent(
         data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-plan`, 800, 600) };
       }
       break;
-    case "organization": data.causes = demoCauses(seed); data.events = demoEvents(seed); break;
+    case "organization":
+      data.causes = demoCauses(seed); data.events = demoEvents(seed);
+      if (templateId === "org-01") {
+        data.heroOverlayColor = "#000000";
+        data.heroStatLabel = "Donation so far";
+        data.heroStatValue = "₦45,000,000";
+        data.impactImages = [0, 1, 2].map((i) => ({ id: `${seed}-im${i}`, name: "", image: img(`${seed}-impact-${i}`, 500, 360) }));
+        data.sectionEyebrows = { ...(data.sectionEyebrows || {}), volunteers: "Get involved" };
+        data.sectionButtons = {
+          ...(data.sectionButtons || {}),
+          mission: { text: "Read More", url: "" },
+          volunteers: { text: "Join Now", url: "" },
+        };
+        data.sectionImages = { ...(data.sectionImages || {}), volunteers: img(`${seed}-vol`, 800, 600) };
+      }
+      break;
     case "events": data.events = demoEvents(seed); if (templateId === "events-02") data.hours = demoHours(seed); break;
     case "portfolio":
       data.portfolioItems = demoPortfolio(seed);

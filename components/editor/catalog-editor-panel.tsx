@@ -98,6 +98,11 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     fields: [{ key: "image", label: "Logo", type: "image" }, { key: "name", label: "Name (optional)" }],
     make: () => ({ id: `cl-${Date.now()}`, name: "Client", image: "" }),
   },
+  impactImages: {
+    key: "impactImages", title: "Impact images",
+    fields: [{ key: "image", label: "Image", type: "image" }, { key: "name", label: "Caption (optional)" }],
+    make: () => ({ id: `im-${Date.now()}`, name: "", image: "" }),
+  },
   resume: {
     key: "resume", title: "Resume (Education / Experience / Skills)",
     fields: [
@@ -228,7 +233,7 @@ export function CatalogEditorPanel({
 
       {orderedDefs.map((def, i) => {
         const hkey = def.heading;
-        const hasControls = def.hero || def.heading || def.text || def.list || def.image || def.formToggle || def.search || def.eyebrow || (def.products && isEcommerce);
+        const hasControls = def.hero || def.heading || def.text || def.list || def.image || def.formToggle || def.search || def.eyebrow || def.button || def.color || (def.products && isEcommerce);
         return (
           <SectionGroup
             key={def.key}
@@ -276,6 +281,12 @@ export function CatalogEditorPanel({
                   <div className="grid grid-cols-2 gap-3">
                     <FieldRow label="Get Ticket text"><Input value={data.ticketText ?? ""} placeholder="Get Ticket" onChange={(e) => patch({ ticketText: e.target.value })} /></FieldRow>
                     <FieldRow label="Get Ticket link"><Input value={data.ticketUrl ?? ""} placeholder="# or https://" onChange={(e) => patch({ ticketUrl: e.target.value })} /></FieldRow>
+                  </div>
+                )}
+                {def.stat && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <FieldRow label="Stat label"><Input value={data.heroStatLabel ?? ""} placeholder="Donation so far" onChange={(e) => patch({ heroStatLabel: e.target.value })} /></FieldRow>
+                    <FieldRow label="Stat value"><Input value={data.heroStatValue ?? ""} placeholder="₦45,000,000" onChange={(e) => patch({ heroStatValue: e.target.value })} /></FieldRow>
                   </div>
                 )}
                 {def.list && <ListBody cfg={LIST_CONFIG[def.list]} data={data} patch={patch} />}
@@ -339,6 +350,29 @@ export function CatalogEditorPanel({
                   <FieldRow label="Booking link (Calendly, WhatsApp, etc.)">
                     <Input value={data.bookingUrl || ""} placeholder="https://calendly.com/you"
                       onChange={(e) => patch({ bookingUrl: e.target.value })} />
+                  </FieldRow>
+                )}
+                {def.button && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <FieldRow label="Button text">
+                      <Input value={data.sectionButtons?.[def.key]?.text ?? ""} placeholder="e.g. Read More"
+                        onChange={(e) => patch({ sectionButtons: { ...(data.sectionButtons || {}), [def.key]: { ...(data.sectionButtons?.[def.key] || {}), text: e.target.value } } })} />
+                    </FieldRow>
+                    <FieldRow label="Button link">
+                      <Input value={data.sectionButtons?.[def.key]?.url ?? ""} placeholder="# or https://"
+                        onChange={(e) => patch({ sectionButtons: { ...(data.sectionButtons || {}), [def.key]: { ...(data.sectionButtons?.[def.key] || {}), url: e.target.value } } })} />
+                    </FieldRow>
+                  </div>
+                )}
+                {def.color && (
+                  <FieldRow label="Section background color">
+                    <div className="flex flex-wrap gap-2">
+                      {[...PRESET, ...custom].map((c) => (
+                        <button key={c} type="button" onClick={() => patch({ sectionColors: { ...(data.sectionColors || {}), [def.key]: c } })}
+                          className={cn("h-7 w-7 rounded-full", (data.sectionColors?.[def.key] || "").toLowerCase() === c.toLowerCase() && "ring-2 ring-ink ring-offset-2")}
+                          style={{ background: c }} aria-label={c} />
+                      ))}
+                    </div>
                   </FieldRow>
                 )}
                 {def.list && (

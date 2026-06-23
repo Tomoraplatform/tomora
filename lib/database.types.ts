@@ -248,6 +248,15 @@ export interface SiteData {
   searchButtonText?: string;
   /** Per-section editable eyebrow / kicker label, keyed by section key. */
   sectionEyebrows?: Record<string, string>;
+  /** Per-section editable button (text + link), keyed by section key. */
+  sectionButtons?: Record<string, { text?: string; url?: string }>;
+  /** Per-section editable background color, keyed by section key. */
+  sectionColors?: Record<string, string>;
+  /** Highlighted hero stat (e.g. donation total) for charity-style heroes. */
+  heroStatLabel?: string;
+  heroStatValue?: string;
+  /** Editable impact / gallery images (charity templates). */
+  impactImages?: CatalogCategoryItem[];
   /** Progress / skill bars (label + percentage) for "Why us" style sections. */
   progress?: CatalogProgress[];
   /** Toggle the newsletter signup form on storefront templates (default on). */

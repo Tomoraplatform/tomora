@@ -11,6 +11,13 @@ const SERVICES = [
 
 export function OpenHeart({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "Open Heart";
+  const overlay = siteData.heroOverlayColor || "#000000";
+  const impactImages = siteData.impactImages?.length
+    ? siteData.impactImages
+    : [0, 1, 2].map((i) => ({ id: `im${i}`, name: "", image: `https://picsum.photos/seed/oh-impact${i}/500/360` }));
+  const missionBtn = siteData.sectionButtons?.mission || {};
+  const volBtn = siteData.sectionButtons?.volunteers || {};
+  const volColor = siteData.sectionColors?.volunteers;
 
   return (
     <BrandStyle brandColor={brandColor} className="bg-[#F9F7F4] font-sans text-neutral-900">
@@ -26,30 +33,41 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
         hero: (
           <section className="relative">
             <Img src={siteData.heroImage} className="absolute inset-0 h-full w-full object-cover grayscale" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/30" />
+            <div className="absolute inset-0" style={{ backgroundImage: `linear-gradient(to right, ${overlay}E6, ${overlay}33)` }} />
             <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-5 py-28 text-white md:flex-row md:items-end md:justify-between">
               <h1 className="max-w-2xl text-3xl font-bold leading-tight sm:text-4xl">{siteData.heroHeadline}</h1>
               <div className="shrink-0">
                 <BrandButton as="a" href={siteData.ctaHref || "#"}>{siteData.ctaText || "Donate Now"} <ChevronRight className="h-4 w-4" /></BrandButton>
-                <div className="mt-4"><p className="text-xs uppercase tracking-wide text-white/60">Donation so far</p><p className="text-3xl font-bold">₦45,000,000</p></div>
+                {(siteData.heroStatValue || siteData.heroStatLabel) && (
+                  <div className="mt-4">
+                    {siteData.heroStatLabel && <p className="text-xs uppercase tracking-wide text-white/60">{siteData.heroStatLabel}</p>}
+                    {siteData.heroStatValue && <p className="text-3xl font-bold">{siteData.heroStatValue}</p>}
+                  </div>
+                )}
               </div>
             </div>
           </section>
         ),
         impact: (
           <section className="grid grid-cols-3 gap-1">
-            {[0,1,2].map((i) => <Img key={i} src={`https://picsum.photos/seed/oh-impact${i}/500/360`} className="h-48 w-full object-cover grayscale sm:h-64" />)}
+            {impactImages.slice(0, 6).map((im) => <Img key={im.id} src={im.image} alt={im.name} className="h-48 w-full object-cover grayscale sm:h-64" />)}
           </section>
         ),
         mission: (
           <section id="mission" className="mx-auto max-w-3xl px-5 py-16 text-center">
             <h2 className="text-3xl font-bold leading-tight">{heading(siteData, "hero2", "Give a helping hand to those who need it!")}</h2>
-            <p className="mt-4 text-black/60">{siteData.heroSubtext}</p>
-            <a href="#" className="mt-6 inline-block rounded-md border-2 px-6 py-3 text-sm font-semibold" style={{ borderColor: "var(--brand-primary)", color: "var(--brand-primary)" }}>Read More</a>
+            <p className="mt-4 text-black/60">{subheading(siteData, "hero2", siteData.heroSubtext || "")}</p>
+            {(missionBtn.text ?? "Read More") && (
+              <a href={missionBtn.url?.trim() || "#"} {...(missionBtn.url?.trim() ? { target: "_blank", rel: "noreferrer" } : {})} className="mt-6 inline-block rounded-md border-2 px-6 py-3 text-sm font-semibold" style={{ borderColor: "var(--brand-primary)", color: "var(--brand-primary)" }}>{missionBtn.text || "Read More"}</a>
+            )}
           </section>
         ),
         services: (
-          <section id="services" className="mx-auto max-w-6xl px-5 pb-16">
+          <section id="services" className="mx-auto max-w-6xl px-5 pb-16 pt-16">
+            <div className="mb-8 text-center">
+              <h2 className="text-3xl font-bold">{heading(siteData, "services", "What We Do")}</h2>
+              {subheading(siteData, "services", "") && <p className="mx-auto mt-3 max-w-xl text-black/60">{subheading(siteData, "services", "")}</p>}
+            </div>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
               {servicesOf(siteData, SERVICES.map((s) => ({ title: s.t, description: "Programs that change lives every day." }))).map((s, i) => {
                 const Icon = SERVICES[i % SERVICES.length].icon;
@@ -62,13 +80,15 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
         ),
         volunteers: (
           <section className="grid md:grid-cols-2">
-            <div className="px-6 py-14 text-white md:px-12" style={{ background: "var(--brand-primary)" }}>
-              <span className="text-sm font-semibold uppercase tracking-wide opacity-80">Get involved</span>
+            <div className="px-6 py-14 text-white md:px-12" style={{ background: volColor || "var(--brand-primary)" }}>
+              {(siteData.sectionEyebrows?.volunteers ?? "Get involved") && <span className="text-sm font-semibold uppercase tracking-wide opacity-80">{siteData.sectionEyebrows?.volunteers ?? "Get involved"}</span>}
               <h2 className="mt-2 text-3xl font-bold">{heading(siteData, "volunteers", "We Need Volunteers")}</h2>
               <p className="mt-3 max-w-md opacity-90">{subheading(siteData, "volunteers", "Join hundreds of volunteers bringing hope to communities across Africa.")}</p>
-              <a href="#" className="mt-6 inline-block rounded-md bg-white px-6 py-3 text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>Join Now</a>
+              {(volBtn.text ?? "Join Now") && (
+                <a href={volBtn.url?.trim() || "#"} {...(volBtn.url?.trim() ? { target: "_blank", rel: "noreferrer" } : {})} className="mt-6 inline-block rounded-md bg-white px-6 py-3 text-sm font-semibold" style={{ color: volColor || "var(--brand-primary)" }}>{volBtn.text || "Join Now"}</a>
+              )}
             </div>
-            <Img src="https://picsum.photos/seed/oh-vol/800/600" className="h-64 w-full object-cover md:h-auto" />
+            <Img src={siteData.sectionImages?.volunteers || "https://picsum.photos/seed/oh-vol/800/600"} className="h-64 w-full object-cover md:h-auto" />
           </section>
         ),
         stories: (
