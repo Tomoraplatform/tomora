@@ -53,7 +53,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["trustBadges", "testimonials"],
   "shop-02": ["trustBadges"],
@@ -63,7 +63,7 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "education-01": ["eduCategories", "advantages", "courses", "eduFeatures", "faqs"],
   "education-02": ["progress", "events", "services", "testimonials"],
   "org-01": ["impactImages", "services", "testimonials"],
-  "org-02": ["services", "causes", "events"],
+  "org-02": ["avatars", "quickActions", "aboutImages", "aboutPoints", "services", "causes", "events"],
   "org-03": ["services"],
   "events-01": ["services"],
   "events-02": ["events", "hours"],
@@ -89,6 +89,7 @@ export type SectionDef = {
   text?: boolean;
   heading?: string;
   list?: EditableList;
+  lists?: EditableList[];  // multiple editable lists in one section
   products?: boolean;
   hero?: boolean;
   image?: boolean;        // editable section image (sectionImages[key])
@@ -271,10 +272,10 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "stories", label: "Success stories", heading: "stories", list: "testimonials" },
   ],
   "org-02": [
-    { key: "hero", label: "Hero", hero: true },
-    { key: "actions", label: "Quick actions" },
-    { key: "about", label: "About", heading: "hope", text: true },
-    { key: "causes", label: "Causes", heading: "causes", list: "causes" },
+    { key: "hero", label: "Hero", hero: true, eyebrow: true, stat: true, list: "avatars" },
+    { key: "actions", label: "Quick actions", list: "quickActions" },
+    { key: "about", label: "About", heading: "hope", eyebrow: true, text: true, button: true, lists: ["aboutImages", "aboutPoints"] },
+    { key: "causes", label: "Causes", heading: "causes", text: true, list: "causes" },
     { key: "donate", label: "Donation band", heading: "donate" },
     { key: "services", label: "What we do", heading: "services", list: "services" },
     { key: "events", label: "Events", heading: "events", list: "events" },
@@ -616,6 +617,27 @@ export function createCatalogContent(
       break;
     case "organization":
       data.causes = demoCauses(seed); data.events = demoEvents(seed);
+      if (templateId === "org-02") {
+        data.heroAvatars = [0, 1, 2, 3].map((i) => ({ id: `${seed}-av${i}`, name: "", image: `https://picsum.photos/seed/ch-vol${i}/64` }));
+        data.heroStatValue = "120+";
+        data.heroStatLabel = "Happy Volunteers";
+        data.sectionEyebrows = {
+          ...(data.sectionEyebrows || {}),
+          hero: "Give them a chance.",
+          about: `Welcome to ${opts.businessName}`,
+        };
+        data.quickActions = [
+          { id: `${seed}-qa0`, title: "Become a Volunteer", description: "Get started today" },
+          { id: `${seed}-qa1`, title: "Quick Fundraising", description: "Get started today" },
+          { id: `${seed}-qa2`, title: "Start Donating", description: "Get started today" },
+        ];
+        data.aboutImages = [0, 1, 2, 3].map((i) => ({ id: `${seed}-abi${i}`, name: "", image: `https://picsum.photos/seed/ch-about${i}/400` }));
+        data.aboutPoints = [
+          { id: `${seed}-apt0`, title: "Our Mission", description: "Empower communities to thrive." },
+          { id: `${seed}-apt1`, title: "Our Vision", description: "A future with opportunity for all." },
+        ];
+        data.sectionButtons = { ...(data.sectionButtons || {}), about: { text: "Discover More", url: "" } };
+      }
       if (templateId === "org-01") {
         data.heroOverlayColor = "#000000";
         data.heroStatLabel = "Donation so far";

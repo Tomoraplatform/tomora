@@ -103,6 +103,26 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     fields: [{ key: "image", label: "Image", type: "image" }, { key: "name", label: "Caption (optional)" }],
     make: () => ({ id: `im-${Date.now()}`, name: "", image: "" }),
   },
+  avatars: {
+    key: "heroAvatars", title: "Avatar images",
+    fields: [{ key: "image", label: "Image", type: "image" }],
+    make: () => ({ id: `av-${Date.now()}`, name: "", image: "" }),
+  },
+  quickActions: {
+    key: "quickActions", title: "Quick actions",
+    fields: [{ key: "title", label: "Title" }, { key: "description", label: "Subtitle" }],
+    make: () => ({ id: `qa-${Date.now()}`, title: "New action", description: "Get started today" }),
+  },
+  aboutImages: {
+    key: "aboutImages", title: "About images",
+    fields: [{ key: "image", label: "Image", type: "image" }],
+    make: () => ({ id: `ai-${Date.now()}`, name: "", image: "" }),
+  },
+  aboutPoints: {
+    key: "aboutPoints", title: "About points (Mission / Vision)",
+    fields: [{ key: "title", label: "Title" }, { key: "description", label: "Description", type: "textarea" }],
+    make: () => ({ id: `ap-${Date.now()}`, title: "Our Mission", description: "What we strive for." }),
+  },
   resume: {
     key: "resume", title: "Resume (Education / Experience / Skills)",
     fields: [
@@ -233,7 +253,7 @@ export function CatalogEditorPanel({
 
       {orderedDefs.map((def, i) => {
         const hkey = def.heading;
-        const hasControls = def.hero || def.heading || def.text || def.list || def.image || def.formToggle || def.search || def.eyebrow || def.button || def.color || (def.products && isEcommerce);
+        const hasControls = def.hero || def.heading || def.text || def.list || (def.lists && def.lists.length) || def.image || def.formToggle || def.search || def.eyebrow || def.button || def.color || (def.products && isEcommerce);
         return (
           <SectionGroup
             key={def.key}
@@ -243,6 +263,12 @@ export function CatalogEditorPanel({
           >
             {def.hero ? (
               <>
+                {def.eyebrow && (
+                  <FieldRow label="Eyebrow / small label">
+                    <Input value={data.sectionEyebrows?.[def.key] ?? ""} placeholder="e.g. Give them a chance."
+                      onChange={(e) => patch({ sectionEyebrows: { ...(data.sectionEyebrows || {}), [def.key]: e.target.value } })} />
+                  </FieldRow>
+                )}
                 {heroFields}
                 {def.video && (
                   <FieldRow label="Owner video link (optional)">
@@ -289,7 +315,7 @@ export function CatalogEditorPanel({
                     <FieldRow label="Stat value"><Input value={data.heroStatValue ?? ""} placeholder="₦45,000,000" onChange={(e) => patch({ heroStatValue: e.target.value })} /></FieldRow>
                   </div>
                 )}
-                {def.list && <ListBody cfg={LIST_CONFIG[def.list]} data={data} patch={patch} />}
+                {[...(def.list ? [def.list] : []), ...(def.lists || [])].map((lk) => <ListBody key={lk} cfg={LIST_CONFIG[lk]} data={data} patch={patch} />)}
               </>
             ) : def.search ? (
               <>
@@ -375,9 +401,9 @@ export function CatalogEditorPanel({
                     </div>
                   </FieldRow>
                 )}
-                {def.list && (
-                  <ListBody cfg={LIST_CONFIG[def.list]} data={data} patch={patch} />
-                )}
+                {[...(def.list ? [def.list] : []), ...(def.lists || [])].map((lk) => (
+                  <ListBody key={lk} cfg={LIST_CONFIG[lk]} data={data} patch={patch} />
+                ))}
                 {def.products && isEcommerce && (
                   onManageProducts ? (
                     <button type="button" onClick={onManageProducts} className="flex w-full items-center justify-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-cream hover:opacity-90">

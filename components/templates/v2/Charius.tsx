@@ -5,12 +5,19 @@ import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img, formatNaira, heading, subheading, CustomSections, OrderedSections } from "./shared";
 
 const ACTIONS = [{ icon: HeartHandshake, t: "Become a Volunteer" }, { icon: Wallet, t: "Quick Fundraising" }, { icon: HandHeart, t: "Start Donating" }];
+const ACTION_ICONS = [HeartHandshake, Wallet, HandHeart];
 const WHATWEDO = [{ icon: GraduationCap, t: "Kids Education" }, { icon: Droplet, t: "Pure Water" }, { icon: Utensils, t: "Healthy Food" }, { icon: Stethoscope, t: "Medical Care" }];
 
 export function Charius({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "Charius";
   const causes = siteData.causes || [];
   const events = siteData.events || [];
+  const avatars = siteData.heroAvatars?.length ? siteData.heroAvatars : [0, 1, 2, 3].map((i) => ({ id: `av${i}`, name: "", image: `https://picsum.photos/seed/ch-vol${i}/64` }));
+  const actionItems = siteData.quickActions?.length ? siteData.quickActions : ACTIONS.map((a, i) => ({ id: `qa${i}`, title: a.t, description: "Get started today" }));
+  const aboutImages = siteData.aboutImages?.length ? siteData.aboutImages : [0, 1, 2, 3].map((i) => ({ id: `abi${i}`, name: "", image: `https://picsum.photos/seed/ch-about${i}/400` }));
+  const aboutPoints = siteData.aboutPoints?.length ? siteData.aboutPoints : [{ id: "ap0", title: "Our Mission", description: "Empower communities to thrive." }, { id: "ap1", title: "Our Vision", description: "A future with opportunity for all." }];
+  const aboutBtn = siteData.sectionButtons?.about || {};
+  const heroStat = [siteData.heroStatValue, siteData.heroStatLabel].filter(Boolean).join(" ") || "120+ Happy Volunteers";
 
   return (
     <BrandStyle brandColor={brandColor} className="bg-white font-sans text-neutral-900">
@@ -28,16 +35,18 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
         hero: (
           <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
             <div>
-              <span className="font-semibold" style={{ color: "var(--brand-primary)" }}>Give them a chance.</span>
+              {(siteData.sectionEyebrows?.hero ?? "Give them a chance.") && <span className="font-semibold" style={{ color: "var(--brand-primary)" }}>{siteData.sectionEyebrows?.hero ?? "Give them a chance."}</span>}
               <h1 className="mt-2 text-4xl font-bold leading-tight sm:text-5xl">{siteData.heroHeadline}</h1>
               <p className="mt-4 max-w-md text-black/60">{siteData.heroSubtext}</p>
               <div className="mt-6 flex items-center gap-4">
                 <BrandButton as="a" href={siteData.ctaHref || "#"}><PlayCircle className="h-4 w-4" /> {siteData.ctaText || "Join Our Campaign"}</BrandButton>
               </div>
-              <div className="mt-6 flex items-center gap-3">
-                <div className="flex -space-x-2">{[0,1,2,3].map((i) => <Img key={i} src={`https://picsum.photos/seed/ch-vol${i}/64`} className="h-9 w-9 rounded-full border-2 border-white object-cover" />)}</div>
-                <span className="text-sm text-black/50">120+ Happy Volunteers</span>
-              </div>
+              {(avatars.length > 0 || heroStat) && (
+                <div className="mt-6 flex items-center gap-3">
+                  {avatars.length > 0 && <div className="flex -space-x-2">{avatars.slice(0, 6).map((a) => <Img key={a.id} src={a.image} className="h-9 w-9 rounded-full border-2 border-white object-cover" />)}</div>}
+                  {heroStat && <span className="text-sm text-black/50">{heroStat}</span>}
+                </div>
+              )}
             </div>
             <Img src={siteData.heroImage} className="aspect-square w-full rounded-[2rem] object-cover" />
           </section>
@@ -45,25 +54,30 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
         actions: (
           <section className="mx-auto max-w-6xl px-5 pb-12">
             <div className="grid gap-5 sm:grid-cols-3">
-              {ACTIONS.map(({ icon: Icon, t }) => (
-                <div key={t} className="flex items-center gap-4 rounded-2xl border border-black/10 p-5"><span className="flex h-12 w-12 items-center justify-center rounded-xl" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span><div><p className="font-semibold">{t}</p><p className="text-sm text-black/50">Get started today</p></div></div>
-              ))}
+              {actionItems.map((a, i) => {
+                const Icon = ACTION_ICONS[i % ACTION_ICONS.length];
+                return (
+                  <div key={a.id} className="flex items-center gap-4 rounded-2xl border border-black/10 p-5"><span className="flex h-12 w-12 items-center justify-center rounded-xl" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary)" }}><Icon className="h-5 w-5" /></span><div><p className="font-semibold">{a.title}</p>{a.description && <p className="text-sm text-black/50">{a.description}</p>}</div></div>
+                );
+              })}
             </div>
           </section>
         ),
         about: (
           <section id="about" className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-12 lg:grid-cols-2">
-            <div className="grid grid-cols-2 gap-3">{[0,1,2,3].map((i) => <Img key={i} src={`https://picsum.photos/seed/ch-about${i}/400`} className="aspect-square w-full rounded-2xl object-cover" />)}</div>
+            <div className="grid grid-cols-2 gap-3">{aboutImages.slice(0, 4).map((im) => <Img key={im.id} src={im.image} alt={im.name} className="aspect-square w-full rounded-2xl object-cover" />)}</div>
             <div>
-              <span className="font-semibold" style={{ color: "var(--brand-primary)" }}>Welcome to {name}</span>
+              {(siteData.sectionEyebrows?.about ?? `Welcome to ${name}`) && <span className="font-semibold" style={{ color: "var(--brand-primary)" }}>{siteData.sectionEyebrows?.about ?? `Welcome to ${name}`}</span>}
               <h2 className="mt-2 text-3xl font-bold">{heading(siteData, "hope", "You're the Hope of Others.")}</h2>
               <p className="mt-3 text-black/60">{subheading(siteData, "hope", "We work hand-in-hand with local communities to deliver education, clean water, food and medical care where it is needed most.")}</p>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                {[["Our Mission", "Empower communities to thrive."], ["Our Vision", "A future with opportunity for all."]].map(([t, d]) => (
-                  <div key={t} className="rounded-xl bg-[#FBF8F2] p-4"><p className="font-semibold">{t}</p><p className="text-sm text-black/60">{d}</p></div>
+                {aboutPoints.map((p) => (
+                  <div key={p.id} className="rounded-xl bg-[#FBF8F2] p-4"><p className="font-semibold">{p.title}</p>{p.description && <p className="text-sm text-black/60">{p.description}</p>}</div>
                 ))}
               </div>
-              <a href="#" className="mt-5 inline-block rounded-md border-2 px-6 py-3 text-sm font-semibold" style={{ borderColor: "var(--brand-primary)", color: "var(--brand-primary)" }}>Discover More</a>
+              {(aboutBtn.text ?? "Discover More") && (
+                <a href={aboutBtn.url?.trim() || "#"} {...(aboutBtn.url?.trim() ? { target: "_blank", rel: "noreferrer" } : {})} className="mt-5 inline-block rounded-md border-2 px-6 py-3 text-sm font-semibold" style={{ borderColor: "var(--brand-primary)", color: "var(--brand-primary)" }}>{aboutBtn.text || "Discover More"}</a>
+              )}
             </div>
           </section>
         ),
@@ -71,6 +85,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
           <section id="causes" className="bg-[#FBF8F2]">
             <div className="mx-auto max-w-6xl px-5 py-16">
               <h2 className="text-center text-3xl font-bold">{heading(siteData, "causes", "Our Causes")}</h2>
+              {subheading(siteData, "causes", "") && <p className="mx-auto mt-3 max-w-xl text-center text-black/60">{subheading(siteData, "causes", "")}</p>}
               <div className="mt-8 grid gap-6 md:grid-cols-3">
                 {causes.slice(0, 3).map((c) => {
                   const pct = Math.min(100, Math.round((c.raised / c.goal) * 100));

@@ -257,6 +257,14 @@ export interface SiteData {
   heroStatValue?: string;
   /** Editable impact / gallery images (charity templates). */
   impactImages?: CatalogCategoryItem[];
+  /** Hero avatar/icon images (e.g. "120+ happy volunteers" row). */
+  heroAvatars?: CatalogCategoryItem[];
+  /** Editable quick-action cards (title + description). */
+  quickActions?: CatalogServiceItem[];
+  /** Editable About-section image grid. */
+  aboutImages?: CatalogCategoryItem[];
+  /** Editable About-section points (e.g. Mission / Vision). */
+  aboutPoints?: CatalogServiceItem[];
   /** Progress / skill bars (label + percentage) for "Why us" style sections. */
   progress?: CatalogProgress[];
   /** Toggle the newsletter signup form on storefront templates (default on). */
