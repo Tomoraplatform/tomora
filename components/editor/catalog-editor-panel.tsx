@@ -55,7 +55,7 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
   },
   events: {
     key: "events", title: "Events",
-    fields: [{ key: "image", label: "Image", type: "image" }, { key: "title", label: "Title" }, { key: "date", label: "Date" }, { key: "location", label: "Location" }, { key: "description", label: "Description", type: "textarea" }],
+    fields: [{ key: "image", label: "Image", type: "image" }, { key: "title", label: "Title" }, { key: "date", label: "Date" }, { key: "location", label: "Location" }, { key: "description", label: "Description", type: "textarea" }, { key: "linkUrl", label: "Read More link (optional)" }],
     make: () => ({ id: `e-${Date.now()}`, title: "New event", date: "Sat 12 Jul", location: "Main Hall", description: "Join us.", image: "" }),
   },
   testimonials: {

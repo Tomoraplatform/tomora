@@ -68,7 +68,7 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "events-01": ["quickActions", "eduFeatures", "services"],
   "events-02": ["quickActions", "ministries", "events", "hours"],
   "events-03": ["aboutImages", "portfolio"],
-  "events-04": ["events"],
+  "events-04": ["quickActions", "events"],
 };
 export function templateLists(id: string): EditableList[] {
   return TEMPLATE_LISTS[id] ?? [];
@@ -196,6 +196,7 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "ministries", label: "Explore Our Church Ministries", text: true },
   ],
   "events-04": [
+    { key: "quick", label: "Quick Access" },
     { key: "news", label: "News" },
     { key: "events", label: "Events" },
     { key: "territory", label: "The Territory" },
@@ -315,11 +316,11 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "ministries", label: "Ministries", heading: "ministries", text: true, button: true, list: "portfolio" },
   ],
   "events-04": [
-    { key: "hero", label: "Hero", hero: true },
-    { key: "quick", label: "Quick access" },
-    { key: "news", label: "News", heading: "news", list: "events" },
-    { key: "events", label: "Events", heading: "events" },
-    { key: "territory", label: "Territory", heading: "territory" },
+    { key: "hero", label: "Hero", hero: true, overlay: true },
+    { key: "quick", label: "Quick access", heading: "quick", text: true, list: "quickActions" },
+    { key: "news", label: "News", heading: "news", text: true, button: true, list: "events" },
+    { key: "events", label: "Events", heading: "events", text: true, button: true, list: "events" },
+    { key: "territory", label: "Territory", heading: "territory", text: true, image: true, button: true, color: true },
   ],
 };
 export function templateReorder(id: string): SectionDef[] {
@@ -719,6 +720,28 @@ export function createCatalogContent(
           ["Parent Ministry", "Supporting families at every stage."],
           ["Teacher Ministry", "Training and encouraging our teachers."],
         ].map(([title, description], i) => ({ id: `${seed}-dm${i}`, title, category: "", description, image: img(`${seed}-deeds-min-${i}`, 500, 300), linkUrl: "" }));
+      }
+      if (templateId === "events-04") {
+        data.heroOverlayColor = "#000000";
+        data.quickActions = [
+          { id: `${seed}-qa0`, title: "Services & Forms", description: "" },
+          { id: `${seed}-qa1`, title: "Useful Numbers", description: "" },
+          { id: `${seed}-qa2`, title: "Associations", description: "" },
+          { id: `${seed}-qa3`, title: "Family Portal", description: "" },
+          { id: `${seed}-qa4`, title: "Legal Publications", description: "" },
+        ];
+        data.sectionButtons = {
+          ...(data.sectionButtons || {}),
+          news: { text: "View All News", url: "" },
+          events: { text: "All Events", url: "" },
+          territory: { text: "View Interactive Map", url: "" },
+        };
+        data.sectionText = {
+          ...(data.sectionText || {}),
+          events: "Discover what's happening across the community.",
+          territory: "Explore the towns, landmarks and natural beauty that make our region home.",
+        };
+        data.sectionImages = { ...(data.sectionImages || {}), territory: img(`${seed}-territory`, 1200, 600) };
       }
       if (templateId === "events-01") {
         data.heroOverlayColor = "#0A0F2E";

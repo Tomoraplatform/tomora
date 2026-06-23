@@ -198,6 +198,8 @@ export interface CatalogEvent {
   location: string;
   image: string;
   description?: string;
+  /** Optional external link for the item's "Read More" button. */
+  linkUrl?: string;
 }
 export interface CatalogPortfolioItem {
   id: string;
