@@ -46,7 +46,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
           <div className="absolute inset-0 bg-black/35" />
           <div className="absolute bottom-6 left-6 text-white">
             <h1 className="max-w-sm text-3xl font-bold uppercase leading-tight">{siteData.heroHeadline}</h1>
-            <a href="#new" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold">Shop now <ArrowRight className="h-4 w-4" /></a>
+            <a href="#allproducts" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold">Shop now <ArrowRight className="h-4 w-4" /></a>
           </div>
         </div>
         {[["New Arrivals", "Fresh drops for the season"], ["Big Clearance", "Up to 60% off select styles"]].map(([t, s], i) => (
