@@ -3,6 +3,7 @@
 import { PlayCircle, HandHeart, Wallet, HeartHandshake, GraduationCap, Droplet, Utensils, Stethoscope, MapPin } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, servicesOf, SocialIcons, BrandButton, Img, formatNaira, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { DonationSection } from "./DonationSection";
 
 const ACTIONS = [{ icon: HeartHandshake, t: "Become a Volunteer" }, { icon: Wallet, t: "Quick Fundraising" }, { icon: HandHeart, t: "Start Donating" }];
 const ACTION_ICONS = [HeartHandshake, Wallet, HandHeart];
@@ -31,7 +32,8 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "actions", "about", "causes", "donate", "services", "events"]} blocks={{
+      <OrderedSections siteData={siteData} natural={["hero", "actions", "about", "causes", "donate", "services", "events", "donation"]} blocks={{
+        donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
         hero: (
           <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
             <div>

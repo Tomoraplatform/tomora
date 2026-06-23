@@ -3,6 +3,7 @@
 import { ArrowRight, Mic, Users, Calendar, Zap, ShieldCheck, Sparkles } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { DonationSection } from "./DonationSection";
 
 const NAVY = "#0A0F2E";
 const ABOUT = [{ icon: Mic, t: "World-class Speakers" }, { icon: Users, t: "Global Network" }, { icon: Calendar, t: "Daily Sessions" }];
@@ -28,7 +29,8 @@ export function ConferenceDark({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "about", "mission", "why"]} blocks={{
+      <OrderedSections siteData={siteData} natural={["hero", "about", "mission", "why", "donation"]} blocks={{
+        donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
         hero: (
           <section className="relative" style={{ background: NAVY }}>
             <Img src={siteData.heroImage} className="absolute inset-0 h-full w-full object-cover opacity-40" />

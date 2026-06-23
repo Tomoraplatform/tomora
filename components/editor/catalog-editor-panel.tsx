@@ -258,7 +258,7 @@ export function CatalogEditorPanel({
 
       {orderedDefs.map((def, i) => {
         const hkey = def.heading;
-        const hasControls = def.hero || def.heading || def.text || def.list || (def.lists && def.lists.length) || def.image || def.formToggle || def.search || def.eyebrow || def.button || def.color || def.heroSearch || (def.extraText && def.extraText.length) || def.countdown || (def.products && isEcommerce);
+        const hasControls = def.hero || def.heading || def.text || def.list || (def.lists && def.lists.length) || def.image || def.formToggle || def.search || def.eyebrow || def.button || def.color || def.heroSearch || (def.extraText && def.extraText.length) || def.countdown || def.donation || (def.products && isEcommerce);
         return (
           <SectionGroup
             key={def.key}
@@ -384,6 +384,19 @@ export function CatalogEditorPanel({
                       <Input type="datetime-local" value={data.countdownDate ?? ""}
                         onChange={(e) => patch({ countdownDate: e.target.value })} />
                     </FieldRow>
+                  </>
+                )}
+                {def.donation && (
+                  <>
+                    <div className="flex items-center justify-between rounded-md border border-ink/10 px-3 py-2">
+                      <span className="text-xs text-ink/70">Show donation section</span>
+                      <Switch checked={!!data.donationEnabled} onCheckedChange={(v) => patch({ donationEnabled: v })} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <FieldRow label="Goal amount (₦)"><Input type="number" min={0} value={data.donationGoal ?? 0} onChange={(e) => patch({ donationGoal: Math.max(0, Math.round(Number(e.target.value) || 0)) })} /></FieldRow>
+                      <FieldRow label="Manually added (₦)"><Input type="number" min={0} value={data.donationManual ?? 0} onChange={(e) => patch({ donationManual: Math.max(0, Math.round(Number(e.target.value) || 0)) })} /></FieldRow>
+                    </div>
+                    <p className="text-xs text-ink/50">Online gifts add to the bar automatically. Use “Manually added” for offline/cash gifts. To accept online donations, add your bank under <a href="/dashboard/payouts" className="underline">Payouts</a>.</p>
                   </>
                 )}
                 {hkey && (

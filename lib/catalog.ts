@@ -107,6 +107,7 @@ export type SectionDef = {
   heroSearch?: boolean;   // hero: editable single search field (toggle + placeholder)
   extraText?: { key: string; label: string }[]; // extra editable labels (sectionText keys)
   countdown?: boolean;    // top bar: editable countdown label + target date
+  donation?: boolean;     // donation section: enable toggle + goal + manual amount
 };
 export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   "shop-01": [
@@ -277,6 +278,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "services", label: "What we do", heading: "services", text: true, list: "services" },
     { key: "volunteers", label: "Get involved", heading: "volunteers", eyebrow: true, text: true, image: true, button: true, color: true },
     { key: "stories", label: "Success stories", heading: "stories", list: "testimonials" },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "org-02": [
     { key: "hero", label: "Hero", hero: true, eyebrow: true, stat: true, list: "avatars" },
@@ -286,6 +288,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "donate", label: "Donation band", heading: "donate" },
     { key: "services", label: "What we do", heading: "services", list: "services" },
     { key: "events", label: "Events", heading: "events", list: "events" },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "org-03": [
     { key: "hero", label: "Hero", hero: true, overlay: true, eyebrow: true, button: true },
@@ -296,24 +299,28 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "features", label: "Features", heading: "invest", text: true, list: "eduFeatures" },
     { key: "stats", label: "Stats", heading: "stats", color: true, list: "stats" },
     { key: "join", label: "Join CTA", heading: "join", text: true, button: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "events-01": [
     { key: "hero", label: "Hero", hero: true, overlay: true },
     { key: "about", label: "About cards", list: "quickActions" },
     { key: "mission", label: "Mission", heading: "mission", text: true, image: true, list: "eduFeatures" },
     { key: "why", label: "Why choose us", heading: "why", text: true, list: "services" },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "events-02": [
     { key: "hero", label: "Hero", hero: true, overlay: true, eyebrow: true, heroSearch: true, list: "quickActions" },
     { key: "mission", label: "Mission statement", heading: "mission", text: true },
     { key: "ministries", label: "Ministries", heading: "ministries", text: true, list: "ministries" },
     { key: "news", label: "What's new", heading: "news", text: true, list: "events", extraText: [{ key: "newsFeatured", label: "Featured column label" }, { key: "newsBlog", label: "Blog column label" }] },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "events-03": [
     { key: "banner", label: "Top countdown bar", countdown: true },
     { key: "hero", label: "Hero", hero: true, overlay: true, eyebrow: true, button: true },
     { key: "about", label: "About / Sermons", heading: "sermons", eyebrow: true, text: true, button: true, list: "aboutImages", extraText: [{ key: "aboutSince", label: "\"Since\" year" }, { key: "aboutQuote", label: "Quote" }] },
     { key: "ministries", label: "Ministries", heading: "ministries", text: true, button: true, list: "portfolio" },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "events-04": [
     { key: "hero", label: "Hero", hero: true, overlay: true },
@@ -321,6 +328,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "news", label: "News", heading: "news", text: true, button: true, list: "events" },
     { key: "events", label: "Events", heading: "events", text: true, button: true, list: "events" },
     { key: "territory", label: "Territory", heading: "territory", text: true, image: true, button: true, color: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
 };
 export function templateReorder(id: string): SectionDef[] {
@@ -758,6 +766,7 @@ export function createCatalogContent(
         data.sectionImages = { ...(data.sectionImages || {}), mission: img(`${seed}-mission`, 700, 500) };
       }
       break;
+    // (donation defaults seeded after the switch for org/community templates)
     case "portfolio":
       data.portfolioItems = demoPortfolio(seed);
       if (templateId === "portfolio-01") {
@@ -773,5 +782,15 @@ export function createCatalogContent(
       if (templateId === "portfolio-02") data.stats = demoStats(seed);
       break;
   }
+
+  // Donation section defaults for organisation / community templates (off until enabled).
+  if (tpl?.category === "organization" || tpl?.category === "events") {
+    data.donationEnabled = false;
+    data.donationGoal = 2000000;
+    data.donationManual = 0;
+    data.sectionTitles = { ...(data.sectionTitles || {}), donation: "Support Our Cause" };
+    data.sectionText = { ...(data.sectionText || {}), donation: "Your gift helps us reach more people. Every contribution counts." };
+  }
+
   return data;
 }

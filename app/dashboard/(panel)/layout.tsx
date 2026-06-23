@@ -50,6 +50,9 @@ export default async function PanelLayout({
           { href: "/dashboard/payouts", label: "Payouts", icon: "Banknote" },
         ] as NavItem[])
       : []),
+    ...(site?.category === "organization"
+      ? ([{ href: "/dashboard/payouts", label: "Payouts", icon: "Banknote" }] as NavItem[])
+      : []),
     { href: "/dashboard/messages", label: "Messages", icon: "MessagesSquare", badge: unreadMessages },
     { href: "/dashboard/leads", label: "Leads", icon: "Inbox" },
     { href: "/dashboard/domain", label: "Custom Domain", icon: "Globe" },

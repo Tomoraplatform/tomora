@@ -3,6 +3,7 @@
 import { ArrowRight, TrendingUp, Building2, Briefcase, LineChart, Sparkles, Headphones, Star, Phone } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { DonationSection } from "./DonationSection";
 
 const GREEN = "#0D3B2A";
 const SERVICES = [
@@ -44,7 +45,8 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "about", "services", "cta", "projects", "features", "stats", "join"]} blocks={{
+      <OrderedSections siteData={siteData} natural={["hero", "about", "services", "cta", "projects", "features", "stats", "join", "donation"]} blocks={{
+        donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
         hero: (
           <section className="relative">
             <Img src={siteData.heroImage} className="absolute inset-0 h-full w-full object-cover" />

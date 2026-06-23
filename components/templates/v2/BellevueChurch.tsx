@@ -3,6 +3,7 @@
 import { Search, Play, HandHeart, Users, CalendarDays, Plus, Phone, MapPin, Mail } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, SocialIcons, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { DonationSection } from "./DonationSection";
 
 const QUICK = [{ icon: Play, t: "Watch" }, { icon: HandHeart, t: "Give" }, { icon: Users, t: "Who We Are" }, { icon: CalendarDays, t: "Events" }];
 const QUICK_ICONS = [Play, HandHeart, Users, CalendarDays];
@@ -28,7 +29,8 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "mission", "ministries", "news"]} blocks={{
+      <OrderedSections siteData={siteData} natural={["hero", "mission", "ministries", "news", "donation"]} blocks={{
+        donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
         hero: (
           <section className="relative">
             <Img src={siteData.heroImage} className="absolute inset-0 h-full w-full object-cover" />

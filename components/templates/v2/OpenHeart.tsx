@@ -3,6 +3,7 @@
 import { HandHeart, GraduationCap, Baby, Users, Quote, ChevronRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { DonationSection } from "./DonationSection";
 
 const SERVICES = [
   { icon: HandHeart, t: "Help & Support" }, { icon: GraduationCap, t: "Education" },
@@ -29,7 +30,8 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "impact", "mission", "services", "volunteers", "stories"]} blocks={{
+      <OrderedSections siteData={siteData} natural={["hero", "impact", "mission", "services", "volunteers", "stories", "donation"]} blocks={{
+        donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
         hero: (
           <section className="relative">
             <Img src={siteData.heroImage} className="absolute inset-0 h-full w-full object-cover grayscale" />

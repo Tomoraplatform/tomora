@@ -6,7 +6,8 @@ export const metadata = { title: "Payouts — Tomora" };
 
 export default async function PayoutsPage() {
   const { site } = await getDashboardData();
-  if (site!.category !== "ecommerce") redirect("/dashboard");
+  // Stores and organisations (donations) both settle to a payout bank.
+  if (site!.category !== "ecommerce" && site!.category !== "organization") redirect("/dashboard");
 
   return (
     <PayoutsForm

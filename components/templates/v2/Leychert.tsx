@@ -3,6 +3,7 @@
 import { Search, Mail, Phone, FileText, PhoneCall, Users, Home as HomeIcon, Scale, MapPin, ArrowRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { DonationSection } from "./DonationSection";
 
 const QUICK = [
   { icon: FileText, t: "Services & Forms" }, { icon: PhoneCall, t: "Useful Numbers" },
@@ -34,7 +35,8 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "quick", "news", "events", "territory"]} blocks={{
+      <OrderedSections siteData={siteData} natural={["hero", "quick", "news", "events", "territory", "donation"]} blocks={{
+        donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
         hero: (
           <section className="relative">
             <Img src={siteData.heroImage} className="absolute inset-0 h-full w-full object-cover" />

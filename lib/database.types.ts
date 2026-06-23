@@ -274,6 +274,10 @@ export interface SiteData {
   /** Countdown banner: label + target date (ISO). Active only when a date is set. */
   countdownLabel?: string;
   countdownDate?: string;
+  /** Donations (organisation/community sites): live fundraising section. */
+  donationEnabled?: boolean;
+  donationGoal?: number;   // target amount in naira
+  donationManual?: number; // offline / manually-added amount in naira
   /** Progress / skill bars (label + percentage) for "Why us" style sections. */
   progress?: CatalogProgress[];
   /** Toggle the newsletter signup form on storefront templates (default on). */

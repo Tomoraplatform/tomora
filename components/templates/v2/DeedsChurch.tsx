@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Phone, Mail, ArrowRight, Quote } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
+import { DonationSection } from "./DonationSection";
 
 const MINISTRIES = [
   ["Education Ministry", "Equipping every generation with the Word."],
@@ -60,7 +61,8 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "about", "ministries"]} blocks={{
+      <OrderedSections siteData={siteData} natural={["hero", "about", "ministries", "donation"]} blocks={{
+        donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
         hero: (
           <section className="relative">
             <Img src={siteData.heroImage} className="absolute inset-0 h-full w-full object-cover" />
