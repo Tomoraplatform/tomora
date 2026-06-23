@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import Link from "next/link";
-import { ExternalLink, Pencil, ArrowRight, CircleDot, Loader2, ShoppingBag, Check } from "lucide-react";
+import { ExternalLink, Pencil, ArrowRight, CircleDot, Loader2, ShoppingBag, Check, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { setCurrentSite, editSite } from "@/app/dashboard/(panel)/templates/actions";
@@ -17,6 +17,8 @@ export interface MySite {
   isCurrent: boolean;
   liveUrl: string;
   liveHost: string;
+  productCount?: number;
+  orderCount?: number;
 }
 
 export function MySites({ sites }: { sites: MySite[] }) {
@@ -53,6 +55,12 @@ export function MySites({ sites }: { sites: MySite[] }) {
                     <Badge variant="secondary"><ShoppingBag className="mr-1 h-3 w-3" /> Store</Badge>
                   )}
                 </div>
+                {s.isEcommerce && (
+                  <div className="mt-2 flex items-center gap-4 text-xs text-ink/60">
+                    <span className="inline-flex items-center gap-1"><Package className="h-3.5 w-3.5" /> {s.productCount ?? 0} products</span>
+                    <span className="inline-flex items-center gap-1"><ShoppingBag className="h-3.5 w-3.5" /> {s.orderCount ?? 0} orders</span>
+                  </div>
+                )}
               </div>
             </div>
 

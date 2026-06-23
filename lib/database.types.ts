@@ -316,6 +316,18 @@ export interface Lead {
   created_at: string;
 }
 
+export interface SupportMessage {
+  id: string;
+  site_id: string;
+  conversation_id: string;
+  sender: "visitor" | "owner";
+  name: string | null;
+  email: string | null;
+  body: string;
+  seen: boolean;
+  created_at: string;
+}
+
 /* ---- User-added custom sections (page builder) ---- */
 export type CustomSectionType =
   | "text"          // headline + description

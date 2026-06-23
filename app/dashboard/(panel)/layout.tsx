@@ -11,10 +11,11 @@ export default async function PanelLayout({
   const { site, sites } = await getDashboardData();
   const isEcommerce = site?.category === "ecommerce";
 
+  const supabase = createClient();
+
   // Count of paid orders the owner hasn't viewed yet (for the "new" badge).
   let newOrders = 0;
   if (isEcommerce && site) {
-    const supabase = createClient();
     const { count } = await supabase
       .from("orders")
       .select("id", { count: "exact", head: true })
@@ -22,6 +23,18 @@ export default async function PanelLayout({
       .eq("status", "paid")
       .eq("seen", false);
     newOrders = count ?? 0;
+  }
+
+  // Unread visitor chat messages (for the Messages badge).
+  let unreadMessages = 0;
+  if (site) {
+    const { count } = await supabase
+      .from("support_messages")
+      .select("id", { count: "exact", head: true })
+      .eq("site_id", site.id)
+      .eq("sender", "visitor")
+      .eq("seen", false);
+    unreadMessages = count ?? 0;
   }
 
   const items: NavItem[] = [
@@ -37,6 +50,7 @@ export default async function PanelLayout({
           { href: "/dashboard/payouts", label: "Payouts", icon: "Banknote" },
         ] as NavItem[])
       : []),
+    { href: "/dashboard/messages", label: "Messages", icon: "MessagesSquare", badge: unreadMessages },
     { href: "/dashboard/leads", label: "Leads", icon: "Inbox" },
     { href: "/dashboard/domain", label: "Custom Domain", icon: "Globe" },
     { href: "/dashboard/billing", label: "Billing", icon: "CreditCard" },

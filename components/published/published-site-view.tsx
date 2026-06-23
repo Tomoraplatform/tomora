@@ -1,6 +1,7 @@
 import { OfflineSite } from "./offline";
 import { SiteRenderer } from "@/components/templates";
 import { PublishedStore } from "./published-store";
+import { SupportChat } from "./support-chat";
 import type { Product, Review, Site } from "@/lib/database.types";
 
 /**
@@ -26,29 +27,38 @@ export function PublishedSiteView({
   }
 
   const brandColor = site.site_data?.brandColor || "#022245";
+  // Live sites get the support chat widget; visitor messages land in the
+  // owner's dashboard inbox.
+  const chat = isLive ? <SupportChat siteId={site.id} brandColor={brandColor} /> : null;
 
   if (site.category === "ecommerce") {
     return (
-      <PublishedStore
-        templateId={site.template_id}
-        siteData={site.site_data}
-        brandColor={brandColor}
-        products={products}
-        reviews={reviews}
-        siteId={site.id}
-        paystackPublicKey={site.paystack_public_key}
-        paystackSubaccount={site.paystack_subaccount}
-      />
+      <>
+        <PublishedStore
+          templateId={site.template_id}
+          siteData={site.site_data}
+          brandColor={brandColor}
+          products={products}
+          reviews={reviews}
+          siteId={site.id}
+          paystackPublicKey={site.paystack_public_key}
+          paystackSubaccount={site.paystack_subaccount}
+        />
+        {chat}
+      </>
     );
   }
 
   return (
-    <SiteRenderer
-      templateId={site.template_id}
-      siteData={site.site_data}
-      brandColor={brandColor}
-      products={products}
-      siteId={isLive ? site.id : undefined}
-    />
+    <>
+      <SiteRenderer
+        templateId={site.template_id}
+        siteData={site.site_data}
+        brandColor={brandColor}
+        products={products}
+        siteId={isLive ? site.id : undefined}
+      />
+      {chat}
+    </>
   );
 }

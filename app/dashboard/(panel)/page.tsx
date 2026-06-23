@@ -22,6 +22,19 @@ export default async function DashboardHome() {
   const { site, sites, subscription, profile } = await getDashboardData();
   const supabase = createClient();
 
+  // Per-site product/order counts for the e-commerce website cards.
+  const ecomIds = sites.filter((s) => s.category === "ecommerce").map((s) => s.id);
+  const prodCounts: Record<string, number> = {};
+  const orderCounts: Record<string, number> = {};
+  if (ecomIds.length) {
+    const [{ data: prodRows }, { data: orderRows }] = await Promise.all([
+      supabase.from("products").select("site_id").in("site_id", ecomIds),
+      supabase.from("orders").select("site_id").in("site_id", ecomIds),
+    ]);
+    for (const r of (prodRows as { site_id: string }[]) || []) prodCounts[r.site_id] = (prodCounts[r.site_id] || 0) + 1;
+    for (const r of (orderRows as { site_id: string }[]) || []) orderCounts[r.site_id] = (orderCounts[r.site_id] || 0) + 1;
+  }
+
   // All of the user's websites (live + draft) for the overview list.
   const mySites: MySite[] = sites.map((s) => {
     const url = siteLiveUrl(s);
@@ -35,6 +48,8 @@ export default async function DashboardHome() {
       isCurrent: s.id === site?.id,
       liveUrl: url,
       liveHost: url.replace(/^https?:\/\//, ""),
+      productCount: prodCounts[s.id] || 0,
+      orderCount: orderCounts[s.id] || 0,
     };
   });
 
