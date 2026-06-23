@@ -205,6 +205,8 @@ export interface CatalogPortfolioItem {
   category: string;
   image: string;
   description?: string;
+  /** Optional external link for the item's button (templates that show one). */
+  linkUrl?: string;
 }
 
 export interface SiteData {
@@ -267,6 +269,9 @@ export interface SiteData {
   aboutPoints?: CatalogServiceItem[];
   /** Editable ministry / feature tiles (image + label). */
   ministries?: CatalogCategoryItem[];
+  /** Countdown banner: label + target date (ISO). Active only when a date is set. */
+  countdownLabel?: string;
+  countdownDate?: string;
   /** Progress / skill bars (label + percentage) for "Why us" style sections. */
   progress?: CatalogProgress[];
   /** Toggle the newsletter signup form on storefront templates (default on). */

@@ -67,7 +67,7 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "org-03": ["avatars", "services", "portfolio", "eduFeatures", "stats"],
   "events-01": ["quickActions", "eduFeatures", "services"],
   "events-02": ["quickActions", "ministries", "events", "hours"],
-  "events-03": [],
+  "events-03": ["aboutImages", "portfolio"],
   "events-04": ["events"],
 };
 export function templateLists(id: string): EditableList[] {
@@ -106,6 +106,7 @@ export type SectionDef = {
   stat?: boolean;         // hero: editable highlighted stat (label + value)
   heroSearch?: boolean;   // hero: editable single search field (toggle + placeholder)
   extraText?: { key: string; label: string }[]; // extra editable labels (sectionText keys)
+  countdown?: boolean;    // top bar: editable countdown label + target date
 };
 export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   "shop-01": [
@@ -308,9 +309,10 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "news", label: "What's new", heading: "news", text: true, list: "events", extraText: [{ key: "newsFeatured", label: "Featured column label" }, { key: "newsBlog", label: "Blog column label" }] },
   ],
   "events-03": [
-    { key: "hero", label: "Hero", hero: true },
-    { key: "about", label: "About / Sermons", heading: "sermons" },
-    { key: "ministries", label: "Ministries", heading: "ministries", text: true },
+    { key: "banner", label: "Top countdown bar", countdown: true },
+    { key: "hero", label: "Hero", hero: true, overlay: true, eyebrow: true, button: true },
+    { key: "about", label: "About / Sermons", heading: "sermons", eyebrow: true, text: true, button: true, list: "aboutImages", extraText: [{ key: "aboutSince", label: "\"Since\" year" }, { key: "aboutQuote", label: "Quote" }] },
+    { key: "ministries", label: "Ministries", heading: "ministries", text: true, button: true, list: "portfolio" },
   ],
   "events-04": [
     { key: "hero", label: "Hero", hero: true },
@@ -687,6 +689,37 @@ export function createCatalogContent(
     case "events":
       data.events = demoEvents(seed);
       if (templateId === "events-02") data.hours = demoHours(seed);
+      if (templateId === "events-03") {
+        data.heroOverlayColor = "#000000";
+        data.countdownLabel = "Upcoming Event";
+        data.countdownDate = "";
+        data.sectionEyebrows = {
+          ...(data.sectionEyebrows || {}),
+          hero: `New to ${opts.businessName}?`,
+          about: "Work of the Church",
+        };
+        data.sectionButtons = {
+          ...(data.sectionButtons || {}),
+          hero: { text: "Plan Your Visit", url: "" },
+          about: { text: "About The Church", url: "" },
+          ministries: { text: "All Church Ministries", url: "" },
+        };
+        data.sectionText = {
+          ...(data.sectionText || {}),
+          aboutSince: "1996",
+          aboutQuote: "Faith, hope and love — and the greatest of these is love.",
+        };
+        data.aboutImages = [
+          { id: `${seed}-da0`, name: "", image: img(`${seed}-deeds-a1`, 500, 600) },
+          { id: `${seed}-da1`, name: "", image: img(`${seed}-deeds-a2`, 300, 300) },
+        ];
+        data.portfolioItems = [
+          ["Education Ministry", "Equipping every generation with the Word."],
+          ["Children Ministry", "A safe, joyful place for kids to grow."],
+          ["Parent Ministry", "Supporting families at every stage."],
+          ["Teacher Ministry", "Training and encouraging our teachers."],
+        ].map(([title, description], i) => ({ id: `${seed}-dm${i}`, title, category: "", description, image: img(`${seed}-deeds-min-${i}`, 500, 300), linkUrl: "" }));
+      }
       if (templateId === "events-01") {
         data.heroOverlayColor = "#0A0F2E";
         data.quickActions = [

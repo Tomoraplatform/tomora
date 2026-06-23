@@ -25,7 +25,7 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
   },
   portfolio: {
     key: "portfolioItems", title: "Portfolio / Projects",
-    fields: [{ key: "image", label: "Image", type: "image" }, { key: "title", label: "Title" }, { key: "category", label: "Category" }, { key: "description", label: "Description", type: "textarea" }],
+    fields: [{ key: "image", label: "Image", type: "image" }, { key: "title", label: "Title" }, { key: "category", label: "Category" }, { key: "description", label: "Description", type: "textarea" }, { key: "linkUrl", label: "Button link (optional)" }],
     make: () => ({ id: `pf-${Date.now()}`, title: "New project", category: "Design", description: "What you built.", image: "" }),
   },
   courses: {
@@ -258,7 +258,7 @@ export function CatalogEditorPanel({
 
       {orderedDefs.map((def, i) => {
         const hkey = def.heading;
-        const hasControls = def.hero || def.heading || def.text || def.list || (def.lists && def.lists.length) || def.image || def.formToggle || def.search || def.eyebrow || def.button || def.color || def.heroSearch || (def.extraText && def.extraText.length) || (def.products && isEcommerce);
+        const hasControls = def.hero || def.heading || def.text || def.list || (def.lists && def.lists.length) || def.image || def.formToggle || def.search || def.eyebrow || def.button || def.color || def.heroSearch || (def.extraText && def.extraText.length) || def.countdown || (def.products && isEcommerce);
         return (
           <SectionGroup
             key={def.key}
@@ -373,6 +373,18 @@ export function CatalogEditorPanel({
                     <Input value={data.sectionEyebrows?.[def.key] ?? ""} placeholder="e.g. Why us"
                       onChange={(e) => patch({ sectionEyebrows: { ...(data.sectionEyebrows || {}), [def.key]: e.target.value } })} />
                   </FieldRow>
+                )}
+                {def.countdown && (
+                  <>
+                    <FieldRow label="Countdown label">
+                      <Input value={data.countdownLabel ?? ""} placeholder="Upcoming Event"
+                        onChange={(e) => patch({ countdownLabel: e.target.value })} />
+                    </FieldRow>
+                    <FieldRow label="Event date & time (leave empty to hide the countdown)">
+                      <Input type="datetime-local" value={data.countdownDate ?? ""}
+                        onChange={(e) => patch({ countdownDate: e.target.value })} />
+                    </FieldRow>
+                  </>
                 )}
                 {hkey && (
                   <FieldRow label="Title">

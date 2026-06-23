@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Phone, Mail, ArrowRight, Quote } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, subheading, CustomSections, OrderedSections } from "./shared";
@@ -11,14 +12,42 @@ const MINISTRIES = [
   ["Teacher Ministry", "Training and encouraging our teachers."],
 ];
 
+/** Live countdown shown in the top bar once a target date is set. */
+function Countdown({ label, date }: { label?: string; date?: string }) {
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    if (!date) return;
+    setNow(Date.now());
+    const t = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(t);
+  }, [date]);
+
+  const target = date ? new Date(date).getTime() : NaN;
+  const live = now != null && !isNaN(target) && target > now;
+  if (!live) return <span className="font-semibold uppercase">{label || "Upcoming Event"}</span>;
+  const diff = target - now!;
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  return <span className="font-semibold uppercase">{label ? `${label}: ` : ""}{days} Days · {hours} Hours · {mins} Mins</span>;
+}
+
 export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
   const name = siteData.businessName || "Deeds";
+  const overlay = siteData.heroOverlayColor || "#000000";
+  const heroBtn = siteData.sectionButtons?.hero || {};
+  const aboutBtn = siteData.sectionButtons?.about || {};
+  const ministriesBtn = siteData.sectionButtons?.ministries || {};
+  const aboutImgs = siteData.aboutImages?.length ? siteData.aboutImages : [{ id: "a0", name: "", image: "https://picsum.photos/seed/deeds-a1/500/600" }, { id: "a1", name: "", image: "https://picsum.photos/seed/deeds-a2/300/300" }];
+  const sinceYear = siteData.sectionText?.aboutSince || "1996";
+  const aboutQuote = siteData.sectionText?.aboutQuote || "Faith, hope and love — and the greatest of these is love.";
+  const ministryCards = siteData.portfolioItems?.length ? siteData.portfolioItems : MINISTRIES.map(([title, description], i) => ({ id: `dm${i}`, title, category: "", description, image: `https://picsum.photos/seed/deeds-min${i}/500/300`, linkUrl: "" }));
 
   return (
     <BrandStyle brandColor={brandColor} className="bg-white font-sans text-neutral-900">
       <div className="text-white" style={{ background: "var(--brand-primary)" }}>
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-5 py-2 text-xs sm:flex-row">
-          <span className="font-semibold uppercase">{heading(siteData, "banner", "Upcoming Event: 203 Days · 10 Hours · 81 Mins")}</span>
+          <Countdown label={siteData.countdownLabel || "Upcoming Event"} date={siteData.countdownDate} />
           <span className="flex items-center gap-4"><span className="flex items-center gap-1"><Phone className="h-3 w-3" /> {siteData.phone || "+234 800 000"}</span><span className="flex items-center gap-1"><Mail className="h-3 w-3" /> {siteData.email || "hello@deeds.org"}</span></span>
         </div>
       </div>
@@ -35,27 +64,27 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
         hero: (
           <section className="relative">
             <Img src={siteData.heroImage} className="absolute inset-0 h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-black/55" />
+            <div className="absolute inset-0" style={{ background: `${overlay}8C` }} />
             <div className="relative mx-auto max-w-3xl px-5 py-28 text-center text-white">
-              <span className="text-xs uppercase tracking-widest text-white/60">New to {name}?</span>
+              {(siteData.sectionEyebrows?.hero ?? `New to ${name}?`) && <span className="text-xs uppercase tracking-widest text-white/60">{siteData.sectionEyebrows?.hero ?? `New to ${name}?`}</span>}
               <h1 className="mt-3 text-4xl font-bold leading-tight sm:text-5xl">{siteData.heroHeadline}</h1>
-              <a href="#" className="mt-6 inline-block rounded-md border-2 border-white px-6 py-3 text-sm font-semibold uppercase">Plan Your Visit</a>
+              {(heroBtn.text ?? "Plan Your Visit") && <a href={heroBtn.url?.trim() || "#"} {...(heroBtn.url?.trim() ? { target: "_blank", rel: "noreferrer" } : {})} className="mt-6 inline-block rounded-md border-2 border-white px-6 py-3 text-sm font-semibold uppercase">{heroBtn.text || "Plan Your Visit"}</a>}
             </div>
           </section>
         ),
         about: (
           <section id="about" className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-[40%_60%]">
             <div className="relative">
-              <Img src="https://picsum.photos/seed/deeds-a1/500/600" className="aspect-[5/6] w-full rounded-2xl object-cover" />
-              <Img src="https://picsum.photos/seed/deeds-a2/300/300" className="absolute -bottom-6 -right-4 h-32 w-32 rounded-2xl border-4 border-white object-cover" />
-              <div className="absolute left-4 top-4 rounded-xl bg-white/90 px-3 py-2 text-center"><p className="text-xs text-black/50">Since</p><p className="text-2xl font-bold">1996</p></div>
+              <Img src={aboutImgs[0]?.image} className="aspect-[5/6] w-full rounded-2xl object-cover" />
+              {aboutImgs[1] && <Img src={aboutImgs[1].image} className="absolute -bottom-6 -right-4 h-32 w-32 rounded-2xl border-4 border-white object-cover" />}
+              {sinceYear && <div className="absolute left-4 top-4 rounded-xl bg-white/90 px-3 py-2 text-center"><p className="text-xs text-black/50">Since</p><p className="text-2xl font-bold">{sinceYear}</p></div>}
             </div>
             <div>
-              <span className="text-sm font-semibold uppercase" style={{ color: "var(--brand-primary)" }}>Work of the Church</span>
+              {(siteData.sectionEyebrows?.about ?? "Work of the Church") && <span className="text-sm font-semibold uppercase" style={{ color: "var(--brand-primary)" }}>{siteData.sectionEyebrows?.about ?? "Work of the Church"}</span>}
               <h2 className="mt-2 text-3xl font-bold">{heading(siteData, "sermons", "We Preach the Gospel in Every Sermon")}</h2>
-              <p className="mt-3 text-black/60">{siteData.heroSubtext}</p>
-              <blockquote className="mt-5 border-l-4 pl-4 text-black/70" style={{ borderColor: "var(--brand-primary)" }}><Quote className="mb-1 h-5 w-5" style={{ color: "var(--brand-primary)" }} />Faith, hope and love — and the greatest of these is love.</blockquote>
-              <BrandButton className="mt-5">About The Church <ArrowRight className="h-4 w-4" /></BrandButton>
+              <p className="mt-3 text-black/60">{subheading(siteData, "sermons", siteData.heroSubtext || "")}</p>
+              {aboutQuote && <blockquote className="mt-5 border-l-4 pl-4 text-black/70" style={{ borderColor: "var(--brand-primary)" }}><Quote className="mb-1 h-5 w-5" style={{ color: "var(--brand-primary)" }} />{aboutQuote}</blockquote>}
+              {(aboutBtn.text ?? "About The Church") && <BrandButton as="a" href={aboutBtn.url?.trim() || "#"} className="mt-5">{aboutBtn.text || "About The Church"} <ArrowRight className="h-4 w-4" /></BrandButton>}
             </div>
           </section>
         ),
@@ -65,12 +94,15 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
               <div>
                 <h2 className="text-3xl font-bold">{heading(siteData, "ministries", "Explore Our Church Ministries")}</h2>
                 <p className="mt-3 text-black/60">{subheading(siteData, "ministries", "There is a place for everyone to belong, serve and grow.")}</p>
-                <a href="#" className="mt-4 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>All Church Ministries →</a>
+                {(ministriesBtn.text ?? "All Church Ministries") && <a href={ministriesBtn.url?.trim() || "#"} {...(ministriesBtn.url?.trim() ? { target: "_blank", rel: "noreferrer" } : {})} className="mt-4 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>{ministriesBtn.text || "All Church Ministries"} →</a>}
               </div>
               <div className="grid gap-5 sm:grid-cols-2">
-                {MINISTRIES.map(([t, d], i) => (
-                  <div key={t} className="overflow-hidden rounded-2xl bg-white shadow-sm"><Img src={`https://picsum.photos/seed/deeds-min${i}/500/300`} className="aspect-[5/3] w-full object-cover" /><div className="p-5"><h3 className="font-semibold">{t}</h3><p className="mt-1 text-sm text-black/60">{d}</p><a href="#" className="mt-2 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>→ Read More</a></div></div>
-                ))}
+                {ministryCards.map((m) => {
+                  const link = m.linkUrl?.trim();
+                  return (
+                    <div key={m.id} className="overflow-hidden rounded-2xl bg-white shadow-sm"><Img src={m.image} className="aspect-[5/3] w-full object-cover" /><div className="p-5"><h3 className="font-semibold">{m.title}</h3>{m.description && <p className="mt-1 text-sm text-black/60">{m.description}</p>}<a href={link || "#"} {...(link ? { target: "_blank", rel: "noreferrer" } : {})} className="mt-2 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>→ Read More</a></div></div>
+                  );
+                })}
               </div>
             </div>
           </section>
