@@ -4,8 +4,9 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ShoppingBag, User, GraduationCap, Heart, CalendarDays, Check, ArrowLeft, ArrowRight,
-  UploadCloud, Loader2, PartyPopper, ExternalLink, Pencil,
+  UploadCloud, Loader2, PartyPopper, ExternalLink, Pencil, Eye, X,
 } from "lucide-react";
+import { TemplatePreview } from "@/components/marketing/template-preview";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { BrowserFrame } from "@/components/browser-frame";
 import { SiteRenderer } from "@/components/templates";
-import { TemplateThumb } from "@/components/templates/template-thumb";
 import { APP_DOMAIN, TRIAL_DAYS } from "@/lib/constants";
 import { CATALOG_CATEGORIES, catalogTemplatesByCategory, createCatalogContent, type CatalogCategoryId } from "@/lib/catalog";
 import { slugifySubdomain } from "@/lib/utils";
@@ -30,6 +30,7 @@ export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
   const [step, setStep] = useState(1);
   const [category, setCategory] = useState<CatalogCategoryId | null>(null);
   const [templateId, setTemplateId] = useState<string | null>(null);
+  const [previewId, setPreviewId] = useState<string | null>(null);
 
   const [businessName, setBusinessName] = useState("");
   const [tagline, setTagline] = useState("");
@@ -145,22 +146,47 @@ export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
               {catalogTemplatesByCategory(category).map((t) => {
                 const active = templateId === t.id;
                 return (
-                  <div key={t.id} className={`overflow-hidden rounded-2xl border-2 bg-white transition-all ${active ? "border-ink shadow-md" : "border-transparent"}`}>
-                    <div className="border-b border-ink/5">
-                      <TemplateThumb template={t} color={brandColor} />
-                    </div>
+                  <div key={t.id} className={`overflow-hidden rounded-2xl border-2 bg-white transition-all ${active ? "border-ink shadow-md" : "border-ink/10"}`}>
+                    {/* Real template hero as the thumbnail */}
+                    <button onClick={() => setPreviewId(t.id)} className="group relative block w-full border-b border-ink/5 text-left">
+                      <div className="pointer-events-none h-44 overflow-hidden">
+                        <TemplatePreview templateId={t.id} brandColor={brandColor} />
+                      </div>
+                      <span className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition group-hover:bg-black/30 group-hover:opacity-100">
+                        <span className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-ink shadow"><Eye className="h-4 w-4" /> Preview</span>
+                      </span>
+                    </button>
                     <div className="p-5">
                       <h3 className="font-semibold">{t.name}</h3>
                       <p className="mt-1 text-sm text-ink/60">{t.blurb}</p>
-                      <Button className="mt-4 w-full" variant={active ? "default" : "outline"} onClick={() => setTemplateId(t.id)}>
-                        {active ? (<><Check className="h-4 w-4" /> Selected</>) : "Choose This"}
-                      </Button>
+                      <div className="mt-4 flex gap-2">
+                        <Button variant="outline" className="flex-1" onClick={() => setPreviewId(t.id)}><Eye className="h-4 w-4" /> Preview</Button>
+                        <Button className="flex-1" variant={active ? "default" : "outline"} onClick={() => setTemplateId(t.id)}>
+                          {active ? (<><Check className="h-4 w-4" /> Selected</>) : "Select"}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 );
               })}
             </div>
             <Nav back={() => setStep(1)} next={() => setStep(3)} nextDisabled={!templateId} />
+
+            {/* Full-screen template preview */}
+            {previewId && (
+              <div className="fixed inset-0 z-50 flex flex-col bg-black/60" onClick={() => setPreviewId(null)}>
+                <div className="flex items-center justify-between gap-3 bg-white px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                  <p className="truncate text-sm font-semibold text-ink">{catalogTemplatesByCategory(category).find((t) => t.id === previewId)?.name} — Preview</p>
+                  <div className="flex items-center gap-2">
+                    <Button size="sm" onClick={() => { setTemplateId(previewId); setPreviewId(null); }}><Check className="h-4 w-4" /> Use this</Button>
+                    <button onClick={() => setPreviewId(null)} aria-label="Close" className="rounded-md p-1.5 text-ink/50 hover:bg-ink/5"><X className="h-5 w-5" /></button>
+                  </div>
+                </div>
+                <div className="flex-1 overflow-y-auto bg-white" onClick={(e) => e.stopPropagation()}>
+                  <TemplatePreview templateId={previewId} brandColor={brandColor} />
+                </div>
+              </div>
+            )}
           </Section>
         )}
 

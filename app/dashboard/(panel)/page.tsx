@@ -1,8 +1,9 @@
 import Link from "next/link";
 import {
   Pencil, Palette, ExternalLink, Globe, CreditCard, Package, ShoppingBag,
-  ArrowRight, CircleDot, LayoutTemplate,
+  ArrowRight, CircleDot, LayoutTemplate, LogOut,
 } from "lucide-react";
+import { signOut } from "@/app/(auth)/actions";
 import { getDashboardData } from "@/lib/dashboard";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -212,7 +213,14 @@ export default async function DashboardHome() {
         </div>
       )}
 
-      <Link href="/dashboard/account" className="inline-block text-sm text-ink/50 hover:text-ink">Account settings</Link>
+      <div className="flex items-center gap-4 border-t border-ink/10 pt-6">
+        <Link href="/dashboard/account" className="text-sm text-ink/50 hover:text-ink">Account settings</Link>
+        <form action={signOut}>
+          <button type="submit" className="flex items-center gap-1.5 text-sm font-medium text-ink/60 hover:text-ink">
+            <LogOut className="h-4 w-4" /> Log out
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -376,6 +376,12 @@ export function isCatalogTemplate(id: string) {
 const img = (seed: string, w = 800, h = 800) =>
   `https://picsum.photos/seed/${encodeURIComponent(seed)}/${w}/${h}`;
 
+/**
+ * Hero image used by the Ecommerce One (shop-01) template — its demo default and
+ * the landing-page preview. Swap this URL to change it everywhere at once.
+ */
+export const ECOMMERCE_ONE_HERO = "https://picsum.photos/seed/shop-01-hero/1200/900";
+
 function demoProducts(seed: string): CatalogProduct[] {
   const names = ["Classic Backpack", "Wireless Headphones", "Ceramic Mug", "Linen Shirt", "Desk Lamp", "Sneakers"];
   return names.map((name, i) => ({
@@ -617,7 +623,7 @@ export function createCatalogContent(
     blocks: [],
     heroHeadline: hero.h,
     heroSubtext: hero.s,
-    heroImage: img(`${seed}-hero`, 1200, 900),
+    heroImage: templateId === "shop-01" ? ECOMMERCE_ONE_HERO : img(`${seed}-hero`, 1200, 900),
     ctaText: hero.c,
     ctaHref: "",
     contactForm: tpl ? !["shop", "education"].includes(tpl.category) || templateId === "education-02" : false,
