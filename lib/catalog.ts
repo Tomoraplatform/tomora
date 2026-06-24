@@ -380,7 +380,7 @@ const img = (seed: string, w = 800, h = 800) =>
  * Hero image used by the Ecommerce One (shop-01) template — its demo default and
  * the landing-page preview. Swap this URL to change it everywhere at once.
  */
-export const ECOMMERCE_ONE_HERO = "https://picsum.photos/seed/shop-01-hero/1200/900";
+export const ECOMMERCE_ONE_HERO = "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80";
 
 function demoProducts(seed: string): CatalogProduct[] {
   const names = ["Classic Backpack", "Wireless Headphones", "Ceramic Mug", "Linen Shirt", "Desk Lamp", "Sneakers"];
