@@ -56,6 +56,8 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
   const isStore = site.category === "ecommerce";
   const [dbProducts, setDbProducts] = useState<Product[]>([]);
   const [showProducts, setShowProducts] = useState(false);
+  // On phones, show either the editor panel or the live preview (not both at once).
+  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
 
   const reloadProducts = useCallback(async () => {
     if (!isStore) return;
@@ -175,8 +177,8 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
             <span className="text-xs text-ink/70">{live ? "Published" : "Offline"}</span>
             <Switch checked={live} onCheckedChange={(v) => { setLive(v); dirty(); }} />
           </div>
-          <Button asChild variant="outline" size="sm"><a href="/dashboard/preview" target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /> Preview</a></Button>
-          <Button asChild variant="ghost" size="sm"><a href={liveUrl} target="_blank" rel="noreferrer">View Live</a></Button>
+          <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex"><a href="/dashboard/preview" target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /> Preview</a></Button>
+          <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex"><a href={liveUrl} target="_blank" rel="noreferrer">View Live</a></Button>
           <Button size="sm" onClick={save} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
             {saved ? "Saved" : "Save"}
@@ -184,9 +186,28 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
         </div>
       </header>
 
+      {/* Mobile-only Edit / Preview switch */}
+      <div className="flex shrink-0 gap-1 border-b border-ink/10 bg-white p-2 lg:hidden">
+        {(["edit", "preview"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setMobileTab(t)}
+            className={cn(
+              "flex-1 rounded-md py-2 text-sm font-medium capitalize transition-colors",
+              mobileTab === t ? "bg-ink text-cream" : "bg-ink/5 text-ink/70"
+            )}
+          >
+            {t === "edit" ? "Edit" : "Preview"}
+          </button>
+        ))}
+      </div>
+
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         {/* Left panel */}
-        <aside className="w-full shrink-0 overflow-y-auto border-b border-ink/10 bg-white p-4 lg:w-80 lg:border-b-0 lg:border-r">
+        <aside className={cn(
+          "w-full shrink-0 overflow-y-auto border-b border-ink/10 bg-white p-4 lg:block lg:w-80 lg:border-b-0 lg:border-r",
+          mobileTab === "edit" ? "block" : "hidden"
+        )}>
           {isCatalog ? (
             <CatalogEditorPanel data={data} patch={patch} lists={lists} sections={sections} reorder={reorder} isEcommerce={isStore} onManageProducts={() => setShowProducts(true)} navDefaults={navDefaults} payoutConnected={!!site.paystack_subaccount} />
           ) : (
@@ -236,7 +257,10 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
         </aside>
 
         {/* Preview */}
-        <div className="min-h-0 flex-1 overflow-y-auto bg-slate-200 p-3 sm:p-6">
+        <div className={cn(
+          "min-h-0 flex-1 overflow-y-auto bg-slate-200 p-3 sm:p-6 lg:block",
+          mobileTab === "preview" ? "block" : "hidden"
+        )}>
           <div className="mx-auto max-w-5xl overflow-hidden rounded-lg border border-ink/10 bg-white shadow-xl">
             <SiteRenderer templateId={site.template_id} siteData={data} brandColor={data.brandColor} editApi={editApi} products={isStore ? dbProducts : undefined} />
           </div>
@@ -246,7 +270,7 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
       {/* Product backend — glass overlay over the editor */}
       {showProducts && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/30 p-4 backdrop-blur-md sm:p-8" onMouseDown={(e) => { if (e.target === e.currentTarget) setShowProducts(false); }}>
-          <div className="relative w-full max-w-3xl rounded-2xl border border-white/40 bg-white/95 p-6 shadow-2xl ring-1 ring-black/5">
+          <div className="relative w-full max-w-3xl rounded-2xl border border-white/40 bg-white/95 p-4 shadow-2xl ring-1 ring-black/5 sm:p-6">
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-ink">Products</h2>
