@@ -6,60 +6,64 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Bright Mind — shared team dashboard API.
+ * Bright Mind — shared team dashboard API. State lives in public.bright_mind_kv:
+ *   bm_user:<email>     -> member record (auth, profile, 31-day sheet, goal meta)
+ *   bm_session:<token>  -> { email }
+ *   bm_docs / bm_doc:<id>      -> shared document metadata + per-file payloads
+ *   bm_anns / bm_ann:<id>      -> announcement (event flyer) metadata + payloads
+ *   bm_goal:<email>            -> a member's uploaded monthly-goal file
  *
- * public.bright_mind_kv (see migration 0017) holds everything:
- *   bm_user:<email>     -> a member record (profile, 31-day to-do sheet, auth)
- *   bm_session:<token>  -> { email } for a logged-in session
- *   bm_docs             -> up to 8 shared documents the admin publishes
- *
- * No placeholder/seed members: the team is whoever signs up. The first account
- * to register becomes the admin.
+ * Large file payloads are kept in their own rows (and served on demand) so they
+ * never travel in the frequently-polled directory response.
  */
 
 const USER_PREFIX = "bm_user:";
 const SESSION_PREFIX = "bm_session:";
 const DOCS_KEY = "bm_docs";
+const DOC_PREFIX = "bm_doc:";
+const ANNS_KEY = "bm_anns";
+const ANN_PREFIX = "bm_ann:";
+const GOAL_PREFIX = "bm_goal:";
+
 const SHEET_DAYS = 31;
 const MAX_DOCS = 8;
-const MAX_AVATAR_CHARS = 400_000; // ~300KB image after client-side resize
-const MAX_DOC_CHARS = 3_000_000; // ~2MB file as base64 data URL
+const MAX_AVATAR_CHARS = 400_000;       // ~300KB resized avatar
+const MAX_FILE_CHARS = 14_500_000;      // ~10MB file as base64 data URL
+
+const STATUS_KEYS = new Set([
+  "newbie", "probie", "distributor", "manager", "senior_manager",
+  "executive_manager", "director", "emerald_director", "sapphire_director",
+]);
 
 type Profile = {
-  avatarUrl: string; sponsor: string; location: string; director: string;
-  skill: string; totalTeam: number; directTeam: number; totalEarnings: number;
+  avatarUrl: string; phone: string; status: string; sponsor: string; location: string;
+  director: string; skill: string; totalTeam: number; directTeam: number; totalEarnings: number;
 };
 type Todo = { id: string; text: string; done: boolean };
 type DayBucket = { items: Todo[] };
 type Sheet = { cycle: number; startDate: string; days: DayBucket[] };
-type DocItem = { id: string; title: string; kind: "link" | "file"; url?: string; dataUrl?: string; mime?: string };
+type DocItem = { id: string; title: string; kind: "link" | "file"; url?: string; mime?: string; name?: string };
+type AnnItem = { id: string; title: string; date: string; mime: string };
 
 type UserRecord = {
-  email: string; name: string; isAdmin: boolean; salt: string; hash: string;
-  profile: Profile; sheet: Sheet; createdAt: number;
+  email: string; name: string; isAdmin: boolean; onboarded: boolean; salt: string; hash: string;
+  profile: Profile; sheet: Sheet;
+  goalText: string; goalHasFile: boolean; goalName: string; goalMime: string; goalUpdated: number;
+  createdAt: number;
 };
 
-// ---- date helpers (UTC day math) -------------------------------------------
+// ---- date helpers ----------------------------------------------------------
 
-function serverToday(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-function dayNum(s: string): number {
-  return Math.floor(Date.parse(s + "T00:00:00Z") / 86_400_000);
-}
-function daysBetween(a: string, b: string): number {
-  return dayNum(b) - dayNum(a);
-}
+function serverToday() { return new Date().toISOString().slice(0, 10); }
+function dayNum(s: string) { return Math.floor(Date.parse(s + "T00:00:00Z") / 86_400_000); }
+function daysBetween(a: string, b: string) { return dayNum(b) - dayNum(a); }
 function freshSheet(cycle: number): Sheet {
   return { cycle, startDate: serverToday(), days: Array.from({ length: SHEET_DAYS }, () => ({ items: [] as Todo[] })) };
 }
 function normalizeSheet(sheet: Sheet | undefined): Sheet {
-  if (!sheet || !Array.isArray(sheet.days) || sheet.days.length !== SHEET_DAYS || !sheet.startDate) {
-    return freshSheet(sheet?.cycle || 1);
-  }
+  if (!sheet || !Array.isArray(sheet.days) || sheet.days.length !== SHEET_DAYS || !sheet.startDate) return freshSheet(sheet?.cycle || 1);
   return sheet;
 }
-/** Rolls to a brand-new sheet once the current 31-day cycle has elapsed. */
 function rollIfExpired(sheet: Sheet, today: string): Sheet {
   const s = normalizeSheet(sheet);
   if (daysBetween(s.startDate, today) >= SHEET_DAYS) return freshSheet((s.cycle || 1) + 1);
@@ -69,31 +73,48 @@ function rollIfExpired(sheet: Sheet, today: string): Sheet {
 // ---- crypto / misc ---------------------------------------------------------
 
 function admin() { return createAdminClient(); }
-function hashPassword(password: string, salt: string) { return scryptSync(password, salt, 64).toString("hex"); }
-function verifyPassword(password: string, salt: string, hash: string) {
-  const a = Buffer.from(hashPassword(password, salt), "hex");
-  const b = Buffer.from(hash, "hex");
+function hashPassword(p: string, salt: string) { return scryptSync(p, salt, 64).toString("hex"); }
+function verifyPassword(p: string, salt: string, hash: string) {
+  const a = Buffer.from(hashPassword(p, salt), "hex"), b = Buffer.from(hash, "hex");
   return a.length === b.length && timingSafeEqual(a, b);
 }
 function newId() { return randomBytes(8).toString("hex"); }
-function normEmail(email: unknown) { return String(email || "").trim().toLowerCase(); }
+function normEmail(e: unknown) { return String(e || "").trim().toLowerCase(); }
 
-/** Strips auth secrets, rolls expired sheets, and adds the current day number. */
 function sanitize(u: UserRecord, today: string) {
   const sheet = rollIfExpired(u.sheet, today);
   const currentDay = Math.min(SHEET_DAYS, Math.max(1, daysBetween(sheet.startDate, today) + 1));
   return {
-    email: u.email, name: u.name, isAdmin: u.isAdmin, profile: u.profile,
-    sheet, currentDay, createdAt: u.createdAt,
+    email: u.email, name: u.name, isAdmin: u.isAdmin, onboarded: u.onboarded !== false,
+    profile: u.profile, sheet, currentDay,
+    goalText: u.goalText || "", goalHasFile: !!u.goalHasFile, goalName: u.goalName || "",
+    goalMime: u.goalMime || "", goalUpdated: u.goalUpdated || 0, createdAt: u.createdAt,
+  };
+}
+
+function emptyProfile(): Profile {
+  return { avatarUrl: "", phone: "", status: "", sponsor: "", location: "", director: "", skill: "", totalTeam: 0, directTeam: 0, totalEarnings: 0 };
+}
+function cleanProfile(p: any, base: Profile): Profile {
+  const avatarUrl = p.avatarUrl !== undefined ? String(p.avatarUrl) : base.avatarUrl;
+  const status = p.status !== undefined ? String(p.status) : base.status;
+  return {
+    avatarUrl: avatarUrl.length > MAX_AVATAR_CHARS ? base.avatarUrl : avatarUrl,
+    phone: String(p.phone ?? base.phone).slice(0, 40),
+    status: STATUS_KEYS.has(status) ? status : (STATUS_KEYS.has(base.status) ? base.status : ""),
+    sponsor: String(p.sponsor ?? base.sponsor),
+    location: String(p.location ?? base.location),
+    director: String(p.director ?? base.director),
+    skill: String(p.skill ?? base.skill),
+    totalTeam: Math.max(0, Math.round(Number(p.totalTeam ?? base.totalTeam) || 0)),
+    directTeam: Math.max(0, Math.round(Number(p.directTeam ?? base.directTeam) || 0)),
+    totalEarnings: Math.max(0, Math.round(Number(p.totalEarnings ?? base.totalEarnings) || 0)),
   };
 }
 
 // ---- KV --------------------------------------------------------------------
 
-function check<T extends { error: unknown }>(res: T): T {
-  if (res.error) throw res.error;
-  return res;
-}
+function check<T extends { error: unknown }>(res: T): T { if (res.error) throw res.error; return res; }
 async function kvGet<T>(key: string): Promise<T | null> {
   const { data } = check(await admin().from("bright_mind_kv").select("value").eq("key", key).maybeSingle());
   return (data?.value as T) ?? null;
@@ -101,37 +122,25 @@ async function kvGet<T>(key: string): Promise<T | null> {
 async function kvSet(key: string, value: unknown) {
   check(await admin().from("bright_mind_kv").upsert({ key, value, updated_at: new Date().toISOString() }));
 }
-async function kvDel(key: string) {
-  check(await admin().from("bright_mind_kv").delete().eq("key", key));
-}
+async function kvDel(key: string) { check(await admin().from("bright_mind_kv").delete().eq("key", key)); }
 async function getUser(email: string) { return kvGet<UserRecord>(USER_PREFIX + normEmail(email)); }
 async function listUsers(): Promise<UserRecord[]> {
   const { data } = check(await admin().from("bright_mind_kv").select("value").like("key", `${USER_PREFIX}%`));
   return (data || []).map((r) => r.value as UserRecord);
 }
 async function resolveSession(token: unknown) {
-  const t = String(token || "");
-  if (!t) return null;
+  const t = String(token || ""); if (!t) return null;
   const sess = await kvGet<{ email: string }>(SESSION_PREFIX + t);
-  if (!sess?.email) return null;
-  return getUser(sess.email);
+  return sess?.email ? getUser(sess.email) : null;
 }
 async function startSession(email: string) {
   const token = randomBytes(24).toString("hex");
   await kvSet(SESSION_PREFIX + token, { email: normEmail(email) });
   return token;
 }
-async function getDocs(): Promise<DocItem[]> {
-  const d = await kvGet<{ docs: DocItem[] }>(DOCS_KEY);
-  return d?.docs || [];
-}
-/** Document list without the heavy file payloads (kept out of the live poll). */
-function docsMeta(docs: DocItem[]) {
-  return docs.map((d) => ({ id: d.id, title: d.title, kind: d.kind, url: d.kind === "link" ? d.url : undefined, mime: d.mime }));
-}
+async function getDocs(): Promise<DocItem[]> { return (await kvGet<{ docs: DocItem[] }>(DOCS_KEY))?.docs || []; }
+async function getAnns(): Promise<AnnItem[]> { return (await kvGet<{ anns: AnnItem[] }>(ANNS_KEY))?.anns || []; }
 
-/** Guarantees the team always has an admin: if none is flagged (e.g. after the
- *  original admin is removed), the earliest registrant is promoted. */
 async function ensureAdmin(users: UserRecord[]): Promise<UserRecord[]> {
   if (users.length === 0 || users.some((u) => u.isAdmin)) return users;
   const earliest = [...users].sort((a, b) => a.createdAt - b.createdAt)[0];
@@ -147,49 +156,63 @@ function tableMissing(err: unknown): boolean {
   return /bright_mind_kv|relation .* does not exist|schema cache|could not find the table/i.test(msg);
 }
 function setupResponse() {
-  return NextResponse.json(
-    { error: "setup", message: "Run migration 0017_bright_mind_kv.sql in Supabase first." },
-    { status: 503 }
-  );
+  return NextResponse.json({ error: "setup", message: "Run migration 0017_bright_mind_kv.sql in Supabase first." }, { status: 503 });
 }
 
-function cleanProfile(p: any, base: Profile): Profile {
-  const avatarUrl = p.avatarUrl !== undefined ? String(p.avatarUrl) : base.avatarUrl;
-  return {
-    avatarUrl: avatarUrl.length > MAX_AVATAR_CHARS ? base.avatarUrl : avatarUrl,
-    sponsor: String(p.sponsor ?? base.sponsor),
-    location: String(p.location ?? base.location),
-    director: String(p.director ?? base.director),
-    skill: String(p.skill ?? base.skill),
-    totalTeam: Math.max(0, Math.round(Number(p.totalTeam ?? base.totalTeam) || 0)),
-    directTeam: Math.max(0, Math.round(Number(p.directTeam ?? base.directTeam) || 0)),
-    totalEarnings: Math.max(0, Math.round(Number(p.totalEarnings ?? base.totalEarnings) || 0)),
-  };
+/** Decodes a base64 data URL and streams it inline (renders in <img>, opens PDFs). */
+function serveDataUrl(dataUrl: string, filename: string) {
+  const m = /^data:([^;]+);base64,([\s\S]*)$/.exec(dataUrl);
+  if (!m) return NextResponse.json({ error: "Not found." }, { status: 404 });
+  const buf = Buffer.from(m[2], "base64");
+  return new Response(buf, {
+    headers: {
+      "Content-Type": m[1],
+      "Content-Disposition": `inline; filename="${filename.replace(/"/g, "")}"`,
+      "Cache-Control": "private, max-age=60",
+    },
+  });
 }
 
-// ---- GET: directory + shared docs, or a single document payload ------------
+// ---- GET -------------------------------------------------------------------
 
 export async function GET(request: NextRequest) {
-  const docId = new URL(request.url).searchParams.get("doc");
+  const url = new URL(request.url);
+  const docId = url.searchParams.get("doc");
+  const annId = url.searchParams.get("ann");
+  const goalEmail = url.searchParams.get("goal");
   try {
     if (docId) {
       const doc = (await getDocs()).find((d) => d.id === docId);
       if (!doc) return NextResponse.json({ error: "Not found." }, { status: 404 });
-      if (doc.kind === "link") return NextResponse.json({ url: doc.url });
-      return NextResponse.json({ dataUrl: doc.dataUrl, title: doc.title, mime: doc.mime });
+      if (doc.kind === "link") return NextResponse.redirect(doc.url || "/", 302);
+      const payload = await kvGet<{ dataUrl: string }>(DOC_PREFIX + docId);
+      if (!payload?.dataUrl) return NextResponse.json({ error: "Not found." }, { status: 404 });
+      return serveDataUrl(payload.dataUrl, doc.name || doc.title || "document");
     }
+    if (annId) {
+      const payload = await kvGet<{ dataUrl: string }>(ANN_PREFIX + annId);
+      if (!payload?.dataUrl) return NextResponse.json({ error: "Not found." }, { status: 404 });
+      return serveDataUrl(payload.dataUrl, "flyer");
+    }
+    if (goalEmail) {
+      const payload = await kvGet<{ dataUrl: string; name?: string }>(GOAL_PREFIX + normEmail(goalEmail));
+      if (!payload?.dataUrl) return NextResponse.json({ error: "Not found." }, { status: 404 });
+      return serveDataUrl(payload.dataUrl, payload.name || "monthly-goal");
+    }
+
     const today = serverToday();
     const users = (await ensureAdmin(await listUsers()))
       .map((u) => sanitize(u, today))
       .sort((a, b) => Number(b.isAdmin) - Number(a.isAdmin) || a.createdAt - b.createdAt);
-    return NextResponse.json({ users, today, docs: docsMeta(await getDocs()) });
+    const anns = (await getAnns()).sort((a, b) => (a.date < b.date ? 1 : -1));
+    return NextResponse.json({ users, today, docs: await getDocs(), announcements: anns });
   } catch (err) {
     if (tableMissing(err)) return setupResponse();
     return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }
 
-// ---- POST: auth + mutations ------------------------------------------------
+// ---- POST ------------------------------------------------------------------
 
 export async function POST(request: NextRequest) {
   let body: any;
@@ -198,35 +221,26 @@ export async function POST(request: NextRequest) {
   const today = serverToday();
 
   try {
-    // ---- signup ----
+    // ---- signup: email + password only ----
     if (action === "signup") {
       const email = normEmail(body.email);
-      const name = String(body.name || "").trim();
       const password = String(body.password || "");
-      if (!name || !email || password.length < 4)
-        return NextResponse.json({ error: "Name, email and a password (4+ chars) are required." }, { status: 400 });
-      if (!/^\S+@\S+\.\S+$/.test(email))
-        return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
-      if (await getUser(email))
-        return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
+      if (!email || password.length < 4) return NextResponse.json({ error: "Email and a password (4+ chars) are required." }, { status: 400 });
+      if (!/^\S+@\S+\.\S+$/.test(email)) return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
+      if (await getUser(email)) return NextResponse.json({ error: "An account with that email already exists." }, { status: 409 });
 
       const isFirst = (await listUsers()).length === 0;
       const salt = randomBytes(16).toString("hex");
       const user: UserRecord = {
-        email, name, isAdmin: isFirst, salt, hash: hashPassword(password, salt),
-        profile: cleanProfile(body.profile || {}, {
-          avatarUrl: "", sponsor: "", location: "", director: "", skill: "",
-          totalTeam: 0, directTeam: 0, totalEarnings: 0,
-        }),
-        sheet: freshSheet(1),
-        createdAt: Date.now(),
+        email, name: "", isAdmin: isFirst, onboarded: false, salt, hash: hashPassword(password, salt),
+        profile: emptyProfile(), sheet: freshSheet(1),
+        goalText: "", goalHasFile: false, goalName: "", goalMime: "", goalUpdated: 0, createdAt: Date.now(),
       };
       await kvSet(USER_PREFIX + email, user);
       const token = await startSession(email);
       return NextResponse.json({ token, user: sanitize(user, today) });
     }
 
-    // ---- login ----
     if (action === "login") {
       const email = normEmail(body.email);
       const user = await getUser(email);
@@ -236,30 +250,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ token, user: sanitize(user, today) });
     }
 
-    // ---- session restore ----
     if (action === "me") {
       const user = await resolveSession(body.token);
       if (!user) return NextResponse.json({ error: "Session expired." }, { status: 401 });
       return NextResponse.json({ user: sanitize(user, today) });
     }
 
-    // ---- everything below needs a session ----
     const me = await resolveSession(body.token);
     if (!me) return NextResponse.json({ error: "Please log in again." }, { status: 401 });
 
-    // ---- update own profile / sheet day ----
+    // ---- onboarding: required name, phone, status ----
+    if (action === "onboard") {
+      const name = String(body.name || "").trim();
+      const p = body.profile || {};
+      const phone = String(p.phone || "").trim();
+      const status = String(p.status || "");
+      if (!name) return NextResponse.json({ error: "Your name is required." }, { status: 400 });
+      if (!phone) return NextResponse.json({ error: "Phone number is required." }, { status: 400 });
+      if (!STATUS_KEYS.has(status)) return NextResponse.json({ error: "Please choose a status." }, { status: 400 });
+      me.name = name;
+      me.profile = cleanProfile(p, me.profile);
+      me.onboarded = true;
+      await kvSet(USER_PREFIX + me.email, me);
+      return NextResponse.json({ user: sanitize(me, today) });
+    }
+
     if (action === "update") {
       const p = body.patch || {};
       if (p.name !== undefined) me.name = String(p.name).trim() || me.name;
       if (p.profile) me.profile = cleanProfile(p.profile, me.profile);
-
+      if (p.goalText !== undefined) me.goalText = String(p.goalText).slice(0, 2000);
       if (p.sheetDay && typeof p.sheetDay.index === "number") {
-        me.sheet = rollIfExpired(me.sheet, today); // start a fresh cycle if expired
+        me.sheet = rollIfExpired(me.sheet, today);
         const idx = Math.max(0, Math.min(SHEET_DAYS - 1, Math.round(p.sheetDay.index)));
         const items: Todo[] = Array.isArray(p.sheetDay.items)
-          ? p.sheetDay.items.slice(0, 100).map((t: any) => ({
-              id: String(t.id || newId()), text: String(t.text || "").slice(0, 300), done: !!t.done,
-            }))
+          ? p.sheetDay.items.slice(0, 100).map((t: any) => ({ id: String(t.id || newId()), text: String(t.text || "").slice(0, 300), done: !!t.done }))
           : [];
         me.sheet.days[idx] = { items };
       }
@@ -267,38 +292,81 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ user: sanitize(me, today) });
     }
 
-    // ---- admin-only actions ----
+    // ---- monthly goal file ----
+    if (action === "set-goal-file") {
+      if (body.clear) {
+        await kvDel(GOAL_PREFIX + me.email);
+        me.goalHasFile = false; me.goalName = ""; me.goalMime = ""; me.goalUpdated = Date.now();
+      } else if (body.dataUrl) {
+        const dataUrl = String(body.dataUrl);
+        if (dataUrl.length > MAX_FILE_CHARS) return NextResponse.json({ error: "File too large (max 10MB)." }, { status: 400 });
+        await kvSet(GOAL_PREFIX + me.email, { dataUrl, name: String(body.name || "monthly-goal"), mime: String(body.mime || "") });
+        me.goalHasFile = true; me.goalName = String(body.name || "monthly-goal").slice(0, 120); me.goalMime = String(body.mime || ""); me.goalUpdated = Date.now();
+      }
+      // else: text-only update, existing file (if any) is left untouched.
+      if (body.text !== undefined) me.goalText = String(body.text).slice(0, 2000);
+      await kvSet(USER_PREFIX + me.email, me);
+      return NextResponse.json({ user: sanitize(me, today) });
+    }
+
+    // ---- admin only below ----
     if (!me.isAdmin) return NextResponse.json({ error: "Admins only." }, { status: 403 });
 
     if (action === "remove-member") {
       const email = normEmail(body.email);
       if (!email) return NextResponse.json({ error: "Missing member." }, { status: 400 });
       await kvDel(USER_PREFIX + email);
+      await kvDel(GOAL_PREFIX + email);
       return NextResponse.json({ ok: true });
     }
 
     if (action === "refresh-sheet") {
-      const email = normEmail(body.email);
-      const target = await getUser(email);
+      const target = await getUser(normEmail(body.email));
       if (!target) return NextResponse.json({ error: "Member not found." }, { status: 404 });
       target.sheet = freshSheet((normalizeSheet(target.sheet).cycle || 1) + 1);
-      await kvSet(USER_PREFIX + email, target);
+      await kvSet(USER_PREFIX + target.email, target);
       return NextResponse.json({ ok: true });
     }
 
-    if (action === "docs-set") {
-      const incoming: any[] = Array.isArray(body.docs) ? body.docs.slice(0, MAX_DOCS) : [];
-      const docs: DocItem[] = [];
-      for (const d of incoming) {
-        const title = String(d.title || "Untitled").slice(0, 120);
-        if (d.kind === "file" && typeof d.dataUrl === "string" && d.dataUrl.length <= MAX_DOC_CHARS) {
-          docs.push({ id: String(d.id || newId()), title, kind: "file", dataUrl: d.dataUrl, mime: String(d.mime || "") });
-        } else if (d.url) {
-          docs.push({ id: String(d.id || newId()), title, kind: "link", url: String(d.url).slice(0, 2000) });
-        }
+    if (action === "doc-add") {
+      const docs = await getDocs();
+      if (docs.length >= MAX_DOCS) return NextResponse.json({ error: "Maximum of 8 documents." }, { status: 400 });
+      const id = newId();
+      const title = String(body.title || "Untitled").slice(0, 120);
+      if (body.kind === "file") {
+        const dataUrl = String(body.dataUrl || "");
+        if (!dataUrl || dataUrl.length > MAX_FILE_CHARS) return NextResponse.json({ error: "File missing or too large (max 10MB)." }, { status: 400 });
+        await kvSet(DOC_PREFIX + id, { dataUrl });
+        docs.push({ id, title, kind: "file", mime: String(body.mime || ""), name: String(body.name || title).slice(0, 120) });
+      } else {
+        if (!body.url) return NextResponse.json({ error: "Missing link." }, { status: 400 });
+        docs.push({ id, title, kind: "link", url: String(body.url).slice(0, 2000) });
       }
       await kvSet(DOCS_KEY, { docs });
-      return NextResponse.json({ docs: docsMeta(docs) });
+      return NextResponse.json({ docs });
+    }
+    if (action === "doc-remove") {
+      const id = String(body.id || "");
+      await kvSet(DOCS_KEY, { docs: (await getDocs()).filter((d) => d.id !== id) });
+      await kvDel(DOC_PREFIX + id);
+      return NextResponse.json({ ok: true });
+    }
+
+    if (action === "announce-add") {
+      const dataUrl = String(body.dataUrl || "");
+      if (!dataUrl || dataUrl.length > MAX_FILE_CHARS) return NextResponse.json({ error: "Flyer missing or too large (max 10MB)." }, { status: 400 });
+      const id = newId();
+      await kvSet(ANN_PREFIX + id, { dataUrl });
+      const anns = await getAnns();
+      anns.push({ id, title: String(body.title || "Upcoming event").slice(0, 140), date: String(body.date || serverToday()), mime: String(body.mime || "") });
+      await kvSet(ANNS_KEY, { anns });
+      return NextResponse.json({ ok: true });
+    }
+    if (action === "announce-remove") {
+      const id = String(body.id || "");
+      await kvSet(ANNS_KEY, { anns: (await getAnns()).filter((a) => a.id !== id) });
+      await kvDel(ANN_PREFIX + id);
+      return NextResponse.json({ ok: true });
     }
 
     return NextResponse.json({ error: "Unknown action." }, { status: 400 });
