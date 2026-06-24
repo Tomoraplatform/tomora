@@ -6,6 +6,8 @@ export interface TemplateEditApi {
   editing: boolean;
   /** Update a top-level string field on a block. */
   update: (blockId: string, field: string, value: string) => void;
+  /** Editor: focus a section's controls in the side panel (click-to-edit). */
+  onFocusSection?: (key: string) => void;
 }
 
 const noop: TemplateEditApi = { editing: false, update: () => {} };

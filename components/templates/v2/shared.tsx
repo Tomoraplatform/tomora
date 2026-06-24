@@ -5,6 +5,7 @@ import { Star, ShoppingCart, Zap, Instagram, Twitter, Facebook, Globe, CheckCirc
 import type { SiteData, CatalogProduct, CatalogTestimonial, Product, SocialLinks, CustomSection } from "@/lib/database.types";
 import { formatNaira, parseNaira, cn } from "@/lib/utils";
 import { useStore } from "../store-context";
+import { useTemplateEdit } from "../editor-context";
 
 type LeadSource = "contact" | "newsletter" | "register";
 
@@ -344,11 +345,26 @@ export function OrderedSections({
   natural: string[];
   blocks: Record<string, React.ReactNode>;
 }) {
+  const { editing, onFocusSection } = useTemplateEdit();
   return (
     <>
-      {orderedSectionKeys(siteData.sectionOrder, natural).map((k) =>
-        blocks[k] ? <div key={k} className="contents">{blocks[k]}</div> : null
-      )}
+      {orderedSectionKeys(siteData.sectionOrder, natural).map((k) => {
+        if (!blocks[k]) return null;
+        // In the editor, clicking a section jumps the side panel to its controls.
+        if (editing && onFocusSection) {
+          return (
+            <div
+              key={k}
+              data-edit-key={k}
+              onClickCapture={() => onFocusSection(k)}
+              className="relative cursor-pointer outline-offset-[-2px] transition hover:outline hover:outline-2 hover:outline-dashed hover:outline-sky-400/70"
+            >
+              {blocks[k]}
+            </div>
+          );
+        }
+        return <div key={k} className="contents">{blocks[k]}</div>;
+      })}
     </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Trash2, UploadCloud, Loader2, X, Package, ChevronUp, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -150,6 +150,8 @@ export function CatalogEditorPanel({
   onManageProducts,
   navDefaults = [],
   payoutConnected = false,
+  focusKey = null,
+  focusNonce = 0,
 }: {
   data: SiteData;
   patch: (p: Partial<SiteData>) => void;
@@ -160,7 +162,22 @@ export function CatalogEditorPanel({
   onManageProducts?: () => void;
   navDefaults?: [string, string][];
   payoutConnected?: boolean;
+  focusKey?: string | null;
+  focusNonce?: number;
 }) {
+  // Click-to-edit: scroll the clicked section's controls into view + briefly highlight.
+  const [highlightKey, setHighlightKey] = useState<string | null>(null);
+  useEffect(() => {
+    if (!focusKey) return;
+    const t = setTimeout(() => {
+      const el = document.getElementById(`edit-sec-${focusKey}`);
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setHighlightKey(focusKey);
+    }, 60);
+    const clear = setTimeout(() => setHighlightKey(null), 1800);
+    return () => { clearTimeout(t); clearTimeout(clear); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusNonce]);
   // Working nav links: saved links, or the template defaults until edited.
   const navWorking = (data.navLinks?.length ? data.navLinks : navDefaults.map((p, i) => ({ id: `nav-${i}`, label: p[0], target: p[1] })));
   const setNav = (next: { id: string; label: string; target: string }[]) => patch({ navLinks: next });
@@ -298,6 +315,8 @@ export function CatalogEditorPanel({
         return (
           <SectionGroup
             key={def.key}
+            sectionKey={def.key}
+            highlight={highlightKey === def.key}
             label={def.label}
             onUp={reorder.length > 1 && i > 0 ? () => moveSection(i, -1) : undefined}
             onDown={reorder.length > 1 && i < orderedDefs.length - 1 ? () => moveSection(i, 1) : undefined}
@@ -557,15 +576,23 @@ export function CatalogEditorPanel({
 
 /** A collapsible-styled group for one page section, with reorder arrows. */
 function SectionGroup({
-  label, children, onUp, onDown,
+  label, children, onUp, onDown, sectionKey, highlight,
 }: {
   label: string;
   children: React.ReactNode;
   onUp?: () => void;
   onDown?: () => void;
+  sectionKey?: string;
+  highlight?: boolean;
 }) {
   return (
-    <div className="mb-4 rounded-xl border border-ink/10">
+    <div
+      id={sectionKey ? `edit-sec-${sectionKey}` : undefined}
+      className={cn(
+        "mb-4 scroll-mt-3 rounded-xl border transition-all",
+        highlight ? "border-sky-400 ring-2 ring-sky-300/60" : "border-ink/10"
+      )}
+    >
       <div className="flex items-center justify-between border-b border-ink/10 bg-cream/40 px-3 py-2">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-ink/60">{label}</h3>
         {(onUp || onDown) && (

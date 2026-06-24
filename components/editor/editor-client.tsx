@@ -58,6 +58,14 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
   const [showProducts, setShowProducts] = useState(false);
   // On phones, show either the editor panel or the live preview (not both at once).
   const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
+  // Click-to-edit: which section's panel controls to scroll to (+ a nonce to retrigger).
+  const [focusKey, setFocusKey] = useState<string | null>(null);
+  const [focusNonce, setFocusNonce] = useState(0);
+  const onFocusSection = useCallback((key: string) => {
+    setMobileTab("edit");
+    setFocusKey(key);
+    setFocusNonce((n) => n + 1);
+  }, []);
 
   const reloadProducts = useCallback(async () => {
     if (!isStore) return;
@@ -142,7 +150,7 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
     else if (res.gated && typeof window !== "undefined") window.alert(res.error);
   }
 
-  const editApi = useMemo(() => ({ editing: true, update }), [update]);
+  const editApi = useMemo(() => ({ editing: true, update, onFocusSection }), [update, onFocusSection]);
   const blockMap = useMemo(() => Object.fromEntries(data.blocks.map((b) => [b.type, b])), [data.blocks]);
   const allTypes = supportedBlocks(site.template_id);
 
@@ -209,7 +217,7 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
           mobileTab === "edit" ? "block" : "hidden"
         )}>
           {isCatalog ? (
-            <CatalogEditorPanel data={data} patch={patch} lists={lists} sections={sections} reorder={reorder} isEcommerce={isStore} onManageProducts={() => setShowProducts(true)} navDefaults={navDefaults} payoutConnected={!!site.paystack_subaccount} />
+            <CatalogEditorPanel data={data} patch={patch} lists={lists} sections={sections} reorder={reorder} isEcommerce={isStore} onManageProducts={() => setShowProducts(true)} navDefaults={navDefaults} payoutConnected={!!site.paystack_subaccount} focusKey={focusKey} focusNonce={focusNonce} />
           ) : (
           <>
           <Section title="Brand">
