@@ -19,12 +19,15 @@ export function TemplatePreview({
   businessName = "Your Brand",
   autoScroll = false,
   className,
+  heroOverride,
 }: {
   templateId: string;
   brandColor?: string;
   businessName?: string;
   autoScroll?: boolean;
   className?: string;
+  /** Override the hero image for this preview only (keeps the landing neutral). */
+  heroOverride?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [vw, setVw] = useState(DESKTOP_WIDTH);
@@ -54,8 +57,12 @@ export function TemplatePreview({
   }, []);
 
   const data = useMemo(
-    () => createCatalogContent(templateId, { businessName, brandColor }),
-    [templateId, businessName, brandColor]
+    () => {
+      const d = createCatalogContent(templateId, { businessName, brandColor });
+      if (heroOverride) d.heroImage = heroOverride;
+      return d;
+    },
+    [templateId, businessName, brandColor, heroOverride]
   );
 
   return (

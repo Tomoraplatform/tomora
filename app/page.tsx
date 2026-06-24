@@ -82,7 +82,7 @@ function Hero() {
         <div className="relative">
           <div className="absolute -inset-6 -z-10 rounded-3xl bg-ink/5 blur-2xl" />
           <BrowserFrame url="ada-styles.tomora.com.ng" bodyClassName="h-[440px]">
-            <TemplatePreview templateId="shop-01" brandColor="#022245" businessName="Ada Styles" autoScroll />
+            <TemplatePreview templateId="shop-01" brandColor="#022245" businessName="Ada Styles" autoScroll heroOverride="https://picsum.photos/seed/shop-01-store/1200/900" />
           </BrowserFrame>
         </div>
       </div>
@@ -287,7 +287,7 @@ function TemplateShowcase() {
               className="group relative overflow-hidden rounded-xl border border-ink/10 bg-white transition-all hover:-translate-y-1 hover:shadow-xl"
             >
               <div className="relative h-52 overflow-hidden border-b border-ink/5">
-                <TemplatePreview templateId={t.id} brandColor={t.accent} businessName={t.name} />
+                <TemplatePreview templateId={t.id} brandColor={t.accent} businessName={t.name} heroOverride={t.id === "shop-01" ? "https://picsum.photos/seed/shop-01-store/1200/900" : undefined} />
                 <div className="absolute inset-0 flex items-center justify-center bg-ink/0 opacity-0 transition-all group-hover:bg-ink/30 group-hover:opacity-100">
                   <Button size="sm" asChild>
                     <Link href="/signup">
