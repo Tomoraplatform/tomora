@@ -126,7 +126,7 @@ export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
                 const active = category === c.id;
                 return (
                   <button key={c.id}
-                    onClick={() => { setCategory(c.id); setTemplateId(null); }}
+                    onClick={() => { setCategory(c.id); setTemplateId(null); setStep(2); }}
                     className={`flex flex-col items-start gap-3 rounded-2xl border-2 bg-white p-6 text-left transition-all hover:shadow-md ${active ? "border-ink" : "border-transparent"}`}>
                     <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-ink/5 text-ink"><Icon className="h-6 w-6" /></span>
                     <span className="text-lg font-semibold">{c.name}</span>
@@ -135,7 +135,6 @@ export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
                 );
               })}
             </div>
-            <Nav next={() => setStep(2)} nextDisabled={!category} />
           </Section>
         )}
 
@@ -161,7 +160,7 @@ export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
                       <p className="mt-1 text-sm text-ink/60">{t.blurb}</p>
                       <div className="mt-4 flex gap-2">
                         <Button variant="outline" className="flex-1" onClick={() => setPreviewId(t.id)}><Eye className="h-4 w-4" /> Preview</Button>
-                        <Button className="flex-1" variant={active ? "default" : "outline"} onClick={() => setTemplateId(t.id)}>
+                        <Button className="flex-1" variant={active ? "default" : "outline"} onClick={() => { setTemplateId(t.id); setStep(3); }}>
                           {active ? (<><Check className="h-4 w-4" /> Selected</>) : "Select"}
                         </Button>
                       </div>
@@ -170,7 +169,9 @@ export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
                 );
               })}
             </div>
-            <Nav back={() => setStep(1)} next={() => setStep(3)} nextDisabled={!templateId} />
+            <div className="mt-6 text-center">
+              <button onClick={() => setStep(1)} className="text-sm text-ink/50 hover:text-ink">← Back to website type</button>
+            </div>
 
             {/* Full-screen template preview */}
             {previewId && (
@@ -178,7 +179,7 @@ export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
                 <div className="flex items-center justify-between gap-3 bg-white px-4 py-3" onClick={(e) => e.stopPropagation()}>
                   <p className="truncate text-sm font-semibold text-ink">{catalogTemplatesByCategory(category).find((t) => t.id === previewId)?.name} — Preview</p>
                   <div className="flex items-center gap-2">
-                    <Button size="sm" onClick={() => { setTemplateId(previewId); setPreviewId(null); }}><Check className="h-4 w-4" /> Use this</Button>
+                    <Button size="sm" onClick={() => { setTemplateId(previewId); setPreviewId(null); setStep(3); }}><Check className="h-4 w-4" /> Use this</Button>
                     <button onClick={() => setPreviewId(null)} aria-label="Close" className="rounded-md p-1.5 text-ink/50 hover:bg-ink/5"><X className="h-5 w-5" /></button>
                   </div>
                 </div>
