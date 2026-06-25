@@ -86,6 +86,14 @@ export async function signIn(
   if (error) return { error: authError(error) };
 
   revalidatePath("/", "layout");
+
+  // Signed up before but no website yet? Send them through the guided builder.
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: sites } = await supabase.from("sites").select("id").eq("user_id", user.id).limit(1);
+    if (!sites || sites.length === 0) redirect("/onboarding");
+  }
+
   redirect(next.startsWith("/") ? next : "/dashboard");
 }
 
