@@ -234,6 +234,8 @@ export interface FinalizeStoreInput {
   heroImages?: string[];
   trustBadges?: { id: string; title: string; subtitle?: string }[];
   bannerImage?: string;
+  donationEnabled?: boolean;
+  donationGoal?: number;
   publish: boolean;
 }
 
@@ -254,6 +256,8 @@ export async function finalizeStoreBuild(input: FinalizeStoreInput): Promise<{ o
   if (input.heroImages && input.heroImages.length) sd.heroImages = input.heroImages;
   if (input.trustBadges && input.trustBadges.length) sd.trustBadges = input.trustBadges;
   if (input.bannerImage) sd.sectionImages = { ...(sd.sectionImages || {}), banner: input.bannerImage };
+  if (input.donationEnabled !== undefined) sd.donationEnabled = input.donationEnabled;
+  if (input.donationGoal !== undefined) sd.donationGoal = Math.max(0, Math.round(input.donationGoal));
   if (input.reviews && input.reviews.length) {
     sd.testimonials = input.reviews
       .filter((r) => r.name?.trim() || r.quote?.trim())

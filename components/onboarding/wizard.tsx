@@ -21,6 +21,7 @@ import { siteLiveUrl } from "@/lib/site-url";
 import { uploadImage } from "@/lib/upload";
 import { completeOnboarding } from "@/app/onboarding/actions";
 import { StoreBuilderWizard } from "./store-builder";
+import { SiteBuilderWizard } from "./site-builder";
 
 const ICONS = { ShoppingBag, User, GraduationCap, Heart, CalendarDays } as const;
 const PRESET_COLORS = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777"];
@@ -87,16 +88,12 @@ export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
     setStep(5);
   }
 
-  // Shop: hand off to the guided store builder once a template is chosen.
-  if (category === "shop" && templateId && step >= 3) {
-    return (
-      <StoreBuilderWizard
-        category={category}
-        templateId={templateId}
-        defaultEmail={defaultEmail}
-        onBack={() => setStep(2)}
-      />
-    );
+  // Hand off to a guided builder once a template is chosen.
+  if (category && templateId && step >= 3) {
+    if (category === "shop") {
+      return <StoreBuilderWizard category={category} templateId={templateId} defaultEmail={defaultEmail} onBack={() => setStep(2)} />;
+    }
+    return <SiteBuilderWizard category={category} templateId={templateId} defaultEmail={defaultEmail} onBack={() => setStep(2)} />;
   }
 
   return (
