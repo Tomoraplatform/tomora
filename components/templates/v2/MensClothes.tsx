@@ -41,6 +41,9 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
 
   const blocks: Record<string, React.ReactNode> = {
     donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
+    banner: siteData.sectionImages?.banner ? (
+      <section id="banner" className="mx-auto max-w-6xl px-5 py-6"><Img src={siteData.sectionImages.banner} className="w-full rounded-2xl object-cover" /></section>
+    ) : null,
     hero: (
       <section className="mx-auto grid max-w-6xl gap-3 px-5 py-6 md:grid-cols-3">
         <div className="relative overflow-hidden rounded-lg md:col-span-2 md:row-span-2">
@@ -53,7 +56,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
         </div>
         {[["New Arrivals", "Fresh drops for the season"], ["Big Clearance", "Up to 60% off select styles"]].map(([t, s], i) => (
           <div key={i} className="relative overflow-hidden rounded-lg">
-            <Img src={`https://picsum.photos/seed/men-banner${i}/600/300`} className="h-40 w-full object-cover" />
+            <Img src={siteData.heroImages?.[i] || `https://picsum.photos/seed/men-banner${i}/600/300`} className="h-40 w-full object-cover" />
             <div className="absolute inset-0 bg-black/40" />
             <div className="absolute bottom-4 left-4 text-white"><p className="text-lg font-bold uppercase">{t}</p><p className="text-xs text-white/80">{s}</p></div>
           </div>
@@ -131,7 +134,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "new", "special", "catbanners", "allproducts", "donation"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "new", "special", "catbanners", "allproducts", "banner", "donation"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="border-t border-neutral-200">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 text-sm">

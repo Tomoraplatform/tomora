@@ -231,6 +231,9 @@ export interface FinalizeStoreInput {
   subheadline?: string;
   reviews?: { name: string; quote: string }[];
   heroImage?: string;
+  heroImages?: string[];
+  trustBadges?: { id: string; title: string; subtitle?: string }[];
+  bannerImage?: string;
   publish: boolean;
 }
 
@@ -248,6 +251,9 @@ export async function finalizeStoreBuild(input: FinalizeStoreInput): Promise<{ o
   if (input.headline?.trim()) sd.heroHeadline = input.headline.trim();
   if (input.subheadline?.trim()) sd.heroSubtext = input.subheadline.trim();
   if (input.heroImage) sd.heroImage = input.heroImage;
+  if (input.heroImages && input.heroImages.length) sd.heroImages = input.heroImages;
+  if (input.trustBadges && input.trustBadges.length) sd.trustBadges = input.trustBadges;
+  if (input.bannerImage) sd.sectionImages = { ...(sd.sectionImages || {}), banner: input.bannerImage };
   if (input.reviews && input.reviews.length) {
     sd.testimonials = input.reviews
       .filter((r) => r.name?.trim() || r.quote?.trim())

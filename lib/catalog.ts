@@ -95,6 +95,16 @@ export function templateNav(id: string): [string, string][] {
   return TEMPLATE_NAV[id] ?? [];
 }
 
+/** How many images a template's hero section shows (for the guided builder). */
+export const HERO_IMAGE_SLOTS: Record<string, number> = {
+  "shop-01": 1,
+  "shop-02": 1,
+  "shop-03": 3, // big image + two banner tiles
+};
+export function heroImageSlots(id: string): number {
+  return HERO_IMAGE_SLOTS[id] ?? 1;
+}
+
 /**
  * A template section for the editor. `key` is the reorder id; `label` is shown
  * in the panel. Optional flags describe which controls this section exposes:
@@ -235,6 +245,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "trust", label: "Trust badges", list: "trustBadges" },
     { key: "categories", label: "Categories", heading: "categories" },
     { key: "allproducts", label: "All products", heading: "allproducts", products: true },
+    { key: "banner", label: "Promo banner", image: true },
     { key: "bestsellers", label: "Best sellers", heading: "bestsellers", products: true },
     { key: "offer", label: "Special offer", heading: "sale", text: true, products: true },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
@@ -245,6 +256,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "catcircles", label: "Category circles" },
     { key: "categories", label: "Shop by category", heading: "categories" },
     { key: "allproducts", label: "All products", heading: "allproducts", products: true },
+    { key: "banner", label: "Promo banner", image: true },
     { key: "promo", label: "Offer & New arrival", products: true },
     { key: "bestsellers", label: "Best sellers", heading: "bestsellers", products: true },
     { key: "newsletter", label: "Newsletter", heading: "newsletter", text: true, image: true, formToggle: true },
@@ -256,6 +268,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "special", label: "Special products", heading: "special", products: true },
     { key: "catbanners", label: "Category banners" },
     { key: "allproducts", label: "All products", heading: "allproducts", products: true },
+    { key: "banner", label: "Promo banner", image: true },
     { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "portfolio-01": [

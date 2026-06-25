@@ -39,6 +39,9 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
 
   const blocks: Record<string, React.ReactNode> = {
     donation: <DonationSection siteData={siteData} brandColor={brandColor} />,
+    banner: siteData.sectionImages?.banner ? (
+      <section id="banner" className="mx-auto max-w-6xl px-5 py-6"><Img src={siteData.sectionImages.banner} className="w-full rounded-2xl object-cover" /></section>
+    ) : null,
     hero: (
       <section className="bg-[#FBFAF7]">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
@@ -182,7 +185,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "trust", "categories", "allproducts", "bestsellers", "offer", "testimonials", "donation"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "trust", "categories", "allproducts", "banner", "bestsellers", "offer", "testimonials", "donation"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
       <ShopFooter name={name} social={siteData.social} />
     </BrandStyle>

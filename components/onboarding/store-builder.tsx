@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft, ArrowRight, UploadCloud, Loader2, Check, Plus, X, Store, Banknote,
-  Package, Type, Star, Image as ImageIcon, Rocket, Pencil, Trash2,
+  Package, Type, Image as ImageIcon, Rocket, Pencil, ShieldCheck,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -15,24 +15,25 @@ import { Switch } from "@/components/ui/switch";
 import { BrowserFrame } from "@/components/browser-frame";
 import { SiteRenderer } from "@/components/templates";
 import { PayoutsForm } from "@/components/dashboard/payouts-form";
-import { createCatalogContent, type CatalogCategoryId } from "@/lib/catalog";
+import { createCatalogContent, heroImageSlots, type CatalogCategoryId } from "@/lib/catalog";
 import { uploadImage } from "@/lib/upload";
 import { formatNaira } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { saveProduct, type ProductInput } from "@/app/dashboard/store-actions";
 import { createStoreDraft, finalizeStoreBuild } from "@/app/onboarding/actions";
-import type { Product } from "@/lib/database.types";
+import type { Product, CatalogTrustBadge } from "@/lib/database.types";
 
 const PRESET_COLORS = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777"];
 const emptyProduct = (): ProductInput => ({ name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isOffer: false, isNewArrival: false, offerPercent: 0 });
 
 const STEPS = [
-  { icon: Store, label: "Brand" },
-  { icon: Banknote, label: "Payouts" },
-  { icon: Package, label: "Products" },
-  { icon: Type, label: "Headline" },
-  { icon: Star, label: "Reviews" },
+  { icon: Store, label: "Your brand" },
   { icon: ImageIcon, label: "Hero image" },
+  { icon: Type, label: "Headline" },
+  { icon: Package, label: "Products" },
+  { icon: ShieldCheck, label: "Trust badges" },
+  { icon: Banknote, label: "Payouts" },
+  { icon: ImageIcon, label: "Promo banner" },
   { icon: Rocket, label: "Finish" },
 ];
 
@@ -47,6 +48,7 @@ export function StoreBuilderWizard({
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const slots = heroImageSlots(templateId);
 
   // Brand
   const [businessName, setBusinessName] = useState("");
@@ -59,9 +61,18 @@ export function StoreBuilderWizard({
   const [facebook, setFacebook] = useState("");
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
-  // Draft site
+  // Draft
   const [siteId, setSiteId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+
+  // Hero images
+  const [heroCount, setHeroCount] = useState(slots);
+  const [heroImgs, setHeroImgs] = useState<string[]>([]);
+  const [heroBusy, setHeroBusy] = useState<number | null>(null);
+
+  // Content
+  const [headline, setHeadline] = useState("");
+  const [subheadline, setSubheadline] = useState("");
 
   // Products
   const [products, setProducts] = useState<ProductInput[]>([]);
@@ -72,14 +83,16 @@ export function StoreBuilderWizard({
   const [savingProduct, setSavingProduct] = useState(false);
   const [productImgBusy, setProductImgBusy] = useState(false);
 
-  // Content
-  const [headline, setHeadline] = useState("");
-  const [subheadline, setSubheadline] = useState("");
-  const [reviews, setReviews] = useState<{ name: string; quote: string }[]>([{ name: "", quote: "" }]);
-  const [heroImage, setHeroImage] = useState<string | undefined>();
-  const [uploadingHero, setUploadingHero] = useState(false);
+  // Trust badges (seed from the template defaults)
+  const defaultBadges = useMemo<CatalogTrustBadge[]>(() => (createCatalogContent(templateId, { businessName: "Store", brandColor }).trustBadges) || [], [templateId, brandColor]);
+  const [badges, setBadges] = useState<CatalogTrustBadge[]>([]);
+  const trustBadges = badges.length ? badges : defaultBadges;
 
-  // Preview / finish
+  // Banner
+  const [bannerImage, setBannerImage] = useState<string | undefined>();
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+
+  // Finish
   const [dbProducts, setDbProducts] = useState<Product[]>([]);
   const [finishing, setFinishing] = useState(false);
 
@@ -88,33 +101,38 @@ export function StoreBuilderWizard({
 
   const previewData = useMemo(() => {
     const d = createCatalogContent(templateId, { businessName: businessName || "Your Store", brandColor, logoUrl, tagline });
+    if (heroImgs[0]) d.heroImage = heroImgs[0];
+    if (slots > 1 && heroImgs.length > 1) d.heroImages = heroImgs.slice(1);
     if (headline.trim()) d.heroHeadline = headline.trim();
     if (subheadline.trim()) d.heroSubtext = subheadline.trim();
-    if (heroImage) d.heroImage = heroImage;
+    if (trustBadges.length) d.trustBadges = trustBadges;
+    if (bannerImage) d.sectionImages = { ...(d.sectionImages || {}), banner: bannerImage };
     d.email = email; d.social = social;
-    const validReviews = reviews.filter((r) => r.name.trim() || r.quote.trim());
-    if (validReviews.length) d.testimonials = validReviews.map((r, i) => ({ id: `rev-${i}`, name: r.name.trim() || "Customer", quote: r.quote.trim() }));
     return d;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [templateId, businessName, brandColor, logoUrl, tagline, headline, subheadline, heroImage, email, instagram, facebook, whatsapp, reviews]);
+  }, [templateId, businessName, brandColor, logoUrl, tagline, heroImgs, headline, subheadline, badges, bannerImage, email, instagram, facebook, whatsapp]);
 
   async function loadProducts(id: string) {
     const { data } = await createClient().from("products").select("*").eq("site_id", id).order("created_at", { ascending: false });
     setDbProducts((data as Product[]) || []);
   }
 
-  // ---- Step transitions ----
   async function startDraft() {
     if (!businessName.trim()) { setError("Please enter your store name."); return; }
     setError(null); setCreating(true);
-    const res = await createStoreDraft({
-      category, templateId, businessName, tagline, brandColor, logoUrl,
-      email, social,
-    });
+    const res = await createStoreDraft({ category, templateId, businessName, tagline, brandColor, logoUrl, email, social });
     setCreating(false);
     if (!res.ok || !res.siteId) { setError(res.error || "Could not create your store."); return; }
     setSiteId(res.siteId);
     setStep(1);
+  }
+
+  async function uploadHeroAt(i: number, file?: File) {
+    if (!file) return;
+    setHeroBusy(i);
+    const { url } = await uploadImage(file, "branding");
+    setHeroBusy(null);
+    if (url) setHeroImgs((arr) => { const next = [...arr]; next[i] = url; return next; });
   }
 
   async function addProduct() {
@@ -136,22 +154,27 @@ export function StoreBuilderWizard({
     setNewCat(""); setAddingCat(false);
   }
 
-  async function goPreview() {
+  async function goFinish() {
     setError(null);
     if (siteId) await loadProducts(siteId);
-    setStep(6);
+    setStep(7);
   }
 
   async function finish(dest: "editor" | "publish") {
     if (!siteId) return;
     setFinishing(true);
-    const res = await finalizeStoreBuild({ siteId, headline, subheadline, reviews, heroImage, publish: dest === "publish" });
+    const res = await finalizeStoreBuild({
+      siteId, headline, subheadline,
+      heroImage: heroImgs[0], heroImages: slots > 1 ? heroImgs.slice(1).filter(Boolean) : undefined,
+      trustBadges: badges.length ? badges : undefined,
+      bannerImage,
+      publish: dest === "publish",
+    });
     setFinishing(false);
     if (!res.ok) { setError(res.error || "Could not save."); return; }
     router.push(dest === "editor" ? "/dashboard/editor" : "/dashboard");
   }
 
-  // ---- UI ----
   return (
     <div className="mx-auto flex min-h-screen max-w-xl flex-col bg-cream px-4 pb-10">
       <header className="flex items-center justify-between py-4">
@@ -159,11 +182,8 @@ export function StoreBuilderWizard({
         <span className="text-xs text-ink/50">Step {step + 1} of {STEPS.length}</span>
       </header>
 
-      {/* Progress */}
       <div className="mb-5 flex gap-1.5">
-        {STEPS.map((s, i) => (
-          <div key={s.label} className={`h-1.5 flex-1 rounded-full ${i <= step ? "bg-ink" : "bg-ink/15"}`} />
-        ))}
+        {STEPS.map((s, i) => <div key={s.label} className={`h-1.5 flex-1 rounded-full ${i <= step ? "bg-ink" : "bg-ink/15"}`} />)}
       </div>
 
       <div className="flex-1">
@@ -174,7 +194,7 @@ export function StoreBuilderWizard({
 
         {error && <p className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
-        {/* STEP 0 — Brand */}
+        {/* 0 — Brand */}
         {step === 0 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">Tell us about your store. You can change all of this later.</p>
@@ -189,9 +209,7 @@ export function StoreBuilderWizard({
             </Field>
             <Field label="Brand color">
               <div className="flex flex-wrap gap-2">
-                {PRESET_COLORS.map((c) => (
-                  <button key={c} onClick={() => setBrandColor(c)} className={`h-9 w-9 rounded-full ${brandColor.toLowerCase() === c.toLowerCase() ? "ring-2 ring-ink ring-offset-2" : ""}`} style={{ background: c }} aria-label={c} />
-                ))}
+                {PRESET_COLORS.map((c) => <button key={c} onClick={() => setBrandColor(c)} className={`h-9 w-9 rounded-full ${brandColor.toLowerCase() === c.toLowerCase() ? "ring-2 ring-ink ring-offset-2" : ""}`} style={{ background: c }} aria-label={c} />)}
                 <label className="relative h-9 w-9 cursor-pointer rounded-full border border-ink/20" style={{ background: brandColor }}>
                   <input type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="absolute inset-0 cursor-pointer opacity-0" />
                 </label>
@@ -208,12 +226,29 @@ export function StoreBuilderWizard({
           </div>
         )}
 
-        {/* STEP 1 — Payouts */}
+        {/* 1 — Hero image(s) */}
         {step === 1 && (
           <div className="space-y-4">
-            <p className="text-sm text-ink/60">Connect the bank account where your sales should be paid out. You can skip and do this later from your dashboard.</p>
-            <div className="rounded-xl border border-ink/10 bg-white p-4">
-              <PayoutsForm initial={{ bankCode: "", bankName: "", accountNumber: "", accountName: "", connected: false }} />
+            <p className="text-sm text-ink/60">Add the main photo(s) for the top of your store — a clear product or banner photo works best.</p>
+            {slots > 1 && (
+              <Field label="How many images does your hero show?">
+                <select value={heroCount} onChange={(e) => setHeroCount(Number(e.target.value))} className="h-10 w-full rounded-md border border-ink/15 bg-white px-3 text-sm">
+                  {Array.from({ length: slots }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n} image{n > 1 ? "s" : ""}</option>)}
+                </select>
+              </Field>
+            )}
+            <div className="space-y-3">
+              {Array.from({ length: slots > 1 ? heroCount : 1 }, (_, i) => (
+                <label key={i} className="flex aspect-[16/9] cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-ink/25 bg-white">
+                  {heroImgs[i] ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={heroImgs[i]} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="flex flex-col items-center gap-2 text-sm text-ink/50">{heroBusy === i ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-6 w-6" />} {slots > 1 ? `Image ${i + 1}` : "Upload hero image"}</span>
+                  )}
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => uploadHeroAt(i, e.target.files?.[0])} />
+                </label>
+              ))}
             </div>
             <div className="flex gap-2 pt-2">
               <Button variant="outline" onClick={() => setStep(0)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
@@ -222,11 +257,23 @@ export function StoreBuilderWizard({
           </div>
         )}
 
-        {/* STEP 2 — Products */}
+        {/* 2 — Headline */}
         {step === 2 && (
           <div className="space-y-4">
-            <p className="text-sm text-ink/60">Add your products one at a time. {products.length > 0 && <span className="font-medium text-ink">{products.length} added.</span>}</p>
+            <p className="text-sm text-ink/60">The big message at the top of your store.</p>
+            <Field label="Store headline"><Input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="e.g. Quality skincare, delivered to your door" /></Field>
+            <Field label="Sub-headline"><Textarea rows={2} value={subheadline} onChange={(e) => setSubheadline(e.target.value)} placeholder="e.g. Shop our best-sellers at honest prices, with fast nationwide delivery." /></Field>
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" onClick={() => setStep(1)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
+              <Button onClick={() => setStep(3)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
+            </div>
+          </div>
+        )}
 
+        {/* 3 — Products */}
+        {step === 3 && (
+          <div className="space-y-4">
+            <p className="text-sm text-ink/60">Add your products one at a time. {products.length > 0 && <span className="font-medium text-ink">{products.length} added.</span>}</p>
             {products.length > 0 && (
               <div className="space-y-1.5">
                 {products.map((p, i) => (
@@ -241,7 +288,6 @@ export function StoreBuilderWizard({
                 ))}
               </div>
             )}
-
             <div className="space-y-3 rounded-xl border border-ink/10 bg-white p-4">
               <p className="text-sm font-semibold text-ink">New product</p>
               <Field label="Name" required><Input value={form.name} onChange={(e) => setF("name", e.target.value)} placeholder="Product name" /></Field>
@@ -286,26 +332,10 @@ export function StoreBuilderWizard({
               </Field>
               <Toggle label="Show on store" checked={!!form.is_active} onChange={(v) => setF("is_active", v)} />
               <Toggle label="Special offer" checked={!!form.isOffer} onChange={(v) => setF("isOffer", v)} />
-              {form.isOffer && (
-                <Field label="Discount (% off)"><Input type="number" min={0} max={100} value={form.offerPercent || ""} onChange={(e) => setF("offerPercent", Number(e.target.value))} placeholder="e.g. 20" /></Field>
-              )}
+              {form.isOffer && <Field label="Discount (% off)"><Input type="number" min={0} max={100} value={form.offerPercent || ""} onChange={(e) => setF("offerPercent", Number(e.target.value))} placeholder="e.g. 20" /></Field>}
               <Toggle label="New arrival" checked={!!form.isNewArrival} onChange={(v) => setF("isNewArrival", v)} />
               <Button onClick={addProduct} disabled={savingProduct} className="w-full">{savingProduct ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4" /> Add product</>}</Button>
             </div>
-
-            <div className="flex gap-2 pt-2">
-              <Button variant="outline" onClick={() => setStep(1)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
-              <Button onClick={() => setStep(3)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3 — Headline */}
-        {step === 3 && (
-          <div className="space-y-4">
-            <p className="text-sm text-ink/60">This is the big message at the top of your store.</p>
-            <Field label="Store headline"><Input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="e.g. Quality skincare, delivered to your door" /></Field>
-            <Field label="Sub-headline"><Textarea rows={2} value={subheadline} onChange={(e) => setSubheadline(e.target.value)} placeholder="e.g. Shop our best-selling products at honest prices, with fast nationwide delivery." /></Field>
             <div className="flex gap-2 pt-2">
               <Button variant="outline" onClick={() => setStep(2)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
               <Button onClick={() => setStep(4)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
@@ -313,21 +343,16 @@ export function StoreBuilderWizard({
           </div>
         )}
 
-        {/* STEP 4 — Reviews */}
+        {/* 4 — Trust badges */}
         {step === 4 && (
           <div className="space-y-4">
-            <p className="text-sm text-ink/60">Add reviews from past customers to build trust. This is optional.</p>
-            {reviews.map((r, i) => (
-              <div key={i} className="space-y-2 rounded-xl border border-ink/10 bg-white p-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-ink/50">Review {i + 1}</span>
-                  {reviews.length > 1 && <button onClick={() => setReviews(reviews.filter((_, j) => j !== i))} className="text-ink/40 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>}
-                </div>
-                <Input value={r.name} onChange={(e) => setReviews(reviews.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} placeholder="Customer name" />
-                <Textarea rows={2} value={r.quote} onChange={(e) => setReviews(reviews.map((x, j) => j === i ? { ...x, quote: e.target.value } : x))} placeholder="What they said" />
+            <p className="text-sm text-ink/60">These reassure shoppers (delivery, secure payment, returns…). Edit them or leave them as they are.</p>
+            {trustBadges.map((b, i) => (
+              <div key={b.id} className="space-y-2 rounded-xl border border-ink/10 bg-white p-3">
+                <Input value={b.title} onChange={(e) => setBadges(trustBadges.map((x, j) => j === i ? { ...x, title: e.target.value } : x))} placeholder="Title (e.g. Free Shipping)" />
+                <Input value={b.subtitle || ""} onChange={(e) => setBadges(trustBadges.map((x, j) => j === i ? { ...x, subtitle: e.target.value } : x))} placeholder="Subtitle (e.g. On orders over ₦20,000)" />
               </div>
             ))}
-            <Button variant="outline" size="sm" onClick={() => setReviews([...reviews, { name: "", quote: "" }])}><Plus className="h-4 w-4" /> Add another review</Button>
             <div className="flex gap-2 pt-2">
               <Button variant="outline" onClick={() => setStep(3)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
               <Button onClick={() => setStep(5)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
@@ -335,30 +360,45 @@ export function StoreBuilderWizard({
           </div>
         )}
 
-        {/* STEP 5 — Hero image */}
+        {/* 5 — Payouts */}
         {step === 5 && (
           <div className="space-y-4">
-            <p className="text-sm text-ink/60">Upload a header image for the top of your store (a banner or a key product photo works well).</p>
-            <label className="flex aspect-[16/9] cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-ink/25 bg-white">
-              {heroImage ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={heroImage} alt="" className="h-full w-full object-cover" />
-              ) : (
-                <span className="flex flex-col items-center gap-2 text-sm text-ink/50">{uploadingHero ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-6 w-6" />} Upload header image</span>
-              )}
-              <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setUploadingHero(true); const { url } = await uploadImage(f, "branding"); setUploadingHero(false); if (url) setHeroImage(url); }} />
-            </label>
+            <p className="text-sm text-ink/60">Connect the bank account where your sales should be paid out. You can skip and do this later.</p>
+            <div className="rounded-xl border border-ink/10 bg-white p-4">
+              <PayoutsForm initial={{ bankCode: "", bankName: "", accountNumber: "", accountName: "", connected: false }} />
+            </div>
             <div className="flex gap-2 pt-2">
               <Button variant="outline" onClick={() => setStep(4)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
-              <Button onClick={goPreview} className="flex-1">See my store <ArrowRight className="h-4 w-4" /></Button>
+              <Button onClick={() => setStep(6)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
             </div>
           </div>
         )}
 
-        {/* STEP 6 — Preview + finish */}
+        {/* 6 — Promo banner (optional) */}
         {step === 6 && (
           <div className="space-y-4">
-            <p className="text-sm text-ink/60">Here&apos;s your store. Publish it now, or open the editor to fine-tune anything.</p>
+            <p className="text-sm text-ink/60">Want a promo banner on your store? Upload one and we&apos;ll add it right after your products. Or skip it.</p>
+            <label className="flex aspect-[3/1] cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-ink/25 bg-white">
+              {bannerImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={bannerImage} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span className="flex flex-col items-center gap-2 text-sm text-ink/50">{uploadingBanner ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-6 w-6" />} Upload banner design</span>
+              )}
+              <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setUploadingBanner(true); const { url } = await uploadImage(f, "branding"); setUploadingBanner(false); if (url) setBannerImage(url); }} />
+            </label>
+            {bannerImage && <button onClick={() => setBannerImage(undefined)} className="text-sm text-ink/50 hover:text-ink">Remove banner</button>}
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" onClick={() => setStep(5)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
+              <Button onClick={goFinish} className="flex-1">{bannerImage ? "Continue" : "Skip"} <ArrowRight className="h-4 w-4" /></Button>
+            </div>
+          </div>
+        )}
+
+        {/* 7 — Finish */}
+        {step === 7 && (
+          <div className="space-y-4">
+            <p className="text-sm text-ink/60">Here&apos;s your store. Open the editor to tweak any remaining section, or publish now.</p>
             <div className="overflow-hidden rounded-xl border border-ink/10 bg-white">
               <BrowserFrame>
                 <div className="h-[60vh] overflow-y-auto">
@@ -367,10 +407,10 @@ export function StoreBuilderWizard({
               </BrowserFrame>
             </div>
             <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-2">
-              <Button variant="outline" onClick={() => finish("editor")} disabled={finishing}><Pencil className="h-4 w-4" /> Open editor</Button>
+              <Button variant="outline" onClick={() => finish("editor")} disabled={finishing}><Pencil className="h-4 w-4" /> Edit the rest</Button>
               <Button onClick={() => finish("publish")} disabled={finishing}>{finishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Rocket className="h-4 w-4" /> Publish my store</>}</Button>
             </div>
-            <button onClick={() => setStep(5)} className="mx-auto block text-sm text-ink/50 hover:text-ink">Back</button>
+            <button onClick={() => setStep(6)} className="mx-auto block text-sm text-ink/50 hover:text-ink">Back</button>
           </div>
         )}
       </div>

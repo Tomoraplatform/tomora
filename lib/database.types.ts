@@ -227,6 +227,8 @@ export interface SiteData {
   heroHeadline?: string;
   heroSubtext?: string;
   heroImage?: string;
+  /** Extra hero images for templates whose hero shows more than one image. */
+  heroImages?: string[];
   ctaText?: string;
   ctaHref?: string;
   contactForm?: boolean;
