@@ -7,7 +7,7 @@ import type { StoreApi } from "@/components/templates/store-context";
 import type { Product, Review, SiteData } from "@/lib/database.types";
 import { formatNaira, contrastText } from "@/lib/utils";
 
-interface Line { product: Product; qty: number; }
+interface Line { product: Product; qty: number; color?: string; }
 
 declare global {
   interface Window { PaystackPop?: any; }
@@ -46,29 +46,47 @@ export function PublishedStore({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [buyer, setBuyer] = useState({ name: "", email: "", phone: "", address: "" });
+  const [colorPick, setColorPick] = useState<{ product: Product; mode: "cart" | "buy" } | null>(null);
 
   const onBrand = contrastText(brandColor);
   const count = lines.reduce((n, l) => n + l.qty, 0);
   const total = lines.reduce((n, l) => n + l.product.price * l.qty, 0);
 
-  const addToCart = useCallback((product: Product) => {
+  const realAdd = useCallback((product: Product, color?: string) => {
     setLines((prev) => {
-      const found = prev.find((l) => l.product.id === product.id);
-      if (found) return prev.map((l) => l.product.id === product.id ? { ...l, qty: l.qty + 1 } : l);
-      return [...prev, { product, qty: 1 }];
+      const same = (l: Line) => l.product.id === product.id && l.color === color;
+      if (prev.some(same)) return prev.map((l) => same(l) ? { ...l, qty: l.qty + 1 } : l);
+      return [...prev, { product, qty: 1, color }];
     });
     setOpen(true);
   }, []);
 
-  const buyNow = useCallback((product: Product) => {
-    setLines([{ product, qty: 1 }]);
+  const realBuy = useCallback((product: Product, color?: string) => {
+    setLines([{ product, qty: 1, color }]);
     setOpen(true);
     setCheckout(true);
   }, []);
 
-  const setQty = (id: string, delta: number) =>
+  const addToCart = useCallback((product: Product) => {
+    if (product.colors?.length) { setColorPick({ product, mode: "cart" }); return; }
+    realAdd(product);
+  }, [realAdd]);
+
+  const buyNow = useCallback((product: Product) => {
+    if (product.colors?.length) { setColorPick({ product, mode: "buy" }); return; }
+    realBuy(product);
+  }, [realBuy]);
+
+  function chooseColor(color: string) {
+    if (!colorPick) return;
+    if (colorPick.mode === "cart") realAdd(colorPick.product, color);
+    else realBuy(colorPick.product, color);
+    setColorPick(null);
+  }
+
+  const setQty = (id: string, color: string | undefined, delta: number) =>
     setLines((prev) => prev.flatMap((l) => {
-      if (l.product.id !== id) return [l];
+      if (!(l.product.id === id && l.color === color)) return [l];
       const qty = l.qty + delta;
       return qty <= 0 ? [] : [{ ...l, qty }];
     }));
@@ -89,7 +107,7 @@ export function PublishedStore({
         body: JSON.stringify({
           siteId,
           buyer,
-          items: lines.map((l) => ({ productId: l.product.id, qty: l.qty })),
+          items: lines.map((l) => ({ productId: l.product.id, qty: l.qty, color: l.color || null })),
         }),
       });
       const data = await res.json();
@@ -138,6 +156,28 @@ export function PublishedStore({
         )}
       </button>
 
+      {/* Colour selection (products with variants) */}
+      {colorPick && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4" onClick={() => setColorPick(null)}>
+          <div className="w-full max-w-sm rounded-t-2xl bg-white p-5 shadow-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <p className="font-semibold text-ink">Choose a colour</p>
+              <button onClick={() => setColorPick(null)} aria-label="Close" className="text-ink/40 hover:text-ink"><X className="h-5 w-5" /></button>
+            </div>
+            <p className="mt-1 text-sm text-ink/60">{colorPick.product.name}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {(colorPick.product.colors || []).map((c) => (
+                <button key={c} onClick={() => chooseColor(c)}
+                  className="rounded-full border border-ink/15 px-4 py-2 text-sm font-medium text-ink transition hover:border-ink"
+                  style={{ ["--tw-ring-color" as any]: brandColor }}>
+                  {c}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Cart / checkout drawer */}
       {open && (
         <div className="fixed inset-0 z-50 flex justify-end">
@@ -162,7 +202,7 @@ export function PublishedStore({
                   {!checkout ? (
                     <ul className="space-y-4">
                       {lines.map((l) => (
-                        <li key={l.product.id} className="flex items-center gap-3">
+                        <li key={`${l.product.id}-${l.color || ""}`} className="flex items-center gap-3">
                           <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-neutral-100">
                             {l.product.images?.[0] && (
                               // eslint-disable-next-line @next/next/no-img-element
@@ -171,13 +211,14 @@ export function PublishedStore({
                           </div>
                           <div className="flex-1">
                             <p className="text-sm font-medium text-ink">{l.product.name}</p>
+                            {l.color && <p className="text-xs text-ink/50">Colour: {l.color}</p>}
                             <p className="text-sm text-ink/50">{formatNaira(l.product.price)}</p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <button onClick={() => setQty(l.product.id, -1)} className="rounded border p-1"><Minus className="h-3 w-3" /></button>
+                            <button onClick={() => setQty(l.product.id, l.color, -1)} className="rounded border p-1"><Minus className="h-3 w-3" /></button>
                             <span className="w-5 text-center text-sm">{l.qty}</span>
-                            <button onClick={() => setQty(l.product.id, 1)} className="rounded border p-1"><Plus className="h-3 w-3" /></button>
-                            <button onClick={() => setQty(l.product.id, -l.qty)} className="ml-1 text-ink/40"><Trash2 className="h-4 w-4" /></button>
+                            <button onClick={() => setQty(l.product.id, l.color, 1)} className="rounded border p-1"><Plus className="h-3 w-3" /></button>
+                            <button onClick={() => setQty(l.product.id, l.color, -l.qty)} className="ml-1 text-ink/40"><Trash2 className="h-4 w-4" /></button>
                           </div>
                         </li>
                       ))}

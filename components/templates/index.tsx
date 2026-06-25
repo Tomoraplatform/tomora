@@ -75,6 +75,7 @@ function toCatalogProducts(products?: Product[]): CatalogProduct[] | undefined {
     offer: p.is_offer,
     newArrival: p.is_new_arrival,
     offerPercent: p.offer_percent,
+    colors: p.colors || [],
   }));
 }
 

@@ -16,7 +16,7 @@ import { uploadImage } from "@/lib/upload";
 import { saveProduct, deleteProduct, type ProductInput } from "@/app/dashboard/store-actions";
 import type { Product } from "@/lib/database.types";
 
-const empty: ProductInput = { name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isBestSeller: false, isOffer: false, isNewArrival: false, offerPercent: 0 };
+const empty: ProductInput = { name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isBestSeller: false, isOffer: false, isNewArrival: false, offerPercent: 0, colors: [] };
 
 export function ProductsManager({ initial, embedded, onChanged }: { initial: Product[]; embedded?: boolean; onChanged?: () => void }) {
   const [products, setProducts] = useState<Product[]>(initial);
@@ -28,7 +28,7 @@ export function ProductsManager({ initial, embedded, onChanged }: { initial: Pro
 
   function startAdd() { setEditing({ ...empty }); setOpen(true); }
   function startEdit(p: Product) {
-    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, comparePrice: p.compare_price ?? undefined, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active, isBestSeller: p.is_best_seller, isOffer: p.is_offer, isNewArrival: p.is_new_arrival, offerPercent: p.offer_percent });
+    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, comparePrice: p.compare_price ?? undefined, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active, isBestSeller: p.is_best_seller, isOffer: p.is_offer, isNewArrival: p.is_new_arrival, offerPercent: p.offer_percent, colors: p.colors || [] });
     setOpen(true);
   }
 
@@ -154,6 +154,8 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
       </div>
       <div className="space-y-2"><Label>Category</Label><Input value={form.category} onChange={(e) => set("category", e.target.value)} placeholder="e.g. Dresses" /></div>
 
+      <ColorsField value={form.colors || []} onChange={(v) => set("colors", v)} />
+
       <div className="space-y-2">
         <Label>Images ({form.images.length}/5)</Label>
         <div className="flex flex-wrap gap-2">
@@ -206,6 +208,36 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
         <Button variant="outline" onClick={onClose}>Cancel</Button>
         <Button onClick={submit} disabled={saving}>{saving && <Loader2 className="h-4 w-4 animate-spin" />} Save Product</Button>
       </div>
+    </div>
+  );
+}
+
+/** Optional list of available colours for a product (e.g. Black, White, Beige). */
+function ColorsField({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  const [draft, setDraft] = useState("");
+  const add = () => {
+    const c = draft.trim();
+    if (c && !value.includes(c)) onChange([...value, c]);
+    setDraft("");
+  };
+  return (
+    <div className="space-y-2">
+      <Label>Available colors <span className="font-normal text-ink/40">(optional)</span></Label>
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {value.map((c) => (
+            <span key={c} className="flex items-center gap-1 rounded-full border border-ink/15 bg-cream/60 px-3 py-1 text-sm">
+              {c}
+              <button type="button" onClick={() => onChange(value.filter((x) => x !== c))} className="text-ink/40 hover:text-destructive"><X className="h-3 w-3" /></button>
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="flex gap-2">
+        <Input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="e.g. Black" onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }} />
+        <Button type="button" variant="outline" onClick={add}>Add</Button>
+      </div>
+      <p className="text-xs text-ink/50">If set, customers pick a colour before adding this product to cart.</p>
     </div>
   );
 }

@@ -24,7 +24,7 @@ import { createStoreDraft, finalizeStoreBuild } from "@/app/onboarding/actions";
 import type { Product, CatalogTrustBadge } from "@/lib/database.types";
 
 const PRESET_COLORS = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777"];
-const emptyProduct = (): ProductInput => ({ name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isOffer: false, isNewArrival: false, offerPercent: 0 });
+const emptyProduct = (): ProductInput => ({ name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isOffer: false, isNewArrival: false, offerPercent: 0, colors: [] });
 
 const STEPS = [
   { icon: Store, label: "Your brand" },
@@ -80,6 +80,7 @@ export function StoreBuilderWizard({
   const [form, setForm] = useState<ProductInput>(emptyProduct());
   const [addingCat, setAddingCat] = useState(false);
   const [newCat, setNewCat] = useState("");
+  const [colorDraft, setColorDraft] = useState("");
   const [savingProduct, setSavingProduct] = useState(false);
   const [productImgBusy, setProductImgBusy] = useState(false);
 
@@ -328,6 +329,20 @@ export function StoreBuilderWizard({
                       <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setProductImgBusy(true); const { url } = await uploadImage(f, "products"); setProductImgBusy(false); if (url) setF("images", [...form.images, url]); }} />
                     </label>
                   )}
+                </div>
+              </Field>
+              <Field label="Available colors (optional)">
+                {(form.colors || []).length > 0 && (
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    {(form.colors || []).map((c) => (
+                      <span key={c} className="flex items-center gap-1 rounded-full border border-ink/15 bg-cream/60 px-3 py-1 text-sm">{c}<button type="button" onClick={() => setF("colors", (form.colors || []).filter((x) => x !== c))} className="text-ink/40"><X className="h-3 w-3" /></button></span>
+                    ))}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Input value={colorDraft} onChange={(e) => setColorDraft(e.target.value)} placeholder="e.g. Black"
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); const c = colorDraft.trim(); if (c && !(form.colors || []).includes(c)) setF("colors", [...(form.colors || []), c]); setColorDraft(""); } }} />
+                  <Button type="button" variant="outline" onClick={() => { const c = colorDraft.trim(); if (c && !(form.colors || []).includes(c)) setF("colors", [...(form.colors || []), c]); setColorDraft(""); }}>Add</Button>
                 </div>
               </Field>
               <Toggle label="Show on store" checked={!!form.is_active} onChange={(v) => setF("is_active", v)} />

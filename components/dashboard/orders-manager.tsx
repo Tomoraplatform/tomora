@@ -44,7 +44,10 @@ export function OrdersManager({ initial, productNames }: { initial: Order[]; pro
               {orders.map((o) => (
                 <tr key={o.id}>
                   <td className="p-4 font-mono text-xs text-ink/60">{o.id.slice(0, 8)}</td>
-                  <td className="p-4 text-ink/80">{o.product_id ? productNames[o.product_id] || "—" : "—"}</td>
+                  <td className="p-4 text-ink/80">
+                    {o.product_id ? productNames[o.product_id] || "—" : "—"}
+                    {o.color && <div className="text-xs text-ink/50">Colour: {o.color}</div>}
+                  </td>
                   <td className="p-4">
                     <div className="text-ink">{o.buyer_name}</div>
                     <div className="text-xs text-ink/50">{o.buyer_email}</div>

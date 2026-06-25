@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   // Fetch the pending orders for this reference before marking them paid.
   const { data: pending } = await admin
     .from("orders")
-    .select("id, site_id, product_id, buyer_name, buyer_email, buyer_phone, buyer_address, amount")
+    .select("id, site_id, product_id, buyer_name, buyer_email, buyer_phone, buyer_address, amount, color")
     .eq("paystack_reference", reference)
     .eq("status", "pending");
 
@@ -67,7 +67,7 @@ async function notify(admin: ReturnType<typeof createAdminClient>, rows: any[], 
   const storeName = (site?.site_data as any)?.businessName || "your store";
 
   const items = rows
-    .map((r) => `<li>${nameById.get(r.product_id) || "Item"} — ${formatNaira(r.amount || 0)}</li>`)
+    .map((r) => `<li>${nameById.get(r.product_id) || "Item"}${r.color ? ` (${r.color})` : ""} — ${formatNaira(r.amount || 0)}</li>`)
     .join("");
   const buyerLine = [buyer.name, buyer.email, buyer.phone, buyer.address].filter(Boolean).join(" · ");
 

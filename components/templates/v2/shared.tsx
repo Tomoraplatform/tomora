@@ -106,7 +106,7 @@ function toProduct(p: CatalogProduct, siteData: SiteData): Product {
   return {
     id: p.id, user_id: "", site_id: "", name: p.name, description: null,
     price: sellingPrice(p), images: p.image ? [p.image] : [], category: p.category || null,
-    stock: 99, is_active: true, created_at: "",
+    stock: 99, is_active: true, colors: p.colors || [], created_at: "",
   } as Product;
 }
 

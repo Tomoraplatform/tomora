@@ -32,6 +32,7 @@ export interface ProductInput {
   isOffer?: boolean;
   isNewArrival?: boolean;
   offerPercent?: number;
+  colors?: string[];
 }
 
 export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; error?: string }> {
@@ -53,6 +54,7 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
       is_offer: !!input.isOffer,
       is_new_arrival: !!input.isNewArrival,
       offer_percent: Math.max(0, Math.min(100, Math.round(input.offerPercent || 0))),
+      colors: (input.colors || []).map((c) => String(c).trim()).filter(Boolean).slice(0, 20),
     };
     // Only include compare_price when set, so saving still works before the
     // 0006 migration adds the column.

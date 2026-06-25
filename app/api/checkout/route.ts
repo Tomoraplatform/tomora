@@ -81,6 +81,7 @@ export async function POST(request: NextRequest) {
       buyer_phone: buyer.phone || null,
       buyer_address: buyer.address || null,
       amount: lineTotal,
+      color: item.color ? String(item.color).slice(0, 60) : null,
       paystack_reference: reference,
       status: "pending",
     });

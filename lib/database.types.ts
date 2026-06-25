@@ -119,6 +119,7 @@ export interface Product {
   is_offer: boolean;
   is_new_arrival: boolean;
   offer_percent: number;
+  colors: string[];
   created_at: string;
 }
 
@@ -131,6 +132,7 @@ export interface Order {
   buyer_phone: string | null;
   buyer_address: string | null;
   amount: number;
+  color: string | null;
   paystack_reference: string | null;
   status: OrderStatus;
   seen: boolean;
@@ -171,6 +173,7 @@ export interface CatalogProduct {
   offer?: boolean;
   newArrival?: boolean;
   offerPercent?: number;
+  colors?: string[];
 }
 export interface CatalogCourse {
   id: string;
