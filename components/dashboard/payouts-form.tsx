@@ -34,14 +34,19 @@ export function PayoutsForm({ initial }: { initial: Initial }) {
 
   async function submit() {
     setSaving(true); setError(null);
-    const bankName = banks.find((b) => b.code === bankCode)?.name || initial.bankName;
-    const res = await savePayoutSettings({ bankCode, bankName, accountNumber });
-    setSaving(false);
-    if (res.ok) {
-      setConnected(true);
-      if (res.accountName) setAccountName(res.accountName);
-    } else {
-      setError(res.error || "Could not save.");
+    try {
+      const bankName = banks.find((b) => b.code === bankCode)?.name || initial.bankName;
+      const res = await savePayoutSettings({ bankCode, bankName, accountNumber });
+      if (res.ok) {
+        setConnected(true);
+        if (res.accountName) setAccountName(res.accountName);
+      } else {
+        setError(res.error || "Could not save. Please check the details and try again.");
+      }
+    } catch (e: any) {
+      setError(e?.message || "Could not reach the bank service. Please try again.");
+    } finally {
+      setSaving(false);
     }
   }
 

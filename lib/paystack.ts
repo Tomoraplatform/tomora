@@ -59,7 +59,7 @@ export async function listBanks(): Promise<{ name: string; code: string }[]> {
 export async function resolveAccount(accountNumber: string, bankCode: string): Promise<string> {
   const res = await fetch(
     `${PAYSTACK_BASE}/bank/resolve?account_number=${encodeURIComponent(accountNumber)}&bank_code=${encodeURIComponent(bankCode)}`,
-    { headers: { Authorization: `Bearer ${secret()}` } }
+    { headers: { Authorization: `Bearer ${secret()}` }, signal: AbortSignal.timeout(15000) }
   );
   const json = await res.json();
   if (!json.status) throw new Error(json.message || "Could not verify account number.");
@@ -78,6 +78,7 @@ export async function createSubaccount(params: {
 }): Promise<{ subaccountCode: string }> {
   const res = await fetch(`${PAYSTACK_BASE}/subaccount`, {
     method: "POST",
+    signal: AbortSignal.timeout(15000),
     headers: { Authorization: `Bearer ${secret()}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       business_name: params.businessName,
