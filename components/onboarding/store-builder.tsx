@@ -23,7 +23,7 @@ import { formatNaira } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { saveProduct, type ProductInput } from "@/app/dashboard/store-actions";
 import { createStoreDraft, finalizeStoreBuild } from "@/app/onboarding/actions";
-import type { Product, CatalogTrustBadge } from "@/lib/database.types";
+import type { Product, CatalogTrustBadge, SiteData } from "@/lib/database.types";
 
 const PRESET_COLORS = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777"];
 const emptyProduct = (): ProductInput => ({ name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isOffer: false, isNewArrival: false, offerPercent: 0, colors: [] });
@@ -39,35 +39,39 @@ const STEPS = [
 ];
 
 export function StoreBuilderWizard({
-  category, templateId, defaultEmail, onBack,
+  category, templateId, defaultEmail, onBack, existingSiteId, initialSubdomain, initial,
 }: {
   category: CatalogCategoryId;
   templateId: string;
   defaultEmail?: string;
   onBack: () => void;
+  existingSiteId?: string;
+  initialSubdomain?: string;
+  initial?: SiteData;
 }) {
   const router = useRouter();
-  const [step, setStep] = useState(0);
-  const [error, setError] = useState<string | null>(null);
   const slots = heroImageSlots(templateId);
+  // When resuming an existing draft, jump straight to the bank-payout step.
+  const [step, setStep] = useState(existingSiteId ? 3 : 0);
+  const [error, setError] = useState<string | null>(null);
 
   // Store basics + hero
-  const [businessName, setBusinessName] = useState("");
-  const [brandColor, setBrandColor] = useState("#022245");
-  const [logoUrl, setLogoUrl] = useState<string | undefined>();
+  const [businessName, setBusinessName] = useState(initial?.businessName || "");
+  const [brandColor, setBrandColor] = useState(initial?.brandColor || "#022245");
+  const [logoUrl, setLogoUrl] = useState<string | undefined>(initial?.logoUrl);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [heroCount, setHeroCount] = useState(slots);
-  const [heroImgs, setHeroImgs] = useState<string[]>([]);
+  const [heroImgs, setHeroImgs] = useState<string[]>(initial ? [initial.heroImage, ...(initial.heroImages || [])].filter(Boolean) as string[] : []);
   const [heroBusy, setHeroBusy] = useState<number | null>(null);
 
   // Draft
-  const [siteId, setSiteId] = useState<string | null>(null);
-  const [subdomain, setSubdomain] = useState("");
+  const [siteId, setSiteId] = useState<string | null>(existingSiteId ?? null);
+  const [subdomain, setSubdomain] = useState(initialSubdomain ?? "");
   const [creating, setCreating] = useState(false);
 
   // Content
-  const [headline, setHeadline] = useState("");
-  const [subheadline, setSubheadline] = useState("");
+  const [headline, setHeadline] = useState(initial?.heroHeadline || "");
+  const [subheadline, setSubheadline] = useState(initial?.heroSubtext || "");
 
   // Products
   const [products, setProducts] = useState<ProductInput[]>([]);
@@ -81,11 +85,11 @@ export function StoreBuilderWizard({
 
   // Trust badges
   const defaultBadges = useMemo<CatalogTrustBadge[]>(() => (createCatalogContent(templateId, { businessName: "Store", brandColor }).trustBadges) || [], [templateId, brandColor]);
-  const [badges, setBadges] = useState<CatalogTrustBadge[]>([]);
+  const [badges, setBadges] = useState<CatalogTrustBadge[]>(initial?.trustBadges || []);
   const trustBadges = badges.length ? badges : defaultBadges;
 
   // Banner
-  const [bannerImage, setBannerImage] = useState<string | undefined>();
+  const [bannerImage, setBannerImage] = useState<string | undefined>(initial?.sectionImages?.banner);
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
   // Finish

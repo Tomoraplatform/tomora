@@ -18,16 +18,20 @@ import { PayoutsForm } from "@/components/dashboard/payouts-form";
 import { createCatalogContent, heroImageSlots, type CatalogCategoryId } from "@/lib/catalog";
 import { uploadImage } from "@/lib/upload";
 import { createStoreDraft, finalizeStoreBuild } from "@/app/onboarding/actions";
+import type { SiteData } from "@/lib/database.types";
 
 const PRESET_COLORS = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777"];
 
 export function SiteBuilderWizard({
-  category, templateId, defaultEmail, onBack,
+  category, templateId, defaultEmail, onBack, existingSiteId, initial,
 }: {
   category: CatalogCategoryId;
   templateId: string;
   defaultEmail?: string;
   onBack: () => void;
+  existingSiteId?: string;
+  initialSubdomain?: string;
+  initial?: SiteData;
 }) {
   const router = useRouter();
   const slots = heroImageSlots(templateId);
@@ -43,35 +47,36 @@ export function SiteBuilderWizard({
   const finishStep = steps.length - 1;
   const donationStep = canDonate ? 3 : -1;
 
-  const [step, setStep] = useState(0);
+  // When resuming an existing draft, jump straight to the finish/publish step.
+  const [step, setStep] = useState(existingSiteId ? finishStep : 0);
   const [error, setError] = useState<string | null>(null);
 
   // Brand
-  const [businessName, setBusinessName] = useState("");
-  const [tagline, setTagline] = useState("");
-  const [brandColor, setBrandColor] = useState("#022245");
-  const [logoUrl, setLogoUrl] = useState<string | undefined>();
-  const [email, setEmail] = useState(defaultEmail || "");
-  const [instagram, setInstagram] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
-  const [facebook, setFacebook] = useState("");
+  const [businessName, setBusinessName] = useState(initial?.businessName || "");
+  const [tagline, setTagline] = useState(initial?.tagline || "");
+  const [brandColor, setBrandColor] = useState(initial?.brandColor || "#022245");
+  const [logoUrl, setLogoUrl] = useState<string | undefined>(initial?.logoUrl);
+  const [email, setEmail] = useState(initial?.email || defaultEmail || "");
+  const [instagram, setInstagram] = useState(initial?.social?.instagram || "");
+  const [whatsapp, setWhatsapp] = useState(initial?.social?.website || "");
+  const [facebook, setFacebook] = useState(initial?.social?.facebook || "");
   const [uploadingLogo, setUploadingLogo] = useState(false);
 
-  const [siteId, setSiteId] = useState<string | null>(null);
+  const [siteId, setSiteId] = useState<string | null>(existingSiteId ?? null);
   const [creating, setCreating] = useState(false);
 
   // Hero
   const [heroCount, setHeroCount] = useState(slots);
-  const [heroImgs, setHeroImgs] = useState<string[]>([]);
+  const [heroImgs, setHeroImgs] = useState<string[]>(initial ? [initial.heroImage, ...(initial.heroImages || [])].filter(Boolean) as string[] : []);
   const [heroBusy, setHeroBusy] = useState<number | null>(null);
 
   // Content
-  const [headline, setHeadline] = useState("");
-  const [subheadline, setSubheadline] = useState("");
+  const [headline, setHeadline] = useState(initial?.heroHeadline || "");
+  const [subheadline, setSubheadline] = useState(initial?.heroSubtext || "");
 
   // Donations
-  const [donationOn, setDonationOn] = useState(false);
-  const [donationGoal, setDonationGoal] = useState(0);
+  const [donationOn, setDonationOn] = useState(!!initial?.donationEnabled);
+  const [donationGoal, setDonationGoal] = useState(initial?.donationGoal || 0);
 
   const [finishing, setFinishing] = useState(false);
 

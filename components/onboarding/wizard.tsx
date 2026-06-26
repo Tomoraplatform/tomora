@@ -15,7 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { BrowserFrame } from "@/components/browser-frame";
 import { SiteRenderer } from "@/components/templates";
 import { APP_DOMAIN, TRIAL_DAYS } from "@/lib/constants";
-import { CATALOG_CATEGORIES, catalogTemplatesByCategory, createCatalogContent, type CatalogCategoryId } from "@/lib/catalog";
+import { CATALOG_CATEGORIES, catalogTemplatesByCategory, createCatalogContent, isCatalogTemplate, catalogTemplate, type CatalogCategoryId } from "@/lib/catalog";
+import type { SiteData } from "@/lib/database.types";
 import { slugifySubdomain } from "@/lib/utils";
 import { siteLiveUrl } from "@/lib/site-url";
 import { uploadImage } from "@/lib/upload";
@@ -26,7 +27,13 @@ import { SiteBuilderWizard } from "./site-builder";
 const ICONS = { ShoppingBag, User, GraduationCap, Heart, CalendarDays } as const;
 const PRESET_COLORS = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777"];
 
-export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
+export function OnboardingWizard({
+  defaultEmail,
+  resume,
+}: {
+  defaultEmail?: string;
+  resume?: { siteId: string; templateId: string; subdomain?: string; siteData?: SiteData };
+}) {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [category, setCategory] = useState<CatalogCategoryId | null>(null);
@@ -86,6 +93,17 @@ export function OnboardingWizard({ defaultEmail }: { defaultEmail?: string }) {
     if (destination === "editor") { router.push("/dashboard/editor"); return; }
     setSubdomain(res.subdomain || slugifySubdomain(businessName));
     setStep(5);
+  }
+
+  // Resume an unfinished draft straight into its builder (skip type/template).
+  if (resume && isCatalogTemplate(resume.templateId)) {
+    const cat = catalogTemplate(resume.templateId)!.category;
+    const common = {
+      category: cat, templateId: resume.templateId, defaultEmail,
+      existingSiteId: resume.siteId, initialSubdomain: resume.subdomain, initial: resume.siteData,
+      onBack: () => router.push("/dashboard"),
+    } as const;
+    return cat === "shop" ? <StoreBuilderWizard {...common} /> : <SiteBuilderWizard {...common} />;
   }
 
   // Hand off to a guided builder once a template is chosen.
