@@ -46,7 +46,9 @@ export function PublishedStore({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [buyer, setBuyer] = useState({ name: "", email: "", phone: "", address: "" });
-  const [colorPick, setColorPick] = useState<{ product: Product; mode: "cart" | "buy" } | null>(null);
+  // Product detail view (description + colour variants that swap the image).
+  const [detail, setDetail] = useState<Product | null>(null);
+  const [detailColor, setDetailColor] = useState<string | null>(null);
 
   const onBrand = contrastText(brandColor);
   const count = lines.reduce((n, l) => n + l.qty, 0);
@@ -67,22 +69,24 @@ export function PublishedStore({
     setCheckout(true);
   }, []);
 
+  const productColorNames = (p: Product): string[] =>
+    (p.color_variants?.length ? p.color_variants.map((v) => v.name) : (p.colors || [])).filter(Boolean);
+
+  const openProduct = useCallback((product: Product) => {
+    setDetail(product);
+    setDetailColor(productColorNames(product)[0] ?? null);
+  }, []);
+
   const addToCart = useCallback((product: Product) => {
-    if (product.colors?.length) { setColorPick({ product, mode: "cart" }); return; }
+    // Products with colours (or a description) open the detail view first.
+    if (productColorNames(product).length || product.description) { openProduct(product); return; }
     realAdd(product);
-  }, [realAdd]);
+  }, [realAdd, openProduct]);
 
   const buyNow = useCallback((product: Product) => {
-    if (product.colors?.length) { setColorPick({ product, mode: "buy" }); return; }
+    if (productColorNames(product).length || product.description) { openProduct(product); return; }
     realBuy(product);
-  }, [realBuy]);
-
-  function chooseColor(color: string) {
-    if (!colorPick) return;
-    if (colorPick.mode === "cart") realAdd(colorPick.product, color);
-    else realBuy(colorPick.product, color);
-    setColorPick(null);
-  }
+  }, [realBuy, openProduct]);
 
   const setQty = (id: string, color: string | undefined, delta: number) =>
     setLines((prev) => prev.flatMap((l) => {
@@ -91,7 +95,15 @@ export function PublishedStore({
       return qty <= 0 ? [] : [{ ...l, qty }];
     }));
 
-  const storeApi: StoreApi = useMemo(() => ({ live: true, addToCart, buyNow }), [addToCart, buyNow]);
+  const storeApi: StoreApi = useMemo(() => ({ live: true, addToCart, buyNow, openProduct }), [addToCart, buyNow, openProduct]);
+
+  // Image shown in the detail view: the selected colour's image, else the main image.
+  const detailImage = (() => {
+    if (!detail) return "";
+    const v = detail.color_variants?.find((x) => x.name === detailColor);
+    return v?.image || detail.images?.[0] || "";
+  })();
+  const detailColors = detail ? productColorNames(detail) : [];
 
   async function pay() {
     setError(null);
@@ -156,23 +168,61 @@ export function PublishedStore({
         )}
       </button>
 
-      {/* Colour selection (products with variants) */}
-      {colorPick && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4" onClick={() => setColorPick(null)}>
-          <div className="w-full max-w-sm rounded-t-2xl bg-white p-5 shadow-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <p className="font-semibold text-ink">Choose a colour</p>
-              <button onClick={() => setColorPick(null)} aria-label="Close" className="text-ink/40 hover:text-ink"><X className="h-5 w-5" /></button>
+      {/* Product detail (description + colour variants that swap the image) */}
+      {detail && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center sm:p-4" onClick={() => setDetail(null)}>
+          <div className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl sm:rounded-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-ink/10 px-4 py-3">
+              <p className="truncate font-semibold text-ink">{detail.name}</p>
+              <button onClick={() => setDetail(null)} aria-label="Close" className="text-ink/40 hover:text-ink"><X className="h-5 w-5" /></button>
             </div>
-            <p className="mt-1 text-sm text-ink/60">{colorPick.product.name}</p>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {(colorPick.product.colors || []).map((c) => (
-                <button key={c} onClick={() => chooseColor(c)}
-                  className="rounded-full border border-ink/15 px-4 py-2 text-sm font-medium text-ink transition hover:border-ink"
-                  style={{ ["--tw-ring-color" as any]: brandColor }}>
-                  {c}
-                </button>
-              ))}
+            <div className="grid flex-1 overflow-y-auto md:grid-cols-2">
+              <div className="bg-neutral-100">
+                {detailImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={detailImage} alt={detail.name} className="h-72 w-full object-cover md:h-full" />
+                ) : <div className="h-72 md:h-full" />}
+              </div>
+              <div className="space-y-4 p-5">
+                <p className="text-xl font-bold text-ink">{formatNaira(detail.price)}</p>
+                {detail.description && <p className="text-sm leading-relaxed text-ink/70">{detail.description}</p>}
+
+                {detailColors.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-ink">Colour: <span className="text-ink/60">{detailColor}</span></p>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {detailColors.map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => setDetailColor(c)}
+                          className="rounded-full border px-4 py-2 text-sm font-medium transition"
+                          style={detailColor === c
+                            ? { background: brandColor, color: onBrand, borderColor: brandColor }
+                            : { borderColor: "rgba(0,0,0,0.15)", color: "#022245" }}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={() => { realAdd(detail, detailColor || undefined); setDetail(null); }}
+                    className="flex-1 rounded-md px-4 py-3 text-sm font-semibold"
+                    style={{ background: brandColor, color: onBrand }}
+                  >
+                    Add to cart
+                  </button>
+                  <button
+                    onClick={() => { realBuy(detail, detailColor || undefined); setDetail(null); }}
+                    className="flex-1 rounded-md border border-ink/20 px-4 py-3 text-sm font-semibold text-ink"
+                  >
+                    Buy now
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

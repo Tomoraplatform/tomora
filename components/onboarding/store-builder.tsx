@@ -82,7 +82,7 @@ export function StoreBuilderWizard({
   const [newCat, setNewCat] = useState("");
   const [savingProduct, setSavingProduct] = useState(false);
   const [productImgBusy, setProductImgBusy] = useState(false);
-  const [colorDraft, setColorDraft] = useState("");
+  const [colorImgBusy, setColorImgBusy] = useState<number | null>(null);
 
   // Trust badges
   const defaultBadges = useMemo<CatalogTrustBadge[]>(() => (createCatalogContent(templateId, { businessName: "Store", brandColor }).trustBadges) || [], [templateId, brandColor]);
@@ -343,19 +343,23 @@ export function StoreBuilderWizard({
                   )}
                 </div>
               </Field>
-              <Field label="Available colors (optional)">
-                {(form.colors || []).length > 0 && (
-                  <div className="mb-2 flex flex-wrap gap-2">
-                    {(form.colors || []).map((c) => (
-                      <span key={c} className="flex items-center gap-1 rounded-full border border-ink/15 bg-cream/60 px-3 py-1 text-sm">{c}<button type="button" onClick={() => setF("colors", (form.colors || []).filter((x) => x !== c))} className="text-ink/40"><X className="h-3 w-3" /></button></span>
-                    ))}
-                  </div>
-                )}
-                <div className="flex gap-2">
-                  <Input value={colorDraft} onChange={(e) => setColorDraft(e.target.value)} placeholder="e.g. Black"
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); const c = colorDraft.trim(); if (c && !(form.colors || []).includes(c)) setF("colors", [...(form.colors || []), c]); setColorDraft(""); } }} />
-                  <Button type="button" variant="outline" onClick={() => { const c = colorDraft.trim(); if (c && !(form.colors || []).includes(c)) setF("colors", [...(form.colors || []), c]); setColorDraft(""); }}>Add</Button>
+              <Field label="Colours (optional — each colour can have its own photo)">
+                <div className="space-y-2">
+                  {(form.colorVariants || []).map((v, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <label className="relative flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-dashed border-ink/25 bg-cream">
+                        {colorImgBusy === i ? <Loader2 className="h-4 w-4 animate-spin" /> : v.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={v.image} alt="" className="h-full w-full object-cover" />
+                        ) : <UploadCloud className="h-4 w-4 text-ink/40" />}
+                        <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setColorImgBusy(i); const { url } = await uploadImage(f, "products"); setColorImgBusy(null); if (url) setF("colorVariants", (form.colorVariants || []).map((x, j) => j === i ? { ...x, image: url } : x)); }} />
+                      </label>
+                      <Input value={v.name} placeholder="Colour name (e.g. Black)" onChange={(e) => setF("colorVariants", (form.colorVariants || []).map((x, j) => j === i ? { ...x, name: e.target.value } : x))} />
+                      <button type="button" onClick={() => setF("colorVariants", (form.colorVariants || []).filter((_, j) => j !== i))} className="text-ink/40"><X className="h-4 w-4" /></button>
+                    </div>
+                  ))}
                 </div>
+                <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => setF("colorVariants", [...(form.colorVariants || []), { name: "", image: "" }])}><Plus className="h-4 w-4" /> Add colour</Button>
               </Field>
               <Toggle label="Show on store" checked={!!form.is_active} onChange={(v) => setF("is_active", v)} />
               <Toggle label="Special offer" checked={!!form.isOffer} onChange={(v) => setF("isOffer", v)} />

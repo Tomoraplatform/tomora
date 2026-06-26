@@ -8,6 +8,8 @@ export interface StoreApi {
   live: boolean;
   addToCart: (product: Product) => void;
   buyNow: (product: Product) => void;
+  /** Open the product detail view (description + colour variants that swap the image). */
+  openProduct?: (product: Product) => void;
   /** Set on a published site so forms can submit leads; undefined in preview. */
   siteId?: string;
 }

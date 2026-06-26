@@ -12,11 +12,13 @@ const slug = (s: string) => (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").
 
 function Card({ product, siteData }: { product: CatalogProduct; siteData: SiteData }) {
   const store = useStore();
-  const add = () => store.addToCart({ id: product.id, name: product.name, price: sellingPrice(product), images: product.image ? [product.image] : [], stock: 99, is_active: true } as Product);
+  const asProduct = { id: product.id, name: product.name, description: (product as any).description || null, price: sellingPrice(product), images: product.image ? [product.image] : [], stock: 99, is_active: true, colors: product.colors || [], color_variants: product.colorVariants || [] } as Product;
+  const add = () => store.addToCart(asProduct);
+  const open = () => (store.openProduct || store.addToCart)(asProduct);
   return (
     <div className="group">
-      <div className="relative aspect-[3/4] overflow-hidden bg-neutral-100"><Img src={product.image} className="h-full w-full object-cover transition-transform group-hover:scale-105" />{product.offer && product.offerPercent ? <span className="absolute left-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-bold text-white" style={{ background: "var(--brand-primary)" }}>-{product.offerPercent}%</span> : null}</div>
-      <p className="mt-3 line-clamp-1 text-sm text-neutral-700">{product.name}</p>
+      <button type="button" onClick={open} className="relative block aspect-[3/4] w-full overflow-hidden bg-neutral-100"><Img src={product.image} className="h-full w-full object-cover transition-transform group-hover:scale-105" />{product.offer && product.offerPercent ? <span className="absolute left-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-bold text-white" style={{ background: "var(--brand-primary)" }}>-{product.offerPercent}%</span> : null}</button>
+      <p onClick={open} className="mt-3 line-clamp-1 cursor-pointer text-sm text-neutral-700">{product.name}</p>
       <div className="mt-1 flex items-center gap-2">
         <span className="font-semibold">{formatNaira(sellingPrice(product))}</span>
         {originalPrice(product) && <span className="text-sm text-neutral-400 line-through">{formatNaira(originalPrice(product)!)}</span>}

@@ -120,7 +120,13 @@ export interface Product {
   is_new_arrival: boolean;
   offer_percent: number;
   colors: string[];
+  color_variants: ColorVariant[];
   created_at: string;
+}
+
+export interface ColorVariant {
+  name: string;
+  image?: string;
 }
 
 export interface Order {
@@ -163,6 +169,7 @@ export interface SiteBlock {
 export interface CatalogProduct {
   id: string;
   name: string;
+  description?: string;
   price: number;
   comparePrice?: number;
   image: string;
@@ -174,6 +181,7 @@ export interface CatalogProduct {
   newArrival?: boolean;
   offerPercent?: number;
   colors?: string[];
+  colorVariants?: ColorVariant[];
 }
 export interface CatalogCourse {
   id: string;

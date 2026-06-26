@@ -104,9 +104,9 @@ export function originalPrice(p: CatalogProduct): number | undefined {
 /** Maps a catalog product into the cart Product shape and fires store actions. */
 function toProduct(p: CatalogProduct, siteData: SiteData): Product {
   return {
-    id: p.id, user_id: "", site_id: "", name: p.name, description: null,
+    id: p.id, user_id: "", site_id: "", name: p.name, description: p.description ?? null,
     price: sellingPrice(p), images: p.image ? [p.image] : [], category: p.category || null,
-    stock: 99, is_active: true, colors: p.colors || [], created_at: "",
+    stock: 99, is_active: true, colors: p.colors || [], color_variants: p.colorVariants || [], created_at: "",
   } as Product;
 }
 
@@ -116,16 +116,17 @@ export function ProductCardV2({
   product: CatalogProduct; siteData: SiteData; showButton?: boolean;
 }) {
   const store = useStore();
+  const open = () => store.openProduct?.(toProduct(product, siteData));
   return (
     <div className="group flex flex-col overflow-hidden rounded-xl border border-black/10 bg-white">
-      <div className="relative aspect-square overflow-hidden bg-black/5">
+      <button type="button" onClick={open} className="relative block aspect-square overflow-hidden bg-black/5 text-left">
         <Img src={product.image} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
         {product.offer && product.offerPercent ? (
           <span className="absolute left-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-bold text-white" style={{ background: "var(--brand-primary)" }}>-{product.offerPercent}%</span>
         ) : null}
-      </div>
+      </button>
       <div className="flex flex-1 flex-col gap-2 p-4">
-        <h3 className="line-clamp-1 font-medium text-black/90">{product.name}</h3>
+        <h3 onClick={open} className="line-clamp-1 cursor-pointer font-medium text-black/90">{product.name}</h3>
         {product.rating != null && <StarRow rating={product.rating} count={product.reviews} />}
         <div className="flex items-center gap-2">
           <span className="font-semibold text-black/90">{formatNaira(sellingPrice(product))}</span>
@@ -147,12 +148,13 @@ export function ProductCardV2({
 
 export function ProductCardSplit({ product, siteData }: { product: CatalogProduct; siteData: SiteData }) {
   const store = useStore();
+  const open = () => store.openProduct?.(toProduct(product, siteData));
   return (
     <div className="overflow-hidden rounded-lg border border-black/10 bg-white p-3">
-      <div className="aspect-square overflow-hidden rounded-md bg-black/5">
+      <button type="button" onClick={open} className="block aspect-square w-full overflow-hidden rounded-md bg-black/5">
         <Img src={product.image} className="h-full w-full object-cover" />
-      </div>
-      <h3 className="mt-3 line-clamp-1 text-sm text-black/80">{product.name}</h3>
+      </button>
+      <h3 onClick={open} className="mt-3 line-clamp-1 cursor-pointer text-sm text-black/80">{product.name}</h3>
       <div className="mt-1 flex items-center justify-between">
         <span className="font-semibold">{formatNaira(product.price)}</span>
         <button onClick={() => store.addToCart(toProduct(product, siteData))} className="text-xs font-semibold" style={{ color: "var(--brand-primary)" }}>

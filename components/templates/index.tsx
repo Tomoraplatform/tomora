@@ -67,6 +67,7 @@ function toCatalogProducts(products?: Product[]): CatalogProduct[] | undefined {
   return products.map((p) => ({
     id: p.id,
     name: p.name,
+    description: p.description ?? undefined,
     price: p.price,
     comparePrice: p.compare_price ?? undefined,
     image: p.images?.[0] || "",
@@ -76,6 +77,7 @@ function toCatalogProducts(products?: Product[]): CatalogProduct[] | undefined {
     newArrival: p.is_new_arrival,
     offerPercent: p.offer_percent,
     colors: p.colors || [],
+    colorVariants: p.color_variants || [],
   }));
 }
 

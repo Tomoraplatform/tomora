@@ -33,6 +33,7 @@ export interface ProductInput {
   isNewArrival?: boolean;
   offerPercent?: number;
   colors?: string[];
+  colorVariants?: { name: string; image?: string }[];
 }
 
 export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; error?: string }> {
@@ -54,7 +55,15 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
       is_offer: !!input.isOffer,
       is_new_arrival: !!input.isNewArrival,
       offer_percent: Math.max(0, Math.min(100, Math.round(input.offerPercent || 0))),
-      colors: (input.colors || []).map((c) => String(c).trim()).filter(Boolean).slice(0, 20),
+      colors: (() => {
+        const fromVariants = (input.colorVariants || []).map((v) => String(v.name || "").trim()).filter(Boolean);
+        const base = fromVariants.length ? fromVariants : (input.colors || []).map((c) => String(c).trim()).filter(Boolean);
+        return base.slice(0, 20);
+      })(),
+      color_variants: (input.colorVariants || [])
+        .map((v) => ({ name: String(v.name || "").trim(), image: v.image || undefined }))
+        .filter((v) => v.name)
+        .slice(0, 20),
     };
     // Only include compare_price when set, so saving still works before the
     // 0006 migration adds the column.
