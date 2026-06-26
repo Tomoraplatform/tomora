@@ -32,6 +32,7 @@ export function SiteBuilderWizard({
   existingSiteId?: string;
   initialSubdomain?: string;
   initial?: SiteData;
+  existingPayoutConnected?: boolean;
 }) {
   const router = useRouter();
   const slots = heroImageSlots(templateId);

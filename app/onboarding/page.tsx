@@ -15,7 +15,7 @@ export default async function OnboardingPage() {
   // unfinished draft, resume the guided builder where it left off.
   const { data: sites } = await supabase
     .from("sites")
-    .select("id, is_live, template_id, subdomain, site_data")
+    .select("id, is_live, template_id, subdomain, site_data, paystack_subaccount")
     .eq("user_id", user.id)
     .order("created_at", { ascending: true });
   if (sites?.some((s) => s.is_live)) redirect("/dashboard");
@@ -24,7 +24,7 @@ export default async function OnboardingPage() {
   return (
     <OnboardingWizard
       defaultEmail={user.email ?? undefined}
-      resume={draft ? { siteId: draft.id, templateId: draft.template_id, subdomain: draft.subdomain, siteData: draft.site_data } : undefined}
+      resume={draft ? { siteId: draft.id, templateId: draft.template_id, subdomain: draft.subdomain, siteData: draft.site_data, payoutConnected: !!draft.paystack_subaccount } : undefined}
     />
   );
 }

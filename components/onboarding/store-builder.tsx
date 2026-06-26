@@ -39,7 +39,7 @@ const STEPS = [
 ];
 
 export function StoreBuilderWizard({
-  category, templateId, defaultEmail, onBack, existingSiteId, initialSubdomain, initial,
+  category, templateId, defaultEmail, onBack, existingSiteId, initialSubdomain, initial, existingPayoutConnected,
 }: {
   category: CatalogCategoryId;
   templateId: string;
@@ -48,11 +48,12 @@ export function StoreBuilderWizard({
   existingSiteId?: string;
   initialSubdomain?: string;
   initial?: SiteData;
+  existingPayoutConnected?: boolean;
 }) {
   const router = useRouter();
   const slots = heroImageSlots(templateId);
-  // When resuming an existing draft, jump straight to the bank-payout step.
-  const [step, setStep] = useState(existingSiteId ? 3 : 0);
+  // Resuming a draft: jump to trust badges if payout's already set, else bank payout.
+  const [step, setStep] = useState(existingSiteId ? (existingPayoutConnected ? 4 : 3) : 0);
   const [error, setError] = useState<string | null>(null);
 
   // Store basics + hero

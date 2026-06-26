@@ -32,7 +32,7 @@ export function OnboardingWizard({
   resume,
 }: {
   defaultEmail?: string;
-  resume?: { siteId: string; templateId: string; subdomain?: string; siteData?: SiteData };
+  resume?: { siteId: string; templateId: string; subdomain?: string; siteData?: SiteData; payoutConnected?: boolean };
 }) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -101,6 +101,7 @@ export function OnboardingWizard({
     const common = {
       category: cat, templateId: resume.templateId, defaultEmail,
       existingSiteId: resume.siteId, initialSubdomain: resume.subdomain, initial: resume.siteData,
+      existingPayoutConnected: resume.payoutConnected,
       onBack: () => router.push("/dashboard"),
     } as const;
     return cat === "shop" ? <StoreBuilderWizard {...common} /> : <SiteBuilderWizard {...common} />;
