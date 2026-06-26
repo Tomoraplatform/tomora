@@ -290,6 +290,11 @@ export function StoreBuilderWizard({
                 ))}
               </div>
             )}
+
+            {/* Prominent continue once at least one product is added */}
+            {products.length > 0 && (
+              <Button onClick={() => setStep(3)} className="w-full">Continue to bank payout <ArrowRight className="h-4 w-4" /></Button>
+            )}
             <div className="space-y-3 rounded-xl border border-ink/10 bg-white p-4">
               <p className="text-sm font-semibold text-ink">New product</p>
               <Field label="Name" required><Input value={form.name} onChange={(e) => setF("name", e.target.value)} placeholder="Product name" /></Field>
