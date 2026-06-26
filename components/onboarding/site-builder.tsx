@@ -91,12 +91,18 @@ export function SiteBuilderWizard({
 
   async function startDraft() {
     if (!businessName.trim()) { setError("Please enter your name / organisation name."); return; }
+    if (siteId) { setStep(1); return; }
     setError(null); setCreating(true);
-    const res = await createStoreDraft({ category, templateId, businessName, tagline, brandColor, logoUrl, email, social });
-    setCreating(false);
-    if (!res.ok || !res.siteId) { setError(res.error || "Could not create your website."); return; }
-    setSiteId(res.siteId);
-    setStep(1);
+    try {
+      const res = await createStoreDraft({ category, templateId, businessName, tagline, brandColor, logoUrl, email, social });
+      if (!res.ok || !res.siteId) { setError(res.error || "Could not create your website. Please try again."); return; }
+      setSiteId(res.siteId);
+      setStep(1);
+    } catch (e: any) {
+      setError(e?.message || "Something went wrong. Please try again.");
+    } finally {
+      setCreating(false);
+    }
   }
 
   async function uploadHeroAt(i: number, file?: File) {
@@ -109,17 +115,22 @@ export function SiteBuilderWizard({
 
   async function finish(dest: "editor" | "publish") {
     if (!siteId) return;
-    setFinishing(true);
-    const res = await finalizeStoreBuild({
-      siteId, headline, subheadline,
-      heroImage: heroImgs[0], heroImages: slots > 1 ? heroImgs.slice(1).filter(Boolean) : undefined,
-      donationEnabled: canDonate ? donationOn : undefined,
-      donationGoal: canDonate && donationOn ? donationGoal : undefined,
-      publish: dest === "publish",
-    });
-    setFinishing(false);
-    if (!res.ok) { setError(res.error || "Could not save."); return; }
-    router.push(dest === "editor" ? "/dashboard/editor" : "/dashboard");
+    setError(null); setFinishing(true);
+    try {
+      const res = await finalizeStoreBuild({
+        siteId, headline, subheadline,
+        heroImage: heroImgs[0], heroImages: slots > 1 ? heroImgs.slice(1).filter(Boolean) : undefined,
+        donationEnabled: canDonate ? donationOn : undefined,
+        donationGoal: canDonate && donationOn ? donationGoal : undefined,
+        publish: dest === "publish",
+      });
+      if (!res.ok) { setError(res.error || "Could not save."); return; }
+      router.push(dest === "editor" ? "/dashboard/editor" : "/dashboard");
+    } catch (e: any) {
+      setError(e?.message || "Could not save. Please try again.");
+    } finally {
+      setFinishing(false);
+    }
   }
 
   return (

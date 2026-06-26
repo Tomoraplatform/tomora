@@ -162,6 +162,7 @@ export async function completeOnboarding(
  * Sets the active-site cookie so saveProduct / savePayoutSettings target it.
  */
 export async function createStoreDraft(payload: OnboardingPayload): Promise<OnboardingResult> {
+  try {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "You must be logged in." };
@@ -223,6 +224,9 @@ export async function createStoreDraft(payload: OnboardingPayload): Promise<Onbo
     return { ok: false, error: error?.message || "Could not create store." };
   }
   return { ok: false, error: "Could not find an available address. Try a different name." };
+  } catch (e: any) {
+    return { ok: false, error: e?.message || "Could not create store." };
+  }
 }
 
 export interface FinalizeStoreInput {
