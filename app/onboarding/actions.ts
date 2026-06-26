@@ -22,6 +22,9 @@ export interface OnboardingPayload {
   email?: string;
   address?: string;
   social: SocialLinks;
+  /** Uploaded hero image(s) — persisted to the draft so they aren't lost on resume. */
+  heroImage?: string;
+  heroImages?: string[];
 }
 
 /** Maps a catalog category to the existing site_category DB enum. */
@@ -188,6 +191,8 @@ export async function createStoreDraft(payload: OnboardingPayload): Promise<Onbo
   });
   siteData.email = payload.email || user.email || undefined;
   siteData.social = payload.social;
+  if (payload.heroImage) siteData.heroImage = payload.heroImage;
+  if (payload.heroImages && payload.heroImages.length) siteData.heroImages = payload.heroImages;
 
   const trialEnds = new Date();
   trialEnds.setDate(trialEnds.getDate() + TRIAL_DAYS);

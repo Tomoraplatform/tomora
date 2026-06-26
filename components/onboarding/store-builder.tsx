@@ -126,6 +126,7 @@ export function StoreBuilderWizard({
       const res = await createStoreDraft({
         category, templateId, businessName, brandColor, logoUrl,
         email: defaultEmail, social: {},
+        heroImage: heroImgs[0], heroImages: slots > 1 ? heroImgs.slice(1).filter(Boolean) : undefined,
       });
       if (!res.ok || !res.siteId) { setError(res.error || "Could not create your store. Please try again."); return; }
       setSiteId(res.siteId);
