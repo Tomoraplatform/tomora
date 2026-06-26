@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft, ArrowRight, UploadCloud, Loader2, Check, Plus, X, Store, Banknote,
+  ArrowLeft, ArrowRight, UploadCloud, Loader2, Check, Plus, X, Banknote,
   Package, Type, Image as ImageIcon, Rocket, Pencil, ShieldCheck,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
@@ -27,8 +27,7 @@ const PRESET_COLORS = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#
 const emptyProduct = (): ProductInput => ({ name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isOffer: false, isNewArrival: false, offerPercent: 0, colors: [] });
 
 const STEPS = [
-  { icon: Store, label: "Your brand" },
-  { icon: ImageIcon, label: "Hero image" },
+  { icon: ImageIcon, label: "Store & hero image" },
   { icon: Type, label: "Headline" },
   { icon: Package, label: "Products" },
   { icon: ShieldCheck, label: "Trust badges" },
@@ -50,25 +49,18 @@ export function StoreBuilderWizard({
   const [error, setError] = useState<string | null>(null);
   const slots = heroImageSlots(templateId);
 
-  // Brand
+  // Store basics + hero
   const [businessName, setBusinessName] = useState("");
-  const [tagline, setTagline] = useState("");
   const [brandColor, setBrandColor] = useState("#022245");
   const [logoUrl, setLogoUrl] = useState<string | undefined>();
-  const [email, setEmail] = useState(defaultEmail || "");
-  const [instagram, setInstagram] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
-  const [facebook, setFacebook] = useState("");
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [heroCount, setHeroCount] = useState(slots);
+  const [heroImgs, setHeroImgs] = useState<string[]>([]);
+  const [heroBusy, setHeroBusy] = useState<number | null>(null);
 
   // Draft
   const [siteId, setSiteId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
-
-  // Hero images
-  const [heroCount, setHeroCount] = useState(slots);
-  const [heroImgs, setHeroImgs] = useState<string[]>([]);
-  const [heroBusy, setHeroBusy] = useState<number | null>(null);
 
   // Content
   const [headline, setHeadline] = useState("");
@@ -80,11 +72,11 @@ export function StoreBuilderWizard({
   const [form, setForm] = useState<ProductInput>(emptyProduct());
   const [addingCat, setAddingCat] = useState(false);
   const [newCat, setNewCat] = useState("");
-  const [colorDraft, setColorDraft] = useState("");
   const [savingProduct, setSavingProduct] = useState(false);
   const [productImgBusy, setProductImgBusy] = useState(false);
+  const [colorDraft, setColorDraft] = useState("");
 
-  // Trust badges (seed from the template defaults)
+  // Trust badges
   const defaultBadges = useMemo<CatalogTrustBadge[]>(() => (createCatalogContent(templateId, { businessName: "Store", brandColor }).trustBadges) || [], [templateId, brandColor]);
   const [badges, setBadges] = useState<CatalogTrustBadge[]>([]);
   const trustBadges = badges.length ? badges : defaultBadges;
@@ -97,31 +89,34 @@ export function StoreBuilderWizard({
   const [dbProducts, setDbProducts] = useState<Product[]>([]);
   const [finishing, setFinishing] = useState(false);
 
-  const social = { instagram, facebook, website: whatsapp };
   const setF = (k: keyof ProductInput, v: any) => setForm((f) => ({ ...f, [k]: v }));
 
   const previewData = useMemo(() => {
-    const d = createCatalogContent(templateId, { businessName: businessName || "Your Store", brandColor, logoUrl, tagline });
+    const d = createCatalogContent(templateId, { businessName: businessName || "Your Store", brandColor, logoUrl });
     if (heroImgs[0]) d.heroImage = heroImgs[0];
     if (slots > 1 && heroImgs.length > 1) d.heroImages = heroImgs.slice(1);
     if (headline.trim()) d.heroHeadline = headline.trim();
     if (subheadline.trim()) d.heroSubtext = subheadline.trim();
     if (trustBadges.length) d.trustBadges = trustBadges;
     if (bannerImage) d.sectionImages = { ...(d.sectionImages || {}), banner: bannerImage };
-    d.email = email; d.social = social;
+    d.email = defaultEmail;
     return d;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [templateId, businessName, brandColor, logoUrl, tagline, heroImgs, headline, subheadline, badges, bannerImage, email, instagram, facebook, whatsapp]);
+  }, [templateId, businessName, brandColor, logoUrl, heroImgs, headline, subheadline, badges, bannerImage]);
 
   async function loadProducts(id: string) {
     const { data } = await createClient().from("products").select("*").eq("site_id", id).order("created_at", { ascending: false });
     setDbProducts((data as Product[]) || []);
   }
 
+  // Create the draft store from step 0, then move on.
   async function startDraft() {
     if (!businessName.trim()) { setError("Please enter your store name."); return; }
     setError(null); setCreating(true);
-    const res = await createStoreDraft({ category, templateId, businessName, tagline, brandColor, logoUrl, email, social });
+    const res = await createStoreDraft({
+      category, templateId, businessName, brandColor, logoUrl,
+      email: defaultEmail, social: {},
+    });
     setCreating(false);
     if (!res.ok || !res.siteId) { setError(res.error || "Could not create your store."); return; }
     setSiteId(res.siteId);
@@ -158,7 +153,7 @@ export function StoreBuilderWizard({
   async function goFinish() {
     setError(null);
     if (siteId) await loadProducts(siteId);
-    setStep(7);
+    setStep(6);
   }
 
   async function finish(dest: "editor" | "publish") {
@@ -195,31 +190,47 @@ export function StoreBuilderWizard({
 
         {error && <p className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
-        {/* 0 — Brand */}
+        {/* 0 — Store name + hero image(s) */}
         {step === 0 && (
           <div className="space-y-4">
-            <p className="text-sm text-ink/60">Tell us about your store. You can change all of this later.</p>
+            <p className="text-sm text-ink/60">Name your store and add the main photo(s) for the top (hero) of your store — a clear product photo works best.</p>
             <Field label="Store name" required><Input value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="e.g. Bola's Beauty" /></Field>
-            <Field label="Tagline"><Input value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="A short line about your store" /></Field>
-            <Field label="Logo">
-              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-ink/25 py-3 text-sm text-ink/70">
-                {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : logoUrl ? <Check className="h-4 w-4 text-emerald-600" /> : <UploadCloud className="h-4 w-4" />}
-                {logoUrl ? "Logo uploaded — replace" : "Upload your logo"}
-                <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setUploadingLogo(true); const { url } = await uploadImage(f, "branding"); setUploadingLogo(false); if (url) setLogoUrl(url); }} />
-              </label>
-            </Field>
-            <Field label="Brand color">
-              <div className="flex flex-wrap gap-2">
-                {PRESET_COLORS.map((c) => <button key={c} onClick={() => setBrandColor(c)} className={`h-9 w-9 rounded-full ${brandColor.toLowerCase() === c.toLowerCase() ? "ring-2 ring-ink ring-offset-2" : ""}`} style={{ background: c }} aria-label={c} />)}
-                <label className="relative h-9 w-9 cursor-pointer rounded-full border border-ink/20" style={{ background: brandColor }}>
-                  <input type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="absolute inset-0 cursor-pointer opacity-0" />
-                </label>
+            {slots > 1 && (
+              <Field label="How many images does the hero show?">
+                <select value={heroCount} onChange={(e) => setHeroCount(Number(e.target.value))} className="h-10 w-full rounded-md border border-ink/15 bg-white px-3 text-sm">
+                  {Array.from({ length: slots }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n} image{n > 1 ? "s" : ""}</option>)}
+                </select>
+              </Field>
+            )}
+            <Field label={slots > 1 ? "Hero images" : "Hero image"}>
+              <div className="space-y-3">
+                {Array.from({ length: slots > 1 ? heroCount : 1 }, (_, i) => (
+                  <label key={i} className="flex aspect-[16/9] cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-ink/25 bg-white">
+                    {heroImgs[i] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={heroImgs[i]} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="flex flex-col items-center gap-2 text-sm text-ink/50">{heroBusy === i ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-6 w-6" />} {slots > 1 ? `Image ${i + 1}` : "Upload hero image"}</span>
+                    )}
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => uploadHeroAt(i, e.target.files?.[0])} />
+                  </label>
+                ))}
               </div>
             </Field>
-            <Field label="Contact email"><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" /></Field>
-            <Field label="Instagram"><Input value={instagram} onChange={(e) => setInstagram(e.target.value)} placeholder="@yourhandle" /></Field>
-            <Field label="WhatsApp / Website"><Input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="https:// or wa.me/234..." /></Field>
-            <Field label="Facebook"><Input value={facebook} onChange={(e) => setFacebook(e.target.value)} placeholder="facebook.com/yourpage" /></Field>
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Logo (optional)">
+                <label className="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-ink/25 text-sm text-ink/70">
+                  {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : logoUrl ? <Check className="h-4 w-4 text-emerald-600" /> : <UploadCloud className="h-4 w-4" />}
+                  {logoUrl ? "Added" : "Upload"}
+                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setUploadingLogo(true); const { url } = await uploadImage(f, "branding"); setUploadingLogo(false); if (url) setLogoUrl(url); }} />
+                </label>
+              </Field>
+              <Field label="Brand color">
+                <div className="flex flex-wrap gap-1.5">
+                  {PRESET_COLORS.map((c) => <button key={c} onClick={() => setBrandColor(c)} className={`h-7 w-7 rounded-full ${brandColor.toLowerCase() === c.toLowerCase() ? "ring-2 ring-ink ring-offset-1" : ""}`} style={{ background: c }} aria-label={c} />)}
+                </div>
+              </Field>
+            </div>
             <div className="flex gap-2 pt-2">
               <Button variant="outline" onClick={onBack} className="flex-1"><ArrowLeft className="h-4 w-4" /> Template</Button>
               <Button onClick={startDraft} disabled={creating} className="flex-1">{creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Continue <ArrowRight className="h-4 w-4" /></>}</Button>
@@ -227,30 +238,12 @@ export function StoreBuilderWizard({
           </div>
         )}
 
-        {/* 1 — Hero image(s) */}
+        {/* 1 — Headline */}
         {step === 1 && (
           <div className="space-y-4">
-            <p className="text-sm text-ink/60">Add the main photo(s) for the top of your store — a clear product or banner photo works best.</p>
-            {slots > 1 && (
-              <Field label="How many images does your hero show?">
-                <select value={heroCount} onChange={(e) => setHeroCount(Number(e.target.value))} className="h-10 w-full rounded-md border border-ink/15 bg-white px-3 text-sm">
-                  {Array.from({ length: slots }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n} image{n > 1 ? "s" : ""}</option>)}
-                </select>
-              </Field>
-            )}
-            <div className="space-y-3">
-              {Array.from({ length: slots > 1 ? heroCount : 1 }, (_, i) => (
-                <label key={i} className="flex aspect-[16/9] cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-ink/25 bg-white">
-                  {heroImgs[i] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={heroImgs[i]} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="flex flex-col items-center gap-2 text-sm text-ink/50">{heroBusy === i ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-6 w-6" />} {slots > 1 ? `Image ${i + 1}` : "Upload hero image"}</span>
-                  )}
-                  <input type="file" accept="image/*" className="hidden" onChange={(e) => uploadHeroAt(i, e.target.files?.[0])} />
-                </label>
-              ))}
-            </div>
+            <p className="text-sm text-ink/60">The big message at the top of your store.</p>
+            <Field label="Store headline"><Input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="e.g. Quality skincare, delivered to your door" /></Field>
+            <Field label="Sub-headline"><Textarea rows={2} value={subheadline} onChange={(e) => setSubheadline(e.target.value)} placeholder="e.g. Shop our best-sellers at honest prices, with fast nationwide delivery." /></Field>
             <div className="flex gap-2 pt-2">
               <Button variant="outline" onClick={() => setStep(0)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
               <Button onClick={() => setStep(2)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
@@ -258,21 +251,8 @@ export function StoreBuilderWizard({
           </div>
         )}
 
-        {/* 2 — Headline */}
+        {/* 2 — Products */}
         {step === 2 && (
-          <div className="space-y-4">
-            <p className="text-sm text-ink/60">The big message at the top of your store.</p>
-            <Field label="Store headline"><Input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="e.g. Quality skincare, delivered to your door" /></Field>
-            <Field label="Sub-headline"><Textarea rows={2} value={subheadline} onChange={(e) => setSubheadline(e.target.value)} placeholder="e.g. Shop our best-sellers at honest prices, with fast nationwide delivery." /></Field>
-            <div className="flex gap-2 pt-2">
-              <Button variant="outline" onClick={() => setStep(1)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
-              <Button onClick={() => setStep(3)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
-            </div>
-          </div>
-        )}
-
-        {/* 3 — Products */}
-        {step === 3 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">Add your products one at a time. {products.length > 0 && <span className="font-medium text-ink">{products.length} added.</span>}</p>
             {products.length > 0 && (
@@ -352,14 +332,14 @@ export function StoreBuilderWizard({
               <Button onClick={addProduct} disabled={savingProduct} className="w-full">{savingProduct ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4" /> Add product</>}</Button>
             </div>
             <div className="flex gap-2 pt-2">
-              <Button variant="outline" onClick={() => setStep(2)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
-              <Button onClick={() => setStep(4)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
+              <Button variant="outline" onClick={() => setStep(1)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
+              <Button onClick={() => setStep(3)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
             </div>
           </div>
         )}
 
-        {/* 4 — Trust badges */}
-        {step === 4 && (
+        {/* 3 — Trust badges */}
+        {step === 3 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">These reassure shoppers (delivery, secure payment, returns…). Edit them or leave them as they are.</p>
             {trustBadges.map((b, i) => (
@@ -369,28 +349,28 @@ export function StoreBuilderWizard({
               </div>
             ))}
             <div className="flex gap-2 pt-2">
-              <Button variant="outline" onClick={() => setStep(3)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
-              <Button onClick={() => setStep(5)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
+              <Button variant="outline" onClick={() => setStep(2)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
+              <Button onClick={() => setStep(4)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
             </div>
           </div>
         )}
 
-        {/* 5 — Payouts */}
-        {step === 5 && (
+        {/* 4 — Payouts */}
+        {step === 4 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">Connect the bank account where your sales should be paid out. You can skip and do this later.</p>
             <div className="rounded-xl border border-ink/10 bg-white p-4">
               <PayoutsForm initial={{ bankCode: "", bankName: "", accountNumber: "", accountName: "", connected: false }} />
             </div>
             <div className="flex gap-2 pt-2">
-              <Button variant="outline" onClick={() => setStep(4)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
-              <Button onClick={() => setStep(6)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
+              <Button variant="outline" onClick={() => setStep(3)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
+              <Button onClick={() => setStep(5)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
             </div>
           </div>
         )}
 
-        {/* 6 — Promo banner (optional) */}
-        {step === 6 && (
+        {/* 5 — Promo banner (optional) */}
+        {step === 5 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">Want a promo banner on your store? Upload one and we&apos;ll add it right after your products. Or skip it.</p>
             <label className="flex aspect-[3/1] cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-ink/25 bg-white">
@@ -404,14 +384,14 @@ export function StoreBuilderWizard({
             </label>
             {bannerImage && <button onClick={() => setBannerImage(undefined)} className="text-sm text-ink/50 hover:text-ink">Remove banner</button>}
             <div className="flex gap-2 pt-2">
-              <Button variant="outline" onClick={() => setStep(5)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
+              <Button variant="outline" onClick={() => setStep(4)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
               <Button onClick={goFinish} className="flex-1">{bannerImage ? "Continue" : "Skip"} <ArrowRight className="h-4 w-4" /></Button>
             </div>
           </div>
         )}
 
-        {/* 7 — Finish */}
-        {step === 7 && (
+        {/* 6 — Finish */}
+        {step === 6 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">Here&apos;s your store. Open the editor to tweak any remaining section, or publish now.</p>
             <div className="overflow-hidden rounded-xl border border-ink/10 bg-white">
@@ -425,7 +405,7 @@ export function StoreBuilderWizard({
               <Button variant="outline" onClick={() => finish("editor")} disabled={finishing}><Pencil className="h-4 w-4" /> Edit the rest</Button>
               <Button onClick={() => finish("publish")} disabled={finishing}>{finishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Rocket className="h-4 w-4" /> Publish my store</>}</Button>
             </div>
-            <button onClick={() => setStep(6)} className="mx-auto block text-sm text-ink/50 hover:text-ink">Back</button>
+            <button onClick={() => setStep(5)} className="mx-auto block text-sm text-ink/50 hover:text-ink">Back</button>
           </div>
         )}
       </div>
