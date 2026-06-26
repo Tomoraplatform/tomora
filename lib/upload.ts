@@ -42,7 +42,10 @@ export async function uploadImage(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated." };
 
-  const compressed = await compressImage(file);
+  // Product photos don't need full hero resolution — compress harder for speed.
+  const compressed = bucket === "products"
+    ? await compressImage(file, 1200, 0.78)
+    : await compressImage(file, 1600, 0.85);
   const ext = compressed.name.split(".").pop() || "jpg";
   const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
 

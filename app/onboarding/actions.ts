@@ -240,6 +240,8 @@ export interface FinalizeStoreInput {
   bannerImage?: string;
   donationEnabled?: boolean;
   donationGoal?: number;
+  /** New subdomain (store-name part of the URL); slugified + checked for uniqueness. */
+  subdomain?: string;
   publish: boolean;
 }
 
@@ -250,7 +252,7 @@ export async function finalizeStoreBuild(input: FinalizeStoreInput): Promise<{ o
   if (!user) return { ok: false, error: "You must be logged in." };
 
   const { data: site } = await supabase
-    .from("sites").select("id, site_data").eq("id", input.siteId).eq("user_id", user.id).maybeSingle();
+    .from("sites").select("id, site_data, subdomain").eq("id", input.siteId).eq("user_id", user.id).maybeSingle();
   if (!site) return { ok: false, error: "Store not found." };
 
   const sd = { ...(site.site_data as any) };
@@ -271,8 +273,21 @@ export async function finalizeStoreBuild(input: FinalizeStoreInput): Promise<{ o
   const update: Record<string, unknown> = { site_data: sd };
   if (input.publish) update.is_live = true;
 
+  // Optional: change the store-name part of the URL (subdomain).
+  const wantedSub = input.subdomain ? slugifySubdomain(input.subdomain) : "";
+  if (wantedSub && wantedSub !== site.subdomain) {
+    const { count } = await supabase
+      .from("sites").select("id", { count: "exact", head: true })
+      .eq("subdomain", wantedSub).neq("id", input.siteId);
+    if (count && count > 0) return { ok: false, error: "That web address is already taken — try another." };
+    update.subdomain = wantedSub;
+  }
+
   const { error } = await supabase.from("sites").update(update).eq("id", input.siteId);
-  if (error) return { ok: false, error: error.message };
+  if (error) {
+    if ((error as any).code === "23505") return { ok: false, error: "That web address is already taken — try another." };
+    return { ok: false, error: error.message };
+  }
   revalidatePath("/dashboard");
   return { ok: true };
 }

@@ -16,6 +16,8 @@ import { BrowserFrame } from "@/components/browser-frame";
 import { SiteRenderer } from "@/components/templates";
 import { PayoutsForm } from "@/components/dashboard/payouts-form";
 import { createCatalogContent, heroImageSlots, type CatalogCategoryId } from "@/lib/catalog";
+import { APP_DOMAIN } from "@/lib/constants";
+import { slugifySubdomain } from "@/lib/utils";
 import { uploadImage } from "@/lib/upload";
 import { formatNaira } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -30,8 +32,8 @@ const STEPS = [
   { icon: ImageIcon, label: "Product image to be displayed first" },
   { icon: Type, label: "Headline" },
   { icon: Package, label: "Products" },
+  { icon: Banknote, label: "Bank payout" },
   { icon: ShieldCheck, label: "Trust badges" },
-  { icon: Banknote, label: "Payouts" },
   { icon: ImageIcon, label: "Promo banner" },
   { icon: Rocket, label: "Finish" },
 ];
@@ -60,6 +62,7 @@ export function StoreBuilderWizard({
 
   // Draft
   const [siteId, setSiteId] = useState<string | null>(null);
+  const [subdomain, setSubdomain] = useState("");
   const [creating, setCreating] = useState(false);
 
   // Content
@@ -121,6 +124,7 @@ export function StoreBuilderWizard({
       });
       if (!res.ok || !res.siteId) { setError(res.error || "Could not create your store. Please try again."); return; }
       setSiteId(res.siteId);
+      if (res.subdomain) setSubdomain(res.subdomain);
       setStep(1);
     } catch (e: any) {
       setError(e?.message || "Something went wrong. Please try again.");
@@ -176,6 +180,7 @@ export function StoreBuilderWizard({
         heroImage: heroImgs[0], heroImages: slots > 1 ? heroImgs.slice(1).filter(Boolean) : undefined,
         trustBadges: badges.length ? badges : undefined,
         bannerImage,
+        subdomain: subdomain || undefined,
         publish: dest === "publish",
       });
       if (!res.ok) { setError(res.error || "Could not save."); return; }
@@ -354,8 +359,22 @@ export function StoreBuilderWizard({
           </div>
         )}
 
-        {/* 3 — Trust badges */}
+        {/* 3 — Bank payout */}
         {step === 3 && (
+          <div className="space-y-4">
+            <p className="text-sm text-ink/60">Connect the bank account where your sales should be paid out. You can skip and do this later.</p>
+            <div className="rounded-xl border border-ink/10 bg-white p-4">
+              <PayoutsForm initial={{ bankCode: "", bankName: "", accountNumber: "", accountName: "", connected: false }} />
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button variant="outline" onClick={() => setStep(2)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
+              <Button onClick={() => setStep(4)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
+            </div>
+          </div>
+        )}
+
+        {/* 4 — Trust badges */}
+        {step === 4 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">These reassure shoppers (delivery, secure payment, returns…). Edit them or leave them as they are.</p>
             {trustBadges.map((b, i) => (
@@ -364,20 +383,6 @@ export function StoreBuilderWizard({
                 <Input value={b.subtitle || ""} onChange={(e) => setBadges(trustBadges.map((x, j) => j === i ? { ...x, subtitle: e.target.value } : x))} placeholder="Subtitle (e.g. On orders over ₦20,000)" />
               </div>
             ))}
-            <div className="flex gap-2 pt-2">
-              <Button variant="outline" onClick={() => setStep(2)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
-              <Button onClick={() => setStep(4)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
-            </div>
-          </div>
-        )}
-
-        {/* 4 — Payouts */}
-        {step === 4 && (
-          <div className="space-y-4">
-            <p className="text-sm text-ink/60">Connect the bank account where your sales should be paid out. You can skip and do this later.</p>
-            <div className="rounded-xl border border-ink/10 bg-white p-4">
-              <PayoutsForm initial={{ bankCode: "", bankName: "", accountNumber: "", accountName: "", connected: false }} />
-            </div>
             <div className="flex gap-2 pt-2">
               <Button variant="outline" onClick={() => setStep(3)} className="flex-1"><ArrowLeft className="h-4 w-4" /> Back</Button>
               <Button onClick={() => setStep(5)} className="flex-1">Continue <ArrowRight className="h-4 w-4" /></Button>
@@ -409,17 +414,34 @@ export function StoreBuilderWizard({
         {/* 6 — Finish */}
         {step === 6 && (
           <div className="space-y-4">
-            <p className="text-sm text-ink/60">Here&apos;s your store. Open the editor to tweak any remaining section, or publish now.</p>
+            <p className="text-sm text-ink/60">Here&apos;s your store. Set your web address, then publish — or open the editor to tweak any remaining section.</p>
             <div className="overflow-hidden rounded-xl border border-ink/10 bg-white">
               <BrowserFrame>
-                <div className="h-[60vh] overflow-y-auto">
+                <div className="h-[55vh] overflow-y-auto">
                   <SiteRenderer templateId={templateId} siteData={previewData} brandColor={brandColor} products={dbProducts} />
                 </div>
               </BrowserFrame>
             </div>
+
+            <div className="rounded-xl border border-ink/10 bg-white p-4">
+              <Field label="Your web address">
+                <div className="flex items-center rounded-md border border-ink/15 bg-white px-3">
+                  <span className="py-2 text-sm text-ink/40">https://</span>
+                  <input
+                    value={subdomain}
+                    onChange={(e) => setSubdomain(slugifySubdomain(e.target.value))}
+                    className="min-w-0 flex-1 border-0 py-2 text-sm text-ink outline-none"
+                    placeholder="your-store"
+                  />
+                  <span className="py-2 text-sm text-ink/40">.{APP_DOMAIN}</span>
+                </div>
+              </Field>
+              <p className="mt-1 break-all text-xs text-ink/50">Your store will be live at <span className="font-medium text-ink">{subdomain || "your-store"}.{APP_DOMAIN}</span></p>
+            </div>
+
             <div className="grid grid-cols-1 gap-2 pt-1 sm:grid-cols-2">
               <Button variant="outline" onClick={() => finish("editor")} disabled={finishing}><Pencil className="h-4 w-4" /> Edit the rest</Button>
-              <Button onClick={() => finish("publish")} disabled={finishing}>{finishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Rocket className="h-4 w-4" /> Publish my store</>}</Button>
+              <Button onClick={() => finish("publish")} disabled={finishing || !subdomain.trim()}>{finishing ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Rocket className="h-4 w-4" /> Publish my store</>}</Button>
             </div>
             <button onClick={() => setStep(5)} className="mx-auto block text-sm text-ink/50 hover:text-ink">Back</button>
           </div>
