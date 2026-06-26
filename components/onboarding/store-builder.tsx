@@ -27,7 +27,7 @@ const PRESET_COLORS = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#
 const emptyProduct = (): ProductInput => ({ name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isOffer: false, isNewArrival: false, offerPercent: 0, colors: [] });
 
 const STEPS = [
-  { icon: ImageIcon, label: "Store & hero image" },
+  { icon: ImageIcon, label: "Product image to be displayed first" },
   { icon: Type, label: "Headline" },
   { icon: Package, label: "Products" },
   { icon: ShieldCheck, label: "Trust badges" },
@@ -193,16 +193,16 @@ export function StoreBuilderWizard({
         {/* 0 — Store name + hero image(s) */}
         {step === 0 && (
           <div className="space-y-4">
-            <p className="text-sm text-ink/60">Name your store and add the main photo(s) for the top (hero) of your store — a clear product photo works best.</p>
+            <p className="text-sm text-ink/60">Name your store and add the product image(s) to be displayed first at the top of your store.</p>
             <Field label="Store name" required><Input value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="e.g. Bola's Beauty" /></Field>
             {slots > 1 && (
-              <Field label="How many images does the hero show?">
+              <Field label="How many images are shown at the top?">
                 <select value={heroCount} onChange={(e) => setHeroCount(Number(e.target.value))} className="h-10 w-full rounded-md border border-ink/15 bg-white px-3 text-sm">
                   {Array.from({ length: slots }, (_, i) => i + 1).map((n) => <option key={n} value={n}>{n} image{n > 1 ? "s" : ""}</option>)}
                 </select>
               </Field>
             )}
-            <Field label={slots > 1 ? "Hero images" : "Hero image"}>
+            <Field label={slots > 1 ? "Product images to be displayed first" : "Product image to be displayed first"}>
               <div className="space-y-3">
                 {Array.from({ length: slots > 1 ? heroCount : 1 }, (_, i) => (
                   <label key={i} className="flex aspect-[16/9] cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-dashed border-ink/25 bg-white">
