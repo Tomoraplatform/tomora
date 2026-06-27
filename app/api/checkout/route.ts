@@ -123,7 +123,14 @@ async function notify(
   const buyerLine = [buyer.name, buyer.email, buyer.phone, buyer.address].filter(Boolean).join(" · ");
   const bankLine = `${bank.holder || ""} — ${bank.account}${bank.name ? ` (${bank.name})` : ""}`;
 
-  const ownerEmail = (profile?.email as string) || null;
+  // Prefer the profile email, fall back to the account's login email.
+  let ownerEmail = (profile?.email as string) || null;
+  if (!ownerEmail) {
+    try {
+      const { data: authUser } = await admin.auth.admin.getUserById(ownerId);
+      ownerEmail = authUser?.user?.email || null;
+    } catch { /* ignore */ }
+  }
   if (ownerEmail) {
     await sendEmail({
       to: ownerEmail,
