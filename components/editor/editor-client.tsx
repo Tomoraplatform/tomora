@@ -275,6 +275,15 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
         </div>
       </div>
 
+      {/* Sticky publish bar (mobile) — header actions are hidden on small screens */}
+      <div className="flex shrink-0 items-center gap-2 border-t border-ink/10 bg-white p-3 lg:hidden">
+        <Button asChild variant="outline" className="flex-1"><a href={liveUrl} target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /> View live</a></Button>
+        <Button className="flex-1" onClick={save} disabled={saving}>
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? <Check className="h-4 w-4" /> : <Rocket className="h-4 w-4" />}
+          {saving ? "Saving…" : live ? "Save & publish" : "Save"}
+        </Button>
+      </div>
+
       {/* Product backend — glass overlay over the editor */}
       {showProducts && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/30 p-4 backdrop-blur-md sm:p-8" onMouseDown={(e) => { if (e.target === e.currentTarget) setShowProducts(false); }}>
