@@ -469,7 +469,7 @@ function demoEvents(seed: string): CatalogEvent[] {
     image: img(`${seed}-event-${i}`, 800, 600), description: "Join us for a memorable gathering with the whole community.",
   }));
 }
-function demoTestimonials(category: CatalogCategoryId): CatalogTestimonial[] {
+const DEMO_TESTIMONIALS: Record<string, CatalogTestimonial[]> = (() => {
   const base: Record<string, CatalogTestimonial[]> = {
     shop: [
       { id: "t1", name: "Ada O.", role: "Customer", quote: "Fast delivery and great quality. I shop here every month." },
@@ -494,7 +494,20 @@ function demoTestimonials(category: CatalogCategoryId): CatalogTestimonial[] {
       { id: "t2", name: "Daniel A.", role: "Member", quote: "The events are thoughtfully run and genuinely uplifting." },
     ],
   };
-  return base[category] || base.shop;
+  return base;
+})();
+
+function demoTestimonials(category: CatalogCategoryId): CatalogTestimonial[] {
+  return DEMO_TESTIMONIALS[category] || DEMO_TESTIMONIALS.shop;
+}
+
+/** All seeded demo review quotes — used to detect unedited placeholder reviews. */
+export const DEMO_REVIEW_QUOTES: Set<string> = new Set(
+  Object.values(DEMO_TESTIMONIALS).flat().map((t) => t.quote)
+);
+/** True if a review is still an untouched seeded placeholder (hidden on published sites). */
+export function isDemoReview(t: { quote?: string }): boolean {
+  return !!t.quote && DEMO_REVIEW_QUOTES.has(t.quote);
 }
 
 function demoServices(templateId: string): CatalogServiceItem[] {

@@ -4,6 +4,7 @@ import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Quote, ShoppingC
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, subheading, navItems, productCategories, CustomSections, OrderedSections } from "./shared";
 import { DonationSection } from "./DonationSection";
+import { useTemplateEdit } from "../editor-context";
 
 const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"];
 
@@ -11,6 +12,7 @@ const TRUST_ICONS = [Truck, ShieldCheck, RotateCcw, Headphones];
 const slug = (s: string) => (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 
 export function ShopMate({ siteData, brandColor }: TemplateProps) {
+  const { editing } = useTemplateEdit();
   const name = siteData.businessName || "Ecommerce One";
   const products = siteData.products || [];
   const badges = siteData.trustBadges?.length
@@ -134,14 +136,15 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
         )}
       </section>
     ),
-    offer: (
+    // Hide the special-offer section on the live site unless a product is flagged.
+    offer: (offers.length === 0 && !editing) ? null : (
       <section id="offer" className="bg-[#F3EFE6]">
         <div className="mx-auto max-w-6xl px-5 py-14">
           <span className="text-sm font-semibold uppercase tracking-wide" style={{ color: "var(--brand-primary)" }}>Special Offer</span>
           <h2 className="mt-2 font-serif text-4xl font-bold">{heading(siteData, "sale", "Up to 50% Off")}</h2>
           <p className="mt-3 max-w-xl text-black/60">{subheading(siteData, "sale", "Limited time savings across our best-selling categories. Don't miss out.")}</p>
           {offers.length === 0 ? (
-            <p className="mt-6 text-sm text-black/50">Mark a product as “On offer” in your dashboard to feature it here.</p>
+            <p className="mt-6 text-sm text-black/50">Mark a product as “On offer” in your dashboard to feature it here. (This section is hidden on your live site until you do.)</p>
           ) : (
             <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
               {offers.map((p) => <ProductCardV2 key={p.id} product={p} siteData={siteData} />)}
@@ -150,10 +153,14 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
     ),
-    testimonials: (
+    // Hide the reviews section on the live site until the owner adds real reviews.
+    testimonials: (testimonialsOf(siteData).length === 0 && !editing) ? null : (
       <section className="bg-[#FBFAF7]">
         <div className="mx-auto max-w-6xl px-5 py-14">
           <h2 className="text-center text-2xl font-bold">{heading(siteData, "testimonials", "What Our Customers Say")}</h2>
+          {testimonialsOf(siteData).length === 0 ? (
+            <p className="mt-6 text-center text-sm text-black/50">Add customer reviews in the editor to show them here. (Hidden on your live site until you do.)</p>
+          ) : (
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {testimonialsOf(siteData).map((t, i) => (
               <figure key={t.id || i} className="rounded-2xl bg-white p-6 shadow-sm">
@@ -166,6 +173,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
               </figure>
             ))}
           </div>
+          )}
         </div>
       </section>
     ),

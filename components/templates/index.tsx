@@ -5,6 +5,7 @@ import type { Product, SiteData, CatalogProduct } from "@/lib/database.types";
 import { TemplateEditContext, type TemplateEditApi } from "./editor-context";
 import { StoreContext, type StoreApi } from "./store-context";
 import type { TemplateProps } from "./shared";
+import { isDemoReview } from "@/lib/catalog";
 
 import { Clarity } from "./clarity";
 import { Prestige } from "./prestige";
@@ -108,8 +109,15 @@ export function SiteRenderer({
 
   // For v2 stores, feed live DB products into the template's content.
   const liveProducts = toCatalogProducts(products);
-  const v2Data: SiteData =
+  let v2Data: SiteData =
     V2 && liveProducts ? { ...siteData, products: liveProducts } : siteData;
+
+  // On the live site (not in the editor), hide untouched placeholder reviews so a
+  // store never shows fake testimonials the owner didn't write.
+  if (!editApi?.editing && v2Data.testimonials?.length) {
+    const real = v2Data.testimonials.filter((t) => !isDemoReview(t));
+    if (real.length !== v2Data.testimonials.length) v2Data = { ...v2Data, testimonials: real };
+  }
 
   const storeValue: StoreApi = {
     ...(storeApi ?? { live: false, addToCart: () => {}, buyNow: () => {} }),

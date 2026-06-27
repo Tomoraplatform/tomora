@@ -210,7 +210,8 @@ export function PublishedStore({
               <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
                 <CheckCircle2 className="h-14 w-14 text-emerald-500" />
                 <p className="text-lg font-semibold text-ink">Order received, {buyer.name || "friend"}!</p>
-                <p className="text-sm text-ink/60">Please complete your transfer of <span className="font-semibold text-ink">{formatNaira(total)}</span>{accountNumber ? <> to <span className="font-semibold text-ink">{accountNumber}</span>{accountName ? ` (${accountName})` : ""}</> : ""}. The seller will confirm your payment and process your order. Details sent to {buyer.email}.</p>
+                <p className="text-sm text-ink/60">Please complete your transfer of <span className="font-semibold text-ink">{formatNaira(total)}</span>{accountNumber ? <> to <span className="font-semibold text-ink">{accountNumber}</span>{accountName ? ` (${accountName})` : ""}</> : ""}. Details sent to {buyer.email}.</p>
+                <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">✓ The seller has been notified of your order and will confirm your payment, then process it.</p>
               </div>
             ) : lines.length === 0 ? (
               <div className="flex flex-1 items-center justify-center p-8 text-center text-ink/50">Your cart is empty.</div>
