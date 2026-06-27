@@ -1,11 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { initTransaction } from "@/lib/paystack";
+import { sendEmail } from "@/lib/email";
+import { formatNaira } from "@/lib/utils";
 
 /**
- * Creates pending order rows for a storefront checkout. Amounts are computed
- * server-side from the database — never trusted from the client. Returns a
- * shared Paystack reference and the total to charge (in Naira).
+ * Records a storefront order as pending and returns the store owner's bank
+ * details so the customer can pay by direct transfer. Amounts are computed
+ * server-side from the database — never trusted from the client. The owner
+ * confirms the order as paid from their dashboard once the transfer lands.
  */
 export async function POST(request: NextRequest) {
   const admin = createAdminClient();
@@ -23,11 +25,14 @@ export async function POST(request: NextRequest) {
 
   const { data: site } = await admin
     .from("sites")
-    .select("id, is_live, category, site_data, paystack_subaccount")
+    .select("id, is_live, category, site_data, user_id, bank_name, account_number, account_name")
     .eq("id", siteId)
     .maybeSingle();
   if (!site || !site.is_live || site.category !== "ecommerce") {
     return NextResponse.json({ error: "Store unavailable." }, { status: 400 });
+  }
+  if (!site.account_number) {
+    return NextResponse.json({ error: "This store hasn't added a payment account yet." }, { status: 400 });
   }
 
   // Real DB products.
@@ -64,7 +69,6 @@ export async function POST(request: NextRequest) {
     } else {
       const p = (products || []).find((x: any) => x.id === item.productId);
       if (p && p.is_active) {
-        // Apply the offer discount server-side so the charged price is trusted.
         price = p.is_offer && p.offer_percent > 0 ? Math.round(p.price * (1 - p.offer_percent / 100)) : p.price;
         productId = p.id;
       }
@@ -88,28 +92,60 @@ export async function POST(request: NextRequest) {
   }
 
   if (!rows.length || total <= 0) {
-    return NextResponse.json({ error: "Nothing to pay for." }, { status: 400 });
+    return NextResponse.json({ error: "Nothing to order." }, { status: 400 });
   }
 
   const { error } = await admin.from("orders").insert(rows);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // Initialize the transaction server-side with the platform secret key — the
-  // same integration that created the subaccount. This avoids the inline popup's
-  // "Invalid subaccount" error that happens when the public key can't validate a
-  // subaccount created by the secret key. The popup just resumes the access code.
-  try {
-    const origin = request.headers.get("origin") || new URL(request.url).origin;
-    const init = await initTransaction({
-      email: buyer.email,
-      amountNaira: total,
-      reference,
-      callbackUrl: `${origin}/?paid=1`,
-      subaccount: site.paystack_subaccount || undefined,
-      metadata: { custom_fields: [{ display_name: "Buyer", variable_name: "buyer", value: buyer.name }] },
+  const bank = { name: site.bank_name as string | null, account: site.account_number as string, holder: site.account_name as string | null };
+
+  // Best-effort notifications.
+  try { await notify(admin, siteId, site.user_id as string, buyer, rows, total, reference, bank); } catch { /* non-fatal */ }
+
+  return NextResponse.json({ ok: true, reference, amount: total, bank });
+}
+
+async function notify(
+  admin: ReturnType<typeof createAdminClient>, siteId: string, ownerId: string,
+  buyer: any, rows: any[], total: number, reference: string,
+  bank: { name: string | null; account: string; holder: string | null },
+) {
+  const productIds = rows.map((r) => r.product_id).filter(Boolean);
+  const [{ data: dbProducts }, { data: site }, { data: profile }] = await Promise.all([
+    productIds.length ? admin.from("products").select("id, name").in("id", productIds) : Promise.resolve({ data: [] as any[] }),
+    admin.from("sites").select("site_data").eq("id", siteId).maybeSingle(),
+    admin.from("profiles").select("email").eq("user_id", ownerId).maybeSingle(),
+  ]);
+  const nameById = new Map((dbProducts || []).map((p: any) => [p.id, p.name]));
+  const storeName = (site?.site_data as any)?.businessName || "your store";
+  const items = rows.map((r) => `<li>${nameById.get(r.product_id) || "Item"}${r.color ? ` (${r.color})` : ""} — ${formatNaira(r.amount || 0)}</li>`).join("");
+  const buyerLine = [buyer.name, buyer.email, buyer.phone, buyer.address].filter(Boolean).join(" · ");
+  const bankLine = `${bank.holder || ""} — ${bank.account}${bank.name ? ` (${bank.name})` : ""}`;
+
+  const ownerEmail = (profile?.email as string) || null;
+  if (ownerEmail) {
+    await sendEmail({
+      to: ownerEmail,
+      subject: `New order on ${storeName} — ${formatNaira(total)} (awaiting transfer)`,
+      html: `<h2>New order — confirm the bank transfer</h2>
+        <p>A customer placed an order on <strong>${storeName}</strong> and was asked to transfer to your account.</p>
+        <ul>${items}</ul>
+        <p><strong>Total: ${formatNaira(total)}</strong></p>
+        <p><strong>Customer:</strong> ${buyerLine}</p>
+        <p>Reference: ${reference}</p>
+        <p>When the money lands in your account, open your Tomora dashboard → Orders and mark it <strong>Paid</strong>.</p>`,
     });
-    return NextResponse.json({ reference: init.reference, amount: total, accessCode: init.access_code });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message || "Could not start this transaction." }, { status: 502 });
+  }
+  if (buyer.email) {
+    await sendEmail({
+      to: buyer.email,
+      subject: `Your order from ${storeName} — complete your transfer`,
+      html: `<h2>Thank you, ${buyer.name || "there"}!</h2>
+        <p>To complete your order from <strong>${storeName}</strong>, please transfer <strong>${formatNaira(total)}</strong> to:</p>
+        <p style="font-size:16px"><strong>${bankLine}</strong></p>
+        <ul>${items}</ul>
+        <p>Use reference <strong>${reference}</strong>. The seller will confirm your payment and process your order.</p>`,
+    });
   }
 }

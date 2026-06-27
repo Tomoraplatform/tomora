@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { ShoppingCart, Plus, Minus, Trash2, Loader2, CheckCircle2, X, Star } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Loader2, CheckCircle2, X, Star, Copy } from "lucide-react";
 import { SiteRenderer } from "@/components/templates";
 import type { StoreApi } from "@/components/templates/store-context";
 import type { Product, Review, SiteData } from "@/lib/database.types";
@@ -9,23 +9,8 @@ import { formatNaira, contrastText } from "@/lib/utils";
 
 interface Line { product: Product; qty: number; color?: string; }
 
-declare global {
-  interface Window { PaystackPop?: any; }
-}
-
-function loadPaystack(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (window.PaystackPop) return resolve();
-    const s = document.createElement("script");
-    s.src = "https://js.paystack.co/v2/inline.js";
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error("Could not load Paystack."));
-    document.body.appendChild(s);
-  });
-}
-
 export function PublishedStore({
-  templateId, siteData, brandColor, products, reviews = [], siteId, paystackPublicKey, paystackSubaccount,
+  templateId, siteData, brandColor, products, reviews = [], siteId, bankName, accountNumber, accountName,
 }: {
   templateId: string;
   siteData: SiteData;
@@ -33,12 +18,13 @@ export function PublishedStore({
   products: Product[];
   reviews?: Review[];
   siteId: string;
-  paystackPublicKey: string | null;
-  paystackSubaccount?: string | null;
+  bankName?: string | null;
+  accountNumber?: string | null;
+  accountName?: string | null;
 }) {
-  // Payments settle to the owner's Paystack subaccount. The transaction is
-  // initialized server-side (platform secret key) and resumed in the popup.
-  const canCheckout = !!paystackSubaccount;
+  // Customers pay the store owner directly by bank transfer to their connected
+  // account; the owner confirms the order as paid once the money lands.
+  const canCheckout = !!accountNumber;
   const [lines, setLines] = useState<Line[]>([]);
   const [open, setOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
@@ -105,14 +91,13 @@ export function PublishedStore({
   })();
   const detailColors = detail ? productColorNames(detail) : [];
 
-  async function pay() {
+  // Record the order; the customer then pays by bank transfer to the owner.
+  async function placeOrder() {
     setError(null);
-    if (!canCheckout) { setError("This store is not accepting payments yet."); return; }
+    if (!canCheckout) { setError("This store hasn't added a payment account yet."); return; }
     if (!buyer.name || !buyer.email) { setError("Please enter your name and email."); return; }
     setBusy(true);
     try {
-      // 1. Create pending order(s) and initialize the transaction server-side
-      // (amount validated against DB; settles to the owner's subaccount).
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -123,29 +108,12 @@ export function PublishedStore({
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Checkout failed.");
-      if (!data.accessCode) throw new Error("Could not start this transaction.");
-
-      // 2. Resume the server-initialized transaction in the popup.
-      await loadPaystack();
-      const popup = new window.PaystackPop();
-      popup.resumeTransaction(data.accessCode, {
-        onSuccess: (txn: { reference: string }) => {
-          fetch("/api/checkout/confirm", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reference: txn.reference || data.reference }),
-          }).finally(() => { setBusy(false); setDone(true); });
-        },
-        onCancel: () => setBusy(false),
-        onError: (err: { message?: string }) => {
-          setBusy(false);
-          setError(err?.message || "Payment failed. Please try again.");
-        },
-      });
+      if (!res.ok) throw new Error(data.error || "Could not place order.");
+      setDone(true);
     } catch (e: any) {
+      setError(e.message || "Could not place order. Please try again.");
+    } finally {
       setBusy(false);
-      setError(e.message || "Checkout failed.");
     }
   }
 
@@ -241,8 +209,8 @@ export function PublishedStore({
             {done ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
                 <CheckCircle2 className="h-14 w-14 text-emerald-500" />
-                <p className="text-lg font-semibold text-ink">Thank you, {buyer.name || "friend"}!</p>
-                <p className="text-sm text-ink/60">Your payment was received. A confirmation has been sent to {buyer.email}.</p>
+                <p className="text-lg font-semibold text-ink">Order received, {buyer.name || "friend"}!</p>
+                <p className="text-sm text-ink/60">Please complete your transfer of <span className="font-semibold text-ink">{formatNaira(total)}</span>{accountNumber ? <> to <span className="font-semibold text-ink">{accountNumber}</span>{accountName ? ` (${accountName})` : ""}</> : ""}. The seller will confirm your payment and process your order. Details sent to {buyer.email}.</p>
               </div>
             ) : lines.length === 0 ? (
               <div className="flex flex-1 items-center justify-center p-8 text-center text-ink/50">Your cart is empty.</div>
@@ -283,6 +251,25 @@ export function PublishedStore({
                           onChange={(e) => setBuyer((b) => ({ ...b, [f]: e.target.value }))}
                         />
                       ))}
+
+                      {/* Pay by bank transfer to the store owner */}
+                      {canCheckout ? (
+                        <div className="rounded-lg border border-ink/15 bg-cream/50 p-4">
+                          <p className="text-sm font-semibold text-ink">Pay {formatNaira(total)} by bank transfer to:</p>
+                          <div className="mt-2 space-y-1 text-sm">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="font-mono text-base font-bold text-ink">{accountNumber}</span>
+                              <button type="button" onClick={() => { navigator.clipboard?.writeText(accountNumber || ""); }} className="flex items-center gap-1 text-xs text-ink/60 hover:text-ink"><Copy className="h-3.5 w-3.5" /> Copy</button>
+                            </div>
+                            {accountName && <p className="text-ink/80">{accountName}</p>}
+                            {bankName && <p className="text-ink/60">{bankName}</p>}
+                          </div>
+                          <p className="mt-3 text-xs text-ink/55">Make the transfer, then tap the button below. The seller confirms your payment and processes your order.</p>
+                        </div>
+                      ) : (
+                        <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">This store hasn&apos;t added a payment account yet.</p>
+                      )}
+
                       {error && <p className="text-sm text-destructive">{error}</p>}
                     </div>
                   )}
@@ -298,8 +285,8 @@ export function PublishedStore({
                       Proceed to Checkout
                     </button>
                   ) : (
-                    <button onClick={pay} disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-md py-3 text-sm font-semibold disabled:opacity-60" style={{ background: brandColor, color: onBrand }}>
-                      {busy && <Loader2 className="h-4 w-4 animate-spin" />} Pay {formatNaira(total)}
+                    <button onClick={placeOrder} disabled={busy || !canCheckout} className="flex w-full items-center justify-center gap-2 rounded-md py-3 text-sm font-semibold disabled:opacity-60" style={{ background: brandColor, color: onBrand }}>
+                      {busy && <Loader2 className="h-4 w-4 animate-spin" />} I&apos;ve sent the payment
                     </button>
                   )}
                 </div>

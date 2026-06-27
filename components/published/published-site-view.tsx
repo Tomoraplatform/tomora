@@ -41,8 +41,9 @@ export function PublishedSiteView({
           products={products}
           reviews={reviews}
           siteId={site.id}
-          paystackPublicKey={site.paystack_public_key}
-          paystackSubaccount={site.paystack_subaccount}
+          bankName={site.bank_name}
+          accountNumber={site.account_number}
+          accountName={site.account_name}
         />
         {chat}
       </>
