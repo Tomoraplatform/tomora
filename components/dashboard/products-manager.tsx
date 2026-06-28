@@ -127,12 +127,19 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
 
   const set = (k: keyof ProductInput, v: any) => setForm((f) => ({ ...f, [k]: v }));
 
-  async function addImage(file?: File) {
-    if (!file || form.images.length >= 5) return;
+  async function addImages(files?: FileList | null) {
+    if (!files?.length) return;
+    const room = 5 - form.images.length;
+    if (room <= 0) return;
+    const chosen = Array.from(files).slice(0, room);
     setUploading(true);
-    const { url } = await uploadImage(file, "products");
+    const urls: string[] = [];
+    for (const f of chosen) {
+      const { url } = await uploadImage(f, "products");
+      if (url) urls.push(url);
+    }
     setUploading(false);
-    if (url) set("images", [...form.images, url]);
+    if (urls.length) set("images", [...form.images, ...urls]);
   }
 
   async function submit() {
@@ -145,19 +152,9 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2"><Label>Name</Label><Input value={form.name} onChange={(e) => set("name", e.target.value)} /></div>
-      <div className="space-y-2"><Label>Description</Label><Textarea rows={3} value={form.description} onChange={(e) => set("description", e.target.value)} /></div>
-      <div className="grid grid-cols-3 gap-4">
-        <div className="space-y-2"><Label>Price (NGN)</Label><Input type="number" min={0} value={form.price} onChange={(e) => set("price", Number(e.target.value))} /></div>
-        <div className="space-y-2"><Label>Old price</Label><Input type="number" min={0} value={form.comparePrice ?? ""} onChange={(e) => set("comparePrice", e.target.value ? Number(e.target.value) : undefined)} placeholder="optional" /></div>
-        <div className="space-y-2"><Label>Stock</Label><Input type="number" min={0} value={form.stock} onChange={(e) => set("stock", Number(e.target.value))} /></div>
-      </div>
-      <div className="space-y-2"><Label>Category</Label><Input value={form.category} onChange={(e) => set("category", e.target.value)} placeholder="e.g. Dresses" /></div>
-
-      <ColorVariantsField value={form.colorVariants || []} onChange={(v) => set("colorVariants", v)} />
-
       <div className="space-y-2">
-        <Label>Images ({form.images.length}/5)</Label>
+        <Label>Product images ({form.images.length}/5)</Label>
+        <p className="text-xs text-ink/50">Add up to 5 — you can select several at once.</p>
         <div className="flex flex-wrap gap-2">
           {form.images.map((src, i) => (
             <div key={i} className="relative h-16 w-16 overflow-hidden rounded-md border">
@@ -169,11 +166,22 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
           {form.images.length < 5 && (
             <label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border border-dashed border-ink/25 text-ink/40 hover:bg-ink/5">
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
-              <input type="file" accept="image/*" className="hidden" onChange={(e) => addImage(e.target.files?.[0])} />
+              <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => addImages(e.target.files)} />
             </label>
           )}
         </div>
       </div>
+
+      <div className="space-y-2"><Label>Name</Label><Input value={form.name} onChange={(e) => set("name", e.target.value)} /></div>
+      <div className="space-y-2"><Label>Description</Label><Textarea rows={3} value={form.description} onChange={(e) => set("description", e.target.value)} /></div>
+      <div className="grid grid-cols-3 gap-4">
+        <div className="space-y-2"><Label>Price (NGN)</Label><Input type="number" min={0} value={form.price} onChange={(e) => set("price", Number(e.target.value))} /></div>
+        <div className="space-y-2"><Label>Old price</Label><Input type="number" min={0} value={form.comparePrice ?? ""} onChange={(e) => set("comparePrice", e.target.value ? Number(e.target.value) : undefined)} placeholder="optional" /></div>
+        <div className="space-y-2"><Label>Stock</Label><Input type="number" min={0} value={form.stock} onChange={(e) => set("stock", Number(e.target.value))} /></div>
+      </div>
+      <div className="space-y-2"><Label>Category</Label><Input value={form.category} onChange={(e) => set("category", e.target.value)} placeholder="e.g. Dresses" /></div>
+
+      <ColorVariantsField value={form.colorVariants || []} onChange={(v) => set("colorVariants", v)} />
 
       <div className="flex items-center justify-between rounded-lg border border-ink/10 px-4 py-3">
         <span className="text-sm font-medium">Active (visible in store)</span>

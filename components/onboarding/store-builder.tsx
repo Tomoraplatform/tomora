@@ -303,6 +303,32 @@ export function StoreBuilderWizard({
             )}
             <div className="space-y-3 rounded-xl border border-ink/10 bg-white p-4">
               <p className="text-sm font-semibold text-ink">New product</p>
+              <Field label={`Product images (${form.images.length}/5)`}>
+                <p className="-mt-1 mb-1 text-xs text-ink/50">Add up to 5 — you can select several at once.</p>
+                <div className="flex flex-wrap gap-2">
+                  {form.images.map((src, i) => (
+                    <div key={i} className="relative h-16 w-16 overflow-hidden rounded-md border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src} alt="" className="h-full w-full object-cover" />
+                      <button onClick={() => setF("images", form.images.filter((_, j) => j !== i))} className="absolute right-0 top-0 bg-black/60 p-0.5 text-white"><X className="h-3 w-3" /></button>
+                    </div>
+                  ))}
+                  {form.images.length < 5 && (
+                    <label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border border-dashed border-ink/25 text-ink/40">
+                      {productImgBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={async (e) => {
+                        const files = e.target.files; if (!files?.length) return;
+                        const room = 5 - form.images.length; if (room <= 0) return;
+                        setProductImgBusy(true);
+                        const urls: string[] = [];
+                        for (const f of Array.from(files).slice(0, room)) { const { url } = await uploadImage(f, "products"); if (url) urls.push(url); }
+                        setProductImgBusy(false);
+                        if (urls.length) setF("images", [...form.images, ...urls]);
+                      }} />
+                    </label>
+                  )}
+                </div>
+              </Field>
               <Field label="Name" required><Input value={form.name} onChange={(e) => setF("name", e.target.value)} placeholder="Product name" /></Field>
               <Field label="Description"><Textarea rows={2} value={form.description} onChange={(e) => setF("description", e.target.value)} placeholder="Short description" /></Field>
               <div className="grid grid-cols-2 gap-3">
@@ -325,23 +351,6 @@ export function StoreBuilderWizard({
                     <Button type="button" variant="ghost" size="sm" onClick={() => { setAddingCat(false); setNewCat(""); }}><X className="h-4 w-4" /></Button>
                   </div>
                 )}
-              </Field>
-              <Field label={`Images (${form.images.length}/5)`}>
-                <div className="flex flex-wrap gap-2">
-                  {form.images.map((src, i) => (
-                    <div key={i} className="relative h-16 w-16 overflow-hidden rounded-md border">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={src} alt="" className="h-full w-full object-cover" />
-                      <button onClick={() => setF("images", form.images.filter((_, j) => j !== i))} className="absolute right-0 top-0 bg-black/60 p-0.5 text-white"><X className="h-3 w-3" /></button>
-                    </div>
-                  ))}
-                  {form.images.length < 5 && (
-                    <label className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-md border border-dashed border-ink/25 text-ink/40">
-                      {productImgBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <UploadCloud className="h-4 w-4" />}
-                      <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setProductImgBusy(true); const { url } = await uploadImage(f, "products"); setProductImgBusy(false); if (url) setF("images", [...form.images, url]); }} />
-                    </label>
-                  )}
-                </div>
               </Field>
               <Field label="Colours (optional — each colour can have its own photo)">
                 <div className="space-y-2">
