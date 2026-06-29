@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { isAdmin } from "@/lib/admin";
+import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { updateSubaccount } from "@/lib/paystack";
 import { TRIAL_DAYS, getPlan, STORE_COMMISSION_PERCENT } from "@/lib/constants";
@@ -168,6 +169,54 @@ export async function updateDomainRequest(
       if (existing) await admin.from("domains").update({ domain_name: req.domain, status: "active" }).eq("id", existing.id);
       else await admin.from("domains").insert({ user_id: req.user_id, site_id: req.site_id, domain_name: req.domain, status: "active" });
     }
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/**
+ * Permanently remove a user's entire account. Deletes their sites (which
+ * cascade to products/orders/leads/reviews/donations/etc.), their profile,
+ * subscription, and any domain records, then deletes the auth user itself.
+ * After this the person must sign up again from scratch to use Tomora.
+ */
+export async function deleteUserAccount(userId: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const admin = await guard();
+
+    // Never let an admin delete their own account from here.
+    const supabase = createClient();
+    const { data: { user: me } } = await supabase.auth.getUser();
+    if (me?.id === userId) return { ok: false, error: "You can't delete your own admin account." };
+
+    // Remove dependent rows first (sites cascade to their children).
+    await admin.from("sites").delete().eq("user_id", userId);
+    await admin.from("domains").delete().eq("user_id", userId);
+    await admin.from("domain_requests").delete().eq("user_id", userId);
+    await admin.from("subscriptions").delete().eq("user_id", userId);
+    await admin.from("profiles").delete().eq("user_id", userId);
+
+    // Finally remove the auth user so the email is free to sign up again.
+    const { error } = await admin.auth.admin.deleteUser(userId);
+    if (error) return { ok: false, error: error.message };
+
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/**
+ * Reset the revenue figures back to zero by recording "now" as the revenue
+ * baseline. The dashboard only counts payments dated after this point, so
+ * revenue reads ₦0 until new payments come in.
+ */
+export async function resetRevenue(): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const admin = await guard();
+    const { error } = await admin
+      .from("app_settings")
+      .upsert({ id: 1, revenue_reset_at: new Date().toISOString() }, { onConflict: "id" });
+    if (error) return { ok: false, error: error.message };
     revalidatePath("/admin");
     return { ok: true };
   } catch (e: any) { return { ok: false, error: e.message }; }

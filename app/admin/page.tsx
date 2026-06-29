@@ -11,14 +11,17 @@ export default async function AdminPage() {
   await requireAdmin();
   const admin = createAdminClient();
 
-  const [{ data: profiles }, { data: sites }, { data: subs }, { data: domains }, { data: domainReqs }, { data: discountRows }] = await Promise.all([
+  const [{ data: profiles }, { data: sites }, { data: subs }, { data: domains }, { data: domainReqs }, { data: discountRows }, { data: settings }] = await Promise.all([
     admin.from("profiles").select("*"),
     admin.from("sites").select("*"),
     admin.from("subscriptions").select("*"),
     admin.from("domains").select("*").order("created_at", { ascending: false }),
     admin.from("domain_requests").select("*").order("created_at", { ascending: false }),
     admin.from("plan_discounts").select("*"),
+    admin.from("app_settings").select("revenue_reset_at").eq("id", 1).maybeSingle(),
   ]);
+
+  const revenueResetAt = (settings as { revenue_reset_at: string | null } | null)?.revenue_reset_at ?? null;
 
   const planDiscounts: Record<string, { percent: number; active: boolean }> = {};
   (discountRows as { plan_id: string; percent: number; active: boolean }[] | null)?.forEach((d) => {
@@ -59,6 +62,27 @@ export default async function AdminPage() {
   const liveSites = (sites as Site[] | null)?.filter((s) => s.is_live).length ?? 0;
   const estAnnualRevenue = activeSubs * (FIRST_PAYMENT_AMOUNT + 3 * RENEWAL_AMOUNT);
 
+  // Dated event series so the dashboard can filter stats by period
+  // (weekly/monthly/quarterly/yearly) on the client.
+  const signups = (profiles as Profile[] | null || [])
+    .map((p) => p.created_at)
+    .filter(Boolean) as string[];
+  const liveSiteDates = (sites as Site[] | null || [])
+    .filter((s) => s.is_live)
+    .map((s) => s.created_at)
+    .filter(Boolean) as string[];
+  const subDates = (subs as Subscription[] | null || [])
+    .map((s) => s.created_at)
+    .filter(Boolean) as string[];
+  // Real payment events: subscriptions that have actually paid (have a payment
+  // date). Amount uses the plan's price as the representative payment.
+  const payments = (subs as Subscription[] | null || [])
+    .filter((s) => s.last_payment_date)
+    .map((s) => ({
+      date: s.last_payment_date as string,
+      amount: getPlan(s.plan || "")?.price ?? FIRST_PAYMENT_AMOUNT,
+    }));
+
   // Monthly breakdown of new subscriptions.
   const monthly: Record<string, number> = {};
   (subs as Subscription[] | null)?.forEach((s) => {
@@ -91,6 +115,8 @@ export default async function AdminPage() {
         rows={rows}
         domains={domainRows}
         planDiscounts={planDiscounts}
+        revenueResetAt={revenueResetAt}
+        series={{ signups, liveSites: liveSiteDates, subs: subDates, payments }}
         stats={{
           totalUsers: profiles?.length ?? 0,
           liveSites,

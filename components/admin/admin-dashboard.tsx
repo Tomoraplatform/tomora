@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Users, Globe, CreditCard, TrendingUp, Loader2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Users, Globe, CreditCard, TrendingUp, Loader2, RotateCcw, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/utils";
-import { extendTrial, setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount, syncStoreCommission } from "@/app/admin/actions";
+import { extendTrial, setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount, syncStoreCommission, deleteUserAccount, resetRevenue } from "@/app/admin/actions";
 import { PLANS } from "@/lib/constants";
 import type { DomainStatus } from "@/lib/database.types";
 
@@ -31,23 +31,68 @@ export interface AdminDomainRow {
   expires: string;
 }
 
+type Period = "week" | "month" | "quarter" | "year" | "all";
+
+const PERIODS: { id: Period; label: string }[] = [
+  { id: "week", label: "Weekly" },
+  { id: "month", label: "Monthly" },
+  { id: "quarter", label: "Quarterly" },
+  { id: "year", label: "Yearly" },
+  { id: "all", label: "All time" },
+];
+
+const PERIOD_DAYS: Record<Period, number | null> = {
+  week: 7, month: 30, quarter: 90, year: 365, all: null,
+};
+
+interface AdminSeries {
+  signups: string[];
+  liveSites: string[];
+  subs: string[];
+  payments: { date: string; amount: number }[];
+}
+
 export function AdminDashboard({
-  rows, domains, stats, planDiscounts = {},
+  rows, domains, stats, planDiscounts = {}, revenueResetAt = null,
+  series = { signups: [], liveSites: [], subs: [], payments: [] },
 }: {
   rows: AdminUserRow[];
   domains: AdminDomainRow[];
   stats: { totalUsers: number; liveSites: number; activeSubs: number; estAnnualRevenue: number; monthly: Record<string, number> };
   planDiscounts?: Record<string, { percent: number; active: boolean }>;
+  revenueResetAt?: string | null;
+  series?: AdminSeries;
 }) {
   const [busy, setBusy] = useState<string | null>(null);
   // Per-row grant duration (days). 0 = no expiry.
   const [grantDays, setGrantDays] = useState<Record<string, number>>({});
+  const [period, setPeriod] = useState<Period>("all");
 
   async function run(key: string, fn: () => Promise<any>) {
     setBusy(key);
     await fn();
     setBusy(null);
   }
+
+  // Stats for the selected period. Revenue also respects the reset baseline.
+  const periodStats = useMemo(() => {
+    const days = PERIOD_DAYS[period];
+    const windowStart = days == null ? 0 : Date.now() - days * 86_400_000;
+    const resetAt = revenueResetAt ? new Date(revenueResetAt).getTime() : 0;
+    const revStart = Math.max(windowStart, resetAt);
+    const inWindow = (iso: string) => new Date(iso).getTime() >= windowStart;
+
+    const newSignups = series.signups.filter(inWindow).length;
+    const newLiveSites = series.liveSites.filter(inWindow).length;
+    const newSubs = series.subs.filter(inWindow).length;
+    const revenue = series.payments
+      .filter((p) => new Date(p.date).getTime() >= revStart)
+      .reduce((sum, p) => sum + p.amount, 0);
+
+    return { newSignups, newLiveSites, newSubs, revenue };
+  }, [period, series, revenueResetAt]);
+
+  const periodLabel = PERIODS.find((p) => p.id === period)!.label.toLowerCase();
 
   return (
     <div className="min-h-screen bg-cream">
@@ -73,13 +118,64 @@ export function AdminDashboard({
       </header>
 
       <main className="mx-auto max-w-6xl space-y-8 px-5 py-8">
+        {/* Period filter + revenue reset */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-1.5">
+            {PERIODS.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setPeriod(p.id)}
+                className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
+                  period === p.id ? "bg-ink text-cream" : "bg-white text-ink/60 hover:text-ink border border-ink/10"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-destructive"
+            disabled={busy === "resetrev"}
+            onClick={() => {
+              if (!confirm("Reset all revenue figures to zero? Revenue will only count payments received from now on. This can't be undone.")) return;
+              run("resetrev", async () => {
+                const res = await resetRevenue();
+                if (typeof window !== "undefined" && !res.ok) window.alert(res.error || "Failed to reset revenue.");
+              });
+            }}
+          >
+            {busy === "resetrev" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCcw className="h-3.5 w-3.5" />} Reset revenue to zero
+          </Button>
+        </div>
+
         {/* Stats */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard icon={<Users className="h-5 w-5" />} label="Total users" value={String(stats.totalUsers)} />
-          <StatCard icon={<Globe className="h-5 w-5" />} label="Live sites" value={String(stats.liveSites)} />
-          <StatCard icon={<CreditCard className="h-5 w-5" />} label="Active subscriptions" value={String(stats.activeSubs)} />
-          <StatCard icon={<TrendingUp className="h-5 w-5" />} label="Est. annual revenue" value={formatNaira(stats.estAnnualRevenue)} />
+          {period === "all" ? (
+            <>
+              <StatCard icon={<Users className="h-5 w-5" />} label="Total users" value={String(stats.totalUsers)} />
+              <StatCard icon={<Globe className="h-5 w-5" />} label="Live sites" value={String(stats.liveSites)} />
+              <StatCard icon={<CreditCard className="h-5 w-5" />} label="Active subscriptions" value={String(stats.activeSubs)} />
+            </>
+          ) : (
+            <>
+              <StatCard icon={<Users className="h-5 w-5" />} label={`New signups (${periodLabel})`} value={String(periodStats.newSignups)} />
+              <StatCard icon={<Globe className="h-5 w-5" />} label={`New live sites (${periodLabel})`} value={String(periodStats.newLiveSites)} />
+              <StatCard icon={<CreditCard className="h-5 w-5" />} label={`New subscriptions (${periodLabel})`} value={String(periodStats.newSubs)} />
+            </>
+          )}
+          <StatCard
+            icon={<TrendingUp className="h-5 w-5" />}
+            label={period === "all" ? "Revenue to date" : `Revenue (${periodLabel})`}
+            value={formatNaira(periodStats.revenue)}
+          />
         </div>
+        {revenueResetAt && (
+          <p className="-mt-5 text-xs text-ink/40">
+            Revenue reset on {new Date(revenueResetAt).toLocaleDateString()} — only payments after that date are counted.
+          </p>
+        )}
 
         {/* Monthly breakdown */}
         <Card>
@@ -166,6 +262,16 @@ export function AdminDashboard({
                           <Button size="sm" variant="ghost" className="text-destructive" disabled={busy === r.userId + "r"}
                             onClick={() => { if (confirm("Revoke this user's plan?")) run(r.userId + "r", () => revokePlan(r.userId)); }}>
                             {busy === r.userId + "r" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Revoke"}
+                          </Button>
+                          <Button size="sm" variant="ghost" className="text-destructive" disabled={busy === r.userId + "d"} title="Delete account"
+                            onClick={() => {
+                              if (!confirm(`Permanently delete ${r.name} (${r.email}) and their site? They will have to sign up again as a new user. This can't be undone.`)) return;
+                              run(r.userId + "d", async () => {
+                                const res = await deleteUserAccount(r.userId);
+                                if (typeof window !== "undefined" && !res.ok) window.alert(res.error || "Failed to delete account.");
+                              });
+                            }}>
+                            {busy === r.userId + "d" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                           </Button>
                         </div>
                       </td>
