@@ -185,7 +185,6 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
             {navItems(siteData, [["Home","#"],["Shop","#allproducts"],["Collections","#collections"],["Best Sellers","#products"],["Offers","#promo"]]).map(([l, h]) => <a key={l} href={h}>{l}</a>)}
           </nav>
           <div className="flex items-center gap-2">
-            <a href="#" className="rounded-md border border-black/20 px-4 py-2 text-sm">Login</a>
             {(() => { const c = headerCta(siteData, "Register"); return <BrandButton as="a" href={c.href} className="px-4 py-2">{c.text}</BrandButton>; })()}
           </div>
         </div>

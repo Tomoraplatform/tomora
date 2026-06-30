@@ -140,7 +140,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
       <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="border-t border-neutral-200">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4 text-sm">
-          {[["Information", ["About Us", "Customer Service", "Site Map", "Advanced Search", "Orders and Returns"]], ["Why buy from us", ["Quality", "Fast Delivery", "Secure Payment"]], ["My account", ["Sign In", "Wish List", "My Orders", "Track Order", "Newsletter"]], ["Contacts", ["12 Marina Rd, Lagos", "+234 800 000 0000", "hello@store.com"]]].map(([h, items]: any) => (
+          {[["Information", ["About Us", "Customer Service", "Site Map", "Advanced Search", "Orders and Returns"]], ["Why buy from us", ["Quality", "Fast Delivery", "Secure Payment"]], ["Customer Care", ["Wish List", "My Orders", "Track Order", "Newsletter"]], ["Contacts", ["12 Marina Rd, Lagos", "+234 800 000 0000", "hello@store.com"]]].map(([h, items]: any) => (
             <div key={h}><h4 className="font-semibold">{h}</h4><ul className="mt-3 space-y-2 text-neutral-500">{items.map((x: string) => <li key={x}>{x}</li>)}</ul></div>
           ))}
         </div>

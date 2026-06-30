@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getTemplateOverrides } from "@/lib/template-overrides";
 import { AdminDashboard, type AdminUserRow, type AdminDomainRow } from "@/components/admin/admin-dashboard";
 import { DomainRequestsPanel, type DomainRequestRow } from "@/components/admin/domain-requests";
 import { APP_DOMAIN, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, getPlan } from "@/lib/constants";
@@ -22,6 +23,7 @@ export default async function AdminPage() {
   ]);
 
   const revenueResetAt = (settings as { revenue_reset_at: string | null } | null)?.revenue_reset_at ?? null;
+  const templateOverrides = await getTemplateOverrides();
 
   const planDiscounts: Record<string, { percent: number; active: boolean }> = {};
   (discountRows as { plan_id: string; percent: number; active: boolean }[] | null)?.forEach((d) => {
@@ -115,6 +117,7 @@ export default async function AdminPage() {
         rows={rows}
         domains={domainRows}
         planDiscounts={planDiscounts}
+        templateOverrides={templateOverrides}
         revenueResetAt={revenueResetAt}
         series={{ signups, liveSites: liveSiteDates, subs: subDates, payments }}
         stats={{

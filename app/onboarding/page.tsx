@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingWizard } from "@/components/onboarding/wizard";
+import { getTemplateOverrides } from "@/lib/template-overrides";
 
 export const metadata = { title: "Set Up Your Site — Tomora" };
 
@@ -21,9 +22,12 @@ export default async function OnboardingPage() {
   if (sites?.some((s) => s.is_live)) redirect("/dashboard");
   const draft = sites?.[0] ?? null;
 
+  const templateOverrides = await getTemplateOverrides();
+
   return (
     <OnboardingWizard
       defaultEmail={user.email ?? undefined}
+      overrides={templateOverrides}
       resume={draft ? { siteId: draft.id, templateId: draft.template_id, subdomain: draft.subdomain, siteData: draft.site_data, payoutConnected: !!draft.paystack_subaccount } : undefined}
     />
   );

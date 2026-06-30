@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, ShoppingBag, Heart, User, LayoutGrid, Grid3x3 } from "lucide-react";
+import { Search, ShoppingBag, Heart, LayoutGrid, Grid3x3 } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import {
   TemplateProps, Brandmark, Img, formatNaira, sellingPrice, originalPrice,
@@ -160,7 +160,6 @@ export function Guza({ siteData, brandColor }: TemplateProps) {
           </nav>
           <div className="flex items-center gap-4 text-black/80">
             <Search className="hidden h-5 w-5 sm:block" />
-            <User className="hidden h-5 w-5 sm:block" />
             <Heart className="hidden h-5 w-5 sm:block" />
             <ShoppingBag className="h-5 w-5" />
           </div>

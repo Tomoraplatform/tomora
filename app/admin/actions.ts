@@ -206,6 +206,30 @@ export async function deleteUserAccount(userId: string): Promise<{ ok: boolean; 
 }
 
 /**
+ * Admin override for a catalog template: rename it, archive it (hide from
+ * onboarding but keep for existing sites), or remove it (hide everywhere new).
+ * Stored per template id in `template_settings`; the built-in catalog is the
+ * fallback when no row exists.
+ */
+export async function updateTemplateSettings(
+  templateId: string,
+  patch: { displayName?: string | null; archived?: boolean; removed?: boolean }
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const admin = await guard();
+    const row: Record<string, any> = { template_id: templateId, updated_at: new Date().toISOString() };
+    if ("displayName" in patch) row.display_name = (patch.displayName || "").trim() || null;
+    if ("archived" in patch) row.archived = !!patch.archived;
+    if ("removed" in patch) row.removed = !!patch.removed;
+    const { error } = await admin.from("template_settings").upsert(row, { onConflict: "template_id" });
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin");
+    revalidatePath("/onboarding");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/**
  * Reset the revenue figures back to zero by recording "now" as the revenue
  * baseline. The dashboard only counts payments dated after this point, so
  * revenue reads ₦0 until new payments come in.

@@ -8,9 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/utils";
-import { extendTrial, setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount, syncStoreCommission, deleteUserAccount, resetRevenue } from "@/app/admin/actions";
+import { extendTrial, setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount, syncStoreCommission, deleteUserAccount, resetRevenue, updateTemplateSettings } from "@/app/admin/actions";
 import { PLANS } from "@/lib/constants";
+import { CATALOG_TEMPLATES, CATALOG_CATEGORIES } from "@/lib/catalog";
 import type { DomainStatus } from "@/lib/database.types";
+
+type TemplateOverride = { displayName?: string; archived?: boolean; removed?: boolean };
 
 export interface AdminUserRow {
   userId: string;
@@ -55,6 +58,7 @@ interface AdminSeries {
 export function AdminDashboard({
   rows, domains, stats, planDiscounts = {}, revenueResetAt = null,
   series = { signups: [], liveSites: [], subs: [], payments: [] },
+  templateOverrides = {},
 }: {
   rows: AdminUserRow[];
   domains: AdminDomainRow[];
@@ -62,6 +66,7 @@ export function AdminDashboard({
   planDiscounts?: Record<string, { percent: number; active: boolean }>;
   revenueResetAt?: string | null;
   series?: AdminSeries;
+  templateOverrides?: Record<string, TemplateOverride>;
 }) {
   const [busy, setBusy] = useState<string | null>(null);
   // Per-row grant duration (days). 0 = no expiry.
@@ -283,6 +288,9 @@ export function AdminDashboard({
           </CardContent>
         </Card>
 
+        {/* Templates */}
+        <TemplatesPanel overrides={templateOverrides} />
+
         {/* Plan discounts */}
         <PlanDiscounts discounts={planDiscounts} />
 
@@ -312,6 +320,72 @@ export function AdminDashboard({
         </Card>
       </main>
     </div>
+  );
+}
+
+function TemplatesPanel({ overrides }: { overrides: Record<string, TemplateOverride> }) {
+  const [names, setNames] = useState<Record<string, string>>(() => {
+    const v: Record<string, string> = {};
+    CATALOG_TEMPLATES.forEach((t) => { v[t.id] = overrides[t.id]?.displayName || t.name; });
+    return v;
+  });
+  const [busy, setBusy] = useState<string | null>(null);
+  const catName = (id: string) => CATALOG_CATEGORIES.find((c) => c.id === id)?.name || id;
+
+  async function run(key: string, fn: () => Promise<{ ok: boolean; error?: string }>) {
+    setBusy(key);
+    const res = await fn();
+    setBusy(null);
+    if (typeof window !== "undefined" && !res.ok) window.alert(res.error || "Failed.");
+  }
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>Templates</CardTitle></CardHeader>
+      <CardContent className="space-y-5">
+        <p className="-mt-1 text-sm text-ink/50">
+          Rename a template, <span className="font-medium">archive</span> it (hidden from new sign-ups, existing sites keep working), or <span className="font-medium">remove</span> it (hidden from onboarding). These don&apos;t affect sites already using a template.
+        </p>
+        {CATALOG_CATEGORIES.map((cat) => {
+          const items = CATALOG_TEMPLATES.filter((t) => t.category === cat.id);
+          if (!items.length) return null;
+          return (
+            <div key={cat.id}>
+              <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/50">{cat.name}</h4>
+              <div className="space-y-2">
+                {items.map((t) => {
+                  const ov = overrides[t.id] || {};
+                  return (
+                    <div key={t.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-ink/10 p-3">
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: t.accent }} />
+                      <input
+                        value={names[t.id] ?? ""}
+                        onChange={(e) => setNames((n) => ({ ...n, [t.id]: e.target.value }))}
+                        className="h-9 min-w-0 flex-1 rounded-md border border-ink/15 px-3 text-sm"
+                      />
+                      {ov.removed && <Badge variant="secondary">Removed</Badge>}
+                      {ov.archived && !ov.removed && <Badge variant="warning">Archived</Badge>}
+                      <Button size="sm" variant="outline" disabled={busy === t.id + "n"}
+                        onClick={() => run(t.id + "n", () => updateTemplateSettings(t.id, { displayName: names[t.id] }))}>
+                        {busy === t.id + "n" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save name"}
+                      </Button>
+                      <Button size="sm" variant="outline" disabled={busy === t.id + "a"}
+                        onClick={() => run(t.id + "a", () => updateTemplateSettings(t.id, { archived: !ov.archived }))}>
+                        {busy === t.id + "a" ? <Loader2 className="h-3 w-3 animate-spin" /> : ov.archived ? "Unarchive" : "Archive"}
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-destructive" disabled={busy === t.id + "r"}
+                        onClick={() => run(t.id + "r", () => updateTemplateSettings(t.id, { removed: !ov.removed }))}>
+                        {busy === t.id + "r" ? <Loader2 className="h-3 w-3 animate-spin" /> : ov.removed ? "Restore" : "Remove"}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
   );
 }
 

@@ -25,6 +25,7 @@ import { Guza } from "./v2/Guza";
 import { Inbio } from "./v2/Inbio";
 import { RizwanAli } from "./v2/RizwanAli";
 import { Spotlight } from "./v2/Spotlight";
+import { Brandcraft } from "./v2/Brandcraft";
 import { Upskill } from "./v2/Upskill";
 import { Motivac } from "./v2/Motivac";
 import { OpenHeart } from "./v2/OpenHeart";
@@ -59,6 +60,7 @@ export const V2_REGISTRY: Record<string, V2Component> = {
   "portfolio-01": Inbio,
   "portfolio-02": RizwanAli,
   "portfolio-03": Spotlight,
+  "portfolio-04": Brandcraft,
   "education-01": Upskill,
   "education-02": Motivac,
   "org-01": OpenHeart,

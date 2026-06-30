@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, ShoppingCart, Heart, User, Truck, ShieldCheck, RotateCcw, Headphones, Star, ArrowUpRight } from "lucide-react";
+import { Search, ShoppingCart, Heart, Truck, ShieldCheck, RotateCcw, Headphones, Star, ArrowUpRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
 import {
   TemplateProps, Brandmark, SocialIcons, BrandButton, ProductCardV2, Img,
@@ -214,7 +214,6 @@ export function FashionHouse({ siteData, brandColor }: TemplateProps) {
           <div className="flex items-center gap-4 text-black/70">
             <Search className="hidden h-5 w-5 sm:block" />
             <Heart className="hidden h-5 w-5 sm:block" />
-            <User className="hidden h-5 w-5 sm:block" />
             <ShoppingCart className="h-5 w-5" />
           </div>
         </div>

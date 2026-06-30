@@ -30,10 +30,17 @@ const PRESET_COLORS = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#
 export function OnboardingWizard({
   defaultEmail,
   resume,
+  overrides = {},
 }: {
   defaultEmail?: string;
   resume?: { siteId: string; templateId: string; subdomain?: string; siteData?: SiteData; payoutConnected?: boolean };
+  overrides?: Record<string, { displayName?: string; archived?: boolean; removed?: boolean }>;
 }) {
+  // Apply admin overrides: hide archived/removed templates, apply renames.
+  const templatesFor = (cat: CatalogCategoryId) =>
+    catalogTemplatesByCategory(cat)
+      .filter((t) => !overrides[t.id]?.archived && !overrides[t.id]?.removed)
+      .map((t) => ({ ...t, name: overrides[t.id]?.displayName || t.name }));
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [category, setCategory] = useState<CatalogCategoryId | null>(null);
@@ -158,7 +165,7 @@ export function OnboardingWizard({
         {step === 2 && category && (
           <Section title="Choose your starting template" subtitle="You can fully customise it next.">
             <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {catalogTemplatesByCategory(category).map((t) => {
+              {templatesFor(category).map((t) => {
                 const active = templateId === t.id;
                 return (
                   <div key={t.id} className={`overflow-hidden rounded-2xl border-2 bg-white transition-all ${active ? "border-ink shadow-md" : "border-ink/10"}`}>
@@ -193,7 +200,7 @@ export function OnboardingWizard({
             {previewId && (
               <div className="fixed inset-0 z-50 flex flex-col bg-black/60" onClick={() => setPreviewId(null)}>
                 <div className="flex items-center justify-between gap-3 bg-white px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                  <p className="truncate text-sm font-semibold text-ink">{catalogTemplatesByCategory(category).find((t) => t.id === previewId)?.name} — Preview</p>
+                  <p className="truncate text-sm font-semibold text-ink">{templatesFor(category).find((t) => t.id === previewId)?.name} — Preview</p>
                   <div className="flex items-center gap-2">
                     <Button size="sm" onClick={() => { setTemplateId(previewId); setPreviewId(null); setStep(3); }}><Check className="h-4 w-4" /> Use this</Button>
                     <button onClick={() => setPreviewId(null)} aria-label="Close" className="rounded-md p-1.5 text-ink/50 hover:bg-ink/5"><X className="h-5 w-5" /></button>

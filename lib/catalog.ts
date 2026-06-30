@@ -44,6 +44,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
   { id: "portfolio-01", name: "Inbio", category: "portfolio", component: "Inbio", accent: "#E74C6B", blurb: "Personal portfolio with services, resume and projects." },
   { id: "portfolio-02", name: "Rizwan Ali", category: "portfolio", component: "RizwanAli", accent: "#2563EB", blurb: "Designer portfolio with stats and project filters." },
   { id: "portfolio-03", name: "Spotlight", category: "portfolio", component: "Spotlight", accent: "#7C5CFF", blurb: "Personal creator brand with photo & video galleries." },
+  { id: "portfolio-04", name: "Brandcraft", category: "portfolio", component: "Brandcraft", accent: "#111111", blurb: "Bold black & white creative agency: process, services, projects and CTA." },
   { id: "education-01", name: "Upskill", category: "education", component: "Upskill", accent: "#2B6CB0", blurb: "Bootcamp and course platform with FAQ." },
   { id: "education-02", name: "Motivac", category: "education", component: "Motivac", accent: "#E91E8C", dark: true, blurb: "Conference and event program, bold and dark." },
   { id: "org-01", name: "Open Heart", category: "organization", component: "OpenHeart", accent: "#CC0000", blurb: "Documentary-style charity with impact stats." },
@@ -67,6 +68,7 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "portfolio-01": ["services", "portfolio", "resume", "testimonials", "clientLogos"],
   "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
   "portfolio-03": ["skills", "experiencePhotos", "services", "galleryPhotos", "galleryVideos"],
+  "portfolio-04": ["clientLogos", "skills", "services", "eduFeatures", "portfolio", "testimonials"],
   "education-01": ["eduCategories", "advantages", "courses", "eduFeatures", "faqs"],
   "education-02": ["progress", "events", "services", "testimonials"],
   "org-01": ["impactImages", "services", "testimonials"],
@@ -92,6 +94,7 @@ export const TEMPLATE_NAV: Record<string, [string, string][]> = {
   "portfolio-01": [["Home", "#"], ["About", "#about"], ["Portfolio", "#portfolio"], ["Resume", "#resume"], ["Contact", "#contact"]],
   "portfolio-02": [["Home", "#"], ["About Me", "#about"], ["Services", "#services"], ["Portfolio", "#projects"], ["Testimonials", "#testimonials"], ["Contact", "#contact"]],
   "portfolio-03": [["Home", "#"], ["Experience", "#experience"], ["Service", "#services"], ["Photos", "#photos"], ["Videos", "#videos"]],
+  "portfolio-04": [["Home", "#"], ["About", "#about"], ["Process", "#process"], ["Services", "#expertise"], ["Work", "#projects"], ["Contact", "#cta"]],
   "education-01": [["Home", "#"], ["Courses", "#bootcamp"], ["Advantages", "#advantages"], ["FAQ", "#faq"]],
   "education-02": [["Home", "#"], ["Events", "#venues"], ["Speakers", "#schedules"], ["Register", "#register"]],
   "org-01": [["Home", "#"], ["Who We Are", "#mission"], ["What We Do", "#services"], ["Stories", "#stories"]],
@@ -198,6 +201,14 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "portfolio", label: "My Projects" },
     { key: "testimonials", label: "Testimonials" },
     { key: "contact", label: "Contact Me", text: true },
+  ],
+  "portfolio-04": [
+    { key: "about", label: "Meet Your Design Partners" },
+    { key: "process", label: "Let us share our latest thinking" },
+    { key: "expertise", label: "We design memorable experiences" },
+    { key: "projects", label: "Explore our most recent projects" },
+    { key: "testimonials", label: "Here's what people say about our work" },
+    { key: "cta", label: "Let's start designing your project" },
   ],
   "portfolio-03": [
     { key: "about", label: "About Me" },
@@ -346,6 +357,16 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "portfolio", label: "Projects", heading: "portfolio", list: "portfolio" },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
     { key: "contact", label: "Contact", heading: "contact", text: true },
+  ],
+  "portfolio-04": [
+    { key: "hero", label: "Hero", hero: true, stat: true },
+    { key: "logos", label: "Logo strip", list: "clientLogos" },
+    { key: "about", label: "About / partners", heading: "about", text: true, image: true, color: true, list: "skills" },
+    { key: "process", label: "Process cards", heading: "process", text: true, list: "services" },
+    { key: "expertise", label: "Services (dark)", heading: "expertise", text: true, color: true, list: "eduFeatures" },
+    { key: "projects", label: "Projects", heading: "projects", text: true, button: true, list: "portfolio" },
+    { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
+    { key: "cta", label: "Closing CTA", heading: "cta", text: true, button: true, color: true },
   ],
   "portfolio-03": [
     { key: "hero", label: "Hero (name, photo, role)", hero: true, eyebrow: true, stat: true },
@@ -699,6 +720,7 @@ const HERO = {
   "portfolio-01": { h: "Hi, I'm Alex — a Professional Designer", s: "I craft digital products and brands that people love to use.", c: "Work With Me" },
   "portfolio-02": { h: "Rizwan Ali", s: "Professional UI/UX & Website Designer helping brands stand out online.", c: "Hire Me" },
   "portfolio-03": { h: "Your Name", s: "", c: "" },
+  "portfolio-04": { h: "We craft brands & digital experiences", s: "A design studio helping ambitious teams launch brands and products people remember.", c: "Start a project" },
   "education-01": { h: "Bootcamp Program", s: "Practical, mentor-led programs that get you hired in months, not years.", c: "Start Learning" },
   "education-02": { h: "Exploring The Future", s: "A worldwide conference bringing together the brightest minds and ideas.", c: "Register" },
   "org-01": { h: "Give A Helping Hand To Those Who Need It", s: "Last year we supported programs that served over 700,000 children in 23 countries.", c: "Donate Now" },
@@ -976,6 +998,42 @@ export function createCatalogContent(
         data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-about`, 800, 800) };
       }
       if (templateId === "portfolio-02") data.stats = demoStats(seed);
+      if (templateId === "portfolio-04") {
+        data.heroStatLabel = "From";
+        data.heroStatValue = "0 → 1 brand";
+        data.clientLogos = ["Northwind", "Lumen", "Vertex", "Halo", "Orbit"].map((name, i) => ({ id: `${seed}-cl${i}`, name, image: "" }));
+        data.skills = ["Branding", "Strategy", "Web", "Motion"].map((name, i) => ({ id: `${seed}-ch${i}`, name }));
+        data.services = [
+          { id: `${seed}-pr0`, title: "Discover", description: "We dig into your goals, audience and market to set the right direction." },
+          { id: `${seed}-pr1`, title: "Design", description: "We shape the brand and interface — look, feel and every detail." },
+          { id: `${seed}-pr2`, title: "Build", description: "We turn the design into a fast, responsive, production-ready site." },
+          { id: `${seed}-pr3`, title: "Evolve", description: "We measure, refine and keep improving long after launch." },
+        ];
+        data.eduFeatures = [
+          { id: `${seed}-ex0`, title: "Brand Strategy", description: "Positioning, messaging and identity that set you apart." },
+          { id: `${seed}-ex1`, title: "Web Design", description: "Beautiful, conversion-focused websites built around your audience." },
+          { id: `${seed}-ex2`, title: "UX / UI Design", description: "Intuitive product interfaces people love to use." },
+          { id: `${seed}-ex3`, title: "E-commerce", description: "Online stores that turn browsers into loyal customers." },
+          { id: `${seed}-ex4`, title: "Development", description: "Robust, scalable builds with clean, maintainable code." },
+          { id: `${seed}-ex5`, title: "Content & Motion", description: "Copy, photography and motion that bring the brand to life." },
+        ];
+        data.sectionEyebrows = { ...(data.sectionEyebrows || {}), expertise: "What we do", projects: "Selected work" };
+        data.sectionButtons = {
+          ...(data.sectionButtons || {}),
+          projects: { text: "All projects", url: "" },
+          cta: { text: "Start a message", url: "" },
+        };
+        data.sectionText = {
+          ...(data.sectionText || {}),
+          about: "We're a small, senior team partnering with founders and brands to design identities and digital products that perform as good as they look.",
+          process: "A simple, proven way of working that keeps you involved at every step — from first idea to launch and beyond.",
+          expertise: "From the first sketch to the final pixel, we cover everything you need to launch and grow a memorable brand.",
+          projects: "A selection of recent work across branding, web and product design.",
+          cta: "Tell us what you're building. We'll get back to you within one working day.",
+        };
+        data.sectionColors = { ...(data.sectionColors || {}), expertise: "#0B0B0C", cta: "#0B0B0C" };
+        data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-team`, 700, 520) };
+      }
       if (templateId === "portfolio-03") {
         data.heroHeadline = opts.businessName;
         data.heroSubtext = "";
