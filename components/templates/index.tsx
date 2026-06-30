@@ -20,6 +20,8 @@ import { Foundation } from "./foundation";
 import { ShopMate } from "./v2/ShopMate";
 import { LunoraFashion } from "./v2/LunoraFashion";
 import { MensClothes } from "./v2/MensClothes";
+import { FashionHouse } from "./v2/FashionHouse";
+import { Guza } from "./v2/Guza";
 import { Inbio } from "./v2/Inbio";
 import { RizwanAli } from "./v2/RizwanAli";
 import { Spotlight } from "./v2/Spotlight";
@@ -51,6 +53,8 @@ export const V2_REGISTRY: Record<string, V2Component> = {
   "shop-01": ShopMate,
   "shop-02": LunoraFashion,
   "shop-03": MensClothes,
+  "shop-04": FashionHouse,
+  "shop-05": Guza,
   "portfolio-01": Inbio,
   "portfolio-02": RizwanAli,
   "portfolio-03": Spotlight,

@@ -39,6 +39,8 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
   { id: "shop-01", name: "Ecommerce One", category: "shop", component: "ShopMate", accent: "#5C6B3A", blurb: "Full online store: categories, best sellers, special offers and reviews." },
   { id: "shop-02", name: "Lunora Fashion", category: "shop", component: "LunoraFashion", accent: "#0A0A0A", dark: true, blurb: "Editorial fashion store with bold serif headlines." },
   { id: "shop-03", name: "Men's Clothes", category: "shop", component: "MensClothes", accent: "#1A1A1A", blurb: "Catalog-style menswear shop with category banners." },
+  { id: "shop-04", name: "Fashion House", category: "shop", component: "FashionHouse", accent: "#2563EB", blurb: "Bold fashion store: big sale hero, deals & featured tabs, reviews and blog." },
+  { id: "shop-05", name: "Guza", category: "shop", component: "Guza", accent: "#111111", blurb: "Minimal shop grid with filters, colour swatches and a dark footer." },
   { id: "portfolio-01", name: "Inbio", category: "portfolio", component: "Inbio", accent: "#E74C6B", blurb: "Personal portfolio with services, resume and projects." },
   { id: "portfolio-02", name: "Rizwan Ali", category: "portfolio", component: "RizwanAli", accent: "#2563EB", blurb: "Designer portfolio with stats and project filters." },
   { id: "portfolio-03", name: "Spotlight", category: "portfolio", component: "Spotlight", accent: "#7C5CFF", blurb: "Personal creator brand with photo & video galleries." },
@@ -54,11 +56,13 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints" | "ministries" | "skills" | "experiencePhotos" | "galleryPhotos" | "galleryVideos";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints" | "ministries" | "skills" | "experiencePhotos" | "galleryPhotos" | "galleryVideos" | "blogPosts";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["trustBadges", "testimonials"],
   "shop-02": ["trustBadges"],
   "shop-03": [],
+  "shop-04": ["trustBadges", "shopCategories", "testimonials", "blogPosts"],
+  "shop-05": [],
   "portfolio-01": ["services", "portfolio", "resume", "testimonials", "clientLogos"],
   "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
   "portfolio-03": ["skills", "experiencePhotos", "services", "galleryPhotos", "galleryVideos"],
@@ -81,6 +85,8 @@ export const TEMPLATE_NAV: Record<string, [string, string][]> = {
   "shop-01": [["Categories", "#categories"], ["Shop", "#allproducts"], ["Deals", "#offer"]],
   "shop-02": [["Home", "#"], ["Shop", "#allproducts"], ["Best Sellers", "#bestsellers"], ["Offers", "#promo"]],
   "shop-03": [["New", "#new"], ["Special", "#special"], ["Shop", "#allproducts"]],
+  "shop-04": [["Home", "#"], ["Categories", "#categories"], ["Great Deals", "#deals"], ["Blog", "#blog"], ["About Us", "#"]],
+  "shop-05": [["Home", "#"], ["Shop", "#shop"], ["Products", "#shop"], ["Blog", "#"]],
   "portfolio-01": [["Home", "#"], ["About", "#about"], ["Portfolio", "#portfolio"], ["Resume", "#resume"], ["Contact", "#contact"]],
   "portfolio-02": [["Home", "#"], ["About Me", "#about"], ["Services", "#services"], ["Portfolio", "#projects"], ["Testimonials", "#testimonials"], ["Contact", "#contact"]],
   "portfolio-03": [["Home", "#"], ["Experience", "#experience"], ["Service", "#services"], ["Photos", "#photos"], ["Videos", "#videos"]],
@@ -103,6 +109,8 @@ export const HERO_IMAGE_SLOTS: Record<string, number> = {
   "shop-01": 1,
   "shop-02": 1,
   "shop-03": 3, // big image + two banner tiles
+  "shop-04": 1,
+  "shop-05": 1,
 };
 export function heroImageSlots(id: string): number {
   return HERO_IMAGE_SLOTS[id] ?? 1;
@@ -161,6 +169,16 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "new", label: "New products" },
     { key: "special", label: "Special products" },
     { key: "allproducts", label: "All Products" },
+  ],
+  "shop-04": [
+    { key: "categories", label: "Shop by Category" },
+    { key: "deals", label: "Great Deals", text: true },
+    { key: "featured", label: "Featured Products", text: true },
+    { key: "testimonials", label: "What Our Clients Say About Us" },
+    { key: "blog", label: "Recent blog posts" },
+  ],
+  "shop-05": [
+    { key: "shop", label: "Shop (product grid)" },
   ],
   "portfolio-01": [
     { key: "about", label: "About Me" },
@@ -280,6 +298,23 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "special", label: "Special products", heading: "special", products: true },
     { key: "catbanners", label: "Category banners" },
     { key: "allproducts", label: "All products", heading: "allproducts", products: true },
+    { key: "banner", label: "Promo banner", image: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+  ],
+  "shop-04": [
+    { key: "hero", label: "Hero (big sale)", hero: true, stat: true },
+    { key: "trust", label: "Trust badges", list: "trustBadges" },
+    { key: "categories", label: "Category cards", list: "shopCategories" },
+    { key: "deals", label: "Great Deals", heading: "deals", text: true, products: true },
+    { key: "featured", label: "Featured Products", heading: "featured", text: true, products: true },
+    { key: "banner", label: "Promo banner", image: true },
+    { key: "testimonials", label: "Reviews", heading: "testimonials", list: "testimonials" },
+    { key: "blog", label: "Blog posts", heading: "blog", list: "blogPosts" },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+  ],
+  "shop-05": [
+    { key: "hero", label: "Hero (page title + banner)", hero: true },
+    { key: "shop", label: "Shop grid", products: true },
     { key: "banner", label: "Promo banner", image: true },
     { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
@@ -642,6 +677,8 @@ const HERO = {
   "shop-01": { h: "Discover The Best Products for You", s: "Quality products, fast delivery, and secure Paystack checkout — all in one place.", c: "Shop Now" },
   "shop-02": { h: "Elevate Your Everyday Style", s: "Curated fashion essentials designed to make every day feel like an occasion.", c: "Shop Now" },
   "shop-03": { h: "Create Your Individuality", s: "The biggest choice of menswear on the web, refreshed every season.", c: "Shop Now" },
+  "shop-04": { h: "EXPLOSIVE\nBig Sale", s: "Up to 50% off across our newest styles — shop the season's biggest deals while they last.", c: "Buy Now" },
+  "shop-05": { h: "Shop", s: "", c: "Shop Now" },
   "portfolio-01": { h: "Hi, I'm Alex — a Professional Designer", s: "I craft digital products and brands that people love to use.", c: "Work With Me" },
   "portfolio-02": { h: "Rizwan Ali", s: "Professional UI/UX & Website Designer helping brands stand out online.", c: "Hire Me" },
   "portfolio-03": { h: "Your Name", s: "", c: "" },
@@ -683,7 +720,35 @@ export function createCatalogContent(
   };
 
   switch (tpl?.category) {
-    case "shop": data.products = demoProducts(seed); data.trustBadges = demoTrustBadges(seed); break;
+    case "shop":
+      data.products = demoProducts(seed); data.trustBadges = demoTrustBadges(seed);
+      if (templateId === "shop-04") {
+        data.heroStatLabel = "Save up to";
+        data.heroStatValue = "50%";
+        data.shopCategories = [["Shop Man", "men"], ["Shop Woman", "women"], ["Shop Kids", "kids"]]
+          .map(([name, key], i) => ({ id: `${seed}-sc${i}`, name, image: img(`${seed}-cat-${key}`, 500, 400) }));
+        data.sectionTitles = {
+          ...(data.sectionTitles || {}),
+          deals: "Great Deals", featured: "Featured Products",
+          testimonials: "What Our Clients Say About Us", blog: "Recent blog posts",
+        };
+        data.sectionText = {
+          ...(data.sectionText || {}),
+          deals: "Get an exciting discount on great products!",
+          featured: "Get your desired product from our featured range!",
+        };
+        data.blogPosts = [
+          ["UX review presentations", "How do you create compelling presentations that wow your colleagues and impress your managers?"],
+          ["Migrating to Linear 101", "Linear helps streamline software projects, sprints, tasks and bug tracking. Here's how to get started."],
+          ["Building your API stack", "The rise of RESTful APIs has been met by a rise in tools for creating, testing and managing them."],
+        ].map(([title, excerpt], i) => ({ id: `${seed}-bp${i}`, title, excerpt, date: "10 Jan 2025", image: img(`${seed}-blog-${i}`, 600, 400), linkUrl: "" }));
+      }
+      if (templateId === "shop-05") {
+        data.heroHeadline = "Shop";
+        data.heroImage = img(`${seed}-shop-banner`, 1200, 520);
+        data.sectionTitles = { ...(data.sectionTitles || {}), shop: "Shop" };
+      }
+      break;
     case "education":
       data.courses = demoCourses(seed);
       if (templateId === "education-01") {

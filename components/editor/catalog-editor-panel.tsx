@@ -128,6 +128,11 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     fields: [{ key: "image", label: "Image", type: "image" }, { key: "name", label: "Label" }],
     make: () => ({ id: `mn-${Date.now()}`, name: "New tile", image: "" }),
   },
+  blogPosts: {
+    key: "blogPosts", title: "Blog post",
+    fields: [{ key: "image", label: "Image", type: "image" }, { key: "title", label: "Title" }, { key: "date", label: "Date / author (optional)" }, { key: "excerpt", label: "Excerpt", type: "textarea" }, { key: "linkUrl", label: "Read more link (optional)" }],
+    make: () => ({ id: `bp-${Date.now()}`, title: "New post title", excerpt: "A short summary of the post.", date: "", image: "" }),
+  },
   skills: {
     key: "skills", title: "Skill",
     fields: [{ key: "name", label: "Skill" }],

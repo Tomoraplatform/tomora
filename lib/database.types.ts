@@ -335,6 +335,17 @@ export interface SiteData {
   galleryPhotos?: CatalogCategoryItem[];
   /** Creator template: video gallery — each item is an uploaded video (+ optional poster/title). */
   galleryVideos?: CatalogVideoItem[];
+  /** Shop template: editable "recent blog posts" cards. */
+  blogPosts?: CatalogBlogPost[];
+}
+
+export interface CatalogBlogPost {
+  id: string;
+  title: string;
+  excerpt?: string;
+  date?: string;
+  image?: string;
+  linkUrl?: string;
 }
 
 export interface CatalogVideoItem {
