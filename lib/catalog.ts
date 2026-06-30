@@ -41,6 +41,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
   { id: "shop-03", name: "Men's Clothes", category: "shop", component: "MensClothes", accent: "#1A1A1A", blurb: "Catalog-style menswear shop with category banners." },
   { id: "portfolio-01", name: "Inbio", category: "portfolio", component: "Inbio", accent: "#E74C6B", blurb: "Personal portfolio with services, resume and projects." },
   { id: "portfolio-02", name: "Rizwan Ali", category: "portfolio", component: "RizwanAli", accent: "#2563EB", blurb: "Designer portfolio with stats and project filters." },
+  { id: "portfolio-03", name: "Spotlight", category: "portfolio", component: "Spotlight", accent: "#7C5CFF", blurb: "Personal creator brand with photo & video galleries." },
   { id: "education-01", name: "Upskill", category: "education", component: "Upskill", accent: "#2B6CB0", blurb: "Bootcamp and course platform with FAQ." },
   { id: "education-02", name: "Motivac", category: "education", component: "Motivac", accent: "#E91E8C", dark: true, blurb: "Conference and event program, bold and dark." },
   { id: "org-01", name: "Open Heart", category: "organization", component: "OpenHeart", accent: "#CC0000", blurb: "Documentary-style charity with impact stats." },
@@ -53,13 +54,14 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints" | "ministries";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints" | "ministries" | "skills" | "experiencePhotos" | "galleryPhotos" | "galleryVideos";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["trustBadges", "testimonials"],
   "shop-02": ["trustBadges"],
   "shop-03": [],
   "portfolio-01": ["services", "portfolio", "resume", "testimonials", "clientLogos"],
   "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
+  "portfolio-03": ["skills", "experiencePhotos", "services", "galleryPhotos", "galleryVideos"],
   "education-01": ["eduCategories", "advantages", "courses", "eduFeatures", "faqs"],
   "education-02": ["progress", "events", "services", "testimonials"],
   "org-01": ["impactImages", "services", "testimonials"],
@@ -81,6 +83,7 @@ export const TEMPLATE_NAV: Record<string, [string, string][]> = {
   "shop-03": [["New", "#new"], ["Special", "#special"], ["Shop", "#allproducts"]],
   "portfolio-01": [["Home", "#"], ["About", "#about"], ["Portfolio", "#portfolio"], ["Resume", "#resume"], ["Contact", "#contact"]],
   "portfolio-02": [["Home", "#"], ["About Me", "#about"], ["Services", "#services"], ["Portfolio", "#projects"], ["Testimonials", "#testimonials"], ["Contact", "#contact"]],
+  "portfolio-03": [["Home", "#"], ["Experience", "#experience"], ["Service", "#services"], ["Photos", "#photos"], ["Videos", "#videos"]],
   "education-01": [["Home", "#"], ["Courses", "#bootcamp"], ["Advantages", "#advantages"], ["FAQ", "#faq"]],
   "education-02": [["Home", "#"], ["Events", "#venues"], ["Speakers", "#schedules"], ["Register", "#register"]],
   "org-01": [["Home", "#"], ["Who We Are", "#mission"], ["What We Do", "#services"], ["Stories", "#stories"]],
@@ -174,6 +177,15 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "portfolio", label: "My Projects" },
     { key: "testimonials", label: "Testimonials" },
     { key: "contact", label: "Contact Me", text: true },
+  ],
+  "portfolio-03": [
+    { key: "about", label: "About Me" },
+    { key: "funfact", label: "Fun fact About Me" },
+    { key: "experience", label: "My Experience" },
+    { key: "services", label: "Services" },
+    { key: "photos", label: "My Photos" },
+    { key: "videos", label: "Videography" },
+    { key: "portfolio", label: "PORTFOLIO" },
   ],
   "education-01": [
     { key: "categories", label: "Browse Top Categories" },
@@ -290,6 +302,16 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "portfolio", label: "Projects", heading: "portfolio", list: "portfolio" },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
     { key: "contact", label: "Contact", heading: "contact", text: true },
+  ],
+  "portfolio-03": [
+    { key: "hero", label: "Hero (name, photo, role)", hero: true, eyebrow: true, stat: true },
+    { key: "about", label: "About & Skills", heading: "about", text: true, color: true, list: "skills", extraText: [{ key: "skillsTitle", label: "\"My Skills\" title" }] },
+    { key: "funfact", label: "Fun fact", heading: "funfact", text: true, color: true },
+    { key: "experience", label: "Experience", heading: "experience", text: true, list: "experiencePhotos" },
+    { key: "services", label: "Services", heading: "services", list: "services" },
+    { key: "photos", label: "My Photos", heading: "photos", list: "galleryPhotos" },
+    { key: "videos", label: "Videography", heading: "videos", text: true, list: "galleryVideos" },
+    { key: "portfolio", label: "Portfolio footer", heading: "portfolio", image: true, color: true },
   ],
   "education-01": [
     { key: "hero", label: "Hero", hero: true },
@@ -622,6 +644,7 @@ const HERO = {
   "shop-03": { h: "Create Your Individuality", s: "The biggest choice of menswear on the web, refreshed every season.", c: "Shop Now" },
   "portfolio-01": { h: "Hi, I'm Alex — a Professional Designer", s: "I craft digital products and brands that people love to use.", c: "Work With Me" },
   "portfolio-02": { h: "Rizwan Ali", s: "Professional UI/UX & Website Designer helping brands stand out online.", c: "Hire Me" },
+  "portfolio-03": { h: "Your Name", s: "", c: "" },
   "education-01": { h: "Bootcamp Program", s: "Practical, mentor-led programs that get you hired in months, not years.", c: "Start Learning" },
   "education-02": { h: "Exploring The Future", s: "A worldwide conference bringing together the brightest minds and ideas.", c: "Register" },
   "org-01": { h: "Give A Helping Hand To Those Who Need It", s: "Last year we supported programs that served over 700,000 children in 23 countries.", c: "Donate Now" },
@@ -840,6 +863,46 @@ export function createCatalogContent(
         data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-about`, 800, 800) };
       }
       if (templateId === "portfolio-02") data.stats = demoStats(seed);
+      if (templateId === "portfolio-03") {
+        data.heroHeadline = opts.businessName;
+        data.heroSubtext = "";
+        data.ctaText = "";
+        data.contactForm = false;
+        data.heroImage = img(`${seed}-portrait`, 700, 900);
+        data.sectionEyebrows = { ...(data.sectionEyebrows || {}), hero: "My name is" };
+        data.heroStatLabel = "What I Do";
+        data.heroStatValue = "Designer";
+        data.sectionColors = { ...(data.sectionColors || {}), about: opts.brandColor };
+        data.sectionTitles = {
+          ...(data.sectionTitles || {}),
+          about: "About Me",
+          funfact: "Fun fact About Me",
+          experience: "My Experience",
+          services: "Services",
+          photos: "My Photos",
+          videos: "Videography",
+          portfolio: "PORTFOLIO",
+        };
+        data.sectionText = {
+          ...(data.sectionText || {}),
+          about: "I'm a multidisciplinary creative who turns ideas into work people remember. I partner with brands and people to craft visuals, products and stories that stand out.",
+          skillsTitle: "My Skills",
+          funfact: "Beyond the work, I'm endlessly curious — always exploring new tools, places and ideas. When I'm not designing you'll find me behind a camera capturing everyday moments.",
+          experience: "A snapshot of the work and clients I've grown with over the years — from brand identities to full creative direction.",
+          videos: "Contents I Created",
+        };
+        data.skills = ["Brand & Visual Design", "UI / UX Design", "Photography", "Video Editing", "Art Direction"]
+          .map((name, i) => ({ id: `${seed}-sk${i}`, name }));
+        data.experiencePhotos = [0, 1].map((i) => ({ id: `${seed}-ex${i}`, name: "", image: img(`${seed}-exp-${i}`, 520, 640) }));
+        data.services = [
+          { id: `${seed}-sv0`, title: "Brand Identity", description: "Logos, visual systems and brand guidelines that give you a distinctive, consistent presence." },
+          { id: `${seed}-sv1`, title: "Web & Product Design", description: "Beautiful, conversion-focused websites and interfaces designed around your audience." },
+          { id: `${seed}-sv2`, title: "Photo & Video", description: "Original photography and edited video content ready for your campaigns and socials." },
+        ];
+        data.galleryPhotos = [0, 1, 2, 3, 4, 5].map((i) => ({ id: `${seed}-gp${i}`, name: "", image: img(`${seed}-photo-${i}`, 600, 700) }));
+        data.galleryVideos = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => ({ id: `${seed}-gv${i}`, title: "", video: "", thumbnail: img(`${seed}-vid-${i}`, 400, 520) }));
+        data.sectionImages = { ...(data.sectionImages || {}), portfolio: img(`${seed}-pf-foot`, 480, 560) };
+      }
       break;
   }
 

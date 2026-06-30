@@ -326,6 +326,23 @@ export interface SiteData {
   causes?: CatalogCause[];
   events?: CatalogEvent[];
   portfolioItems?: CatalogPortfolioItem[];
+  /** Creator template: editable single-line skills list. */
+  skills?: CatalogCategoryItem[];
+  /** Creator template: overlapping "Experience" photos (image only). */
+  experiencePhotos?: CatalogCategoryItem[];
+  /** Creator template: photo gallery (image + optional caption). */
+  galleryPhotos?: CatalogCategoryItem[];
+  /** Creator template: video gallery — each item is an uploaded video (+ optional poster/title). */
+  galleryVideos?: CatalogVideoItem[];
+}
+
+export interface CatalogVideoItem {
+  id: string;
+  title?: string;
+  /** Uploaded video URL (mp4/webm). Empty until the owner uploads one. */
+  video?: string;
+  /** Optional poster image shown before playback / when no video is set. */
+  thumbnail?: string;
 }
 
 export interface CatalogTestimonial {

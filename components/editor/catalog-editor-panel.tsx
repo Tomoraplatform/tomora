@@ -15,7 +15,7 @@ import { SectionsEditor } from "./sections-editor";
 
 const PRESET = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777", "#111111"];
 
-type Field = { key: string; label: string; type?: "text" | "textarea" | "number" | "image" };
+type Field = { key: string; label: string; type?: "text" | "textarea" | "number" | "image" | "video" };
 
 const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fields: Field[]; make: () => any }> = {
   services: {
@@ -127,6 +127,26 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     key: "ministries", title: "Tiles / ministries",
     fields: [{ key: "image", label: "Image", type: "image" }, { key: "name", label: "Label" }],
     make: () => ({ id: `mn-${Date.now()}`, name: "New tile", image: "" }),
+  },
+  skills: {
+    key: "skills", title: "Skill",
+    fields: [{ key: "name", label: "Skill" }],
+    make: () => ({ id: `sk-${Date.now()}`, name: "New skill" }),
+  },
+  experiencePhotos: {
+    key: "experiencePhotos", title: "Experience photo",
+    fields: [{ key: "image", label: "Photo", type: "image" }],
+    make: () => ({ id: `ex-${Date.now()}`, name: "", image: "" }),
+  },
+  galleryPhotos: {
+    key: "galleryPhotos", title: "Photo",
+    fields: [{ key: "image", label: "Photo", type: "image" }, { key: "name", label: "Caption (optional)" }],
+    make: () => ({ id: `gp-${Date.now()}`, name: "", image: "" }),
+  },
+  galleryVideos: {
+    key: "galleryVideos", title: "Video",
+    fields: [{ key: "video", label: "Video (max 10MB)", type: "video" }, { key: "thumbnail", label: "Poster image (optional)", type: "image" }, { key: "title", label: "Caption (optional)" }],
+    make: () => ({ id: `gv-${Date.now()}`, title: "", video: "", thumbnail: "" }),
   },
   resume: {
     key: "resume", title: "Resume (Education / Experience / Skills)",
@@ -638,6 +658,33 @@ function ListBody({ cfg, data, patch }: {
 
 function ItemField({ field, value, onChange }: { field: Field; value: any; onChange: (v: any) => void }) {
   const [busy, setBusy] = useState(false);
+  if (field.type === "video") {
+    return (
+      <div className="space-y-1">
+        <Label className="text-[11px] text-ink/50">{field.label}</Label>
+        <label className="flex cursor-pointer items-center gap-2 rounded-md border border-dashed border-ink/25 p-2 text-xs hover:bg-ink/[0.02]">
+          <span className="flex h-8 w-8 items-center justify-center rounded bg-ink text-cream">
+            {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UploadCloud className="h-3.5 w-3.5" />}
+          </span>
+          <span className="text-ink/60">{value ? "Replace video" : "Upload video"}</span>
+          <input type="file" accept="video/*" className="hidden" onChange={async (e) => {
+            const file = e.target.files?.[0]; if (!file) return;
+            setBusy(true);
+            const { url, error } = await uploadMedia(file, "branding", 10 * 1024 * 1024);
+            setBusy(false);
+            if (url) onChange(url);
+            else if (error) alert(error);
+          }} />
+        </label>
+        {value && (
+          <div className="flex items-center justify-between gap-2">
+            <video src={value} className="h-16 w-full rounded bg-black object-contain" />
+            <button type="button" className="text-[11px] text-destructive hover:underline" onClick={() => onChange("")}>Remove</button>
+          </div>
+        )}
+      </div>
+    );
+  }
   if (field.type === "image") {
     return (
       <div className="space-y-1">
