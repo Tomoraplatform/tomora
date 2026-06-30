@@ -28,6 +28,7 @@ import { Spotlight } from "./v2/Spotlight";
 import { Upskill } from "./v2/Upskill";
 import { Motivac } from "./v2/Motivac";
 import { OpenHeart } from "./v2/OpenHeart";
+import { HelpingHands } from "./v2/HelpingHands";
 import { Charius } from "./v2/Charius";
 import { Fincco } from "./v2/Fincco";
 import { ConferenceDark } from "./v2/ConferenceDark";
@@ -61,6 +62,7 @@ export const V2_REGISTRY: Record<string, V2Component> = {
   "education-01": Upskill,
   "education-02": Motivac,
   "org-01": OpenHeart,
+  "org-04": HelpingHands,
   "org-02": Charius,
   "org-03": Fincco,
   "events-01": ConferenceDark,

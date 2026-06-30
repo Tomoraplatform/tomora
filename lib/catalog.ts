@@ -49,6 +49,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
   { id: "org-01", name: "Open Heart", category: "organization", component: "OpenHeart", accent: "#CC0000", blurb: "Documentary-style charity with impact stats." },
   { id: "org-02", name: "Charius", category: "organization", component: "Charius", accent: "#F5A623", blurb: "Warm NGO with campaigns and donation progress." },
   { id: "org-03", name: "Fincco", category: "organization", component: "Fincco", accent: "#1A5C3A", blurb: "Professional consulting / finance firm." },
+  { id: "org-04", name: "Helping Hands", category: "organization", component: "HelpingHands", accent: "#C8102E", blurb: "Documentary charity: split hero, impact grid, volunteer drive and success stories." },
   { id: "events-01", name: "Conference", category: "events", component: "ConferenceDark", accent: "#0066FF", dark: true, blurb: "Dark conference site with bold hero." },
   { id: "events-02", name: "Bellevue Church", category: "events", component: "BellevueChurch", accent: "#D4A017", blurb: "Warm church community with quick links." },
   { id: "events-03", name: "Deeds Church", category: "events", component: "DeedsChurch", accent: "#8B1A1A", blurb: "Traditional church with countdown and ministries." },
@@ -71,6 +72,7 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "org-01": ["impactImages", "services", "testimonials"],
   "org-02": ["avatars", "quickActions", "aboutImages", "aboutPoints", "services", "causes", "events"],
   "org-03": ["avatars", "services", "portfolio", "eduFeatures", "stats"],
+  "org-04": ["impactImages", "services", "clientLogos", "testimonials"],
   "events-01": ["quickActions", "eduFeatures", "services"],
   "events-02": ["quickActions", "ministries", "events", "hours"],
   "events-03": ["aboutImages", "portfolio"],
@@ -95,6 +97,7 @@ export const TEMPLATE_NAV: Record<string, [string, string][]> = {
   "org-01": [["Home", "#"], ["Who We Are", "#mission"], ["What We Do", "#services"], ["Stories", "#stories"]],
   "org-02": [["Home", "#"], ["Donations", "#causes"], ["Events", "#events"], ["About", "#about"]],
   "org-03": [["Home", "#"], ["About Us", "#about"], ["Case Study", "#projects"], ["Services", "#services"]],
+  "org-04": [["Home", "#"], ["Who We Are", "#helping"], ["Where We Work", "#services"], ["Our Blog", "#stories"], ["Contacts", "#footer"]],
   "events-01": [["Home", "#"], ["About", "#about"], ["Speakers", "#mission"], ["Why Us", "#why"]],
   "events-02": [["Mission", "#mission"], ["Ministries", "#ministries"], ["What's New", "#news"]],
   "events-03": [["Home", "#"], ["Sermons", "#about"], ["Ministries", "#ministries"]],
@@ -232,6 +235,12 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "donate", label: "Your Donation Means Another Smile." },
     { key: "services", label: "What We Do" },
     { key: "events", label: "Join Our Upcoming Events" },
+  ],
+  "org-04": [
+    { key: "helping", label: "Give a helping hand to those who need it!" },
+    { key: "services", label: "What We Do" },
+    { key: "volunteers", label: "We Need Volunteers in South Africa" },
+    { key: "stories", label: "Success Stories" },
   ],
   "org-03": [
     { key: "experience", label: "15+ Years of Financial Experience", text: true },
@@ -385,6 +394,14 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "donate", label: "Donation band", heading: "donate" },
     { key: "services", label: "What we do", heading: "services", list: "services" },
     { key: "events", label: "Events", heading: "events", list: "events" },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+  ],
+  "org-04": [
+    { key: "hero", label: "Hero (split + donation)", hero: true, stat: true },
+    { key: "helping", label: "Helping hand + impact grid", heading: "helping", text: true, button: true, list: "impactImages" },
+    { key: "services", label: "What we do", heading: "services", text: true, image: true, list: "services" },
+    { key: "volunteers", label: "Volunteer drive (red band)", heading: "volunteers", eyebrow: true, text: true, button: true, image: true, color: true, list: "clientLogos" },
+    { key: "stories", label: "Success stories", heading: "stories", list: "testimonials" },
     { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "org-03": [
@@ -687,6 +704,7 @@ const HERO = {
   "org-01": { h: "Give A Helping Hand To Those Who Need It", s: "Last year we supported programs that served over 700,000 children in 23 countries.", c: "Donate Now" },
   "org-02": { h: "Believe in The Better Future of Others", s: "Together we can bring hope, education and care to communities that need it most.", c: "Join Our Campaign" },
   "org-03": { h: "Smart Financial Solutions for Your Future", s: "Consulting is a long-term investment in your goals — let's build yours together.", c: "Free Consultation" },
+  "org-04": { h: "Last year we supported programs that served over 700,000 children in 23 countries.", s: "Together we can bring hope, education and care to the communities that need it most.", c: "Donate Now!" },
   "events-01": { h: "The Conference for Builders & Dreamers", s: "Two days of talks, workshops and connections that move your work forward.", c: "Register" },
   "events-02": { h: "Welcome To Our Community", s: "A place to belong, grow and serve. What can we help you find today?", c: "Plan Your Visit" },
   "events-03": { h: "A Place to Grow in Faith and Community", s: "Join us this week as we worship, learn and serve together.", c: "Plan Your Visit" },
@@ -814,6 +832,36 @@ export function createCatalogContent(
           volunteers: { text: "Join Now", url: "" },
         };
         data.sectionImages = { ...(data.sectionImages || {}), volunteers: img(`${seed}-vol`, 800, 600) };
+      }
+      if (templateId === "org-04") {
+        data.heroStatLabel = "Donation so far";
+        data.heroStatValue = "$450,000";
+        data.impactImages = [0, 1, 2, 3].map((i) => ({ id: `${seed}-im${i}`, name: "", image: img(`${seed}-impact-${i}`, 360, 360) }));
+        data.services = [
+          { id: `${seed}-sv0`, title: "Help & Support", description: "Programs that change lives across our communities every day." },
+          { id: `${seed}-sv1`, title: "Education", description: "Schooling and learning opportunities for every child." },
+          { id: `${seed}-sv2`, title: "Adoption", description: "Finding loving homes for children who need them most." },
+          { id: `${seed}-sv3`, title: "Volunteering", description: "Join hands with our field teams on the ground." },
+        ];
+        data.clientLogos = ["Benckert Matrix", "CSR Process", "Forwithes", "Partnership", "Montes Anceus"]
+          .map((name, i) => ({ id: `${seed}-cl${i}`, name, image: "" }));
+        data.sectionEyebrows = { ...(data.sectionEyebrows || {}), volunteers: "Get Involved" };
+        data.sectionButtons = {
+          ...(data.sectionButtons || {}),
+          helping: { text: "Read More", url: "" },
+          volunteers: { text: "Join Us!", url: "" },
+        };
+        data.sectionText = {
+          ...(data.sectionText || {}),
+          helping: "We work alongside local communities to deliver lasting change — providing care, education and opportunity to children and families who need it most.",
+          volunteers: "We're looking for compassionate volunteers to join our teams on the ground. Give your time and help us bring hope to communities across the region.",
+        };
+        data.sectionImages = {
+          ...(data.sectionImages || {}),
+          services: img(`${seed}-map`, 600, 600),
+          volunteers: img(`${seed}-donationbox`, 700, 800),
+        };
+        data.sectionColors = { ...(data.sectionColors || {}), volunteers: opts.brandColor };
       }
       if (templateId === "org-03") {
         data.heroOverlayColor = "#0D3B2A";
