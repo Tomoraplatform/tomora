@@ -307,8 +307,8 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "hero", label: "Hero (name, photo, role)", hero: true, eyebrow: true, stat: true },
     { key: "about", label: "About & Skills", heading: "about", text: true, color: true, list: "skills", extraText: [{ key: "skillsTitle", label: "\"My Skills\" title" }] },
     { key: "funfact", label: "Fun fact", heading: "funfact", text: true, color: true },
-    { key: "experience", label: "Experience", heading: "experience", text: true, list: "experiencePhotos" },
-    { key: "services", label: "Services", heading: "services", list: "services" },
+    { key: "experience", label: "Experience", heading: "experience", text: true, button: true, list: "experiencePhotos" },
+    { key: "services", label: "Services", heading: "services", button: true, list: "services" },
     { key: "photos", label: "My Photos", heading: "photos", list: "galleryPhotos" },
     { key: "videos", label: "Videography", heading: "videos", text: true, list: "galleryVideos" },
     { key: "portfolio", label: "Portfolio footer", heading: "portfolio", image: true, color: true },
@@ -866,8 +866,14 @@ export function createCatalogContent(
       if (templateId === "portfolio-03") {
         data.heroHeadline = opts.businessName;
         data.heroSubtext = "";
-        data.ctaText = "";
+        data.ctaText = "Contact Me";
+        data.ctaHref = "";
         data.contactForm = false;
+        data.sectionButtons = {
+          ...(data.sectionButtons || {}),
+          experience: { text: "Contact Me", url: "" },
+          services: { text: "Contact Me", url: "" },
+        };
         data.heroImage = img(`${seed}-portrait`, 700, 900);
         data.sectionEyebrows = { ...(data.sectionEyebrows || {}), hero: "My name is" };
         data.heroStatLabel = "What I Do";

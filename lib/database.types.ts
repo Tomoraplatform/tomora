@@ -18,6 +18,7 @@ export interface SocialLinks {
   facebook?: string;
   linkedin?: string;
   github?: string;
+  tiktok?: string;
   website?: string;
   [key: string]: string | undefined;
 }

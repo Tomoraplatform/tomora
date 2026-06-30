@@ -584,7 +584,7 @@ export function CatalogEditorPanel({
 
       <Section title="Social links">
         <p className="mb-1 text-xs text-ink/50">Only the ones you fill in will show on your site.</p>
-        {(["instagram", "twitter", "facebook", "linkedin", "github", "website"] as const).map((k) => (
+        {(["instagram", "twitter", "facebook", "linkedin", "github", "tiktok", "website"] as const).map((k) => (
           <FieldRow key={k} label={k[0].toUpperCase() + k.slice(1)}>
             <Input value={data.social?.[k] || ""} onChange={(e) => patch({ social: { ...(data.social || {}), [k]: e.target.value } })} placeholder={k === "website" ? "https://" : "@handle or URL"} />
           </FieldRow>
