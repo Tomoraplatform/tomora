@@ -41,7 +41,9 @@ type Profile = {
 };
 type Todo = { id: string; text: string; done: boolean };
 type DayBucket = { items: Todo[] };
-type Sheet = { cycle: number; startDate: string; days: DayBucket[] };
+// `manual` marks a sheet whose start date an admin set by hand — those don't
+// auto-reset on the 1st of the month, only after a full 31-day window.
+type Sheet = { cycle: number; startDate: string; days: DayBucket[]; manual?: boolean };
 type DocItem = { id: string; title: string; kind: "link" | "file"; url?: string; mime?: string; name?: string };
 type AnnItem = { id: string; title: string; date: string; mime: string };
 
@@ -57,16 +59,27 @@ type UserRecord = {
 function serverToday() { return new Date().toISOString().slice(0, 10); }
 function dayNum(s: string) { return Math.floor(Date.parse(s + "T00:00:00Z") / 86_400_000); }
 function daysBetween(a: string, b: string) { return dayNum(b) - dayNum(a); }
+function firstOfMonth(dateStr: string) { return dateStr.slice(0, 7) + "-01"; } // YYYY-MM-01
+function sameMonth(a: string, b: string) { return a.slice(0, 7) === b.slice(0, 7); }
 function freshSheet(cycle: number): Sheet {
-  return { cycle, startDate: serverToday(), days: Array.from({ length: SHEET_DAYS }, () => ({ items: [] as Todo[] })) };
+  // Day 1 is always the 1st of the current month, so "today" reads as its
+  // calendar day-of-month (e.g. July 1 => Day 1).
+  return { cycle, startDate: firstOfMonth(serverToday()), days: Array.from({ length: SHEET_DAYS }, () => ({ items: [] as Todo[] })) };
 }
 function normalizeSheet(sheet: Sheet | undefined): Sheet {
   if (!sheet || !Array.isArray(sheet.days) || sheet.days.length !== SHEET_DAYS || !sheet.startDate) return freshSheet(sheet?.cycle || 1);
   return sheet;
 }
-function rollIfExpired(sheet: Sheet, today: string): Sheet {
+/** Rolls the sheet forward: month-anchored sheets reset on a new month; admin
+ *  hand-set sheets reset only after a full 31-day window. */
+function rollIfNeeded(sheet: Sheet, today: string): Sheet {
   const s = normalizeSheet(sheet);
-  if (daysBetween(s.startDate, today) >= SHEET_DAYS) return freshSheet((s.cycle || 1) + 1);
+  if (s.manual) {
+    const gap = daysBetween(s.startDate, today);
+    if (gap >= SHEET_DAYS || gap < 0) return freshSheet((s.cycle || 1) + 1);
+  } else if (!sameMonth(s.startDate, today)) {
+    return freshSheet((s.cycle || 1) + 1);
+  }
   return s;
 }
 
@@ -82,7 +95,7 @@ function newId() { return randomBytes(8).toString("hex"); }
 function normEmail(e: unknown) { return String(e || "").trim().toLowerCase(); }
 
 function sanitize(u: UserRecord, today: string) {
-  const sheet = rollIfExpired(u.sheet, today);
+  const sheet = rollIfNeeded(u.sheet, today);
   const currentDay = Math.min(SHEET_DAYS, Math.max(1, daysBetween(sheet.startDate, today) + 1));
   return {
     email: u.email, name: u.name, isAdmin: u.isAdmin, onboarded: u.onboarded !== false,
@@ -281,7 +294,7 @@ export async function POST(request: NextRequest) {
       if (p.profile) me.profile = cleanProfile(p.profile, me.profile);
       if (p.goalText !== undefined) me.goalText = String(p.goalText).slice(0, 2000);
       if (p.sheetDay && typeof p.sheetDay.index === "number") {
-        me.sheet = rollIfExpired(me.sheet, today);
+        me.sheet = rollIfNeeded(me.sheet, today);
         const idx = Math.max(0, Math.min(SHEET_DAYS - 1, Math.round(p.sheetDay.index)));
         const items: Todo[] = Array.isArray(p.sheetDay.items)
           ? p.sheetDay.items.slice(0, 100).map((t: any) => ({ id: String(t.id || newId()), text: String(t.text || "").slice(0, 300), done: !!t.done }))
@@ -324,6 +337,19 @@ export async function POST(request: NextRequest) {
       const target = await getUser(normEmail(body.email));
       if (!target) return NextResponse.json({ error: "Member not found." }, { status: 404 });
       target.sheet = freshSheet((normalizeSheet(target.sheet).cycle || 1) + 1);
+      await kvSet(USER_PREFIX + target.email, target);
+      return NextResponse.json({ ok: true });
+    }
+
+    // Admin adjusts a member's Day 1 date; keeps their logged tasks in place.
+    if (action === "set-sheet-start") {
+      const startDate = String(body.startDate || "");
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate)) return NextResponse.json({ error: "Invalid date." }, { status: 400 });
+      const target = await getUser(normEmail(body.email));
+      if (!target) return NextResponse.json({ error: "Member not found." }, { status: 404 });
+      target.sheet = normalizeSheet(target.sheet);
+      target.sheet.startDate = startDate;
+      target.sheet.manual = true;
       await kvSet(USER_PREFIX + target.email, target);
       return NextResponse.json({ ok: true });
     }

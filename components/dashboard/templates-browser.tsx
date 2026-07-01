@@ -23,13 +23,21 @@ export interface MySite {
 }
 
 export function TemplatesBrowser({
-  siteCount, siteLimit, planName, mySites = [],
+  siteCount, siteLimit, planName, mySites = [], overrides = {}, usedTemplateIds = [],
 }: {
   siteCount: number;
   siteLimit: number;
   planName: string;
   mySites?: MySite[];
+  overrides?: Record<string, { displayName?: string; archived?: boolean; removed?: boolean }>;
+  usedTemplateIds?: string[];
 }) {
+  // Hide archived/removed templates from the picker, but keep any the user
+  // already has a site on (their "published" one) so they can re-use it.
+  const templatesFor = (catId: string) =>
+    catalogTemplatesByCategory(catId as CatalogTemplate["category"])
+      .filter((t) => usedTemplateIds.includes(t.id) || (!overrides[t.id]?.archived && !overrides[t.id]?.removed))
+      .map((t) => ({ ...t, name: overrides[t.id]?.displayName || t.name }));
   const [preview, setPreview] = useState<CatalogTemplate | null>(null);
   const [creating, setCreating] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -118,11 +126,14 @@ export function TemplatesBrowser({
         </p>
       </div>
 
-      {CATALOG_CATEGORIES.map((cat) => (
+      {CATALOG_CATEGORIES.map((cat) => {
+        const catTemplates = templatesFor(cat.id);
+        if (catTemplates.length === 0) return null;
+        return (
         <div key={cat.id}>
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink/50">{cat.name}</h2>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {catalogTemplatesByCategory(cat.id).map((t) => (
+            {catTemplates.map((t) => (
               <div key={t.id} className="overflow-hidden rounded-2xl border border-ink/10 bg-white">
                 <div className="h-48 overflow-hidden border-b border-ink/5">
                   <TemplatePreview templateId={t.id} brandColor={t.accent} businessName={t.name} />
@@ -141,7 +152,8 @@ export function TemplatesBrowser({
             ))}
           </div>
         </div>
-      ))}
+        );
+      })}
 
       <Dialog open={!!preview} onOpenChange={(o) => !o && setPreview(null)}>
         <DialogContent className="max-h-[88vh] max-w-4xl overflow-hidden p-0">

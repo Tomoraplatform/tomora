@@ -43,6 +43,11 @@ const STATUSES = [
 ];
 const STATUS_MAP: Record<string, { key: string; label: string; color: string }> =
   Object.fromEntries(STATUSES.map((s) => [s.key, s]));
+// Admin dashboard groups members from highest rank to lowest.
+const ADMIN_ORDER = [
+  "sapphire_director", "emerald_director", "director", "executive_manager",
+  "senior_manager", "manager", "distributor", "probie", "newbie",
+];
 
 // ---- api -------------------------------------------------------------------
 
@@ -65,6 +70,8 @@ function money(n: number) { return "$" + (n || 0).toLocaleString("en-US"); }
 function dayNum(s: string) { return Math.floor(Date.parse(s + "T00:00:00Z") / 86_400_000); }
 function addDays(s: string, n: number) { return new Date((dayNum(s) + n) * 86_400_000).toISOString().slice(0, 10); }
 function shortDate(s: string) { return new Date(s + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" }); }
+function monthName(s: string) { return new Date(s + "T00:00:00").toLocaleDateString("en-US", { month: "long", year: "numeric" }); }
+function statusColor(statusKey: string) { return STATUS_MAP[statusKey]?.color || BLUE; }
 
 function fileToAvatar(file: File, max = 320, quality = 0.82): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -187,10 +194,10 @@ function StatusSelect({ value, onChange }: { value: string; onChange: (v: string
   );
 }
 
-function Stat({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+function Stat({ icon: Icon, label, value, accent = BLUE }: { icon: any; label: string; value: string; accent?: string }) {
   return (
     <div className="flex items-center gap-2.5 rounded-xl bg-slate-50 px-3 py-2.5 border border-slate-100">
-      <div className="grid place-items-center h-8 w-8 rounded-lg shrink-0" style={{ background: BLUE + "14", color: BLUE }}>
+      <div className="grid place-items-center h-8 w-8 rounded-lg shrink-0" style={{ background: accent + "22", color: accent }}>
         <Icon size={16} strokeWidth={2.4} />
       </div>
       <div className="min-w-0">
@@ -208,14 +215,14 @@ function sheetStats(m: Member) {
   m.sheet.days.forEach((d) => { total += d.items.length; done += d.items.filter((t) => t.done).length; });
   return { total, done };
 }
-function DayGrid({ m }: { m: Member }) {
+function DayGrid({ m, accent = BLUE }: { m: Member; accent?: string }) {
   return (
     <div className="flex flex-wrap gap-1">
       {m.sheet.days.map((d, i) => {
         const has = d.items.length > 0, allDone = has && d.items.every((t) => t.done), isToday = i === m.currentDay - 1;
         return (
           <div key={i} title={`Day ${i + 1}`} className="h-5 w-5 rounded text-[9px] grid place-items-center font-bold"
-            style={{ background: allDone ? "#16a34a" : has ? BLUE : "#eef0f4", color: has ? "#fff" : "#94a3b8", outline: isToday ? `2px solid ${CHARCOAL}` : "none", outlineOffset: 1 }}>
+            style={{ background: allDone ? "#16a34a" : has ? accent : "#eef0f4", color: has ? "#fff" : "#94a3b8", outline: isToday ? `2px solid ${CHARCOAL}` : "none", outlineOffset: 1 }}>
             {i + 1}
           </div>
         );
@@ -224,15 +231,15 @@ function DayGrid({ m }: { m: Member }) {
   );
 }
 
-function GoalRow({ m }: { m: Member }) {
+function GoalRow({ m, accent = BLUE }: { m: Member; accent?: string }) {
   if (!m.goalText && !m.goalHasFile) return null;
   return (
     <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5">
-      <div className="flex items-center gap-1.5 text-xs font-bold text-[#2B2B33] mb-1"><Flag size={13} style={{ color: BLUE }} /> Monthly goal</div>
+      <div className="flex items-center gap-1.5 text-xs font-bold text-[#2B2B33] mb-1"><Flag size={13} style={{ color: accent }} /> Monthly goal</div>
       {m.goalText && <p className="text-sm text-slate-600 mb-1.5 whitespace-pre-wrap">{m.goalText}</p>}
       {m.goalHasFile && (
         <a href={`/api/bright-mind?goal=${encodeURIComponent(m.email)}&v=${m.goalUpdated}`} target="_blank" rel="noopener"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: BLUE }}>
+          className="inline-flex items-center gap-1.5 text-sm font-semibold" style={{ color: accent }}>
           <FileText size={14} /> {m.goalName || "Open goal file"} <ExternalLink size={13} />
         </a>
       )}
@@ -244,9 +251,10 @@ function GoalRow({ m }: { m: Member }) {
 
 function ProfileCard({ m, you }: { m: Member; you: boolean }) {
   const s = sheetStats(m);
+  const accent = statusColor(m.profile.status);
   return (
-    <div className="group relative rounded-3xl bg-white border border-slate-200 overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 hover:-translate-y-1">
-      <div className="h-20" style={{ background: `linear-gradient(120deg, ${BLUE}, #6B78FF)` }} />
+    <div className="group relative rounded-3xl bg-white border-2 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1" style={{ borderColor: accent + "33" }}>
+      <div className="h-20" style={{ background: `linear-gradient(120deg, ${accent}, ${accent}99)` }} />
       <div className="px-5 pb-5 -mt-10">
         <div className="flex items-end justify-between">
           <Avatar name={m.name} url={m.profile.avatarUrl} size={72} ring />
@@ -265,22 +273,22 @@ function ProfileCard({ m, you }: { m: Member; you: boolean }) {
           <div className="shrink-0"><StatusBadge statusKey={m.profile.status} plain /></div>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <Stat icon={Phone} label="Phone" value={m.profile.phone} />
-          <Stat icon={UserCheck} label="Sponsor" value={m.profile.sponsor} />
-          <Stat icon={Building2} label="Director" value={m.profile.director} />
-          <Stat icon={Award} label="Skill" value={m.profile.skill} />
-          <Stat icon={Target} label="Direct Team" value={String(m.profile.directTeam)} />
-          <Stat icon={Network} label="Total Team" value={String(m.profile.totalTeam)} />
-          <div className="col-span-2"><Stat icon={Wallet} label="Total Made" value={money(m.profile.totalEarnings)} /></div>
+          <Stat icon={Phone} label="Phone" value={m.profile.phone} accent={accent} />
+          <Stat icon={UserCheck} label="Sponsor" value={m.profile.sponsor} accent={accent} />
+          <Stat icon={Building2} label="Director" value={m.profile.director} accent={accent} />
+          <Stat icon={Award} label="Skill" value={m.profile.skill} accent={accent} />
+          <Stat icon={Target} label="Direct Team" value={String(m.profile.directTeam)} accent={accent} />
+          <Stat icon={Network} label="Total Team" value={String(m.profile.totalTeam)} accent={accent} />
+          <div className="col-span-2"><Stat icon={Wallet} label="Total Made" value={money(m.profile.totalEarnings)} accent={accent} /></div>
         </div>
         <div className="mt-3 space-y-3">
-          <GoalRow m={m} />
+          <GoalRow m={m} accent={accent} />
           <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5">
             <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="font-bold text-[#2B2B33] flex items-center gap-1.5"><ListTodo size={13} style={{ color: BLUE }} /> Sheet · Cycle {m.sheet.cycle}</span>
+              <span className="font-bold text-[#2B2B33] flex items-center gap-1.5"><ListTodo size={13} style={{ color: accent }} /> Sheet · {monthName(m.sheet.startDate)}</span>
               <span className="text-slate-400">{s.done}/{s.total} done</span>
             </div>
-            <DayGrid m={m} />
+            <DayGrid m={m} accent={accent} />
           </div>
         </div>
       </div>
@@ -584,7 +592,7 @@ function Workspace({ me, docs, save, saveGoal }: { me: Member; docs: Doc[]; save
         <div className="rounded-3xl bg-white border border-slate-200 p-6">
           <div className="flex items-center gap-2 mb-1">
             <div className="grid place-items-center h-9 w-9 rounded-xl text-white" style={{ background: BLUE }}><ListTodo size={18} strokeWidth={2.4} /></div>
-            <div><h3 className="bm-display font-extrabold text-[#2B2B33] leading-tight">To-do sheet</h3><p className="text-xs text-slate-400">Cycle {me.sheet.cycle} · Day {me.currentDay} of 31 · started {shortDate(me.sheet.startDate)}</p></div>
+            <div><h3 className="bm-display font-extrabold text-[#2B2B33] leading-tight">To-do sheet</h3><p className="text-xs text-slate-400">{monthName(me.sheet.startDate)} · Day {me.currentDay} of 31</p></div>
           </div>
           <div className="mt-4 mb-4 flex flex-wrap gap-1.5">
             {me.sheet.days.map((dd, i) => {
@@ -770,10 +778,12 @@ function AnnouncementsBanner({ anns }: { anns: Announcement[] }) {
 
 // ---- admin member row + grouped view ---------------------------------------
 
-function MemberRow({ m, meEmail, open, setOpen, onRefresh, onRemove }: {
-  m: Member; meEmail: string; open: boolean; setOpen: (v: boolean) => void; onRefresh: (e: string) => void; onRemove: (e: string) => void;
+function MemberRow({ m, meEmail, open, setOpen, onRefresh, onRemove, onSetStart }: {
+  m: Member; meEmail: string; open: boolean; setOpen: (v: boolean) => void;
+  onRefresh: (e: string) => void; onRemove: (e: string) => void; onSetStart: (e: string, d: string) => void;
 }) {
   const [confirm, setConfirm] = useState(false);
+  const [startDraft, setStartDraft] = useState(m.sheet.startDate);
   return (
     <div>
       <button onClick={() => setOpen(!open)} className="w-full flex items-center gap-4 px-6 py-4 hover:bg-slate-50 text-left">
@@ -797,8 +807,13 @@ function MemberRow({ m, meEmail, open, setOpen, onRefresh, onRemove }: {
           </div>
           <div className="mb-4"><GoalRow m={m} /></div>
           <SheetReadOnly m={m} />
-          <div className="flex flex-wrap gap-2 mt-4">
-            <button onClick={() => onRefresh(m.email)} className="flex items-center gap-1.5 text-sm font-bold px-3 py-2 rounded-xl border border-slate-200 text-[#2B2B33] hover:bg-white"><RefreshCw size={14} strokeWidth={2.6} /> Refresh sheet (new 31 days)</button>
+          <div className="flex flex-wrap items-center gap-2 mt-4 pb-3 border-b border-slate-200">
+            <span className="text-sm font-semibold text-slate-500 flex items-center gap-1.5"><Calendar size={14} style={{ color: BLUE }} /> Day 1 date:</span>
+            <input type="date" value={startDraft} onChange={(e) => setStartDraft(e.target.value)} className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-none focus:border-[#3D4DEF]" />
+            <button onClick={() => onSetStart(m.email, startDraft)} className="flex items-center gap-1.5 text-sm font-bold px-3 py-2 rounded-xl text-white" style={{ background: BLUE }}><Save size={14} strokeWidth={2.6} /> Set start date</button>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-3">
+            <button onClick={() => onRefresh(m.email)} className="flex items-center gap-1.5 text-sm font-bold px-3 py-2 rounded-xl border border-slate-200 text-[#2B2B33] hover:bg-white"><RefreshCw size={14} strokeWidth={2.6} /> Reset to this month</button>
             {m.email !== meEmail && (confirm ? (
               <span className="flex items-center gap-2 text-sm">
                 <span className="text-slate-500">Remove {m.name}?</span>
@@ -815,9 +830,9 @@ function MemberRow({ m, meEmail, open, setOpen, onRefresh, onRemove }: {
   );
 }
 
-function AdminView({ members, docs, anns, meEmail, onRemove, onRefresh, addDoc, removeDoc, addAnn, removeAnn }: {
+function AdminView({ members, docs, anns, meEmail, onRemove, onRefresh, onSetStart, addDoc, removeDoc, addAnn, removeAnn }: {
   members: Member[]; docs: Doc[]; anns: Announcement[]; meEmail: string;
-  onRemove: (e: string) => void; onRefresh: (e: string) => void;
+  onRemove: (e: string) => void; onRefresh: (e: string) => void; onSetStart: (e: string, d: string) => void;
   addDoc: (d: any) => Promise<void>; removeDoc: (id: string) => void; addAnn: (a: any) => Promise<void>; removeAnn: (id: string) => void;
 }) {
   const [open, setOpen] = useState<string | null>(null);
@@ -828,8 +843,8 @@ function AdminView({ members, docs, anns, meEmail, onRemove, onRefresh, addDoc, 
     { label: "Combined revenue", value: money(totalRevenue), icon: TrendingUp },
     { label: "Largest downline", value: largest.toLocaleString(), icon: Network },
   ];
-  // group members by status, in the defined ranking order, with "no status" last
-  const groups = STATUSES.map((s) => ({ ...s, members: members.filter((m) => m.profile.status === s.key) }))
+  // group members by status, highest rank first, with "no status" last
+  const groups = ADMIN_ORDER.map((key) => ({ ...STATUS_MAP[key], members: members.filter((m) => m.profile.status === key) }))
     .filter((g) => g.members.length > 0);
   const noStatus = members.filter((m) => !STATUS_MAP[m.profile.status]);
 
@@ -860,7 +875,7 @@ function AdminView({ members, docs, anns, meEmail, onRemove, onRefresh, addDoc, 
                 <span className="text-xs font-bold text-slate-400">{g.members.length}</span>
               </div>
               <div className="divide-y divide-slate-100">
-                {g.members.map((m) => <MemberRow key={m.email} m={m} meEmail={meEmail} open={open === m.email} setOpen={(v) => setOpen(v ? m.email : null)} onRefresh={onRefresh} onRemove={onRemove} />)}
+                {g.members.map((m) => <MemberRow key={m.email} m={m} meEmail={meEmail} open={open === m.email} setOpen={(v) => setOpen(v ? m.email : null)} onRefresh={onRefresh} onRemove={onRemove} onSetStart={onSetStart} />)}
               </div>
             </div>
           ))}
@@ -870,12 +885,38 @@ function AdminView({ members, docs, anns, meEmail, onRemove, onRefresh, addDoc, 
                 <span className="h-3.5 w-3.5 rounded-full bg-slate-300" /><span className="bm-display font-extrabold text-[#2B2B33]">No status set</span><span className="text-xs font-bold text-slate-400">{noStatus.length}</span>
               </div>
               <div className="divide-y divide-slate-100">
-                {noStatus.map((m) => <MemberRow key={m.email} m={m} meEmail={meEmail} open={open === m.email} setOpen={(v) => setOpen(v ? m.email : null)} onRefresh={onRefresh} onRemove={onRemove} />)}
+                {noStatus.map((m) => <MemberRow key={m.email} m={m} meEmail={meEmail} open={open === m.email} setOpen={(v) => setOpen(v ? m.email : null)} onRefresh={onRefresh} onRemove={onRemove} onSetStart={onSetStart} />)}
               </div>
             </div>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ---- team page grouped by status -------------------------------------------
+
+function TeamByStatus({ members, meEmail }: { members: Member[]; meEmail: string }) {
+  const groups = ADMIN_ORDER.map((key) => ({ ...STATUS_MAP[key], members: members.filter((m) => m.profile.status === key) }))
+    .filter((g) => g.members.length > 0);
+  const noStatus = members.filter((m) => !STATUS_MAP[m.profile.status]);
+  const Section = ({ label, color, list }: { label: string; color: string; list: Member[] }) => (
+    <div>
+      <div className="flex items-center gap-2.5 mb-3">
+        <span className="h-3.5 w-3.5 rounded-full" style={{ background: color }} />
+        <h2 className="bm-display font-extrabold text-[#2B2B33]">{label}</h2>
+        <span className="text-xs font-bold text-slate-400">{list.length}</span>
+      </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {list.map((m) => <ProfileCard key={m.email} m={m} you={m.email === meEmail} />)}
+      </div>
+    </div>
+  );
+  return (
+    <div className="space-y-8">
+      {groups.map((g) => <Section key={g.key} label={g.label} color={g.color} list={g.members} />)}
+      {noStatus.length > 0 && <Section label="No status set" color="#cbd5e1" list={noStatus} />}
     </div>
   );
 }
@@ -954,6 +995,7 @@ export default function BrightMindPage() {
 
   const removeMember = useCallback(async (email: string) => { setMembers((prev) => prev.filter((m) => m.email !== email)); try { await api("remove-member", { token, email }); } catch {} finally { refresh(); } }, [token, refresh]);
   const refreshSheet = useCallback(async (email: string) => { try { await api("refresh-sheet", { token, email }); } catch {} finally { refresh(); } }, [token, refresh]);
+  const setSheetStart = useCallback(async (email: string, startDate: string) => { try { await api("set-sheet-start", { token, email, startDate }); } catch {} finally { refresh(); } }, [token, refresh]);
   const addDoc = useCallback(async (d: any) => { const data = await api("doc-add", { token, ...d }); setDocs(data.docs || []); refresh(); }, [token, refresh]);
   const removeDoc = useCallback(async (id: string) => { setDocs((p) => p.filter((d) => d.id !== id)); try { await api("doc-remove", { token, id }); } catch {} finally { refresh(); } }, [token, refresh]);
   const addAnn = useCallback(async (a: any) => { await api("announce-add", { token, ...a }); refresh(); }, [token, refresh]);
@@ -1010,7 +1052,7 @@ export default function BrightMindPage() {
             ) : members.length === 0 ? (
               <div className="rounded-3xl border border-dashed border-slate-300 py-16 text-center text-slate-400">No members yet — be the first to set up your profile.</div>
             ) : (
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">{members.map((m) => <ProfileCard key={m.email} m={m} you={m.email === meEmail} />)}</div>
+              <TeamByStatus members={members} meEmail={meEmail} />
             )}
           </>
         )}
@@ -1025,7 +1067,7 @@ export default function BrightMindPage() {
         {tab === "admin" && me?.isAdmin && (
           <>
             <div className="mb-6"><h1 className="bm-display text-3xl font-extrabold text-[#2B2B33]">Admin Dashboard</h1><p className="text-slate-500">Members grouped by status, announcements, shared documents and member management.</p></div>
-            <AdminView members={members} docs={docs} anns={anns} meEmail={meEmail} onRemove={removeMember} onRefresh={refreshSheet} addDoc={addDoc} removeDoc={removeDoc} addAnn={addAnn} removeAnn={removeAnn} />
+            <AdminView members={members} docs={docs} anns={anns} meEmail={meEmail} onRemove={removeMember} onRefresh={refreshSheet} onSetStart={setSheetStart} addDoc={addDoc} removeDoc={removeDoc} addAnn={addAnn} removeAnn={removeAnn} />
           </>
         )}
       </main>
