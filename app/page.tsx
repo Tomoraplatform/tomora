@@ -25,6 +25,7 @@ import {
 import { FAQS, PLANS } from "@/lib/constants";
 import { loadPlanDiscounts, discountedPrice } from "@/lib/discounts";
 import { CATALOG_TEMPLATES, CATALOG_CATEGORIES } from "@/lib/catalog";
+import { getTemplateOverrides } from "@/lib/template-overrides";
 import { formatNaira } from "@/lib/utils";
 
 const CATALOG_LABEL = Object.fromEntries(
@@ -33,13 +34,18 @@ const CATALOG_LABEL = Object.fromEntries(
 
 export default async function Home() {
   const discounts = await loadPlanDiscounts();
+  // Hide admin-archived/removed templates from the public showcase; apply renames.
+  const templateOverrides = await getTemplateOverrides();
+  const showcaseTemplates = CATALOG_TEMPLATES
+    .filter((t) => !templateOverrides[t.id]?.archived && !templateOverrides[t.id]?.removed)
+    .map((t) => ({ ...t, name: templateOverrides[t.id]?.displayName || t.name }));
   return (
     <div className="bg-cream text-ink">
       <MarketingNav />
       <Hero />
       <SocialProof />
       <Features />
-      <TemplateShowcase />
+      <TemplateShowcase templates={showcaseTemplates} />
       <Pricing discounts={discounts} />
       <Testimonials />
       <Faq />
@@ -267,7 +273,7 @@ function CommerceVisual() {
 }
 
 /* ----------------------- Template showcase ---------------------- */
-function TemplateShowcase() {
+function TemplateShowcase({ templates }: { templates: (typeof CATALOG_TEMPLATES)[number][] }) {
   return (
     <section id="templates" className="bg-white py-20 md:py-28">
       <div className="container">
@@ -281,7 +287,7 @@ function TemplateShowcase() {
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {CATALOG_TEMPLATES.map((t) => (
+          {templates.map((t) => (
             <div
               key={t.id}
               className="group relative overflow-hidden rounded-xl border border-ink/10 bg-white transition-all hover:-translate-y-1 hover:shadow-xl"
