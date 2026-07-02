@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { currentSiteId } from "@/lib/dashboard";
 import { resolveAccount, createSubaccount } from "@/lib/paystack";
 import { STORE_COMMISSION_PERCENT } from "@/lib/constants";
@@ -113,12 +114,31 @@ export async function savePayoutSettings(input: {
   accountNumber: string;
 }): Promise<{ ok: boolean; error?: string; accountName?: string }> {
   try {
-    const { supabase, siteId } = await requireUserAndSite();
+    const { supabase, userId, siteId } = await requireUserAndSite();
 
     const bankCode = (input.bankCode || "").trim();
     const accountNumber = (input.accountNumber || "").trim();
     if (!bankCode || !/^\d{10}$/.test(accountNumber)) {
       return { ok: false, error: "Select your bank and enter a valid 10-digit account number." };
+    }
+
+    // Changing an already-connected payout bank needs an approved change request.
+    const { data: siteRow } = await supabase.from("sites").select("paystack_subaccount").eq("id", siteId).maybeSingle();
+    const isChange = !!siteRow?.paystack_subaccount;
+    let approvedReqId: string | null = null;
+    if (isChange) {
+      const { data: req } = await supabase
+        .from("payout_change_requests")
+        .select("id, status")
+        .eq("user_id", userId)
+        .eq("status", "approved")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (!req) {
+        return { ok: false, error: "Changing your payout bank needs admin approval. Please request access first." };
+      }
+      approvedReqId = req.id;
     }
 
     // Verify the account, then create a Paystack subaccount so sales settle
@@ -149,8 +169,54 @@ export async function savePayoutSettings(input: {
       })
       .eq("id", siteId);
     if (error) return { ok: false, error: error.message };
+
+    // Consume the approved change request so a fresh approval is needed next time.
+    if (approvedReqId) {
+      await createAdminClient()
+        .from("payout_change_requests")
+        .update({ status: "used" })
+        .eq("id", approvedReqId);
+    }
     revalidatePath("/dashboard/payouts");
     return { ok: true, accountName };
+  } catch (e: any) {
+    return { ok: false, error: e.message };
+  }
+}
+
+/**
+ * Requests admin permission to change an already-connected payout bank. The
+ * user uploads proof of ownership of the new account (e.g. a bank statement
+ * showing a matching name). Once an admin approves, they can save new details.
+ */
+export async function requestPayoutChange(input: { proofUrl?: string; note?: string }): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const { supabase, userId, siteId } = await requireUserAndSite();
+    if (!input.proofUrl) {
+      return { ok: false, error: "Please upload proof of ownership of the new account (image or PDF)." };
+    }
+    // One active request at a time.
+    const { data: existing } = await supabase
+      .from("payout_change_requests")
+      .select("id, status")
+      .eq("user_id", userId)
+      .in("status", ["pending", "approved"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (existing?.status === "pending") return { ok: false, error: "You already have a request under review." };
+    if (existing?.status === "approved") return { ok: false, error: "Your request is approved — you can update your bank now." };
+
+    const { error } = await supabase.from("payout_change_requests").insert({
+      user_id: userId,
+      site_id: siteId,
+      proof_url: input.proofUrl,
+      note: (input.note || "").slice(0, 500) || null,
+      status: "pending",
+    });
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/dashboard/payouts");
+    return { ok: true };
   } catch (e: any) {
     return { ok: false, error: e.message };
   }

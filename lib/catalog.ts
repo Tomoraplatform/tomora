@@ -1087,7 +1087,7 @@ export function createCatalogContent(
   // NGOs enable giving out of the box (figure starts at ₦0, live once a bank is
   // connected); other org/community templates stay opt-in.
   if (tpl?.category === "organization" || tpl?.category === "events") {
-    data.donationEnabled = ["org-01", "org-02", "org-04"].includes(templateId);
+    data.donationEnabled = ["org-01", "org-02", "org-03", "org-04"].includes(templateId);
     data.donationGoal = 2000000;
     data.donationManual = 0;
     data.sectionTitles = { ...(data.sectionTitles || {}), donation: "Support Our Cause" };

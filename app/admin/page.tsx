@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getTemplateOverrides } from "@/lib/template-overrides";
 import { AdminDashboard, type AdminUserRow, type AdminDomainRow } from "@/components/admin/admin-dashboard";
 import { DomainRequestsPanel, type DomainRequestRow } from "@/components/admin/domain-requests";
+import { PayoutRequestsPanel, type PayoutRequestRow } from "@/components/admin/payout-requests";
 import { APP_DOMAIN, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, getPlan } from "@/lib/constants";
 import type { Profile, Site, Subscription, Domain, DomainRequest } from "@/lib/database.types";
 
@@ -21,6 +22,11 @@ export default async function AdminPage() {
     admin.from("plan_discounts").select("*"),
     admin.from("app_settings").select("revenue_reset_at").eq("id", 1).maybeSingle(),
   ]);
+
+  const { data: payoutReqs } = await admin
+    .from("payout_change_requests")
+    .select("*")
+    .order("created_at", { ascending: false });
 
   const revenueResetAt = (settings as { revenue_reset_at: string | null } | null)?.revenue_reset_at ?? null;
   const templateOverrides = await getTemplateOverrides();
@@ -111,6 +117,16 @@ export default async function AdminPage() {
     createdAt: new Date(r.created_at).toLocaleDateString(),
   }));
 
+  const payoutRows: PayoutRequestRow[] = (payoutReqs as { id: string; user_id: string; proof_url: string | null; note: string | null; status: string; created_at: string }[] | null || []).map((r) => ({
+    id: r.id,
+    business: profileByUser.get(r.user_id)?.business_name || "—",
+    email: profileByUser.get(r.user_id)?.email || "—",
+    proofUrl: r.proof_url,
+    note: r.note,
+    status: r.status,
+    createdAt: new Date(r.created_at).toLocaleDateString(),
+  }));
+
   return (
     <>
       <AdminDashboard
@@ -129,6 +145,7 @@ export default async function AdminPage() {
         }}
       />
       <DomainRequestsPanel requests={requestRows} />
+      <PayoutRequestsPanel requests={payoutRows} />
     </>
   );
 }

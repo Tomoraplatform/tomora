@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { getDashboardData } from "@/lib/dashboard";
+import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { PayoutsForm } from "@/components/dashboard/payouts-form";
 
@@ -13,9 +14,23 @@ export default async function PayoutsPage() {
   const needsPayout = site!.category === "ecommerce" || site!.category === "organization" || !!site!.site_data?.donationEnabled;
   if (!needsPayout) redirect("/dashboard");
 
+  // Latest payout-change request (drives the request/approval gating in the form).
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: changeReq } = user
+    ? await supabase
+        .from("payout_change_requests")
+        .select("status")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    : { data: null };
+
   return (
     <div className="space-y-6">
       <PayoutsForm
+        changeStatus={(changeReq as { status: string } | null)?.status ?? null}
         initial={{
           bankCode: site!.bank_code || "",
           bankName: site!.bank_name || "",

@@ -206,6 +206,27 @@ export async function deleteUserAccount(userId: string): Promise<{ ok: boolean; 
 }
 
 /**
+ * Approve or decline a user's request to change their payout bank. Approving
+ * unlocks one payout edit for that user; declining closes the request.
+ */
+export async function updatePayoutRequest(
+  id: string,
+  status: "approved" | "declined"
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const admin = await guard();
+    const { error } = await admin
+      .from("payout_change_requests")
+      .update({ status, reviewed_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin");
+    revalidatePath("/dashboard/payouts");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/**
  * Admin override for a catalog template: rename it, archive it (hide from
  * onboarding but keep for existing sites), or remove it (hide everywhere new).
  * Stored per template id in `template_settings`; the built-in catalog is the

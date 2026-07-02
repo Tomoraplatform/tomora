@@ -4,6 +4,7 @@ import { ArrowRight, TrendingUp, Building2, Briefcase, LineChart, Sparkles, Head
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, heading, subheading, navItems, headerCta, CustomSections, OrderedSections } from "./shared";
 import { DonationSection } from "./DonationSection";
+import { HeroDonation } from "../donation-context";
 
 const GREEN = "#0D3B2A";
 const SERVICES = [
@@ -56,11 +57,12 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
               <h1 className="mt-3 max-w-2xl text-4xl font-bold leading-tight sm:text-5xl">{siteData.heroHeadline}</h1>
               <p className="mt-4 max-w-md text-white/80">{siteData.heroSubtext}</p>
               <div className="mt-7 flex flex-wrap gap-3">
-                <BrandButton as="a" href={siteData.ctaHref || "#"}>{siteData.ctaText || "Free Consultation"} <ArrowRight className="h-4 w-4" /></BrandButton>
+                <BrandButton as="a" href={siteData.donationEnabled ? "#donate" : (siteData.ctaHref || "#")}>{siteData.ctaText || "Free Consultation"} <ArrowRight className="h-4 w-4" /></BrandButton>
                 {(heroBtn.text ?? "Learn More") && (
                   <a href={heroBtn.url?.trim() || "#"} {...(heroBtn.url?.trim() ? { target: "_blank", rel: "noreferrer" } : {})} className="inline-flex items-center gap-2 rounded-md border border-white/40 px-6 py-3 text-sm font-semibold">{heroBtn.text || "Learn More"}</a>
                 )}
               </div>
+              {siteData.donationEnabled && <div className="mt-7"><HeroDonation tone="dark" /></div>}
             </div>
           </section>
         ),
