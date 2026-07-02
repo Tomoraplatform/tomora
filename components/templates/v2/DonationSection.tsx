@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Heart, Loader2, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { Heart, Loader2, CheckCircle2, Target } from "lucide-react";
 import type { SiteData } from "@/lib/database.types";
 import { formatNaira, contrastText } from "@/lib/utils";
 import { useStore } from "../store-context";
+import { useDonation } from "../donation-context";
 import { heading, subheading } from "./shared";
 
 declare global {
@@ -26,27 +27,13 @@ const PRESETS = [1000, 5000, 10000, 25000];
 
 export function DonationSection({ siteData, brandColor }: { siteData: SiteData; brandColor: string }) {
   const { siteId } = useStore();
+  const { raised, goal, count, canDonate, refresh } = useDonation();
   const onBrand = contrastText(brandColor);
-  const goal = Math.max(0, Math.round(siteData.donationGoal || 0));
-  const [raised, setRaised] = useState<number>(Math.max(0, Math.round(siteData.donationManual || 0)));
-  const [count, setCount] = useState(0);
-  const [canDonate, setCanDonate] = useState(false);
   const [amount, setAmount] = useState<number>(5000);
   const [donor, setDonor] = useState({ name: "", email: "" });
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const refresh = useCallback(async () => {
-    if (!siteId) return;
-    try {
-      const res = await fetch(`/api/donations/total?siteId=${siteId}`);
-      const d = await res.json();
-      if (typeof d.raised === "number") { setRaised(d.raised); setCount(d.count || 0); setCanDonate(!!d.canDonate); }
-    } catch { /* ignore */ }
-  }, [siteId]);
-
-  useEffect(() => { refresh(); }, [refresh]);
 
   if (!siteData.donationEnabled) return null;
 
@@ -90,6 +77,16 @@ export function DonationSection({ siteData, brandColor }: { siteData: SiteData; 
           <Heart className="h-9 w-9" style={{ color: onBrand, opacity: 0.9 }} />
           <h2 className="mt-4 text-3xl font-bold">{heading(siteData, "donation", "Support Our Cause")}</h2>
           <p className="mt-3 opacity-90">{subheading(siteData, "donation", "Your gift helps us reach more people. Every contribution counts.")}</p>
+
+          {goal > 0 && (
+            <div className="mt-6 inline-flex items-center gap-3 rounded-xl bg-white/15 px-4 py-3">
+              <Target className="h-6 w-6" style={{ color: onBrand }} />
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide opacity-70">Our target</p>
+                <p className="text-xl font-bold">{formatNaira(goal)}</p>
+              </div>
+            </div>
+          )}
 
           <div className="mt-8">
             <div className="flex items-end justify-between text-sm">

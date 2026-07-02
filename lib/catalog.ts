@@ -845,7 +845,7 @@ export function createCatalogContent(
       if (templateId === "org-01") {
         data.heroOverlayColor = "#000000";
         data.heroStatLabel = "Donation so far";
-        data.heroStatValue = "₦45,000,000";
+        data.heroStatValue = "";
         data.impactImages = [0, 1, 2].map((i) => ({ id: `${seed}-im${i}`, name: "", image: img(`${seed}-impact-${i}`, 500, 360) }));
         data.sectionEyebrows = { ...(data.sectionEyebrows || {}), volunteers: "Get involved" };
         data.sectionButtons = {
@@ -857,7 +857,7 @@ export function createCatalogContent(
       }
       if (templateId === "org-04") {
         data.heroStatLabel = "Donation so far";
-        data.heroStatValue = "$450,000";
+        data.heroStatValue = "";
         data.impactImages = [0, 1, 2, 3].map((i) => ({ id: `${seed}-im${i}`, name: "", image: img(`${seed}-impact-${i}`, 360, 360) }));
         data.services = [
           { id: `${seed}-sv0`, title: "Help & Support", description: "Programs that change lives across our communities every day." },
@@ -1083,9 +1083,11 @@ export function createCatalogContent(
       break;
   }
 
-  // Donation section defaults for organisation / community templates (off until enabled).
+  // Donation section defaults for organisation / community templates. Charity
+  // NGOs enable giving out of the box (figure starts at ₦0, live once a bank is
+  // connected); other org/community templates stay opt-in.
   if (tpl?.category === "organization" || tpl?.category === "events") {
-    data.donationEnabled = false;
+    data.donationEnabled = ["org-01", "org-02", "org-04"].includes(templateId);
     data.donationGoal = 2000000;
     data.donationManual = 0;
     data.sectionTitles = { ...(data.sectionTitles || {}), donation: "Support Our Cause" };

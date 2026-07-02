@@ -4,6 +4,7 @@ import { HandHeart, GraduationCap, Baby, Users, Quote, ChevronRight } from "luci
 import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, testimonialsOf, servicesOf, SocialIcons, BrandButton, Img, heading, subheading, navItems, CustomSections, OrderedSections } from "./shared";
 import { DonationSection } from "./DonationSection";
+import { HeroDonation } from "../donation-context";
 
 const SERVICES = [
   { icon: HandHeart, t: "Help & Support" }, { icon: GraduationCap, t: "Education" },
@@ -39,13 +40,17 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
             <div className="relative mx-auto flex max-w-6xl flex-col gap-6 px-5 py-28 text-white md:flex-row md:items-end md:justify-between">
               <h1 className="max-w-2xl text-3xl font-bold leading-tight sm:text-4xl">{siteData.heroHeadline}</h1>
               <div className="shrink-0">
-                <BrandButton as="a" href={siteData.ctaHref || "#"}>{siteData.ctaText || "Donate Now"} <ChevronRight className="h-4 w-4" /></BrandButton>
-                {(siteData.heroStatValue || siteData.heroStatLabel) && (
-                  <div className="mt-4">
-                    {siteData.heroStatLabel && <p className="text-xs uppercase tracking-wide text-white/60">{siteData.heroStatLabel}</p>}
-                    {siteData.heroStatValue && <p className="text-3xl font-bold">{siteData.heroStatValue}</p>}
-                  </div>
-                )}
+                <BrandButton as="a" href={siteData.ctaHref || "#donate"}>{siteData.ctaText || "Donate Now"} <ChevronRight className="h-4 w-4" /></BrandButton>
+                <div className="mt-4">
+                  {siteData.donationEnabled ? (
+                    <HeroDonation tone="dark" />
+                  ) : (siteData.heroStatValue || siteData.heroStatLabel) ? (
+                    <>
+                      {siteData.heroStatLabel && <p className="text-xs uppercase tracking-wide text-white/60">{siteData.heroStatLabel}</p>}
+                      {siteData.heroStatValue && <p className="text-3xl font-bold">{siteData.heroStatValue}</p>}
+                    </>
+                  ) : null}
+                </div>
               </div>
             </div>
           </section>

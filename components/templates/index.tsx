@@ -4,6 +4,7 @@ import type { ComponentType } from "react";
 import type { Product, SiteData, CatalogProduct } from "@/lib/database.types";
 import { TemplateEditContext, type TemplateEditApi } from "./editor-context";
 import { StoreContext, type StoreApi } from "./store-context";
+import { DonationProvider } from "./donation-context";
 import type { TemplateProps } from "./shared";
 import { isDemoReview } from "@/lib/catalog";
 
@@ -137,14 +138,21 @@ export function SiteRenderer({
   return (
     <TemplateEditContext.Provider value={editApi ?? { editing: false, update: () => {} }}>
       <StoreContext.Provider value={storeValue}>
-        {V2 ? (
-          <V2 siteData={v2Data} brandColor={brandColor} />
-        ) : (
-          (() => {
-            const Template = Legacy ?? Clarity;
-            return <Template siteData={siteData} brandColor={brandColor} products={products} />;
-          })()
-        )}
+        <DonationProvider
+          siteId={siteId}
+          enabled={!!v2Data.donationEnabled}
+          goal={v2Data.donationGoal || 0}
+          manual={v2Data.donationManual || 0}
+        >
+          {V2 ? (
+            <V2 siteData={v2Data} brandColor={brandColor} />
+          ) : (
+            (() => {
+              const Template = Legacy ?? Clarity;
+              return <Template siteData={siteData} brandColor={brandColor} products={products} />;
+            })()
+          )}
+        </DonationProvider>
       </StoreContext.Provider>
     </TemplateEditContext.Provider>
   );

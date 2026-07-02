@@ -7,6 +7,7 @@ import {
   heading, subheading, servicesOf, testimonialsOf, navItems, CustomSections, OrderedSections,
 } from "./shared";
 import { DonationSection } from "./DonationSection";
+import { HeroDonation } from "../donation-context";
 
 const SERVICE_ICONS = [HandHeart, GraduationCap, Baby, Users];
 const FALLBACK_SERVICES = [
@@ -41,8 +42,10 @@ export function HelpingHands({ siteData, brandColor }: TemplateProps) {
             <div className="order-1 lg:order-2">
               <Img src={siteData.heroImage} className="aspect-[5/4] w-full object-cover grayscale" />
               <div className="mt-4 flex flex-wrap items-center gap-5">
-                <BrandButton as="a" href={siteData.ctaHref || "#donation"}>{siteData.ctaText || "Donate Now!"} <ChevronDown className="h-4 w-4" /></BrandButton>
-                {(siteData.heroStatLabel || siteData.heroStatValue) ? (
+                <BrandButton as="a" href={siteData.ctaHref || "#donate"}>{siteData.ctaText || "Donate Now!"} <ChevronDown className="h-4 w-4" /></BrandButton>
+                {siteData.donationEnabled ? (
+                  <HeroDonation tone="light" />
+                ) : (siteData.heroStatLabel || siteData.heroStatValue) ? (
                   <div>
                     {siteData.heroStatLabel ? <p className="text-[11px] font-semibold uppercase tracking-wide text-black/50">{siteData.heroStatLabel}</p> : null}
                     {siteData.heroStatValue ? <p className="text-2xl font-bold" style={{ color: "var(--brand-primary)" }}>{siteData.heroStatValue}</p> : null}

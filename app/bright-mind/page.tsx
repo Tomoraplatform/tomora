@@ -215,18 +215,45 @@ function sheetStats(m: Member) {
   m.sheet.days.forEach((d) => { total += d.items.length; done += d.items.filter((t) => t.done).length; });
   return { total, done };
 }
-function DayGrid({ m, accent = BLUE }: { m: Member; accent?: string }) {
+/** Read-only view of a member's month sheet: click any day to see the to-do
+ *  list they set for it (blank when they set nothing). Used on team cards and
+ *  in the admin drill-in so previous days' activity can be reviewed. */
+function SheetDayViewer({ m, accent = BLUE }: { m: Member; accent?: string }) {
+  const [sel, setSel] = useState(m.currentDay - 1);
+  const idx = Math.min(30, Math.max(0, sel));
+  const day = m.sheet.days[idx] || { items: [] };
+  const isToday = idx === m.currentDay - 1;
+  const stats = sheetStats(m);
   return (
-    <div className="flex flex-wrap gap-1">
-      {m.sheet.days.map((d, i) => {
-        const has = d.items.length > 0, allDone = has && d.items.every((t) => t.done), isToday = i === m.currentDay - 1;
-        return (
-          <div key={i} title={`Day ${i + 1}`} className="h-5 w-5 rounded text-[9px] grid place-items-center font-bold"
-            style={{ background: allDone ? "#16a34a" : has ? accent : "#eef0f4", color: has ? "#fff" : "#94a3b8", outline: isToday ? `2px solid ${CHARCOAL}` : "none", outlineOffset: 1 }}>
-            {i + 1}
-          </div>
-        );
-      })}
+    <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5">
+      <div className="flex items-center justify-between text-xs mb-2">
+        <span className="font-bold text-[#2B2B33] flex items-center gap-1.5"><ListTodo size={13} style={{ color: accent }} /> To-do · {monthName(m.sheet.startDate)}</span>
+        <span className="text-slate-400">{stats.done}/{stats.total} done</span>
+      </div>
+      <div className="flex flex-wrap gap-1 mb-2.5">
+        {m.sheet.days.map((d, i) => {
+          const has = d.items.length > 0, allDone = has && d.items.every((t) => t.done), today = i === m.currentDay - 1, seld = i === idx;
+          return (
+            <button key={i} onClick={() => setSel(i)} title={`Day ${i + 1}`} className="h-5 w-5 rounded text-[9px] grid place-items-center font-bold transition"
+              style={{ background: seld ? CHARCOAL : allDone ? "#16a34a" : has ? accent : "#eef0f4", color: seld || has || allDone ? "#fff" : "#94a3b8", outline: today && !seld ? `2px solid ${accent}` : "none", outlineOffset: 1 }}>
+              {i + 1}
+            </button>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span className="text-xs font-bold text-[#2B2B33]">Day {idx + 1} · {shortDate(addDays(m.sheet.startDate, idx))}</span>
+        {isToday && <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full text-white" style={{ background: accent }}>Today</span>}
+      </div>
+      <ul className="space-y-1">
+        {day.items.length === 0 && <li className="text-xs text-slate-400">No to-do list set for this day.</li>}
+        {day.items.map((t) => (
+          <li key={t.id} className="flex items-center gap-2 text-sm">
+            <span className={`grid place-items-center h-4 w-4 rounded shrink-0 ${t.done ? "text-white" : "border border-slate-300"}`} style={t.done ? { background: accent } : {}}>{t.done && <Check size={10} strokeWidth={3} />}</span>
+            <span className={t.done ? "line-through text-slate-400" : "text-slate-700"}>{t.text}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -250,7 +277,6 @@ function GoalRow({ m, accent = BLUE }: { m: Member; accent?: string }) {
 // ---- profile card ----------------------------------------------------------
 
 function ProfileCard({ m, you }: { m: Member; you: boolean }) {
-  const s = sheetStats(m);
   const accent = statusColor(m.profile.status);
   return (
     <div className="group relative rounded-3xl bg-white border-2 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1" style={{ borderColor: accent + "33" }}>
@@ -283,38 +309,9 @@ function ProfileCard({ m, you }: { m: Member; you: boolean }) {
         </div>
         <div className="mt-3 space-y-3">
           <GoalRow m={m} accent={accent} />
-          <div className="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5">
-            <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="font-bold text-[#2B2B33] flex items-center gap-1.5"><ListTodo size={13} style={{ color: accent }} /> Sheet · {monthName(m.sheet.startDate)}</span>
-              <span className="text-slate-400">{s.done}/{s.total} done</span>
-            </div>
-            <DayGrid m={m} accent={accent} />
-          </div>
+          <SheetDayViewer m={m} accent={accent} />
         </div>
       </div>
-    </div>
-  );
-}
-
-function SheetReadOnly({ m }: { m: Member }) {
-  const today = m.sheet.days[m.currentDay - 1];
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="bm-display font-bold text-[#2B2B33] flex items-center gap-1.5"><ListTodo size={15} style={{ color: BLUE }} /> Day {m.currentDay} of 31 — today</h4>
-        <span className="text-xs text-slate-400">started {shortDate(m.sheet.startDate)}</span>
-      </div>
-      <ul className="space-y-1.5 mb-4">
-        {(!today || today.items.length === 0) && <li className="text-sm text-slate-400">No tasks logged for today.</li>}
-        {today?.items.map((t) => (
-          <li key={t.id} className="flex items-center gap-2 text-sm">
-            <span className={`grid place-items-center h-4 w-4 rounded ${t.done ? "text-white" : "border border-slate-300"}`} style={t.done ? { background: BLUE } : {}}>{t.done && <Check size={11} strokeWidth={3} />}</span>
-            <span className={t.done ? "line-through text-slate-400" : "text-slate-700"}>{t.text}</span>
-          </li>
-        ))}
-      </ul>
-      <div className="text-[11px] uppercase tracking-wide text-slate-400 font-semibold mb-1.5">Full 31-day sheet</div>
-      <DayGrid m={m} />
     </div>
   );
 }
@@ -355,18 +352,22 @@ function Field({ icon: Icon, ...props }: any) {
   );
 }
 
-function AuthScreen({ onAuthed }: { onAuthed: (token: string, user: Member) => void }) {
-  const [mode, setMode] = useState<"login" | "signup">("login");
+function AuthScreen({ onAuthed, flash }: { onAuthed: (token: string, user: Member) => void; flash?: string }) {
+  const [mode, setMode] = useState<"login" | "signup" | "forgot">("login");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [sent, setSent] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setErr(""); setBusy(true);
-    try { const data = await api(mode, { email, password }); onAuthed(data.token, data.user); }
-    catch (e: any) { setErr(e.message); } finally { setBusy(false); }
+    try {
+      if (mode === "forgot") { await api("forgot-password", { email }); setSent(true); }
+      else { const data = await api(mode, { email, password }); onAuthed(data.token, data.user); }
+    } catch (e: any) { setErr(e.message); } finally { setBusy(false); }
   }
+  function switchMode(m: "login" | "signup" | "forgot") { setMode(m); setErr(""); setSent(false); }
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
@@ -383,21 +384,70 @@ function AuthScreen({ onAuthed }: { onAuthed: (token: string, user: Member) => v
       <div className="flex items-center justify-center p-6 sm:p-12 bg-slate-50">
         <div className="w-full max-w-md">
           <div className="lg:hidden mb-8"><Logo size={40} /></div>
+          {flash && <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{flash}</div>}
           <div className="inline-flex p-1 rounded-xl bg-slate-200/70 mb-6">
             {(["login", "signup"] as const).map((t) => (
-              <button key={t} onClick={() => { setMode(t); setErr(""); }} className={`px-5 py-2 rounded-lg text-sm font-bold transition ${mode === t ? "bg-white text-[#2B2B33] shadow-sm" : "text-slate-500"}`}>
+              <button key={t} onClick={() => switchMode(t)} className={`px-5 py-2 rounded-lg text-sm font-bold transition ${mode === t ? "bg-white text-[#2B2B33] shadow-sm" : "text-slate-500"}`}>
                 {t === "login" ? "Log in" : "Sign up"}
               </button>
             ))}
           </div>
-          <h2 className="bm-display text-2xl font-extrabold text-[#2B2B33] mb-1">{mode === "login" ? "Welcome back" : "Create your account"}</h2>
-          <p className="text-sm text-slate-500 mb-5">{mode === "login" ? "Log in to your team workspace." : "Just your email and a password to start — you'll set up your profile next."}</p>
+          <h2 className="bm-display text-2xl font-extrabold text-[#2B2B33] mb-1">{mode === "login" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}</h2>
+          <p className="text-sm text-slate-500 mb-5">{mode === "login" ? "Log in to your team workspace." : mode === "signup" ? "Just your email and a password to start — you'll set up your profile next." : "Enter your email and we'll send you a link to set a new password."}</p>
+
+          {mode === "forgot" && sent ? (
+            <div className="space-y-4">
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">If an account exists for <strong>{email}</strong>, a reset link is on its way. Check your inbox (and spam folder).</div>
+              <button onClick={() => switchMode("login")} className="text-sm font-bold" style={{ color: BLUE }}>← Back to log in</button>
+            </div>
+          ) : (
+            <form onSubmit={submit} className="space-y-3">
+              <Field icon={Mail} type="email" placeholder="Email address" value={email} onChange={(e: any) => setEmail(e.target.value)} required />
+              {mode !== "forgot" && <Field icon={Lock} type="password" placeholder="Password" value={password} onChange={(e: any) => setPassword(e.target.value)} required />}
+              {err && <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{err}</div>}
+              <button type="submit" disabled={busy} className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-60" style={{ background: BLUE }}>
+                {busy ? <Loader2 size={17} className="animate-spin" /> : <>{mode === "login" ? "Log in" : mode === "signup" ? "Create account" : "Send reset link"} <ArrowRight size={16} strokeWidth={2.6} /></>}
+              </button>
+              {mode === "login" && <button type="button" onClick={() => switchMode("forgot")} className="w-full text-center text-sm font-semibold text-slate-500 hover:text-[#3D4DEF]">Forgot password?</button>}
+              {mode === "forgot" && <button type="button" onClick={() => switchMode("login")} className="w-full text-center text-sm font-semibold text-slate-500 hover:text-[#3D4DEF]">← Back to log in</button>}
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---- reset password (from emailed link) ------------------------------------
+
+function ResetScreen({ token, onDone }: { token: string; onDone: (msg: string) => void }) {
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (password.length < 4) return setErr("Password must be at least 4 characters.");
+    if (password !== confirm) return setErr("Passwords don't match.");
+    setErr(""); setBusy(true);
+    try { await api("reset-password", { token, password }); onDone("Password updated — you can now log in with your new password."); }
+    catch (e: any) { setErr(e.message); setBusy(false); }
+  }
+
+  return (
+    <div className="min-h-screen grid place-items-center bg-slate-50 px-4">
+      <div className="w-full max-w-md">
+        <div className="mb-8 flex justify-center"><Logo size={42} /></div>
+        <div className="rounded-3xl bg-white border border-slate-200 p-6 sm:p-8">
+          <h2 className="bm-display text-2xl font-extrabold text-[#2B2B33] mb-1">Set a new password</h2>
+          <p className="text-sm text-slate-500 mb-5">Choose a new password for your account.</p>
           <form onSubmit={submit} className="space-y-3">
-            <Field icon={Mail} type="email" placeholder="Email address" value={email} onChange={(e: any) => setEmail(e.target.value)} required />
-            <Field icon={Lock} type="password" placeholder="Password" value={password} onChange={(e: any) => setPassword(e.target.value)} required />
+            <Field icon={Lock} type="password" placeholder="New password" value={password} onChange={(e: any) => setPassword(e.target.value)} required />
+            <Field icon={Lock} type="password" placeholder="Confirm new password" value={confirm} onChange={(e: any) => setConfirm(e.target.value)} required />
             {err && <div className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{err}</div>}
-            <button type="submit" disabled={busy} className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white transition hover:brightness-110 disabled:opacity-60" style={{ background: BLUE }}>
-              {busy ? <Loader2 size={17} className="animate-spin" /> : <>{mode === "login" ? "Log in" : "Create account"} <ArrowRight size={16} strokeWidth={2.6} /></>}
+            <button type="submit" disabled={busy} className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold text-white disabled:opacity-60" style={{ background: BLUE }}>
+              {busy ? <Loader2 size={17} className="animate-spin" /> : <>Update password <ArrowRight size={16} strokeWidth={2.6} /></>}
             </button>
           </form>
         </div>
@@ -806,7 +856,7 @@ function MemberRow({ m, meEmail, open, setOpen, onRefresh, onRemove, onSetStart 
             <Stat icon={Target} label="Direct Team" value={String(m.profile.directTeam)} />
           </div>
           <div className="mb-4"><GoalRow m={m} /></div>
-          <SheetReadOnly m={m} />
+          <SheetDayViewer m={m} accent={statusColor(m.profile.status)} />
           <div className="flex flex-wrap items-center gap-2 mt-4 pb-3 border-b border-slate-200">
             <span className="text-sm font-semibold text-slate-500 flex items-center gap-1.5"><Calendar size={14} style={{ color: BLUE }} /> Day 1 date:</span>
             <input type="date" value={startDraft} onChange={(e) => setStartDraft(e.target.value)} className="rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-600 outline-none focus:border-[#3D4DEF]" />
@@ -935,6 +985,8 @@ export default function BrightMindPage() {
   const [loading, setLoading] = useState(true);
   const [setupMsg, setSetupMsg] = useState("");
   const [ready, setReady] = useState(false);
+  const [resetToken, setResetToken] = useState<string | null>(null);
+  const [flash, setFlash] = useState("");
   const pollRef = useRef<ReturnType<typeof setInterval>>();
 
   const me = useMemo(() => members.find((m) => m.email === meEmail) || null, [members, meEmail]);
@@ -950,6 +1002,7 @@ export default function BrightMindPage() {
 
   useEffect(() => {
     try { const saved = JSON.parse(localStorage.getItem("bm_session") || "null"); if (saved?.token && saved?.email) { setToken(saved.token); setMeEmail(saved.email); } } catch {}
+    try { const rt = new URLSearchParams(window.location.search).get("reset"); if (rt) setResetToken(rt); } catch {}
     setReady(true); refresh();
   }, [refresh]);
   useEffect(() => { pollRef.current = setInterval(refresh, 6000); return () => clearInterval(pollRef.current); }, [refresh]);
@@ -1011,7 +1064,15 @@ export default function BrightMindPage() {
   );
 
   if (!ready) return null;
-  if (!token || !meEmail) return <div className="bm-root">{fonts}<AuthScreen onAuthed={onAuthed} /></div>;
+  if (resetToken) return (
+    <div className="bm-root">{fonts}
+      <ResetScreen token={resetToken} onDone={(msg) => {
+        try { window.history.replaceState({}, "", "/bright-mind"); } catch {}
+        setResetToken(null); logout(); setFlash(msg);
+      }} />
+    </div>
+  );
+  if (!token || !meEmail) return <div className="bm-root">{fonts}<AuthScreen onAuthed={onAuthed} flash={flash} /></div>;
   if (me && !me.onboarded) return <div className="bm-root">{fonts}<Onboarding onDone={onboard} onLogout={logout} /></div>;
 
   const tabs: { id: Tab; label: string; icon: any; show: boolean }[] = [

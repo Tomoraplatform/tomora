@@ -41,7 +41,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
               <h1 className="mt-2 text-4xl font-bold leading-tight sm:text-5xl">{siteData.heroHeadline}</h1>
               <p className="mt-4 max-w-md text-black/60">{siteData.heroSubtext}</p>
               <div className="mt-6 flex items-center gap-4">
-                <BrandButton as="a" href={siteData.ctaHref || "#"}><PlayCircle className="h-4 w-4" /> {siteData.ctaText || "Join Our Campaign"}</BrandButton>
+                <BrandButton as="a" href={siteData.ctaHref || "#donate"}><PlayCircle className="h-4 w-4" /> {siteData.ctaText || "Join Our Campaign"}</BrandButton>
               </div>
               {(avatars.length > 0 || heroStat) && (
                 <div className="mt-6 flex items-center gap-3">
@@ -107,7 +107,10 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
           </section>
         ),
         donate: (
-          <section className="bg-[#0D0D0D] py-16 text-center text-white"><h2 className="mx-auto max-w-2xl px-5 text-3xl font-bold">{heading(siteData, "donate", "Your Donation Means Another Smile.")}</h2></section>
+          <section className="bg-[#0D0D0D] py-16 text-center text-white">
+            <h2 className="mx-auto max-w-2xl px-5 text-3xl font-bold">{heading(siteData, "donate", "Your Donation Means Another Smile.")}</h2>
+            <div className="mt-6"><BrandButton as="a" href="#donate">{siteData.ctaText || "Donate Now"}</BrandButton></div>
+          </section>
         ),
         services: (
           <section id="whatwedo" className="mx-auto max-w-6xl px-5 py-16">

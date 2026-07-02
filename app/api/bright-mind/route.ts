@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,6 +25,8 @@ const DOC_PREFIX = "bm_doc:";
 const ANNS_KEY = "bm_anns";
 const ANN_PREFIX = "bm_ann:";
 const GOAL_PREFIX = "bm_goal:";
+const RESET_PREFIX = "bm_reset:";
+const RESET_TTL_MS = 60 * 60 * 1000; // password reset link valid for 1 hour
 
 const SHEET_DAYS = 31;
 const MAX_DOCS = 8;
@@ -261,6 +264,55 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Incorrect email or password." }, { status: 401 });
       const token = await startSession(email);
       return NextResponse.json({ token, user: sanitize(user, today) });
+    }
+
+    // ---- forgot password: email a reset link ----
+    if (action === "forgot-password") {
+      const email = normEmail(body.email);
+      const user = email ? await getUser(email) : null;
+      // Only actually send when the account exists, but always respond the same
+      // way so the endpoint can't be used to probe which emails are registered.
+      if (user) {
+        const token = randomBytes(24).toString("hex");
+        await kvSet(RESET_PREFIX + token, { email, expires: Date.now() + RESET_TTL_MS });
+        const origin = "https://" + (request.headers.get("host") || process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com.ng");
+        const link = `${origin}/bright-mind?reset=${token}`;
+        await sendEmail({
+          to: email,
+          subject: "Reset your Bright Mind password",
+          html: `
+            <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#2B2B33">
+              <h2 style="color:#3D4DEF;margin:0 0 8px">Bright Mind</h2>
+              <p>Hi ${user.name || "there"}, we received a request to reset your password.</p>
+              <p style="margin:24px 0">
+                <a href="${link}" style="background:#3D4DEF;color:#fff;text-decoration:none;padding:12px 22px;border-radius:10px;font-weight:bold;display:inline-block">Reset my password</a>
+              </p>
+              <p style="color:#64748b;font-size:13px">This link expires in 1 hour. If you didn't request it, you can safely ignore this email.</p>
+              <p style="color:#94a3b8;font-size:12px">Or paste this link into your browser:<br>${link}</p>
+            </div>`,
+        });
+      }
+      return NextResponse.json({ ok: true });
+    }
+
+    // ---- reset password with a valid token ----
+    if (action === "reset-password") {
+      const token = String(body.token || "");
+      const password = String(body.password || "");
+      if (password.length < 4) return NextResponse.json({ error: "Password must be at least 4 characters." }, { status: 400 });
+      const rec = await kvGet<{ email: string; expires: number }>(RESET_PREFIX + token);
+      if (!rec || rec.expires < Date.now()) {
+        await kvDel(RESET_PREFIX + token);
+        return NextResponse.json({ error: "This reset link is invalid or has expired." }, { status: 400 });
+      }
+      const user = await getUser(rec.email);
+      if (!user) return NextResponse.json({ error: "Account not found." }, { status: 404 });
+      const salt = randomBytes(16).toString("hex");
+      user.salt = salt;
+      user.hash = hashPassword(password, salt);
+      await kvSet(USER_PREFIX + user.email, user);
+      await kvDel(RESET_PREFIX + token);
+      return NextResponse.json({ ok: true });
     }
 
     if (action === "me") {
