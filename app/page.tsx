@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   Star,
   Users,
@@ -32,7 +33,21 @@ const CATALOG_LABEL = Object.fromEntries(
   CATALOG_CATEGORIES.map((c) => [c.id, c.name])
 ) as Record<string, string>;
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: { code?: string; error?: string; error_description?: string };
+}) {
+  // OAuth safety net: if Supabase falls back to the Site URL (root) with an
+  // auth code instead of hitting /auth/callback, forward it there to complete
+  // the exchange. Handles www/apex + Site-URL-fallback edge cases.
+  if (searchParams?.code) {
+    redirect(`/auth/callback?code=${encodeURIComponent(searchParams.code)}&next=/dashboard`);
+  }
+  if (searchParams?.error) {
+    redirect(`/login?error=${encodeURIComponent(searchParams.error)}`);
+  }
+
   const discounts = await loadPlanDiscounts();
   // Hide admin-archived/removed templates from the public showcase; apply renames.
   const templateOverrides = await getTemplateOverrides();
