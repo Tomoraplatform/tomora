@@ -840,7 +840,8 @@ function MemberRow({ m, meEmail, open, setOpen, onRefresh, onRemove, onSetStart 
         <Avatar name={m.name} url={m.profile.avatarUrl} size={48} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2"><span className="bm-display font-bold text-[#2B2B33] truncate">{m.name}</span>{m.isAdmin && <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full text-white" style={{ background: BLUE }}>Admin</span>}</div>
-          <div className="text-xs text-slate-500 truncate">{m.profile.skill || "—"} · {m.profile.location || "—"} · {m.profile.phone || "no phone"}</div>
+          <div className="text-xs text-slate-500 truncate flex items-center gap-1"><Mail size={11} className="shrink-0" style={{ color: BLUE }} /> {m.email}</div>
+          <div className="text-xs text-slate-400 truncate">{m.profile.skill || "—"} · {m.profile.location || "—"} · {m.profile.phone || "no phone"}</div>
         </div>
         <div className="hidden sm:flex items-center gap-6 text-sm">
           <div className="text-right"><div className="text-[11px] text-slate-400 font-semibold uppercase">Team</div><div className="font-bold text-[#2B2B33]">{m.profile.totalTeam}</div></div>
@@ -851,6 +852,7 @@ function MemberRow({ m, meEmail, open, setOpen, onRefresh, onRemove, onSetStart 
       {open && (
         <div className="px-6 pb-6 pt-1 bg-slate-50/60">
           <div className="grid sm:grid-cols-3 gap-2 mb-4">
+            <div className="sm:col-span-3"><Stat icon={Mail} label="Email" value={m.email} /></div>
             <Stat icon={UserCheck} label="Sponsor" value={m.profile.sponsor} />
             <Stat icon={Building2} label="Director" value={m.profile.director} />
             <Stat icon={Target} label="Direct Team" value={String(m.profile.directTeam)} />

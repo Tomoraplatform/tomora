@@ -53,6 +53,9 @@ export default async function PanelLayout({
     ...(site && site.category !== "ecommerce" && (site.category === "organization" || site.site_data?.donationEnabled)
       ? ([{ href: "/dashboard/payouts", label: "Payouts", icon: "Banknote" }] as NavItem[])
       : []),
+    ...(site && (site.category === "organization" || site.site_data?.donationEnabled)
+      ? ([{ href: "/dashboard/donations", label: "Donations", icon: "Heart" }] as NavItem[])
+      : []),
     { href: "/dashboard/messages", label: "Messages", icon: "MessagesSquare", badge: unreadMessages },
     { href: "/dashboard/leads", label: "Leads", icon: "Inbox" },
     { href: "/dashboard/domain", label: "Custom Domain", icon: "Globe" },
