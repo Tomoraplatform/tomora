@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "./submit-button";
+import { SocialAuth } from "./social-auth";
 
 const initial: AuthState = {};
 
@@ -56,7 +57,9 @@ function Feedback({ state }: { state: AuthState }) {
 export function LoginForm({ next }: { next?: string }) {
   const [state, action] = useFormState(signIn, initial);
   return (
-    <form action={action} className="space-y-4">
+    <div className="space-y-4">
+      <SocialAuth next={next || "/dashboard"} />
+      <form action={action} className="space-y-4">
       <input type="hidden" name="next" value={next || "/dashboard"} />
       <Feedback state={state} />
       <div className="space-y-2">
@@ -79,14 +82,17 @@ export function LoginForm({ next }: { next?: string }) {
           Create an account
         </Link>
       </p>
-    </form>
+      </form>
+    </div>
   );
 }
 
 export function SignupForm() {
   const [state, action] = useFormState(signUp, initial);
   return (
-    <form action={action} className="space-y-4">
+    <div className="space-y-4">
+      <SocialAuth next="/dashboard" />
+      <form action={action} className="space-y-4">
       <Feedback state={state} />
       <div className="space-y-2">
         <Label htmlFor="name">Full name</Label>
@@ -111,7 +117,8 @@ export function SignupForm() {
           Log in
         </Link>
       </p>
-    </form>
+      </form>
+    </div>
   );
 }
 
