@@ -281,6 +281,54 @@ export function NewsletterInput({ buttonText = "Subscribe", dark = false }: { bu
 
 export { formatNaira, Zap };
 
+/** Converts a YouTube/Vimeo watch URL into an embeddable player URL, or null. */
+export function toEmbedUrl(raw?: string): string | null {
+  const url = (raw || "").trim();
+  if (!url) return null;
+  const yt = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([\w-]{6,})/i);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}`;
+  const vimeo = url.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+  if (vimeo) return `https://player.vimeo.com/video/${vimeo[1]}`;
+  return null;
+}
+
+/**
+ * Responsive grid of creator videos added by link — 2 per row on mobile, 3 on
+ * desktop, capped at 6. Embeds recognised YouTube/Vimeo links; otherwise shows
+ * a "Watch video" card. Renders placeholder tiles until links are added.
+ */
+export function VideoLinkGrid({ videos, accentText = false }: { videos?: { id: string; title?: string; url?: string }[]; accentText?: boolean }) {
+  const items = (videos || []).filter((v) => (v.url || "").trim()).slice(0, 6);
+  if (items.length === 0) {
+    return (
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+        {[0, 1, 2].map((i) => <div key={i} className="aspect-video rounded-xl bg-black/10" />)}
+      </div>
+    );
+  }
+  return (
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+      {items.map((v) => {
+        const embed = toEmbedUrl(v.url);
+        return (
+          <figure key={v.id} className="overflow-hidden rounded-xl bg-black/5">
+            {embed ? (
+              <div className="aspect-video">
+                <iframe src={embed} title={v.title || "Video"} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="h-full w-full" />
+              </div>
+            ) : (
+              <a href={v.url} target="_blank" rel="noreferrer" className="flex aspect-video items-center justify-center bg-black/80 text-sm font-semibold text-white">
+                Watch video
+              </a>
+            )}
+            {v.title ? <figcaption className={`px-3 py-2 text-sm ${accentText ? "text-white/70" : "text-black/60"}`}>{v.title}</figcaption> : null}
+          </figure>
+        );
+      })}
+    </div>
+  );
+}
+
 /**
  * Distinct product categories derived from the store's products (the owner
  * sets a product's Category when uploading it). Each entry carries a

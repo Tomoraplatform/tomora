@@ -27,6 +27,9 @@ import { Inbio } from "./v2/Inbio";
 import { RizwanAli } from "./v2/RizwanAli";
 import { Spotlight } from "./v2/Spotlight";
 import { Brandcraft } from "./v2/Brandcraft";
+import { Handle } from "./v2/Handle";
+import { Tailored } from "./v2/Tailored";
+import { Overflow } from "./v2/Overflow";
 import { Upskill } from "./v2/Upskill";
 import { Motivac } from "./v2/Motivac";
 import { OpenHeart } from "./v2/OpenHeart";
@@ -62,6 +65,9 @@ export const V2_REGISTRY: Record<string, V2Component> = {
   "portfolio-02": RizwanAli,
   "portfolio-03": Spotlight,
   "portfolio-04": Brandcraft,
+  "portfolio-05": Handle,
+  "portfolio-06": Tailored,
+  "portfolio-07": Overflow,
   "education-01": Upskill,
   "education-02": Motivac,
   "org-01": OpenHeart,

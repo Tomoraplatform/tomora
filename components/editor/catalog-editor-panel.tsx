@@ -138,6 +138,11 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     fields: [{ key: "name", label: "Skill" }],
     make: () => ({ id: `sk-${Date.now()}`, name: "New skill" }),
   },
+  videoLinks: {
+    key: "videoLinks", title: "Video",
+    fields: [{ key: "url", label: "Video link (YouTube / Vimeo)" }, { key: "title", label: "Caption (optional)" }],
+    make: () => ({ id: `vl-${Date.now()}`, url: "", title: "" }),
+  },
   experiencePhotos: {
     key: "experiencePhotos", title: "Experience photo",
     fields: [{ key: "image", label: "Photo", type: "image" }],

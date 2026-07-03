@@ -337,6 +337,15 @@ export interface SiteData {
   galleryVideos?: CatalogVideoItem[];
   /** Shop template: editable "recent blog posts" cards. */
   blogPosts?: CatalogBlogPost[];
+  /** Creator template: videos added by link (YouTube/Vimeo), not uploaded. */
+  videoLinks?: CatalogVideoLink[];
+}
+
+export interface CatalogVideoLink {
+  id: string;
+  title?: string;
+  /** YouTube / Vimeo (or any) video URL. Embedded when recognised. */
+  url?: string;
 }
 
 export interface CatalogBlogPost {

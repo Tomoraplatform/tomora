@@ -45,6 +45,9 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
   { id: "portfolio-02", name: "Rizwan Ali", category: "portfolio", component: "RizwanAli", accent: "#2563EB", blurb: "Designer portfolio with stats and project filters." },
   { id: "portfolio-03", name: "Spotlight", category: "portfolio", component: "Spotlight", accent: "#7C5CFF", blurb: "Personal creator brand with photo & video galleries." },
   { id: "portfolio-04", name: "Brandcraft", category: "portfolio", component: "Brandcraft", accent: "#111111", blurb: "Bold black & white creative agency: process, services, projects and CTA." },
+  { id: "portfolio-05", name: "Handle", category: "portfolio", component: "Handle", accent: "#EC9BB4", blurb: "Soft-pink service agency: bold hero, marquee, services and process." },
+  { id: "portfolio-06", name: "Tailored", category: "portfolio", component: "Tailored", accent: "#D98AA6", blurb: "Elegant stylist / personal brand with services, portfolio and videos." },
+  { id: "portfolio-07", name: "Overflow", category: "portfolio", component: "Overflow", accent: "#8C2B22", blurb: "Luxury coach: dark editorial hero, signature offer, results and CTA." },
   { id: "education-01", name: "Upskill", category: "education", component: "Upskill", accent: "#2B6CB0", blurb: "Bootcamp and course platform with FAQ." },
   { id: "education-02", name: "Motivac", category: "education", component: "Motivac", accent: "#E91E8C", dark: true, blurb: "Conference and event program, bold and dark." },
   { id: "org-01", name: "Open Heart", category: "organization", component: "OpenHeart", accent: "#CC0000", blurb: "Documentary-style charity with impact stats." },
@@ -58,7 +61,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints" | "ministries" | "skills" | "experiencePhotos" | "galleryPhotos" | "galleryVideos" | "blogPosts";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints" | "ministries" | "skills" | "experiencePhotos" | "galleryPhotos" | "galleryVideos" | "blogPosts" | "videoLinks";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["trustBadges", "testimonials"],
   "shop-02": ["trustBadges"],
@@ -69,6 +72,9 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
   "portfolio-03": ["skills", "experiencePhotos", "services", "galleryPhotos", "galleryVideos"],
   "portfolio-04": ["clientLogos", "skills", "services", "eduFeatures", "portfolio", "testimonials"],
+  "portfolio-05": ["services", "clientLogos", "videoLinks"],
+  "portfolio-06": ["services", "portfolio", "testimonials", "videoLinks"],
+  "portfolio-07": ["skills", "eduFeatures", "services", "testimonials", "videoLinks"],
   "education-01": ["eduCategories", "advantages", "courses", "eduFeatures", "faqs"],
   "education-02": ["progress", "events", "services", "testimonials"],
   "org-01": ["impactImages", "services", "testimonials"],
@@ -95,6 +101,9 @@ export const TEMPLATE_NAV: Record<string, [string, string][]> = {
   "portfolio-02": [["Home", "#"], ["About Me", "#about"], ["Services", "#services"], ["Portfolio", "#projects"], ["Testimonials", "#testimonials"], ["Contact", "#contact"]],
   "portfolio-03": [["Home", "#"], ["Experience", "#experience"], ["Service", "#services"], ["Photos", "#photos"], ["Videos", "#videos"]],
   "portfolio-04": [["Home", "#"], ["About", "#about"], ["Process", "#process"], ["Services", "#expertise"], ["Work", "#projects"], ["Contact", "#cta"]],
+  "portfolio-05": [["Home", "#"], ["About", "#about"], ["Services", "#services"], ["Portfolio", "#videos"], ["Contact", "#cta"], ["Blog", "#"]],
+  "portfolio-06": [["Home", "#"], ["About", "#about"], ["Services", "#services"], ["Portfolio", "#portfolio"], ["Videos", "#videos"], ["Contact", "#cta"]],
+  "portfolio-07": [["Home", "#"], ["About", "#about"], ["Offer", "#offer"], ["Work", "#videos"], ["Results", "#results"], ["Contact", "#cta"]],
   "education-01": [["Home", "#"], ["Courses", "#bootcamp"], ["Advantages", "#advantages"], ["FAQ", "#faq"]],
   "education-02": [["Home", "#"], ["Events", "#venues"], ["Speakers", "#schedules"], ["Register", "#register"]],
   "org-01": [["Home", "#"], ["Who We Are", "#mission"], ["What We Do", "#services"], ["Stories", "#stories"]],
@@ -209,6 +218,29 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "projects", label: "Explore our most recent projects" },
     { key: "testimonials", label: "Here's what people say about our work" },
     { key: "cta", label: "Let's start designing your project" },
+  ],
+  "portfolio-05": [
+    { key: "about", label: "Helping Your Business Achieve Its Full Potential" },
+    { key: "services", label: "What We Do" },
+    { key: "process", label: "Inspire · Create · Elevate" },
+    { key: "videos", label: "Watch Our Work" },
+    { key: "cta", label: "Ready to get started?" },
+  ],
+  "portfolio-06": [
+    { key: "about", label: "About The Stylist" },
+    { key: "services", label: "Styling Services" },
+    { key: "portfolio", label: "Portfolio" },
+    { key: "testimonials", label: "Kind Words" },
+    { key: "videos", label: "Watch & Learn" },
+    { key: "cta", label: "Unlock Your Style Secrets" },
+  ],
+  "portfolio-07": [
+    { key: "about", label: "About Me" },
+    { key: "offer", label: "The Signature Offer" },
+    { key: "services", label: "What I Offer" },
+    { key: "results", label: "Results That Matter" },
+    { key: "videos", label: "Watch" },
+    { key: "cta", label: "Ready For Your Next Expansion?" },
   ],
   "portfolio-03": [
     { key: "about", label: "About Me" },
@@ -366,6 +398,35 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "expertise", label: "Services (dark)", heading: "expertise", text: true, color: true, list: "eduFeatures" },
     { key: "projects", label: "Projects", heading: "projects", text: true, button: true, list: "portfolio" },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
+    { key: "cta", label: "Closing CTA", heading: "cta", text: true, button: true, color: true },
+  ],
+  "portfolio-05": [
+    { key: "hero", label: "Hero", hero: true },
+    { key: "marquee", label: "Scrolling banner", heading: "marquee", color: true },
+    { key: "about", label: "About / helping", heading: "about", text: true, image: true, button: true, color: true },
+    { key: "services", label: "Services", heading: "services", text: true, image: true, color: true, list: "services" },
+    { key: "logos", label: "Logo strip", list: "clientLogos" },
+    { key: "process", label: "Process highlight", heading: "process", text: true, image: true, button: true },
+    { key: "videos", label: "Videos", heading: "videos", text: true, list: "videoLinks" },
+    { key: "cta", label: "Closing CTA", heading: "cta", text: true, button: true, color: true },
+  ],
+  "portfolio-06": [
+    { key: "hero", label: "Hero", hero: true, overlay: true },
+    { key: "marquee", label: "Scrolling banner", heading: "marquee", color: true },
+    { key: "about", label: "About the stylist", heading: "about", text: true, image: true, button: true },
+    { key: "services", label: "Styling services", heading: "services", color: true, list: "services" },
+    { key: "portfolio", label: "Portfolio", heading: "portfolio", color: true, list: "portfolio" },
+    { key: "testimonials", label: "Testimonials", heading: "testimonials", color: true, list: "testimonials" },
+    { key: "videos", label: "Videos", heading: "videos", text: true, list: "videoLinks" },
+    { key: "cta", label: "Closing CTA", heading: "cta", text: true, image: true, button: true, color: true },
+  ],
+  "portfolio-07": [
+    { key: "hero", label: "Hero", hero: true, overlay: true },
+    { key: "about", label: "About me", heading: "about", text: true, image: true, color: true, list: "skills" },
+    { key: "offer", label: "Signature offer", heading: "offer", text: true, image: true, button: true, color: true, list: "eduFeatures" },
+    { key: "services", label: "What I offer", heading: "services", text: true, color: true, list: "services" },
+    { key: "results", label: "Results / testimonials", heading: "results", color: true, list: "testimonials" },
+    { key: "videos", label: "Videos", heading: "videos", text: true, list: "videoLinks" },
     { key: "cta", label: "Closing CTA", heading: "cta", text: true, button: true, color: true },
   ],
   "portfolio-03": [
@@ -721,6 +782,9 @@ const HERO = {
   "portfolio-02": { h: "Rizwan Ali", s: "Professional UI/UX & Website Designer helping brands stand out online.", c: "Hire Me" },
   "portfolio-03": { h: "Your Name", s: "", c: "" },
   "portfolio-04": { h: "We craft brands & digital experiences", s: "A design studio helping ambitious teams launch brands and products people remember.", c: "Start a project" },
+  "portfolio-05": { h: "Let Us Handle the Work, You Focus on What Matters", s: "We take the busywork off your plate so you can focus on growing what matters most.", c: "Learn more" },
+  "portfolio-06": { h: "Discover Your Perfect Style with Tailored By Taylor", s: "Personal styling that helps you show up as the most confident version of yourself.", c: "Book Your Session" },
+  "portfolio-07": { h: "wealth begins within.", s: "Heart-led coaching for women ready to expand their wealth, self-worth and impact.", c: "Explore my work" },
   "education-01": { h: "Bootcamp Program", s: "Practical, mentor-led programs that get you hired in months, not years.", c: "Start Learning" },
   "education-02": { h: "Exploring The Future", s: "A worldwide conference bringing together the brightest minds and ideas.", c: "Register" },
   "org-01": { h: "Give A Helping Hand To Those Who Need It", s: "Last year we supported programs that served over 700,000 children in 23 countries.", c: "Donate Now" },
@@ -1033,6 +1097,94 @@ export function createCatalogContent(
         };
         data.sectionColors = { ...(data.sectionColors || {}), expertise: "#0B0B0C", cta: "#0B0B0C" };
         data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-team`, 700, 520) };
+      }
+      if (["portfolio-05", "portfolio-06", "portfolio-07"].includes(templateId)) {
+        data.videoLinks = [0, 1, 2].map((i) => ({ id: `${seed}-vl${i}`, url: "", title: "" }));
+      }
+      if (templateId === "portfolio-05") {
+        data.heroImage = img(`${seed}-hero`, 640, 760);
+        data.sectionTitles = {
+          ...(data.sectionTitles || {}),
+          marquee: "We manage it all · You reap the benefits",
+          about: "Helping your business achieve its full potential",
+          services: "What We Do", process: "Inspire · Create · Elevate",
+          videos: "Watch Our Work", cta: "Ready to get started?",
+        };
+        data.sectionText = {
+          ...(data.sectionText || {}),
+          about: "We handle the strategy, content and day-to-day so you can focus on serving your clients and growing what matters most.",
+          services: "A full-service team behind your brand, from idea to execution.",
+          process: "A proven process that turns your ideas into results — thoughtfully planned, beautifully executed.",
+          videos: "A look at the work we've created for brands like yours.",
+          cta: "Let's take the busywork off your plate. Book a free discovery call today.",
+        };
+        data.services = [
+          { id: `${seed}-s0`, title: "Creative Content Creation", description: "On-brand content that stops the scroll and builds trust." },
+          { id: `${seed}-s1`, title: "Business Consultation", description: "Clear strategy and systems to help you scale with ease." },
+          { id: `${seed}-s2`, title: "Social Media Solutions", description: "Done-for-you social that grows your audience and sales." },
+        ];
+        data.clientLogos = ["Forbes", "NY Post", "USA Today", "Business Insider"].map((name, i) => ({ id: `${seed}-cl${i}`, name, image: "" }));
+        data.sectionButtons = { ...(data.sectionButtons || {}), about: { text: "Find Out How We Can Help", url: "" }, process: { text: "See Our Process", url: "" }, cta: { text: "Book a Call", url: "" } };
+        data.sectionColors = { ...(data.sectionColors || {}), marquee: opts.brandColor, about: "#FCE7EE", services: "#FBDDE8", cta: "#FCE7EE" };
+        data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-about`, 620, 520), services: img(`${seed}-svc`, 500, 500), process: img(`${seed}-proc`, 640, 460) };
+      }
+      if (templateId === "portfolio-06") {
+        data.heroImage = img(`${seed}-hero`, 1200, 900);
+        data.heroOverlayColor = "#8A2E4D";
+        data.sectionTitles = {
+          ...(data.sectionTitles || {}),
+          marquee: "Confident · Elevated style · Curated for you",
+          about: "About The Stylist", services: "Styling Services", portfolio: "Portfolio",
+          testimonials: "Kind Words", videos: "Watch & Learn", cta: "Unlock Your Style Secrets",
+        };
+        data.sectionText = {
+          ...(data.sectionText || {}),
+          about: "Style is more than what you wear — it's how you feel. I help you build a wardrobe that reflects your individuality and elevates every day.",
+          videos: "Style tips, lookbooks and behind-the-scenes from recent sessions.",
+          cta: "Step into your world of fashion with a free guide designed to elevate your look.",
+        };
+        data.services = [
+          { id: `${seed}-s0`, title: "The Signature Look", description: "A complete look built around your body, lifestyle and goals." },
+          { id: `${seed}-s1`, title: "Capsule Wardrobe", description: "A versatile, mix-and-match wardrobe that works for everything." },
+          { id: `${seed}-s2`, title: "Brand Styling", description: "Show up polished and on-brand for shoots, launches and events." },
+        ];
+        data.portfolioItems = [0, 1, 2].map((i) => ({ id: `${seed}-pf${i}`, title: "Client Look", category: "Styling", description: "", image: img(`${seed}-look-${i}`, 500, 640) }));
+        data.sectionButtons = { ...(data.sectionButtons || {}), about: { text: "Learn More", url: "" }, cta: { text: "Download the Guide", url: "" } };
+        data.sectionColors = { ...(data.sectionColors || {}), marquee: opts.brandColor, services: "#F2D6E0", portfolio: opts.brandColor, testimonials: "#C98BA3", cta: "#F5E6EB" };
+        data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-about`, 560, 620), cta: img(`${seed}-phone`, 420, 620) };
+      }
+      if (templateId === "portfolio-07") {
+        data.heroImage = img(`${seed}-hero`, 1400, 900);
+        data.heroOverlayColor = "#1A0808";
+        data.sectionTitles = {
+          ...(data.sectionTitles || {}),
+          about: "About Me", offer: "The Overflow Code", services: "What I Offer",
+          results: "Results That Matter", videos: "Watch", cta: "Ready For Your Next Expansion?",
+        };
+        data.sectionText = {
+          ...(data.sectionText || {}),
+          about: "I guide heart-led women into overflow with integrity, softness and strategy. This isn't just about making money — it's about feeling safe to receive it, hold it, and expand with it.",
+          offer: "Unlock the energetic blueprint of wealth, self-worth and aligned business. Inside The Overflow Code you'll shift from scarcity into soul-aligned overflow.",
+          services: "Step into your next level with offers that meet you where you are — and lead you where you're meant to go.",
+          videos: "Talks, trainings and moments from the work.",
+          cta: "You've done the mindset work. Now it's time to move from waiting to receiving — with softness, strategy and soul.",
+        };
+        data.skills = ["Feminine leadership that feels like home", "Clients who value your magic — and pay accordingly", "A business that honours your nervous system", "Soft power, strong boundaries, rich results"].map((name, i) => ({ id: `${seed}-sk${i}`, name }));
+        data.eduFeatures = [
+          { id: `${seed}-ef0`, title: "5 transformative modules", description: "" },
+          { id: `${seed}-ef1`, title: "Sessions for worth & wealth", description: "" },
+          { id: `${seed}-ef2`, title: "Aligned action roadmap", description: "" },
+          { id: `${seed}-ef3`, title: "Lifetime access + all updates", description: "" },
+        ];
+        data.services = [
+          { id: `${seed}-s0`, title: "1:1 Coaching", description: "Private mentorship to help you heal money blocks and scale with alignment." },
+          { id: `${seed}-s1`, title: "Courses", description: "Self-paced digital experiences to elevate your mindset, energy and income." },
+          { id: `${seed}-s2`, title: "Journals & Resources", description: "Beautifully designed tools to ground your growth." },
+          { id: `${seed}-s3`, title: "Free Resources", description: "Downloads, trainings and more to begin your journey into overflow." },
+        ];
+        data.sectionButtons = { ...(data.sectionButtons || {}), offer: { text: "I want this", url: "" }, cta: { text: "Apply to work together", url: "" } };
+        data.sectionColors = { ...(data.sectionColors || {}), about: "#8C2B22", offer: "#F3D9DE", services: "#7C2119", results: "#2A0C0A", cta: "#5A1712" };
+        data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-about`, 520, 520), offer: img(`${seed}-offer`, 460, 600) };
       }
       if (templateId === "portfolio-03") {
         data.heroHeadline = opts.businessName;
