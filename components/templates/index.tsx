@@ -40,6 +40,11 @@ import { ConferenceDark } from "./v2/ConferenceDark";
 import { BellevueChurch } from "./v2/BellevueChurch";
 import { DeedsChurch } from "./v2/DeedsChurch";
 import { Leychert } from "./v2/Leychert";
+import { Handmade } from "./v2/Handmade";
+import { Atelier } from "./v2/Atelier";
+import { CarryStudio } from "./v2/CarryStudio";
+import { Woodmore } from "./v2/Woodmore";
+import { Seatwell } from "./v2/Seatwell";
 
 export const TEMPLATE_REGISTRY: Record<string, ComponentType<TemplateProps>> = {
   clarity: Clarity,
@@ -78,6 +83,11 @@ export const V2_REGISTRY: Record<string, V2Component> = {
   "events-02": BellevueChurch,
   "events-03": DeedsChurch,
   "events-04": Leychert,
+  "artisan-01": Handmade,
+  "artisan-02": Atelier,
+  "artisan-03": CarryStudio,
+  "artisan-04": Woodmore,
+  "artisan-05": Seatwell,
 };
 
 function toCatalogProducts(products?: Product[]): CatalogProduct[] | undefined {

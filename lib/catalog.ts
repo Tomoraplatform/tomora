@@ -5,13 +5,13 @@ import type {
 
 /* ============================ Categories ============================ */
 export type CatalogCategoryId =
-  | "shop" | "portfolio" | "education" | "organization" | "events";
+  | "shop" | "portfolio" | "education" | "organization" | "events" | "artisan";
 
 export interface CatalogCategory {
   id: CatalogCategoryId;
   name: string;
   description: string;
-  icon: "ShoppingBag" | "User" | "GraduationCap" | "Heart" | "CalendarDays";
+  icon: "ShoppingBag" | "User" | "GraduationCap" | "Heart" | "CalendarDays" | "Palette";
 }
 
 export const CATALOG_CATEGORIES: CatalogCategory[] = [
@@ -20,6 +20,7 @@ export const CATALOG_CATEGORIES: CatalogCategory[] = [
   { id: "education", name: "Education", description: "Courses, bootcamps, conferences and learning programs.", icon: "GraduationCap" },
   { id: "organization", name: "Organization & NGO", description: "Charities, nonprofits and professional firms.", icon: "Heart" },
   { id: "events", name: "Events & Community", description: "Churches, conferences and community organizations.", icon: "CalendarDays" },
+  { id: "artisan", name: "Artisan & Other Businesses", description: "Makers, studios and services that showcase work and take bookings or enquiries.", icon: "Palette" },
 ];
 
 /* ============================ Templates ============================ */
@@ -58,6 +59,11 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
   { id: "events-02", name: "Bellevue Church", category: "events", component: "BellevueChurch", accent: "#D4A017", blurb: "Warm church community with quick links." },
   { id: "events-03", name: "Deeds Church", category: "events", component: "DeedsChurch", accent: "#8B1A1A", blurb: "Traditional church with countdown and ministries." },
   { id: "events-04", name: "Leychert", category: "events", component: "Leychert", accent: "#C4622D", blurb: "Community / municipality with news and events." },
+  { id: "artisan-01", name: "Handmade", category: "artisan", component: "Handmade", accent: "#8A6D4B", dark: true, blurb: "Warm maker's site: showcase your craft and take enquiries." },
+  { id: "artisan-02", name: "Atelier", category: "artisan", component: "Atelier", accent: "#C0703C", blurb: "Editorial studio: gallery, services and enquiries." },
+  { id: "artisan-03", name: "Carry", category: "artisan", component: "CarryStudio", accent: "#8DA290", blurb: "Elegant showcase for makers — display work, drive enquiries." },
+  { id: "artisan-04", name: "Woodmore", category: "artisan", component: "Woodmore", accent: "#1F5C3A", blurb: "Furniture / product maker: collections, work and consultations." },
+  { id: "artisan-05", name: "Seatwell", category: "artisan", component: "Seatwell", accent: "#C99AA6", blurb: "Soft pastel studio: catalog, popular pieces and enquiries." },
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
@@ -85,6 +91,11 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "events-02": ["quickActions", "ministries", "events", "hours"],
   "events-03": ["aboutImages", "portfolio"],
   "events-04": ["quickActions", "events"],
+  "artisan-01": ["services", "portfolio"],
+  "artisan-02": ["services", "portfolio", "testimonials"],
+  "artisan-03": ["portfolio", "testimonials"],
+  "artisan-04": ["trustBadges", "services", "portfolio"],
+  "artisan-05": ["services", "portfolio"],
 };
 export function templateLists(id: string): EditableList[] {
   return TEMPLATE_LISTS[id] ?? [];
@@ -114,6 +125,11 @@ export const TEMPLATE_NAV: Record<string, [string, string][]> = {
   "events-02": [["Mission", "#mission"], ["Ministries", "#ministries"], ["What's New", "#news"]],
   "events-03": [["Home", "#"], ["Sermons", "#about"], ["Ministries", "#ministries"]],
   "events-04": [["About", "#news"], ["Living Here", "#events"], ["Heritage", "#territory"], ["Services", "#quick"]],
+  "artisan-01": [["Home", "#"], ["Why me", "#why"], ["About me", "#about"], ["Catalog", "#catalog"], ["Contacts", "#contact"]],
+  "artisan-02": [["Home", "#"], ["About", "#about"], ["Work", "#gallery"], ["Services", "#services"], ["Contact", "#contact"]],
+  "artisan-03": [["Home", "#"], ["About", "#about"], ["Showcase", "#showcase"], ["Gallery", "#gallery"], ["Contact", "#contact"]],
+  "artisan-04": [["Home", "#"], ["Collections", "#categories"], ["Work", "#showcase"], ["Contact", "#contact"]],
+  "artisan-05": [["Home", "#"], ["Catalog", "#categories"], ["About", "#about"], ["Work", "#popular"], ["Contact", "#contact"]],
 };
 export function templateNav(id: string): [string, string][] {
   return TEMPLATE_NAV[id] ?? [];
@@ -314,6 +330,37 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "news", label: "News" },
     { key: "events", label: "Events" },
     { key: "territory", label: "The Territory" },
+  ],
+  "artisan-01": [
+    { key: "why", label: "Why should you choose me" },
+    { key: "catalog", label: "You can order" },
+    { key: "about", label: "Who I Am" },
+    { key: "contact", label: "Leave a response" },
+  ],
+  "artisan-02": [
+    { key: "about", label: "About the studio" },
+    { key: "gallery", label: "Selected work" },
+    { key: "services", label: "What we do" },
+    { key: "testimonials", label: "Kind words" },
+    { key: "contact", label: "Get in touch" },
+  ],
+  "artisan-03": [
+    { key: "showcase", label: "Featured pieces" },
+    { key: "about", label: "Embracing style and utility" },
+    { key: "gallery", label: "Find your perfect piece" },
+    { key: "testimonials", label: "Loved by clients" },
+    { key: "contact", label: "Make an enquiry" },
+  ],
+  "artisan-04": [
+    { key: "categories", label: "Explore our collection" },
+    { key: "showcase", label: "Our latest work" },
+    { key: "contact", label: "Enquire now" },
+  ],
+  "artisan-05": [
+    { key: "categories", label: "Browse the catalog" },
+    { key: "about", label: "The art of modern furniture" },
+    { key: "popular", label: "Popular pieces" },
+    { key: "contact", label: "Enquire" },
   ],
 };
 export function templateSections(id: string): SectionDef[] {
@@ -525,6 +572,43 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "events", label: "Events", heading: "events", text: true, button: true, list: "events" },
     { key: "territory", label: "Territory", heading: "territory", text: true, image: true, button: true, color: true },
     { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+  ],
+  "artisan-01": [
+    { key: "hero", label: "Hero", hero: true, overlay: true },
+    { key: "why", label: "Why choose me", heading: "why", eyebrow: true, list: "services" },
+    { key: "catalog", label: "You can order", heading: "catalog", eyebrow: true, color: true, list: "portfolio" },
+    { key: "about", label: "About me", heading: "about", eyebrow: true, text: true, image: true },
+    { key: "contact", label: "Contact / enquiry", heading: "contact", eyebrow: true, book: true, color: true },
+  ],
+  "artisan-02": [
+    { key: "hero", label: "Hero", hero: true },
+    { key: "about", label: "About the studio", heading: "about", text: true, image: true },
+    { key: "gallery", label: "Selected work", heading: "gallery", text: true, list: "portfolio" },
+    { key: "services", label: "What we do", heading: "services", color: true, list: "services" },
+    { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
+    { key: "contact", label: "Contact / enquiry", heading: "contact", book: true, color: true },
+  ],
+  "artisan-03": [
+    { key: "hero", label: "Hero", hero: true },
+    { key: "showcase", label: "Featured pieces", heading: "showcase", text: true, list: "portfolio" },
+    { key: "about", label: "About", heading: "about", text: true, image: true, button: true, color: true },
+    { key: "gallery", label: "Gallery", heading: "gallery", list: "portfolio" },
+    { key: "testimonials", label: "Testimonials", heading: "testimonials", color: true, list: "testimonials" },
+    { key: "contact", label: "Contact / enquiry", heading: "contact", book: true, color: true },
+  ],
+  "artisan-04": [
+    { key: "hero", label: "Hero", hero: true, image: true },
+    { key: "trust", label: "Highlights", list: "trustBadges" },
+    { key: "categories", label: "Collections", heading: "categories", text: true, list: "services" },
+    { key: "showcase", label: "Our work", heading: "showcase", text: true, list: "portfolio" },
+    { key: "contact", label: "Contact / enquiry", heading: "contact", book: true, color: true },
+  ],
+  "artisan-05": [
+    { key: "hero", label: "Hero", hero: true, image: true, button: true },
+    { key: "categories", label: "Catalog cards", heading: "categories", list: "services" },
+    { key: "about", label: "About", heading: "about", text: true, image: true },
+    { key: "popular", label: "Popular pieces", heading: "popular", list: "portfolio" },
+    { key: "contact", label: "Contact / enquiry", heading: "contact", book: true, color: true },
   ],
 };
 export function templateReorder(id: string): SectionDef[] {
@@ -795,6 +879,11 @@ const HERO = {
   "events-02": { h: "Welcome To Our Community", s: "A place to belong, grow and serve. What can we help you find today?", c: "Plan Your Visit" },
   "events-03": { h: "A Place to Grow in Faith and Community", s: "Join us this week as we worship, learn and serve together.", c: "Plan Your Visit" },
   "events-04": { h: "Our Community, Our Home", s: "News, events and services for everyone who lives and works here.", c: "Explore" },
+  "artisan-01": { h: "Handmade Knitted Products", s: "Made with love — cosy, one-of-a-kind pieces knitted just for you.", c: "Contact me" },
+  "artisan-02": { h: "Handcrafted with intention", s: "A small studio creating timeless, handmade pieces for modern living.", c: "Make an enquiry" },
+  "artisan-03": { h: "Carry style in every step", s: "Beautifully made pieces, crafted to be part of your everyday story.", c: "Enquire now" },
+  "artisan-04": { h: "Explore our modern furniture collection", s: "Handmade, made-to-order furniture designed to last a lifetime.", c: "Book a consultation" },
+  "artisan-05": { h: "This is where style sits down", s: "A collection of designer chairs and armchairs, made to order.", c: "Make an enquiry" },
 } as const;
 
 export function createCatalogContent(
@@ -1233,6 +1322,80 @@ export function createCatalogContent(
         data.sectionImages = { ...(data.sectionImages || {}), portfolio: img(`${seed}-pf-foot`, 480, 560) };
       }
       break;
+    case "artisan": {
+      data.heroImage = img(`${seed}-hero`, 1200, 800);
+      data.bookingUrl = "";
+      const showcase = (labels: [string, string][]) => labels.map(([title, description], i) => ({ id: `${seed}-pf${i}`, title, category: "", description, image: img(`${seed}-work-${i}`, 600, 700), linkUrl: "" }));
+      if (templateId === "artisan-01") {
+        data.heroOverlayColor = "#241C14";
+        data.sectionEyebrows = { ...(data.sectionEyebrows || {}), why: "Superiority", catalog: "Catalog", about: "About me", contact: "Contacts" };
+        data.services = [
+          { id: `${seed}-w0`, title: "Exclusively hand-knitted", description: "Every piece is made only by hand, with care." },
+          { id: `${seed}-w1`, title: "Worldwide delivery", description: "Fast and timely shipping, wherever you are." },
+          { id: `${seed}-w2`, title: "Hypoallergenic yarn", description: "Soft, quality yarn that's kind to your skin." },
+          { id: `${seed}-w3`, title: "Made in 5 days", description: "Most orders are ready within five working days." },
+        ];
+        data.portfolioItems = showcase([["Sweater", "Cosy, made-to-measure knitwear."], ["Hat", "Warm hats with a soft pom-pom."], ["Mittens", "Hand-knitted mittens in your colours."]]);
+        data.sectionText = { ...(data.sectionText || {}), about: "Hello everybody! My name is Victoria and knitting is my whole life. What began as a hobby became a passion — and now I knit for a living, and I'm sure this is my vocation!", contact: "Have something in mind? Send me a message and let's make it together." };
+        data.sectionColors = { ...(data.sectionColors || {}), catalog: "#241C14", contact: "#241C14" };
+        data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-me`, 500, 620) };
+      }
+      if (templateId === "artisan-02") {
+        data.services = [
+          { id: `${seed}-s0`, title: "Bespoke pieces", description: "One-of-a-kind commissions made to your brief." },
+          { id: `${seed}-s1`, title: "Small-batch production", description: "Thoughtfully made in limited runs." },
+          { id: `${seed}-s2`, title: "Restoration", description: "Careful repair and renewal of loved pieces." },
+        ];
+        data.portfolioItems = showcase([["Signature Collection", "Our most-loved designs."], ["Studio Series", "Limited pieces from the studio."], ["Custom Commission", "Made just for you."], ["Archive", "Past work and inspiration."], ["Materials", "Natural, honest materials."], ["Process", "Behind the scenes."]]);
+        data.testimonials = [
+          { id: "t1", name: "Amara O.", role: "Client", quote: "Beautiful craftsmanship and a lovely process from start to finish." },
+          { id: "t2", name: "Daniel K.", role: "Client", quote: "Exactly what I imagined — and even better in person." },
+        ];
+        data.sectionText = { ...(data.sectionText || {}), about: "We're a small studio creating timeless, handmade pieces for modern homes. Every commission is a collaboration — considered, unhurried and made to last.", gallery: "A selection of recent work." };
+        data.sectionColors = { ...(data.sectionColors || {}), services: "#F3E8DE" };
+        data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-studio`, 640, 520) };
+      }
+      if (templateId === "artisan-03") {
+        data.portfolioItems = showcase([["Signature piece", "Our hero design, loved by many."], ["Everyday essential", "Made for daily life."], ["Statement piece", "For when you want to stand out."], ["New arrival", "Fresh from the studio."], ["Classic", "A timeless favourite."], ["Limited edition", "Only a few available."]]);
+        data.testimonials = [
+          { id: "t1", name: "Emma & Daisy", role: "Clients", quote: "We're obsessed — the quality and detail are unmatched." },
+          { id: "t2", name: "Zara N.", role: "Client", quote: "Beautiful, functional and clearly made with love." },
+        ];
+        data.sectionText = { ...(data.sectionText || {}), showcase: "A look at some of our favourite pieces.", about: "We create pieces where style and function intertwine — made to elevate your everyday and last for years to come." };
+        data.sectionButtons = { ...(data.sectionButtons || {}), about: { text: "Make an enquiry", url: "" } };
+        data.sectionColors = { ...(data.sectionColors || {}), about: "#E7EEEA", testimonials: "#E7EEEA" };
+        data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-about`, 560, 620) };
+      }
+      if (templateId === "artisan-04") {
+        data.trustBadges = [
+          { id: `${seed}-tb0`, title: "Made to order", subtitle: "Crafted specially for you" },
+          { id: `${seed}-tb1`, title: "Flexible payment", subtitle: "Discuss options with us" },
+          { id: `${seed}-tb2`, title: "24×7 support", subtitle: "We're here to help" },
+        ];
+        data.services = [
+          { id: `${seed}-c0`, title: "Chairs", description: "Gaming, lounge, dining, office and more." },
+          { id: `${seed}-c1`, title: "Sofas", description: "Reception, sectional, armless and curved." },
+          { id: `${seed}-c2`, title: "Lighting", description: "Table, floor, ceiling and wall lights." },
+        ];
+        data.portfolioItems = showcase([["Living Room", "Made-to-order living room pieces."], ["Bed Room", "Restful, handcrafted bedroom furniture."], ["Wooden Chair", "Solid, comfortable seating."], ["Nightstand", "Practical bedside pieces."], ["Lounge Set", "Relaxed statement seating."], ["Dining", "Gather-round dining pieces."]]);
+        data.sectionText = { ...(data.sectionText || {}), categories: "Browse the pieces we love to make.", showcase: "A few recent made-to-order projects." };
+        data.sectionColors = { ...(data.sectionColors || {}), contact: "#0F3D26" };
+        data.sectionImages = { ...(data.sectionImages || {}), hero: img(`${seed}-room`, 700, 520) };
+      }
+      if (templateId === "artisan-05") {
+        data.services = [
+          { id: `${seed}-c0`, title: "Sofas", description: "Soft, sculptural seating." },
+          { id: `${seed}-c1`, title: "Poufs", description: "Playful accent pieces." },
+          { id: `${seed}-c2`, title: "Chairs", description: "Designer chairs, made to order." },
+        ];
+        data.portfolioItems = showcase([["Fluffy chair", "A cosy statement chair."], ["Hospitable sofa", "Made for gathering."], ["Cute pouf", "A soft, playful accent."], ["Accent chair", "Comfort with character."]]);
+        data.sectionText = { ...(data.sectionText || {}), about: "Step into a world where furniture becomes a canvas for personal expression — pieces curated and crafted specifically for you.", categories: "Explore the pieces we make." };
+        data.sectionButtons = { ...(data.sectionButtons || {}), hero: { text: "Learn more", url: "" } };
+        data.sectionColors = { ...(data.sectionColors || {}), categories: "#F5DEE4" };
+        data.sectionImages = { ...(data.sectionImages || {}), hero: img(`${seed}-chair`, 520, 560) };
+      }
+      break;
+    }
   }
 
   // Donation section defaults for organisation / community templates. Charity

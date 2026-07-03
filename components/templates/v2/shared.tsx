@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Star, ShoppingCart, Zap, Instagram, Twitter, Facebook, Globe, CheckCircle2, Linkedin, Github } from "lucide-react";
+import { Star, ShoppingCart, Zap, Instagram, Twitter, Facebook, Globe, CheckCircle2, Linkedin, Github, Phone, Mail, MapPin, CalendarClock } from "lucide-react";
 import type { SiteData, CatalogProduct, CatalogTestimonial, Product, SocialLinks, CustomSection } from "@/lib/database.types";
 import { formatNaira, parseNaira, cn } from "@/lib/utils";
 import { useStore } from "../store-context";
@@ -280,6 +280,64 @@ export function NewsletterInput({ buttonText = "Subscribe", dark = false }: { bu
 }
 
 export { formatNaira, Zap };
+
+/** Google Maps embed URL for an address (no API key needed), or null. */
+export function mapEmbedUrl(address?: string): string | null {
+  const a = (address || "").trim();
+  if (!a) return null;
+  return `https://maps.google.com/maps?q=${encodeURIComponent(a)}&z=14&output=embed`;
+}
+
+/**
+ * A showcase contact / enquiry block: phone, email, socials, an optional
+ * "Book a time" link, a lead-capturing enquiry form and a map. Shared by the
+ * Artisan templates (no purchase — the goal is to book, contact or enquire).
+ */
+export function ContactBlock({
+  siteData, id = "contact", title, subtitle, tone = "light", submitText = "Send enquiry",
+}: {
+  siteData: SiteData; id?: string; title: string; subtitle?: string;
+  tone?: "light" | "dark"; submitText?: string;
+}) {
+  const dark = tone === "dark";
+  const booking = (siteData.bookingUrl || "").trim();
+  const map = mapEmbedUrl(siteData.address);
+  const muted = dark ? "text-white/70" : "text-black/60";
+  const rowCls = dark ? "text-white/85" : "text-black/70";
+  return (
+    <section id={id} className="px-5 py-16">
+      <div className="mx-auto max-w-6xl">
+        <h2 className={`text-3xl font-bold ${dark ? "text-white" : ""}`}>{title}</h2>
+        {subtitle ? <p className={`mt-2 max-w-xl ${muted}`}>{subtitle}</p> : null}
+        <div className="mt-8 grid gap-8 lg:grid-cols-2">
+          <div>
+            <div className="space-y-3 text-sm">
+              {siteData.phone ? <a href={`tel:${siteData.phone}`} className={`flex items-center gap-3 ${rowCls}`}><Phone className="h-4 w-4" style={{ color: "var(--brand-primary)" }} /> {siteData.phone}</a> : null}
+              {siteData.email ? <a href={`mailto:${siteData.email}`} className={`flex items-center gap-3 ${rowCls}`}><Mail className="h-4 w-4" style={{ color: "var(--brand-primary)" }} /> {siteData.email}</a> : null}
+              {siteData.address ? <p className={`flex items-center gap-3 ${rowCls}`}><MapPin className="h-4 w-4" style={{ color: "var(--brand-primary)" }} /> {siteData.address}</p> : null}
+            </div>
+            <SocialIcons social={siteData.social} circle className={`mt-4 ${dark ? "text-white/80" : "text-black/60"}`} />
+            {booking ? (
+              <a href={booking} target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-md px-6 py-3 text-sm font-semibold" style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>
+                <CalendarClock className="h-4 w-4" /> Book a time
+              </a>
+            ) : null}
+            <div className="mt-6"><ContactFormV2 submitText={submitText} /></div>
+          </div>
+          <div>
+            {map ? (
+              <iframe src={map} title="Map" loading="lazy" className="h-72 w-full rounded-2xl border-0 lg:h-full" />
+            ) : (
+              <div className={`flex h-72 w-full items-center justify-center rounded-2xl ${dark ? "bg-white/10 text-white/50" : "bg-black/5 text-black/40"} lg:h-full`}>
+                <MapPin className="h-8 w-8" />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 /** Converts a YouTube/Vimeo watch URL into an embeddable player URL, or null. */
 export function toEmbedUrl(raw?: string): string | null {

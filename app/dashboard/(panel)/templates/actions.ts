@@ -13,7 +13,7 @@ import type { SiteCategory } from "@/lib/database.types";
 function toDbCategory(cat: string): SiteCategory {
   const map: Record<CatalogCategoryId, SiteCategory> = {
     shop: "ecommerce", portfolio: "creator", education: "business",
-    organization: "organization", events: "organization",
+    organization: "organization", events: "organization", artisan: "creator",
   };
   return map[cat as CatalogCategoryId] ?? "business";
 }
