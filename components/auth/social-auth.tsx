@@ -14,20 +14,12 @@ function GoogleIcon({ className = "h-4 w-4" }: { className?: string }) {
     </svg>
   );
 }
-function AppleIcon({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M16.37 12.6c-.02-2.05 1.67-3.03 1.75-3.08-0.95-1.4-2.44-1.59-2.97-1.61-1.27-.13-2.47.74-3.11.74-.64 0-1.63-.72-2.68-.7-1.38.02-2.65.8-3.36 2.03-1.43 2.49-.37 6.17 1.03 8.19.68.99 1.5 2.1 2.57 2.06 1.03-.04 1.42-.66 2.67-.66 1.24 0 1.6.66 2.68.64 1.11-.02 1.81-1 2.49-2 .78-1.15 1.1-2.26 1.12-2.32-.02-.01-2.15-.83-2.18-3.28Zm-2.05-6.03c.56-.69.94-1.63.83-2.57-.81.03-1.79.54-2.37 1.22-.52.6-.98 1.57-.86 2.48.9.07 1.83-.46 2.4-1.13Z" />
-    </svg>
-  );
-}
-
-/** Google / Apple sign-in buttons (Supabase OAuth). */
+/** Social sign-in buttons (Supabase OAuth). */
 export function SocialAuth({ next = "/dashboard" }: { next?: string }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  async function go(provider: "google" | "apple") {
+  async function go(provider: "google") {
     setBusy(provider);
     setError(null);
     try {
@@ -53,9 +45,6 @@ export function SocialAuth({ next = "/dashboard" }: { next?: string }) {
       )}
       <button type="button" onClick={() => go("google")} disabled={!!busy} className={btn}>
         {busy === "google" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />} Continue with Google
-      </button>
-      <button type="button" onClick={() => go("apple")} disabled={!!busy} className={btn}>
-        {busy === "apple" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleIcon />} Continue with Apple
       </button>
       <div className="flex items-center gap-3 py-1">
         <span className="h-px flex-1 bg-ink/10" />
