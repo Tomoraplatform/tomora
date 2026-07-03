@@ -29,6 +29,8 @@ export async function GET(request: NextRequest) {
   const online = (rows || []).reduce((s: number, r: any) => s + (r.amount || 0), 0);
   const manual = Math.max(0, Math.round(sd.donationManual || 0));
   return NextResponse.json({
+    online,
+    manual,
     raised: manual + online,
     count: (rows || []).length,
     goal: Math.max(0, Math.round(sd.donationGoal || 0)),

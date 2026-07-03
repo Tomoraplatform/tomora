@@ -35,7 +35,10 @@ export function DonationProvider({
   manual: number;
   children: React.ReactNode;
 }) {
-  const [raised, setRaised] = useState(Math.max(0, Math.round(manual || 0)));
+  // Online (Paystack) sum comes from the server; the manual/offline amount and
+  // the goal come from the live site data (props), so editing them in the
+  // editor updates the hero figure and progress bar immediately.
+  const [online, setOnline] = useState(0);
   const [count, setCount] = useState(0);
   const [canDonate, setCanDonate] = useState(false);
 
@@ -44,11 +47,18 @@ export function DonationProvider({
     try {
       const res = await fetch(`/api/donations/total?siteId=${siteId}`);
       const d = await res.json();
-      if (typeof d.raised === "number") { setRaised(d.raised); setCount(d.count || 0); setCanDonate(!!d.canDonate); }
+      if (typeof d.online === "number") setOnline(d.online);
+      else if (typeof d.raised === "number") setOnline(Math.max(0, d.raised - Math.max(0, Math.round(manual || 0))));
+      setCount(d.count || 0);
+      setCanDonate(!!d.canDonate);
     } catch { /* ignore */ }
+    // manual intentionally excluded — it's applied live from props below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteId, enabled]);
 
   useEffect(() => { refresh(); }, [refresh]);
+
+  const raised = Math.max(0, Math.round(manual || 0)) + online;
 
   return (
     <DonationContext.Provider value={{ enabled, raised, goal: Math.max(0, Math.round(goal || 0)), count, canDonate, refresh }}>
