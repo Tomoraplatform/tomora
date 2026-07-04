@@ -103,6 +103,55 @@ export async function updateSubaccount(code: string, percentageCharge: number): 
   return !!json.status;
 }
 
+/** Creates (or reuses) a transfer recipient for a bank account. Returns recipient_code. */
+export async function createTransferRecipient(params: {
+  name: string;
+  accountNumber: string;
+  bankCode: string;
+}): Promise<string> {
+  const res = await fetch(`${PAYSTACK_BASE}/transferrecipient`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${secret()}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "nuban",
+      name: params.name,
+      account_number: params.accountNumber,
+      bank_code: params.bankCode,
+      currency: "NGN",
+    }),
+    signal: AbortSignal.timeout(15000),
+  });
+  const json = await res.json();
+  if (!json.status || !json.data?.recipient_code) {
+    throw new Error(json.message || "Could not set up the transfer recipient.");
+  }
+  return json.data.recipient_code as string;
+}
+
+/** Initiates a Paystack transfer (withdrawal) to a recipient. */
+export async function initiateTransfer(params: {
+  amountNaira: number;
+  recipient: string;
+  reference: string;
+  reason?: string;
+}): Promise<{ status: string; transferCode?: string }> {
+  const res = await fetch(`${PAYSTACK_BASE}/transfer`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${secret()}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      source: "balance",
+      amount: Math.round(params.amountNaira * 100),
+      recipient: params.recipient,
+      reference: params.reference,
+      reason: params.reason || "Tomora wallet withdrawal",
+    }),
+    signal: AbortSignal.timeout(15000),
+  });
+  const json = await res.json();
+  if (!json.status) throw new Error(json.message || "Transfer failed.");
+  return { status: json.data?.status || "pending", transferCode: json.data?.transfer_code };
+}
+
 /** Verify a Paystack transaction by reference. */
 export async function verifyTransaction(reference: string): Promise<{
   success: boolean;

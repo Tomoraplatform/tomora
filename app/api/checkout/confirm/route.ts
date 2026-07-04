@@ -40,6 +40,28 @@ export async function POST(request: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // Credit the owner's Tomora Wallet with this Paystack income (first time only —
+  // a unique index on (type, reference) also guards against double-credits).
+  if (pending && pending.length) {
+    try {
+      const total = pending.reduce((s: number, r: any) => s + (r.amount || 0), 0);
+      const { data: site } = await admin
+        .from("sites").select("user_id, site_data").eq("id", pending[0].site_id).maybeSingle();
+      if (site?.user_id && total > 0) {
+        await admin.from("wallet_transactions").insert({
+          user_id: site.user_id,
+          site_id: pending[0].site_id,
+          type: "income",
+          source: "order",
+          amount: total,
+          status: "completed",
+          reference,
+          description: `Order from ${pending[0].buyer_name || "customer"}`,
+        });
+      }
+    } catch { /* non-fatal — wallet table may not exist yet */ }
+  }
+
   // Best-effort notifications (only the first time, when there were pending rows).
   if (pending && pending.length) {
     try { await notify(admin, pending, reference); } catch { /* non-fatal */ }

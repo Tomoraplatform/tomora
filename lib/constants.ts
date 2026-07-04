@@ -15,6 +15,13 @@ export const NEW_DOMAIN_AMOUNT = 5000; // NGN — covers .com.ng registration (~
 export const STORE_COMMISSION_PERCENT = 0;
 /** Paystack processing fee added to the customer's total when the owner passes it on. */
 export const PAYSTACK_FEE_PERCENT = 2.5;
+
+/** Tomora Wallet withdrawal limits for free / starter / basic plans (naira).
+ *  Growth, Pro and Custom plans have no limits. */
+export const WALLET_SINGLE_WITHDRAWAL_LIMIT = 5_000;
+export const WALLET_DAILY_WITHDRAWAL_LIMIT = 500_000;
+/** Plans exempt from wallet withdrawal limits. */
+export const WALLET_UNLIMITED_PLANS = ["growth", "pro", "custom"];
 /**
  * TLDs offered in the assisted domain search. Only .com.ng is cheap enough to
  * sell profitably at the flat NEW_DOMAIN_AMOUNT; pricier TLDs (e.g. .ng, .com)

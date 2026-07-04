@@ -154,13 +154,13 @@ export async function POST(request: NextRequest) {
     const charge = feeBearer === "customer" ? Math.round(total * (1 + PAYSTACK_FEE_PERCENT / 100)) : total;
     try {
       const origin = request.headers.get("origin") || new URL(request.url).origin;
+      // Funds are collected into the platform balance and credited to the
+      // owner's Tomora Wallet on confirmation; they withdraw to their bank.
       const init = await initTransaction({
         email: String(buyer.email),
         amountNaira: charge,
         reference,
         callbackUrl: `${origin}/?order=1`,
-        subaccount: site.paystack_subaccount as string,
-        bearer: "subaccount",
         metadata: { custom_fields: [{ display_name: "Order", variable_name: "order", value: buyer.name || buyer.email }] },
       });
       return NextResponse.json({ ok: true, method: "paystack", reference, amount: total, charge, feeBearer, discount, couponCode: appliedCode, accessCode: init.access_code });

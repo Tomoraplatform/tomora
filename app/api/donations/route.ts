@@ -52,13 +52,13 @@ export async function POST(request: NextRequest) {
     // cause still receives the full gift. The recorded donation stays `amount`.
     const feeBearer = (site.site_data as any)?.feeBearer === "customer" ? "customer" : "owner";
     const charge = feeBearer === "customer" ? Math.round(amount * (1 + PAYSTACK_FEE_PERCENT / 100)) : amount;
+    // Collected into the platform balance and credited to the organisation's
+    // Tomora Wallet on confirmation; they withdraw to their connected bank.
     const init = await initTransaction({
       email: String(email),
       amountNaira: charge,
       reference,
       callbackUrl: `${origin}/?donated=1`,
-      subaccount: site.paystack_subaccount,
-      bearer: "subaccount",
       metadata: { custom_fields: [{ display_name: "Donation", variable_name: "donation", value: name || email }] },
     });
     return NextResponse.json({ reference: init.reference, accessCode: init.access_code });

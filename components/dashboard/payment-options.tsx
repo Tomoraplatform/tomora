@@ -48,7 +48,7 @@ export function PaymentOptions({
             <CreditCard className="mt-0.5 h-5 w-5 text-ink/60" />
             <div>
               <p className="font-medium text-ink">Pay online (Paystack)</p>
-              <p className="text-sm text-ink/55">Card, bank or USSD. Money settles to your bank automatically.</p>
+              <p className="text-sm text-ink/55">Card, bank or USSD. Payments land in your Tomora Wallet — withdraw anytime.</p>
             </div>
           </div>
           <Switch checked={paystack} onCheckedChange={setPaystack} disabled={!connected} />
