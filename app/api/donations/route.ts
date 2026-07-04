@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { initTransaction } from "@/lib/paystack";
+import { PAYSTACK_FEE_PERCENT } from "@/lib/constants";
 
 /**
  * Starts an online donation: records a pending row and initializes a Paystack
@@ -47,12 +48,17 @@ export async function POST(request: NextRequest) {
 
   try {
     const origin = request.headers.get("origin") || new URL(request.url).origin;
+    // When the org passes the fee on, the donor is charged a bit more so the
+    // cause still receives the full gift. The recorded donation stays `amount`.
+    const feeBearer = (site.site_data as any)?.feeBearer === "customer" ? "customer" : "owner";
+    const charge = feeBearer === "customer" ? Math.round(amount * (1 + PAYSTACK_FEE_PERCENT / 100)) : amount;
     const init = await initTransaction({
       email: String(email),
-      amountNaira: amount,
+      amountNaira: charge,
       reference,
       callbackUrl: `${origin}/?donated=1`,
       subaccount: site.paystack_subaccount,
+      bearer: "subaccount",
       metadata: { custom_fields: [{ display_name: "Donation", variable_name: "donation", value: name || email }] },
     });
     return NextResponse.json({ reference: init.reference, accessCode: init.access_code });

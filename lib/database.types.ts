@@ -347,6 +347,10 @@ export interface SiteData {
   coupons?: Coupon[];
   /** Shipping locations + fees a customer chooses from at checkout. */
   shippingZones?: { id: string; name: string; fee: number }[];
+  /** Which checkout payment methods the owner has enabled. */
+  paymentMethods?: { paystack?: boolean; transfer?: boolean };
+  /** Who covers the Paystack processing fee — added to the customer's total when "customer". */
+  feeBearer?: "customer" | "owner";
 }
 
 export interface CatalogVideoLink {

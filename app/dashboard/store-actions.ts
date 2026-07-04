@@ -221,3 +221,28 @@ export async function requestPayoutChange(input: { proofUrl?: string; note?: str
     return { ok: false, error: e.message };
   }
 }
+
+/** Saves which checkout payment methods are enabled + who bears the Paystack fee. */
+export async function savePaymentSettings(input: {
+  paystack: boolean;
+  transfer: boolean;
+  feeBearer: "customer" | "owner";
+}): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const { supabase, siteId } = await requireUserAndSite();
+    const { data: site } = await supabase.from("sites").select("id, site_data").eq("id", siteId).maybeSingle();
+    if (!site) return { ok: false, error: "No site found." };
+    const sd = (site.site_data || {}) as any;
+    const updated = {
+      ...sd,
+      paymentMethods: { paystack: !!input.paystack, transfer: !!input.transfer },
+      feeBearer: input.feeBearer === "customer" ? "customer" : "owner",
+    };
+    const { error } = await supabase.from("sites").update({ site_data: updated }).eq("id", site.id);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/dashboard/payouts");
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, error: e.message };
+  }
+}

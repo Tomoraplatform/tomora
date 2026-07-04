@@ -134,6 +134,7 @@ export function DonationSection({ siteData, brandColor }: { siteData: SiteData; 
                 style={{ background: brandColor, color: onBrand }}>
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Heart className="h-4 w-4" />} Donate {amount >= 100 ? formatNaira(amount) : ""}
               </button>
+              {siteData.feeBearer === "customer" && <p className="mt-2 text-center text-xs text-ink/50">A small payment-processing fee is added at checkout.</p>}
               {!canDonate && <p className="mt-2 text-center text-xs text-ink/50">Online giving activates once the organisation adds their payout bank.</p>}
             </>
           )}

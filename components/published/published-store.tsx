@@ -7,11 +7,23 @@ import type { StoreApi } from "@/components/templates/store-context";
 import type { Product, Review, SiteData } from "@/lib/database.types";
 import { formatNaira, contrastText } from "@/lib/utils";
 import { validateCoupon } from "@/lib/coupons";
+import { PAYSTACK_FEE_PERCENT } from "@/lib/constants";
 
 interface Line { product: Product; qty: number; color?: string; }
 
+function loadPaystack(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if ((window as any).PaystackPop) return resolve();
+    const s = document.createElement("script");
+    s.src = "https://js.paystack.co/v2/inline.js";
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("Could not load Paystack."));
+    document.body.appendChild(s);
+  });
+}
+
 export function PublishedStore({
-  templateId, siteData, brandColor, products, reviews = [], siteId, bankName, accountNumber, accountName,
+  templateId, siteData, brandColor, products, reviews = [], siteId, bankName, accountNumber, accountName, paystackEnabled = false,
 }: {
   templateId: string;
   siteData: SiteData;
@@ -22,10 +34,16 @@ export function PublishedStore({
   bankName?: string | null;
   accountNumber?: string | null;
   accountName?: string | null;
+  paystackEnabled?: boolean;
 }) {
-  // Customers pay the store owner directly by bank transfer to their connected
-  // account; the owner confirms the order as paid once the money lands.
-  const canCheckout = !!accountNumber;
+  // Enabled payment methods. Bank transfer needs a connected account; Paystack
+  // needs a subaccount (both gated by the owner's saved payment settings).
+  const methods = siteData.paymentMethods;
+  const transferEnabled = !!accountNumber && (methods?.transfer ?? true);
+  const canPaystack = paystackEnabled && (methods?.paystack ?? true);
+  const canCheckout = transferEnabled || canPaystack;
+  const feeBearer = siteData.feeBearer === "customer" ? "customer" : "owner";
+  const [payMethod, setPayMethod] = useState<"paystack" | "transfer">(canPaystack ? "paystack" : "transfer");
   const [lines, setLines] = useState<Line[]>([]);
   const [open, setOpen] = useState(false);
   const [checkout, setCheckout] = useState(false);
@@ -111,11 +129,13 @@ export function PublishedStore({
   })();
   const detailColors = detail ? productColorNames(detail) : [];
 
-  // Record the order; the customer then pays by bank transfer to the owner.
+  // Places the order. Bank transfer records a pending order + shows bank details;
+  // Paystack opens the inline popup and confirms on success.
   async function placeOrder() {
     setError(null);
     if (!canCheckout) { setError("This store hasn't added a payment account yet."); return; }
     if (!buyer.name || !buyer.email) { setError("Please enter your name and email."); return; }
+    const activeMethod = canPaystack && transferEnabled ? payMethod : (canPaystack ? "paystack" : "transfer");
     setBusy(true);
     try {
       const res = await fetch("/api/checkout", {
@@ -127,15 +147,32 @@ export function PublishedStore({
           items: lines.map((l) => ({ productId: l.product.id, qty: l.qty, color: l.color || null })),
           couponCode: appliedCoupon || undefined,
           shippingZoneId: shippingZoneId || undefined,
+          method: activeMethod,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not place order.");
+
+      if (activeMethod === "paystack" && data.accessCode) {
+        await loadPaystack();
+        const popup = new (window as any).PaystackPop();
+        popup.resumeTransaction(data.accessCode, {
+          onSuccess: (txn: { reference: string }) => {
+            fetch("/api/checkout/confirm", {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ reference: txn.reference || data.reference }),
+            }).finally(() => { setBusy(false); setDone(true); });
+          },
+          onCancel: () => setBusy(false),
+          onError: (err: { message?: string }) => { setBusy(false); setError(err?.message || "Payment failed."); },
+        });
+        return;
+      }
       setDone(true);
     } catch (e: any) {
       setError(e.message || "Could not place order. Please try again.");
     } finally {
-      setBusy(false);
+      if (!(canPaystack && payMethod === "paystack")) setBusy(false);
     }
   }
 
@@ -287,8 +324,39 @@ export function PublishedStore({
                         </select>
                       )}
 
-                      {/* Pay by bank transfer to the store owner */}
-                      {canCheckout ? (
+                      {/* Payment method choice (only when both are enabled) */}
+                      {canPaystack && transferEnabled && (
+                        <div className="grid grid-cols-2 gap-2">
+                          <button type="button" onClick={() => setPayMethod("paystack")}
+                            className="rounded-lg border px-3 py-2.5 text-sm font-semibold transition"
+                            style={payMethod === "paystack" ? { borderColor: brandColor, background: `${brandColor}12`, color: "#022245" } : { borderColor: "rgba(0,0,0,0.15)", color: "#4b5563" }}>
+                            Pay online (card)
+                          </button>
+                          <button type="button" onClick={() => setPayMethod("transfer")}
+                            className="rounded-lg border px-3 py-2.5 text-sm font-semibold transition"
+                            style={payMethod === "transfer" ? { borderColor: brandColor, background: `${brandColor}12`, color: "#022245" } : { borderColor: "rgba(0,0,0,0.15)", color: "#4b5563" }}>
+                            Bank transfer
+                          </button>
+                        </div>
+                      )}
+
+                      {!canCheckout && (
+                        <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">This store hasn&apos;t added a payment account yet.</p>
+                      )}
+
+                      {/* Paystack (card / bank / USSD) */}
+                      {canCheckout && (canPaystack && (!transferEnabled || payMethod === "paystack")) && (
+                        <div className="rounded-lg border border-ink/15 bg-cream/50 p-4 text-sm">
+                          <p className="font-semibold text-ink">Pay {formatNaira(total)} securely online</p>
+                          <p className="mt-1 text-xs text-ink/55">Card, bank or USSD via Paystack. You&apos;ll get a receipt instantly.</p>
+                          {feeBearer === "customer" && (
+                            <p className="mt-1 text-xs text-ink/55">A {PAYSTACK_FEE_PERCENT}% payment fee applies at checkout.</p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Direct bank transfer */}
+                      {canCheckout && (transferEnabled && (!canPaystack || payMethod === "transfer")) && (
                         <div className="rounded-lg border border-ink/15 bg-cream/50 p-4">
                           <p className="text-sm font-semibold text-ink">Pay {formatNaira(total)} by bank transfer to:</p>
                           <div className="mt-2 space-y-1 text-sm">
@@ -301,8 +369,6 @@ export function PublishedStore({
                           </div>
                           <p className="mt-3 text-xs text-ink/55">Make the transfer, then tap the button below. The seller confirms your payment and processes your order.</p>
                         </div>
-                      ) : (
-                        <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">This store hasn&apos;t added a payment account yet.</p>
                       )}
 
                       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -364,7 +430,8 @@ export function PublishedStore({
                     </button>
                   ) : (
                     <button onClick={placeOrder} disabled={busy || !canCheckout} className="flex w-full items-center justify-center gap-2 rounded-md py-3 text-sm font-semibold disabled:opacity-60" style={{ background: brandColor, color: onBrand }}>
-                      {busy && <Loader2 className="h-4 w-4 animate-spin" />} I&apos;ve sent the payment
+                      {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+                      {(canPaystack && (!transferEnabled || payMethod === "paystack")) ? `Pay ${formatNaira(feeBearer === "customer" ? Math.round(total * (1 + PAYSTACK_FEE_PERCENT / 100)) : total)} now` : "I've sent the payment"}
                     </button>
                   )}
                 </div>

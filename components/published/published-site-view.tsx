@@ -46,6 +46,7 @@ export function PublishedSiteView({
           bankName={site.bank_name}
           accountNumber={site.account_number}
           accountName={site.account_name}
+          paystackEnabled={!!site.paystack_subaccount}
         />
         {chat}
         {beacon}

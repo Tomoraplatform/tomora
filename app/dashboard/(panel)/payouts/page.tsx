@@ -5,6 +5,7 @@ import { getDashboardData } from "@/lib/dashboard";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { PayoutsForm } from "@/components/dashboard/payouts-form";
+import { PaymentOptions } from "@/components/dashboard/payment-options";
 
 export const metadata = { title: "Payouts — Tomora" };
 
@@ -39,6 +40,31 @@ export default async function PayoutsPage() {
           connected: !!site!.paystack_subaccount,
         }}
       />
+
+      {/* Payment methods a shopper can choose at checkout (ecommerce). */}
+      {site!.category === "ecommerce" && (
+        <PaymentOptions
+          connected={!!site!.paystack_subaccount}
+          initial={{
+            paystack: site!.site_data?.paymentMethods?.paystack ?? true,
+            transfer: site!.site_data?.paymentMethods?.transfer ?? true,
+            feeBearer: site!.site_data?.feeBearer === "customer" ? "customer" : "owner",
+          }}
+        />
+      )}
+
+      {/* Fee bearer for donations (organisation / NGO sites). */}
+      {site!.category !== "ecommerce" && (site!.category === "organization" || !!site!.site_data?.donationEnabled) && (
+        <PaymentOptions
+          donationOnly
+          connected={!!site!.paystack_subaccount}
+          initial={{
+            paystack: true,
+            transfer: false,
+            feeBearer: site!.site_data?.feeBearer === "customer" ? "customer" : "owner",
+          }}
+        />
+      )}
 
       {/* Store still in setup — guide them back into the rest of the flow. */}
       {!site!.is_live && (

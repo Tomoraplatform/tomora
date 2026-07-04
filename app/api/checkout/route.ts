@@ -3,6 +3,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
 import { formatNaira } from "@/lib/utils";
 import { validateCoupon } from "@/lib/coupons";
+import { initTransaction } from "@/lib/paystack";
+import { PAYSTACK_FEE_PERCENT } from "@/lib/constants";
 
 /**
  * Records a storefront order as pending and returns the store owner's bank
@@ -24,15 +26,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing checkout details." }, { status: 400 });
   }
 
+  const method = body?.method === "paystack" ? "paystack" : "transfer";
+
   const { data: site } = await admin
     .from("sites")
-    .select("id, is_live, category, site_data, user_id, bank_name, account_number, account_name")
+    .select("id, is_live, category, site_data, user_id, bank_name, account_number, account_name, paystack_subaccount")
     .eq("id", siteId)
     .maybeSingle();
   if (!site || !site.is_live || site.category !== "ecommerce") {
     return NextResponse.json({ error: "Store unavailable." }, { status: 400 });
   }
-  if (!site.account_number) {
+  if (method === "paystack" && !site.paystack_subaccount) {
+    return NextResponse.json({ error: "Card payment isn't available on this store yet." }, { status: 400 });
+  }
+  if (method === "transfer" && !site.account_number) {
     return NextResponse.json({ error: "This store hasn't added a payment account yet." }, { status: 400 });
   }
 
@@ -140,12 +147,34 @@ export async function POST(request: NextRequest) {
   const { error } = await admin.from("orders").insert(rows);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  const bank = { name: site.bank_name as string | null, account: site.account_number as string, holder: site.account_name as string | null };
+  // ---- Pay with Paystack (card / bank / USSD), settles to the owner's subaccount ----
+  if (method === "paystack") {
+    const feeBearer = (site.site_data as any)?.feeBearer === "customer" ? "customer" : "owner";
+    // When the customer bears the fee, gross the charge up so the owner nets the order total.
+    const charge = feeBearer === "customer" ? Math.round(total * (1 + PAYSTACK_FEE_PERCENT / 100)) : total;
+    try {
+      const origin = request.headers.get("origin") || new URL(request.url).origin;
+      const init = await initTransaction({
+        email: String(buyer.email),
+        amountNaira: charge,
+        reference,
+        callbackUrl: `${origin}/?order=1`,
+        subaccount: site.paystack_subaccount as string,
+        bearer: "subaccount",
+        metadata: { custom_fields: [{ display_name: "Order", variable_name: "order", value: buyer.name || buyer.email }] },
+      });
+      return NextResponse.json({ ok: true, method: "paystack", reference, amount: total, charge, feeBearer, discount, couponCode: appliedCode, accessCode: init.access_code });
+    } catch (e: any) {
+      return NextResponse.json({ error: e.message || "Could not start the payment." }, { status: 502 });
+    }
+  }
 
-  // Best-effort notifications.
+  // ---- Pay by direct bank transfer to the owner ----
+  const bank = { name: site.bank_name as string | null, account: site.account_number as string, holder: site.account_name as string | null };
+  // Best-effort notifications (transfer = order awaits confirmation).
   try { await notify(admin, siteId, site.user_id as string, buyer, rows, total, reference, bank); } catch { /* non-fatal */ }
 
-  return NextResponse.json({ ok: true, reference, amount: total, discount, couponCode: appliedCode, bank });
+  return NextResponse.json({ ok: true, method: "transfer", reference, amount: total, discount, couponCode: appliedCode, bank });
 }
 
 async function notify(
