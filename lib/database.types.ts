@@ -339,6 +339,8 @@ export interface SiteData {
   blogPosts?: CatalogBlogPost[];
   /** Creator template: videos added by link (YouTube/Vimeo), not uploaded. */
   videoLinks?: CatalogVideoLink[];
+  /** Owner-set targets shown on the Milestones & Goals dashboard. */
+  goals?: { orders?: number; revenue?: number; visits?: number };
 }
 
 export interface CatalogVideoLink {

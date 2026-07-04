@@ -2,6 +2,7 @@ import { OfflineSite } from "./offline";
 import { SiteRenderer } from "@/components/templates";
 import { PublishedStore } from "./published-store";
 import { SupportChat } from "./support-chat";
+import { VisitBeacon } from "./visit-beacon";
 import type { Product, Review, Site } from "@/lib/database.types";
 
 /**
@@ -30,6 +31,7 @@ export function PublishedSiteView({
   // Live sites get the support chat widget; visitor messages land in the
   // owner's dashboard inbox.
   const chat = isLive ? <SupportChat siteId={site.id} brandColor={brandColor} /> : null;
+  const beacon = isLive ? <VisitBeacon siteId={site.id} /> : null;
 
   if (site.category === "ecommerce") {
     return (
@@ -46,6 +48,7 @@ export function PublishedSiteView({
           accountName={site.account_name}
         />
         {chat}
+        {beacon}
       </>
     );
   }
@@ -60,6 +63,7 @@ export function PublishedSiteView({
         siteId={isLive ? site.id : undefined}
       />
       {chat}
+      {beacon}
     </>
   );
 }
