@@ -14,6 +14,10 @@ export interface BrandInput {
   email: string;
   address: string;
   social: SocialLinks;
+  /** Hero section (synced into the current site). */
+  heroHeadline?: string;
+  heroSubtext?: string;
+  heroImage?: string;
 }
 
 export async function updateBrand(input: BrandInput): Promise<{ ok: boolean; error?: string }> {
@@ -50,6 +54,10 @@ export async function updateBrand(input: BrandInput): Promise<{ ok: boolean; err
       email: input.email,
       address: input.address,
       social: input.social,
+      // Hero section (form is prefilled from the site, so these are safe to write).
+      heroHeadline: input.heroHeadline !== undefined ? input.heroHeadline : sd.heroHeadline,
+      heroSubtext: input.heroSubtext !== undefined ? input.heroSubtext : sd.heroSubtext,
+      heroImage: input.heroImage !== undefined ? (input.heroImage || undefined) : sd.heroImage,
     };
     await supabase.from("sites").update({ site_data: updated }).eq("id", site.id);
   }

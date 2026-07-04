@@ -18,6 +18,7 @@ export function BrandForm({ initial }: { initial: BrandInput }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingHero, setUploadingHero] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const set = (k: keyof BrandInput, v: any) => { setForm((f) => ({ ...f, [k]: v })); setSaved(false); };
@@ -29,6 +30,14 @@ export function BrandForm({ initial }: { initial: BrandInput }) {
     const { url } = await uploadImage(file, "branding");
     setUploading(false);
     if (url) set("logoUrl", url);
+  }
+
+  async function onHeroImage(file?: File) {
+    if (!file) return;
+    setUploadingHero(true);
+    const { url } = await uploadImage(file, "branding");
+    setUploadingHero(false);
+    if (url) set("heroImage", url);
   }
 
   async function submit() {
@@ -80,6 +89,29 @@ export function BrandForm({ initial }: { initial: BrandInput }) {
       </Card>
 
       <Card>
+        <CardHeader><CardTitle>Hero section</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2"><Label>Headline</Label><Input value={form.heroHeadline || ""} onChange={(e) => set("heroHeadline", e.target.value)} placeholder="The big line at the top of your site" /></div>
+          <div className="space-y-2"><Label>Subheading</Label><Textarea rows={2} value={form.heroSubtext || ""} onChange={(e) => set("heroSubtext", e.target.value)} placeholder="A short supporting sentence under the headline" /></div>
+          <div className="space-y-2">
+            <Label>Hero image</Label>
+            <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-ink/25 p-4 hover:bg-ink/[0.02]">
+              {form.heroImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={form.heroImage} alt="" className="h-14 w-20 rounded object-cover" />
+              ) : (
+                <span className="flex h-12 w-12 items-center justify-center rounded bg-ink text-cream">
+                  {uploadingHero ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-5 w-5" />}
+                </span>
+              )}
+              <span className="text-sm text-ink/60">{form.heroImage ? "Click to replace hero image" : "Upload your hero image"}</span>
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => onHeroImage(e.target.files?.[0])} />
+            </label>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader><CardTitle>Contact</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -96,6 +128,8 @@ export function BrandForm({ initial }: { initial: BrandInput }) {
           <div className="space-y-2"><Label>Instagram</Label><Input value={form.social.instagram || ""} onChange={(e) => setSocial("instagram", e.target.value)} /></div>
           <div className="space-y-2"><Label>Twitter</Label><Input value={form.social.twitter || ""} onChange={(e) => setSocial("twitter", e.target.value)} /></div>
           <div className="space-y-2"><Label>Facebook</Label><Input value={form.social.facebook || ""} onChange={(e) => setSocial("facebook", e.target.value)} /></div>
+          <div className="space-y-2"><Label>LinkedIn</Label><Input value={form.social.linkedin || ""} onChange={(e) => setSocial("linkedin", e.target.value)} /></div>
+          <div className="space-y-2"><Label>TikTok</Label><Input value={form.social.tiktok || ""} onChange={(e) => setSocial("tiktok", e.target.value)} /></div>
           <div className="space-y-2"><Label>Website</Label><Input value={form.social.website || ""} onChange={(e) => setSocial("website", e.target.value)} /></div>
         </CardContent>
       </Card>
