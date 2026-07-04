@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
@@ -27,7 +28,7 @@ export interface DashboardData {
  * (primary) site. Redirects to /login if unauthenticated and to /onboarding
  * if the user has no site yet.
  */
-export async function getDashboardData(opts?: { requireSite?: boolean }): Promise<DashboardData> {
+export const getDashboardData = cache(async (opts?: { requireSite?: boolean }): Promise<DashboardData> => {
   const supabase = createClient();
   const {
     data: { user },
@@ -87,13 +88,13 @@ export async function getDashboardData(opts?: { requireSite?: boolean }): Promis
     isStaff,
     staffAreas,
   };
-}
+});
 
 /**
  * Resolves the current site id for write actions (server actions / routes),
  * validating ownership. Falls back to the user's first site.
  */
-export async function currentSiteId(userId: string): Promise<string | null> {
+export const currentSiteId = cache(async (userId: string): Promise<string | null> => {
   const supabase = createClient();
   const { data: sites } = await supabase
     .from("sites")
@@ -123,4 +124,4 @@ export async function currentSiteId(userId: string): Promise<string | null> {
   if (!list.length) return null;
   const cookieId = cookies().get(SITE_COOKIE)?.value;
   return list.find((s) => s.id === cookieId)?.id ?? list[0].id;
-}
+});

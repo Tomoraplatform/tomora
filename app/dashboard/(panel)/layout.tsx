@@ -13,28 +13,28 @@ export default async function PanelLayout({
 
   const supabase = createClient();
 
-  // Count of paid orders the owner hasn't viewed yet (for the "new" badge).
+  // Badge counts (new paid orders + unread chats), fetched in parallel.
   let newOrders = 0;
-  if (isEcommerce && site) {
-    const { count } = await supabase
-      .from("orders")
-      .select("id", { count: "exact", head: true })
-      .eq("site_id", site.id)
-      .eq("status", "paid")
-      .eq("seen", false);
-    newOrders = count ?? 0;
-  }
-
-  // Unread visitor chat messages (for the Messages badge).
   let unreadMessages = 0;
   if (site) {
-    const { count } = await supabase
-      .from("support_messages")
-      .select("id", { count: "exact", head: true })
-      .eq("site_id", site.id)
-      .eq("sender", "visitor")
-      .eq("seen", false);
-    unreadMessages = count ?? 0;
+    const [ordersRes, messagesRes] = await Promise.all([
+      isEcommerce
+        ? supabase
+            .from("orders")
+            .select("id", { count: "exact", head: true })
+            .eq("site_id", site.id)
+            .eq("status", "paid")
+            .eq("seen", false)
+        : Promise.resolve({ count: 0 }),
+      supabase
+        .from("support_messages")
+        .select("id", { count: "exact", head: true })
+        .eq("site_id", site.id)
+        .eq("sender", "visitor")
+        .eq("seen", false),
+    ]);
+    newOrders = ordersRes.count ?? 0;
+    unreadMessages = messagesRes.count ?? 0;
   }
 
   const allItems: NavItem[] = [
