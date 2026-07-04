@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote,
-  Globe, CreditCard, Settings, Menu, X, LogOut, ExternalLink, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy,
+  Globe, CreditCard, Settings, Menu, X, LogOut, ExternalLink, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ import { signOut } from "@/app/(auth)/actions";
 import { SiteSwitcher, type SwitcherSite } from "./site-switcher";
 
 const ICONS = {
-  LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote, Globe, CreditCard, Settings, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy,
+  LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote, Globe, CreditCard, Settings, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket,
 } as const;
 
 export interface NavItem {

@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
 import { formatNaira } from "@/lib/utils";
+import { validateCoupon } from "@/lib/coupons";
 
 /**
  * Records a storefront order as pending and returns the store owner's bank
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { siteId, buyer, items } = body || {};
+  const { siteId, buyer, items, couponCode } = body || {};
   if (!siteId || !buyer?.email || !buyer?.name || !Array.isArray(items) || !items.length) {
     return NextResponse.json({ error: "Missing checkout details." }, { status: 400 });
   }
@@ -95,6 +96,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Nothing to order." }, { status: 400 });
   }
 
+  // Apply a discount code (validated server-side against the store's coupons).
+  let discount = 0;
+  let appliedCode: string | null = null;
+  if (couponCode) {
+    const res = validateCoupon((site.site_data as any)?.coupons, String(couponCode), total);
+    if (res.error) return NextResponse.json({ error: res.error }, { status: 400 });
+    if (res.discount > 0 && res.coupon) {
+      discount = res.discount;
+      appliedCode = res.coupon.code;
+      const discountedTotal = total - discount;
+      // Scale each line so the rows still sum to the discounted total.
+      let running = 0;
+      rows.forEach((r, i) => {
+        if (i === rows.length - 1) r.amount = discountedTotal - running;
+        else { r.amount = Math.round((r.amount / total) * discountedTotal); running += r.amount; }
+      });
+      total = discountedTotal;
+    }
+  }
+
   const { error } = await admin.from("orders").insert(rows);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
@@ -103,7 +124,7 @@ export async function POST(request: NextRequest) {
   // Best-effort notifications.
   try { await notify(admin, siteId, site.user_id as string, buyer, rows, total, reference, bank); } catch { /* non-fatal */ }
 
-  return NextResponse.json({ ok: true, reference, amount: total, bank });
+  return NextResponse.json({ ok: true, reference, amount: total, discount, couponCode: appliedCode, bank });
 }
 
 async function notify(

@@ -6,6 +6,7 @@ import { SiteRenderer } from "@/components/templates";
 import type { StoreApi } from "@/components/templates/store-context";
 import type { Product, Review, SiteData } from "@/lib/database.types";
 import { formatNaira, contrastText } from "@/lib/utils";
+import { validateCoupon } from "@/lib/coupons";
 
 interface Line { product: Product; qty: number; color?: string; }
 
@@ -36,9 +37,23 @@ export function PublishedStore({
   const [detail, setDetail] = useState<Product | null>(null);
   const [detailColor, setDetailColor] = useState<string | null>(null);
 
+  // Discount code / coupon.
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
   const onBrand = contrastText(brandColor);
   const count = lines.reduce((n, l) => n + l.qty, 0);
-  const total = lines.reduce((n, l) => n + l.product.price * l.qty, 0);
+  const subtotal = lines.reduce((n, l) => n + l.product.price * l.qty, 0);
+  const discount = appliedCoupon ? validateCoupon(siteData.coupons, appliedCoupon, subtotal).discount : 0;
+  const total = Math.max(0, subtotal - discount);
+
+  function applyCoupon() {
+    setCouponError(null);
+    const res = validateCoupon(siteData.coupons, couponInput, subtotal);
+    if (res.error || !res.coupon) { setAppliedCoupon(null); setCouponError(res.error || "That code isn't valid."); return; }
+    setAppliedCoupon(res.coupon.code);
+  }
 
   const realAdd = useCallback((product: Product, color?: string) => {
     setLines((prev) => {
@@ -105,6 +120,7 @@ export function PublishedStore({
           siteId,
           buyer,
           items: lines.map((l) => ({ productId: l.product.id, qty: l.qty, color: l.color || null })),
+          couponCode: appliedCoupon || undefined,
         }),
       });
       const data = await res.json();
@@ -277,6 +293,41 @@ export function PublishedStore({
                 </div>
 
                 <div className="border-t p-5">
+                  {/* Discount code */}
+                  {(siteData.coupons?.some((c) => c.active) ?? false) && (
+                    <div className="mb-4">
+                      {appliedCoupon ? (
+                        <div className="flex items-center justify-between rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                          <span>Code <span className="font-semibold">{appliedCoupon}</span> applied</span>
+                          <button onClick={() => { setAppliedCoupon(null); setCouponInput(""); }} className="text-xs font-semibold underline">Remove</button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <input
+                            value={couponInput}
+                            onChange={(e) => { setCouponInput(e.target.value); setCouponError(null); }}
+                            placeholder="Discount code"
+                            className="flex-1 rounded-md border border-ink/15 px-3 py-2 text-sm uppercase outline-none focus:border-ink"
+                          />
+                          <button onClick={applyCoupon} className="rounded-md border border-ink/20 px-4 py-2 text-sm font-semibold text-ink">Apply</button>
+                        </div>
+                      )}
+                      {couponError && <p className="mt-1.5 text-xs text-destructive">{couponError}</p>}
+                    </div>
+                  )}
+
+                  {discount > 0 && (
+                    <>
+                      <div className="mb-1.5 flex justify-between text-sm">
+                        <span className="text-ink/60">Subtotal</span>
+                        <span className="text-ink/70">{formatNaira(subtotal)}</span>
+                      </div>
+                      <div className="mb-1.5 flex justify-between text-sm text-emerald-700">
+                        <span>Discount</span>
+                        <span>−{formatNaira(discount)}</span>
+                      </div>
+                    </>
+                  )}
                   <div className="mb-4 flex justify-between text-sm">
                     <span className="text-ink/60">Total</span>
                     <span className="font-semibold text-ink">{formatNaira(total)}</span>

@@ -4,6 +4,8 @@
  * to a live project if you prefer.
  */
 
+import type { Coupon } from "./coupons";
+
 export type Json =
   | string
   | number
@@ -341,6 +343,8 @@ export interface SiteData {
   videoLinks?: CatalogVideoLink[];
   /** Owner-set targets shown on the Milestones & Goals dashboard. */
   goals?: { orders?: number; revenue?: number; visits?: number };
+  /** Store discount codes / coupons applied at checkout. */
+  coupons?: Coupon[];
 }
 
 export interface CatalogVideoLink {
