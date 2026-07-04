@@ -15,6 +15,10 @@ export interface DashboardData {
   /** All of the user's sites, oldest first. */
   sites: Site[];
   subscription: Subscription | null;
+  /** True when this login is a staff member working on someone else's account. */
+  isStaff: boolean;
+  /** Dashboard areas granted to the staff member (empty for owners). */
+  staffAreas: string[];
 }
 
 /**
@@ -42,7 +46,32 @@ export async function getDashboardData(opts?: { requireSite?: boolean }): Promis
     sub.status = "cancelled";
   }
 
-  const sites = (sitesData as Site[]) ?? [];
+  let sites = (sitesData as Site[]) ?? [];
+  let isStaff = false;
+  let staffAreas: string[] = [];
+
+  // Staff resolution: a user with no sites of their own who was invited as
+  // staff works on the owner's sites, limited to their granted areas (the
+  // staff RLS policies enforce this at the data layer too).
+  if (sites.length === 0) {
+    const { data: membership } = await supabase
+      .from("staff_members")
+      .select("owner_id, areas")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (membership?.owner_id) {
+      const { data: ownerSites } = await supabase
+        .from("sites")
+        .select("*")
+        .eq("user_id", membership.owner_id)
+        .order("created_at", { ascending: true });
+      sites = (ownerSites as Site[]) ?? [];
+      isStaff = sites.length > 0;
+      staffAreas = isStaff ? ((membership.areas as string[]) || []) : [];
+    }
+  }
+
   if ((opts?.requireSite ?? true) && sites.length === 0) redirect("/onboarding");
 
   const currentId = cookies().get(SITE_COOKIE)?.value;
@@ -55,6 +84,8 @@ export async function getDashboardData(opts?: { requireSite?: boolean }): Promis
     site,
     sites,
     subscription: sub,
+    isStaff,
+    staffAreas,
   };
 }
 
@@ -69,7 +100,26 @@ export async function currentSiteId(userId: string): Promise<string | null> {
     .select("id")
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
-  const list = (sites as { id: string }[]) ?? [];
+  let list = (sites as { id: string }[]) ?? [];
+
+  // Staff fallback: no sites of their own → resolve the owner's sites.
+  if (!list.length) {
+    const { data: membership } = await supabase
+      .from("staff_members")
+      .select("owner_id")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (membership?.owner_id) {
+      const { data: ownerSites } = await supabase
+        .from("sites")
+        .select("id")
+        .eq("user_id", membership.owner_id)
+        .order("created_at", { ascending: true });
+      list = (ownerSites as { id: string }[]) ?? [];
+    }
+  }
+
   if (!list.length) return null;
   const cookieId = cookies().get(SITE_COOKIE)?.value;
   return list.find((s) => s.id === cookieId)?.id ?? list[0].id;

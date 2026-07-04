@@ -16,7 +16,11 @@ async function requireUserAndSite() {
   if (!user) throw new Error("Not authenticated.");
   const siteId = await currentSiteId(user.id);
   if (!siteId) throw new Error("No site found.");
-  return { supabase, userId: user.id, siteId };
+  // Rows created from the dashboard belong to the site's owner — for staff
+  // members that's the account owner, not the staff user themselves.
+  const { data: site } = await supabase.from("sites").select("user_id").eq("id", siteId).maybeSingle();
+  const ownerId = (site?.user_id as string) || user.id;
+  return { supabase, userId: user.id, ownerId, siteId };
 }
 
 export interface ProductInput {
@@ -39,11 +43,11 @@ export interface ProductInput {
 
 export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; error?: string }> {
   try {
-    const { supabase, userId, siteId } = await requireUserAndSite();
+    const { supabase, ownerId, siteId } = await requireUserAndSite();
     if (!input.name?.trim()) return { ok: false, error: "Name is required." };
 
     const row: Record<string, unknown> = {
-      user_id: userId,
+      user_id: ownerId,
       site_id: siteId,
       name: input.name.trim(),
       description: input.description || null,
@@ -71,7 +75,7 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
     if (input.comparePrice) row.compare_price = Math.max(0, Math.round(input.comparePrice));
 
     if (input.id) {
-      const { error } = await supabase.from("products").update(row).eq("id", input.id).eq("user_id", userId);
+      const { error } = await supabase.from("products").update(row).eq("id", input.id).eq("user_id", ownerId);
       if (error) return { ok: false, error: error.message };
     } else {
       const { error } = await supabase.from("products").insert(row);
@@ -86,8 +90,8 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
 
 export async function deleteProduct(id: string): Promise<{ ok: boolean; error?: string }> {
   try {
-    const { supabase, userId } = await requireUserAndSite();
-    const { error } = await supabase.from("products").delete().eq("id", id).eq("user_id", userId);
+    const { supabase, ownerId } = await requireUserAndSite();
+    const { error } = await supabase.from("products").delete().eq("id", id).eq("user_id", ownerId);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard/products");
     return { ok: true };

@@ -8,7 +8,7 @@ export default async function PanelLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { site, sites } = await getDashboardData();
+  const { site, sites, isStaff, staffAreas } = await getDashboardData();
   const isEcommerce = site?.category === "ecommerce";
 
   const supabase = createClient();
@@ -37,7 +37,7 @@ export default async function PanelLayout({
     unreadMessages = count ?? 0;
   }
 
-  const items: NavItem[] = [
+  const allItems: NavItem[] = [
     { href: "/dashboard", label: "Dashboard", icon: "LayoutDashboard" },
     { href: "/dashboard/editor", label: "Edit Site", icon: "Pencil" },
     { href: "/dashboard/templates", label: "Templates", icon: "LayoutTemplate" },
@@ -65,10 +65,26 @@ export default async function PanelLayout({
     { href: "/dashboard/messages", label: "Messages", icon: "MessagesSquare", badge: unreadMessages },
     { href: "/dashboard/leads", label: "Leads", icon: "Inbox" },
     { href: "/dashboard/domain", label: "Custom Domain", icon: "Globe" },
+    { href: "/dashboard/staff", label: "Staff", icon: "UsersRound" },
     { href: "/dashboard/billing", label: "Billing", icon: "CreditCard" },
     { href: "/dashboard/account", label: "Account", icon: "Settings" },
     { href: "/dashboard/help", label: "Help & Support", icon: "LifeBuoy" },
   ];
+
+  // Staff logins only see the areas they've been granted (plus basics).
+  const STAFF_NAV: Record<string, string[]> = {
+    orders: ["/dashboard/orders"],
+    products: ["/dashboard/products"],
+    editor: ["/dashboard/editor", "/dashboard/discounts", "/dashboard/shipping", "/dashboard/donations"],
+    messages: ["/dashboard/messages"],
+    leads: ["/dashboard/leads"],
+    reviews: ["/dashboard/reviews"],
+  };
+  const staffAllowed = new Set([
+    "/dashboard", "/dashboard/account", "/dashboard/help",
+    ...staffAreas.flatMap((a) => STAFF_NAV[a] || []),
+  ]);
+  const items = isStaff ? allItems.filter((i) => staffAllowed.has(i.href)) : allItems;
 
   const liveUrl = site ? siteLiveUrl(site) : null;
   const switcherSites = sites.map((s) => ({

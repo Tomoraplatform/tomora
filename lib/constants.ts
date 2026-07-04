@@ -22,6 +22,18 @@ export const WALLET_SINGLE_WITHDRAWAL_LIMIT = 5_000;
 export const WALLET_DAILY_WITHDRAWAL_LIMIT = 500_000;
 /** Plans exempt from wallet withdrawal limits. */
 export const WALLET_UNLIMITED_PLANS = ["growth", "pro", "custom"];
+
+/** Plans that include staff accounts (team access). */
+export const TEAM_PLANS = ["growth", "pro", "custom"];
+/** Dashboard areas an owner can grant to a staff member. */
+export const STAFF_AREAS: { id: string; label: string; description: string }[] = [
+  { id: "orders", label: "Orders", description: "View and update customer orders" },
+  { id: "products", label: "Products", description: "Add, edit and remove products" },
+  { id: "editor", label: "Site content", description: "Edit the website, discounts, shipping and donation figures" },
+  { id: "messages", label: "Messages", description: "Read and reply to customer chats" },
+  { id: "leads", label: "Leads", description: "View enquiries and form submissions" },
+  { id: "reviews", label: "Reviews", description: "Moderate customer reviews" },
+];
 /**
  * TLDs offered in the assisted domain search. Only .com.ng is cheap enough to
  * sell profitably at the flat NEW_DOMAIN_AMOUNT; pricier TLDs (e.g. .ng, .com)
