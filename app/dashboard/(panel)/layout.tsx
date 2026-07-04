@@ -48,6 +48,7 @@ export default async function PanelLayout({
           { href: "/dashboard/products", label: "Products", icon: "Package" },
           { href: "/dashboard/orders", label: "Orders", icon: "ShoppingBag", badge: newOrders },
           { href: "/dashboard/discounts", label: "Discounts", icon: "Ticket" },
+          { href: "/dashboard/shipping", label: "Shipping", icon: "Truck" },
           { href: "/dashboard/reviews", label: "Reviews", icon: "Star" },
           { href: "/dashboard/payouts", label: "Payouts", icon: "Banknote" },
         ] as NavItem[])

@@ -345,6 +345,8 @@ export interface SiteData {
   goals?: { orders?: number; revenue?: number; visits?: number };
   /** Store discount codes / coupons applied at checkout. */
   coupons?: Coupon[];
+  /** Shipping locations + fees a customer chooses from at checkout. */
+  shippingZones?: { id: string; name: string; fee: number }[];
 }
 
 export interface CatalogVideoLink {

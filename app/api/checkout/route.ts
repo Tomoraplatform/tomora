@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { siteId, buyer, items, couponCode } = body || {};
+  const { siteId, buyer, items, couponCode, shippingZoneId } = body || {};
   if (!siteId || !buyer?.email || !buyer?.name || !Array.isArray(items) || !items.length) {
     return NextResponse.json({ error: "Missing checkout details." }, { status: 400 });
   }
@@ -113,6 +113,27 @@ export async function POST(request: NextRequest) {
         else { r.amount = Math.round((r.amount / total) * discountedTotal); running += r.amount; }
       });
       total = discountedTotal;
+    }
+  }
+
+  // Shipping fee for the chosen delivery location (validated server-side).
+  let shippingFee = 0;
+  let shippingName: string | null = null;
+  if (shippingZoneId) {
+    const zone = ((site.site_data as any)?.shippingZones || []).find((z: any) => z.id === shippingZoneId);
+    if (zone) {
+      shippingFee = Math.max(0, Math.round(Number(zone.fee) || 0));
+      shippingName = String(zone.name || "").slice(0, 80);
+      if (shippingFee > 0) {
+        total += shippingFee;
+        rows.push({
+          site_id: siteId, product_id: null,
+          buyer_name: buyer.name, buyer_email: buyer.email,
+          buyer_phone: buyer.phone || null, buyer_address: buyer.address || null,
+          amount: shippingFee, color: `Shipping: ${shippingName}`,
+          paystack_reference: reference, status: "pending",
+        });
+      }
     }
   }
 

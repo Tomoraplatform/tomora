@@ -42,11 +42,16 @@ export function PublishedStore({
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
 
+  // Shipping location + fee.
+  const zones = siteData.shippingZones || [];
+  const [shippingZoneId, setShippingZoneId] = useState<string>("");
+  const shippingFee = zones.find((z) => z.id === shippingZoneId)?.fee || 0;
+
   const onBrand = contrastText(brandColor);
   const count = lines.reduce((n, l) => n + l.qty, 0);
   const subtotal = lines.reduce((n, l) => n + l.product.price * l.qty, 0);
   const discount = appliedCoupon ? validateCoupon(siteData.coupons, appliedCoupon, subtotal).discount : 0;
-  const total = Math.max(0, subtotal - discount);
+  const total = Math.max(0, subtotal - discount) + shippingFee;
 
   function applyCoupon() {
     setCouponError(null);
@@ -121,6 +126,7 @@ export function PublishedStore({
           buyer,
           items: lines.map((l) => ({ productId: l.product.id, qty: l.qty, color: l.color || null })),
           couponCode: appliedCoupon || undefined,
+          shippingZoneId: shippingZoneId || undefined,
         }),
       });
       const data = await res.json();
@@ -269,6 +275,18 @@ export function PublishedStore({
                         />
                       ))}
 
+                      {/* Delivery location */}
+                      {zones.length > 0 && (
+                        <select
+                          value={shippingZoneId}
+                          onChange={(e) => setShippingZoneId(e.target.value)}
+                          className="w-full rounded-md border border-ink/15 px-4 py-3 text-sm text-ink outline-none focus:border-ink"
+                        >
+                          <option value="">Select delivery location…</option>
+                          {zones.map((z) => <option key={z.id} value={z.id}>{z.name} — {z.fee > 0 ? formatNaira(z.fee) : "Free"}</option>)}
+                        </select>
+                      )}
+
                       {/* Pay by bank transfer to the store owner */}
                       {canCheckout ? (
                         <div className="rounded-lg border border-ink/15 bg-cream/50 p-4">
@@ -316,16 +334,24 @@ export function PublishedStore({
                     </div>
                   )}
 
-                  {discount > 0 && (
+                  {(discount > 0 || shippingFee > 0) && (
                     <>
                       <div className="mb-1.5 flex justify-between text-sm">
                         <span className="text-ink/60">Subtotal</span>
                         <span className="text-ink/70">{formatNaira(subtotal)}</span>
                       </div>
-                      <div className="mb-1.5 flex justify-between text-sm text-emerald-700">
-                        <span>Discount</span>
-                        <span>−{formatNaira(discount)}</span>
-                      </div>
+                      {discount > 0 && (
+                        <div className="mb-1.5 flex justify-between text-sm text-emerald-700">
+                          <span>Discount</span>
+                          <span>−{formatNaira(discount)}</span>
+                        </div>
+                      )}
+                      {shippingFee > 0 && (
+                        <div className="mb-1.5 flex justify-between text-sm">
+                          <span className="text-ink/60">Shipping</span>
+                          <span className="text-ink/70">{formatNaira(shippingFee)}</span>
+                        </div>
+                      )}
                     </>
                   )}
                   <div className="mb-4 flex justify-between text-sm">

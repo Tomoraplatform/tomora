@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote,
-  Globe, CreditCard, Settings, Menu, X, LogOut, ExternalLink, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket,
+  Globe, CreditCard, Settings, Menu, X, LogOut, ExternalLink, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket, Truck, MoreHorizontal,
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ import { signOut } from "@/app/(auth)/actions";
 import { SiteSwitcher, type SwitcherSite } from "./site-switcher";
 
 const ICONS = {
-  LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote, Globe, CreditCard, Settings, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket,
+  LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote, Globe, CreditCard, Settings, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket, Truck,
 } as const;
 
 export interface NavItem {
@@ -106,8 +106,47 @@ export function DashboardShell({
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-ink/10 bg-white lg:block">
           {SidebarContent}
         </aside>
-        <main className="min-w-0 flex-1 px-5 py-8 lg:px-10">{children}</main>
+        <main className="min-w-0 flex-1 px-5 pb-28 pt-8 lg:px-10 lg:pb-8">{children}</main>
       </div>
+
+      <MobileBottomNav items={items} pathname={pathname} onMore={() => setOpen(true)} />
     </div>
+  );
+}
+
+/** App-style bottom tab bar on mobile. Shows key destinations + a "More" tab. */
+function MobileBottomNav({ items, pathname, onMore }: { items: NavItem[]; pathname: string; onMore: () => void }) {
+  const find = (href: string) => items.find((i) => i.href === href);
+  const tabs = [
+    find("/dashboard"),
+    find("/dashboard/editor"),
+    find("/dashboard/orders") || find("/dashboard/milestones"),
+    find("/dashboard/messages"),
+  ].filter(Boolean) as NavItem[];
+
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-ink/10 bg-white/95 backdrop-blur lg:hidden">
+      <div className="mx-auto flex max-w-lg items-stretch justify-around px-1 pb-[env(safe-area-inset-bottom)]">
+        {tabs.map((item) => {
+          const Icon = ICONS[item.icon];
+          const active = pathname === item.href;
+          const short = item.label.split(" ")[0];
+          return (
+            <Link key={item.href} href={item.href}
+              className={cn("relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium", active ? "text-ink" : "text-ink/45")}>
+              <span className="relative">
+                <Icon className="h-[22px] w-[22px]" />
+                {item.badge ? <span className="absolute -right-2 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-ink px-1 text-[9px] font-semibold text-cream">{item.badge > 99 ? "99+" : item.badge}</span> : null}
+              </span>
+              {short}
+            </Link>
+          );
+        })}
+        <button onClick={onMore} className="flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium text-ink/45">
+          <MoreHorizontal className="h-[22px] w-[22px]" />
+          More
+        </button>
+      </div>
+    </nav>
   );
 }
