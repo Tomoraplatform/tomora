@@ -33,6 +33,8 @@ export function MarketingFooter() {
             <li><Link href="/signup" className="hover:text-cream">About</Link></li>
             <li><a href="#faq" className="hover:text-cream">FAQ</a></li>
             <li><a href="mailto:tomoraplatform@gmail.com" className="hover:text-cream">Contact</a></li>
+            <li><Link href="/privacy" className="hover:text-cream">Privacy Policy</Link></li>
+            <li><Link href="/terms" className="hover:text-cream">Terms of Use</Link></li>
           </ul>
         </div>
 

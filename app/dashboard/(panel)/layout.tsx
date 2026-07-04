@@ -64,6 +64,7 @@ export default async function PanelLayout({
     { href: "/dashboard/domain", label: "Custom Domain", icon: "Globe" },
     { href: "/dashboard/billing", label: "Billing", icon: "CreditCard" },
     { href: "/dashboard/account", label: "Account", icon: "Settings" },
+    { href: "/dashboard/help", label: "Help & Support", icon: "LifeBuoy" },
   ];
 
   const liveUrl = site ? siteLiveUrl(site) : null;
