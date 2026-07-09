@@ -114,7 +114,8 @@ export function DashboardShell({
   );
 }
 
-/** App-style bottom tab bar on mobile. Shows key destinations + a "More" tab. */
+/** App-style bottom nav on mobile: a floating frosted-glass pill centered above
+ *  the bottom edge (not flush against it). Shows key destinations + a "More" tab. */
 function MobileBottomNav({ items, pathname, onMore }: { items: NavItem[]; pathname: string; onMore: () => void }) {
   const find = (href: string) => items.find((i) => i.href === href);
   const tabs = [
@@ -125,15 +126,18 @@ function MobileBottomNav({ items, pathname, onMore }: { items: NavItem[]; pathna
   ].filter(Boolean) as NavItem[];
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-ink/10 bg-white/95 backdrop-blur lg:hidden">
-      <div className="mx-auto flex max-w-lg items-stretch justify-around px-1 pb-[env(safe-area-inset-bottom)]">
+    <nav className="pointer-events-none fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+14px)] z-40 flex justify-center px-4 lg:hidden">
+      <div className="pointer-events-auto flex items-stretch gap-0.5 rounded-full border border-white/60 bg-white/60 px-2.5 py-1 shadow-xl shadow-ink/15 ring-1 ring-black/5 backdrop-blur-xl">
         {tabs.map((item) => {
           const Icon = ICONS[item.icon];
           const active = pathname === item.href;
           const short = item.label.split(" ")[0];
           return (
             <Link key={item.href} href={item.href}
-              className={cn("relative flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium", active ? "text-ink" : "text-ink/45")}>
+              className={cn(
+                "relative flex flex-col items-center gap-0.5 rounded-full px-3.5 py-2 text-[10px] font-medium transition-colors",
+                active ? "bg-ink/5 font-semibold text-ink" : "text-ink/45"
+              )}>
               <span className="relative">
                 <Icon className="h-[22px] w-[22px]" />
                 {item.badge ? <span className="absolute -right-2 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-ink px-1 text-[9px] font-semibold text-cream">{item.badge > 99 ? "99+" : item.badge}</span> : null}
@@ -142,7 +146,7 @@ function MobileBottomNav({ items, pathname, onMore }: { items: NavItem[]; pathna
             </Link>
           );
         })}
-        <button onClick={onMore} className="flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium text-ink/45">
+        <button onClick={onMore} className="flex flex-col items-center gap-0.5 rounded-full px-3.5 py-2 text-[10px] font-medium text-ink/45">
           <MoreHorizontal className="h-[22px] w-[22px]" />
           More
         </button>
