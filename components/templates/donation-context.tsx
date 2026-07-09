@@ -9,11 +9,13 @@ export type DonationState = {
   goal: number;
   count: number;
   canDonate: boolean;
+  /** Paid online totals per fundraising project, keyed by project id. */
+  projects: Record<string, { raised: number; count: number }>;
   refresh: () => void;
 };
 
 const DonationContext = createContext<DonationState>({
-  enabled: false, raised: 0, goal: 0, count: 0, canDonate: false, refresh: () => {},
+  enabled: false, raised: 0, goal: 0, count: 0, canDonate: false, projects: {}, refresh: () => {},
 });
 
 export function useDonation() {
@@ -41,6 +43,7 @@ export function DonationProvider({
   const [online, setOnline] = useState(0);
   const [count, setCount] = useState(0);
   const [canDonate, setCanDonate] = useState(false);
+  const [projects, setProjects] = useState<Record<string, { raised: number; count: number }>>({});
 
   const refresh = useCallback(async () => {
     if (!siteId || !enabled) return;
@@ -51,6 +54,7 @@ export function DonationProvider({
       else if (typeof d.raised === "number") setOnline(Math.max(0, d.raised - Math.max(0, Math.round(manual || 0))));
       setCount(d.count || 0);
       setCanDonate(!!d.canDonate);
+      setProjects(d.projects || {});
     } catch { /* ignore */ }
     // manual intentionally excluded — it's applied live from props below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -61,7 +65,7 @@ export function DonationProvider({
   const raised = Math.max(0, Math.round(manual || 0)) + online;
 
   return (
-    <DonationContext.Provider value={{ enabled, raised, goal: Math.max(0, Math.round(goal || 0)), count, canDonate, refresh }}>
+    <DonationContext.Provider value={{ enabled, raised, goal: Math.max(0, Math.round(goal || 0)), count, canDonate, projects, refresh }}>
       {children}
     </DonationContext.Provider>
   );

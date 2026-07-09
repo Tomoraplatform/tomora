@@ -68,7 +68,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints" | "ministries" | "skills" | "experiencePhotos" | "galleryPhotos" | "galleryVideos" | "blogPosts" | "videoLinks" | "beforeAfter";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints" | "ministries" | "skills" | "experiencePhotos" | "galleryPhotos" | "galleryVideos" | "blogPosts" | "videoLinks" | "beforeAfter" | "donationProjects";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["trustBadges", "testimonials"],
   "shop-02": ["trustBadges"],
@@ -387,7 +387,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "bestsellers", label: "Best sellers", heading: "bestsellers", products: true },
     { key: "offer", label: "Special offer", heading: "sale", text: true, products: true },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "shop-02": [
     { key: "hero", label: "Hero", hero: true, video: true, list: "trustBadges" },
@@ -398,7 +398,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "promo", label: "Offer & New arrival", products: true },
     { key: "bestsellers", label: "Best sellers", heading: "bestsellers", products: true },
     { key: "newsletter", label: "Newsletter", heading: "newsletter", text: true, image: true, formToggle: true },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "shop-03": [
     { key: "hero", label: "Hero banner", hero: true },
@@ -407,7 +407,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "catbanners", label: "Category banners" },
     { key: "allproducts", label: "All products", heading: "allproducts", products: true },
     { key: "banner", label: "Promo banner", image: true },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "shop-04": [
     { key: "hero", label: "Hero (big sale)", hero: true, stat: true },
@@ -418,20 +418,20 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "banner", label: "Promo banner", image: true },
     { key: "testimonials", label: "Reviews", heading: "testimonials", list: "testimonials" },
     { key: "blog", label: "Blog posts", heading: "blog", list: "blogPosts" },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "shop-05": [
     { key: "hero", label: "Hero (page title + banner)", hero: true },
     { key: "shop", label: "Shop grid", products: true },
     { key: "banner", label: "Promo banner", image: true },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "shop-06": [
     { key: "hero", label: "Hero", hero: true },
     { key: "newarrivals", label: "New Arrivals", heading: "newarrivals", products: true },
     { key: "categories", label: "Shop by Category", heading: "categories", list: "shopCategories" },
     { key: "featured", label: "Featured", heading: "featured", products: true },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "portfolio-01": [
     { key: "hero", label: "Hero", hero: true },
@@ -444,7 +444,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "clients", label: "Client logos", list: "clientLogos" },
     { key: "booking", label: "Book a session", heading: "booking", text: true, book: true },
     { key: "contact", label: "Contact", heading: "contact" },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "portfolio-02": [
     { key: "hero", label: "Hero", hero: true, cv: true },
@@ -516,7 +516,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "courses", label: "Bootcamp / Courses", heading: "courses", list: "courses" },
     { key: "features", label: "Features", heading: "features", text: true, list: "eduFeatures" },
     { key: "faq", label: "FAQ", heading: "faq", list: "faqs" },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "education-02": [
     { key: "hero", label: "Hero", hero: true, overlay: true, ticket: true },
@@ -527,7 +527,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "services", label: "Features", heading: "services", text: true, list: "services" },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
     { key: "register", label: "Register", heading: "register" },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "org-01": [
     { key: "hero", label: "Hero", hero: true, overlay: true, stat: true },
@@ -536,7 +536,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "services", label: "What we do", heading: "services", text: true, list: "services" },
     { key: "volunteers", label: "Get involved", heading: "volunteers", eyebrow: true, text: true, image: true, button: true, color: true },
     { key: "stories", label: "Success stories", heading: "stories", list: "testimonials" },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "org-02": [
     { key: "hero", label: "Hero", hero: true, eyebrow: true, stat: true, list: "avatars" },
@@ -546,7 +546,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "donate", label: "Donation band", heading: "donate" },
     { key: "services", label: "What we do", heading: "services", list: "services" },
     { key: "events", label: "Events", heading: "events", list: "events" },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "org-04": [
     { key: "hero", label: "Hero (split + donation)", hero: true, stat: true },
@@ -554,7 +554,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "services", label: "What we do", heading: "services", text: true, image: true, list: "services" },
     { key: "volunteers", label: "Volunteer drive (red band)", heading: "volunteers", eyebrow: true, text: true, button: true, image: true, color: true, list: "clientLogos" },
     { key: "stories", label: "Success stories", heading: "stories", list: "testimonials" },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "org-03": [
     { key: "hero", label: "Hero", hero: true, overlay: true, eyebrow: true, button: true },
@@ -565,28 +565,28 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "features", label: "Features", heading: "invest", text: true, list: "eduFeatures" },
     { key: "stats", label: "Stats", heading: "stats", color: true, list: "stats" },
     { key: "join", label: "Join CTA", heading: "join", text: true, button: true },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "events-01": [
     { key: "hero", label: "Hero", hero: true, overlay: true },
     { key: "about", label: "About cards", list: "quickActions" },
     { key: "mission", label: "Mission", heading: "mission", text: true, image: true, list: "eduFeatures" },
     { key: "why", label: "Why choose us", heading: "why", text: true, list: "services" },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "events-02": [
     { key: "hero", label: "Hero", hero: true, overlay: true, eyebrow: true, heroSearch: true, list: "quickActions" },
     { key: "mission", label: "Mission statement", heading: "mission", text: true },
     { key: "ministries", label: "Ministries", heading: "ministries", text: true, list: "ministries" },
     { key: "news", label: "What's new", heading: "news", text: true, list: "events", extraText: [{ key: "newsFeatured", label: "Featured column label" }, { key: "newsBlog", label: "Blog column label" }] },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "events-03": [
     { key: "banner", label: "Top countdown bar", countdown: true },
     { key: "hero", label: "Hero", hero: true, overlay: true, eyebrow: true, button: true },
     { key: "about", label: "About / Sermons", heading: "sermons", eyebrow: true, text: true, button: true, list: "aboutImages", extraText: [{ key: "aboutSince", label: "\"Since\" year" }, { key: "aboutQuote", label: "Quote" }] },
     { key: "ministries", label: "Ministries", heading: "ministries", text: true, button: true, list: "portfolio" },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "events-04": [
     { key: "hero", label: "Hero", hero: true, overlay: true },
@@ -594,7 +594,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "news", label: "News", heading: "news", text: true, button: true, list: "events" },
     { key: "events", label: "Events", heading: "events", text: true, button: true, list: "events" },
     { key: "territory", label: "Territory", heading: "territory", text: true, image: true, button: true, color: true },
-    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "artisan-01": [
     { key: "hero", label: "Hero", hero: true, overlay: true },

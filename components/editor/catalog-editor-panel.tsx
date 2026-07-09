@@ -168,6 +168,15 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     ],
     make: () => ({ id: `r-${Date.now()}`, group: "Education", title: "2020 - 2024", subtitle: "Institution", detail: "Qualification" }),
   },
+  donationProjects: {
+    key: "donationProjects", title: "Fundraising projects (optional)",
+    fields: [
+      { key: "name", label: "Project name" },
+      { key: "description", label: "Project description", type: "textarea" },
+      { key: "goal", label: "Project target (₦)", type: "number" },
+    ],
+    make: () => ({ id: `dp-${Date.now()}`, name: "New project", description: "What this project funds.", goal: 500000 }),
+  },
   beforeAfter: {
     key: "beforeAfterResults", title: "Before & After Results",
     fields: [
@@ -502,6 +511,9 @@ export function CatalogEditorPanel({
                       </div>
                     )}
                     <p className="text-xs text-ink/50">Online gifts add to the bar automatically. Use “Manually added” for offline/cash gifts.</p>
+                    {(data.donationProjects?.length || 0) > 0 && (
+                      <p className="rounded-md bg-cream px-3 py-2 text-xs text-ink/70">You&apos;ve added fundraising projects below — your site shows a card per project with its own target, and the general goal above is ignored. All gifts still settle to the same payout account.</p>
+                    )}
                   </>
                 )}
                 {hkey && (

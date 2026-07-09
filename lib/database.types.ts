@@ -229,6 +229,13 @@ export interface CatalogPortfolioItem {
   /** Optional external link for the item's button (templates that show one). */
   linkUrl?: string;
 }
+export interface CatalogDonationProject {
+  id: string;
+  name: string;
+  description?: string;
+  /** Fundraising target for this project, in naira. */
+  goal: number;
+}
 export interface CatalogResultItem {
   id: string;
   /** Optional caption, e.g. a client or project name. */
@@ -312,6 +319,10 @@ export interface SiteData {
   donationEnabled?: boolean;
   donationGoal?: number;   // target amount in naira
   donationManual?: number; // offline / manually-added amount in naira
+  /** Named fundraising projects, each with its own target + progress bar. When set,
+   *  the donation section shows a card per project instead of one general goal;
+   *  every gift still settles to the same payout account. */
+  donationProjects?: CatalogDonationProject[];
   /** Progress / skill bars (label + percentage) for "Why us" style sections. */
   progress?: CatalogProgress[];
   /** Toggle the newsletter signup form on storefront templates (default on). */

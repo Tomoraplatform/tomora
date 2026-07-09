@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getDashboardData } from "@/lib/dashboard";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { DonationsManager } from "@/components/dashboard/donations-manager";
+import { DonationsManager, type DonationRecord, type ProjectSummary } from "@/components/dashboard/donations-manager";
 
 export const metadata = { title: "Donations — Tomora" };
 
@@ -12,14 +12,54 @@ export default async function DonationsPage() {
   const eligible = site!.category === "organization" || !!sd.donationEnabled;
   if (!eligible) redirect("/dashboard");
 
-  // Sum online (Paystack) donations that have been paid.
+  // Paid online (Paystack) donations. project_* columns arrive with migration
+  // 0026 — fall back to the amount-only shape if it hasn't been applied yet.
   const admin = createAdminClient();
-  const { data: rows } = await admin
-    .from("donations")
-    .select("amount")
-    .eq("site_id", site!.id)
-    .eq("status", "paid");
-  const online = (rows || []).reduce((s: number, r: { amount: number | null }) => s + (r.amount || 0), 0);
+  let rows: any[] = [];
+  {
+    const res = await admin
+      .from("donations")
+      .select("id, donor_name, donor_email, amount, project_id, project_name, created_at")
+      .eq("site_id", site!.id)
+      .eq("status", "paid")
+      .order("created_at", { ascending: false });
+    if (res.error) {
+      const retry = await admin
+        .from("donations")
+        .select("id, donor_name, donor_email, amount, created_at")
+        .eq("site_id", site!.id)
+        .eq("status", "paid")
+        .order("created_at", { ascending: false });
+      rows = retry.data || [];
+    } else {
+      rows = res.data || [];
+    }
+  }
+
+  const online = rows.reduce((s, r) => s + (r.amount || 0), 0);
+
+  // Per-project summaries from the owner's configured projects + paid gifts.
+  const projects: ProjectSummary[] = (sd.donationProjects || [])
+    .filter((p) => p.name?.trim())
+    .map((p) => {
+      const mine = rows.filter((r) => r.project_id === p.id);
+      return {
+        id: p.id,
+        name: p.name,
+        goal: Math.max(0, Math.round(p.goal || 0)),
+        raised: mine.reduce((s, r) => s + (r.amount || 0), 0),
+        count: mine.length,
+      };
+    });
+
+  const records: DonationRecord[] = rows.slice(0, 50).map((r) => ({
+    id: r.id,
+    donorName: r.donor_name || null,
+    donorEmail: r.donor_email || null,
+    amount: r.amount || 0,
+    projectName: r.project_name || null,
+    createdAt: r.created_at,
+  }));
 
   return (
     <div className="space-y-6">
@@ -31,9 +71,11 @@ export default async function DonationsPage() {
       )}
       <DonationsManager
         online={online}
-        onlineCount={(rows || []).length}
+        onlineCount={rows.length}
         manual={Math.max(0, Math.round(sd.donationManual || 0))}
         goal={Math.max(0, Math.round(sd.donationGoal || 0))}
+        projects={projects}
+        records={records}
       />
     </div>
   );

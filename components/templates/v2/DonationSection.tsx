@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Heart, Loader2, CheckCircle2, Target } from "lucide-react";
-import type { SiteData } from "@/lib/database.types";
+import type { SiteData, CatalogDonationProject } from "@/lib/database.types";
 import { formatNaira, contrastText } from "@/lib/utils";
 import { useStore } from "../store-context";
 import { useDonation } from "../donation-context";
@@ -25,7 +25,171 @@ function loadPaystack(): Promise<void> {
 
 const PRESETS = [1000, 5000, 10000, 25000];
 
+/** Starts a donation and opens the Paystack popup. Resolves when payment completes. */
+async function startDonation(
+  { siteId, name, email, amount, projectId }: { siteId: string; name: string; email: string; amount: number; projectId?: string },
+  { onSuccess, onCancel, onError }: { onSuccess: () => void; onCancel: () => void; onError: (msg: string) => void }
+) {
+  const res = await fetch("/api/donations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ siteId, name, email, amount, projectId }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data.accessCode) throw new Error(data.error || "Could not start this donation.");
+  await loadPaystack();
+  const popup = new window.PaystackPop();
+  popup.resumeTransaction(data.accessCode, {
+    onSuccess: (txn: { reference: string }) => {
+      fetch("/api/donations/confirm", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reference: txn.reference || data.reference }),
+      }).finally(onSuccess);
+    },
+    onCancel,
+    onError: (err: { message?: string }) => onError(err?.message || "Payment failed."),
+  });
+}
+
 export function DonationSection({ siteData, brandColor }: { siteData: SiteData; brandColor: string }) {
+  if (!siteData.donationEnabled) return null;
+  const projects = (siteData.donationProjects || []).filter((p) => p.name?.trim());
+  if (projects.length > 0) {
+    return <ProjectsDonation siteData={siteData} brandColor={brandColor} projects={projects} />;
+  }
+  return <GeneralDonation siteData={siteData} brandColor={brandColor} />;
+}
+
+/* ------------------- Multi-project layout ------------------- */
+
+function ProjectsDonation({
+  siteData, brandColor, projects,
+}: {
+  siteData: SiteData; brandColor: string; projects: CatalogDonationProject[];
+}) {
+  const { canDonate } = useDonation();
+
+  return (
+    <section id="donate" className="mx-auto max-w-6xl px-5 py-16">
+      <div className="mx-auto max-w-2xl text-center">
+        <h2 className="text-3xl font-bold text-ink">{heading(siteData, "donation", "Support Our Cause")}</h2>
+        <p className="mt-3 text-ink/60">{subheading(siteData, "donation", "Choose a project below — every contribution counts.")}</p>
+      </div>
+
+      <div className={`mt-10 grid gap-6 md:grid-cols-2 ${projects.length >= 3 ? "xl:grid-cols-3" : ""}`}>
+        {projects.map((p) => <ProjectCard key={p.id} project={p} brandColor={brandColor} feeBearer={siteData.feeBearer} />)}
+      </div>
+
+      {!canDonate && (
+        <p className="mt-6 text-center text-xs text-ink/50">Online giving activates once the organisation adds their payout bank.</p>
+      )}
+    </section>
+  );
+}
+
+function ProjectCard({
+  project, brandColor, feeBearer,
+}: {
+  project: CatalogDonationProject; brandColor: string; feeBearer?: "customer" | "owner";
+}) {
+  const { siteId } = useStore();
+  const { projects: totals, refresh } = useDonation();
+  const onBrand = contrastText(brandColor);
+
+  const [amount, setAmount] = useState<number>(5000);
+  const [donor, setDonor] = useState({ name: "", email: "" });
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const raised = totals[project.id]?.raised || 0;
+  const count = totals[project.id]?.count || 0;
+  const goal = Math.max(0, Math.round(project.goal || 0));
+  const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
+
+  async function donate() {
+    setError(null);
+    if (!siteId) { setError("Donations work on the published site."); return; }
+    if (!donor.email || amount < 100) { setError("Enter your email and an amount of at least ₦100."); return; }
+    setBusy(true);
+    try {
+      await startDonation(
+        { siteId, name: donor.name, email: donor.email, amount, projectId: project.id },
+        {
+          onSuccess: () => { setBusy(false); setDone(true); refresh(); },
+          onCancel: () => setBusy(false),
+          onError: (msg) => { setBusy(false); setError(msg); },
+        }
+      );
+    } catch (e: any) {
+      setBusy(false);
+      setError(e.message || "Could not start this donation.");
+    }
+  }
+
+  return (
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
+      <div className="p-6 pb-0">
+        <h3 className="text-lg font-bold text-ink">{project.name}</h3>
+        {project.description && <p className="mt-1.5 text-sm leading-relaxed text-ink/60">{project.description}</p>}
+
+        <div className="mt-4">
+          <div className="flex flex-wrap items-end justify-between gap-x-3 text-sm">
+            <span className="text-lg font-bold text-ink">{formatNaira(raised)}</span>
+            {goal > 0 && <span className="text-ink/50">of {formatNaira(goal)}</span>}
+          </div>
+          <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-black/10">
+            <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: brandColor }} />
+          </div>
+          <p className="mt-1.5 text-xs text-ink/50">
+            {count} {count === 1 ? "gift" : "gifts"}{goal > 0 ? ` · ${pct}% of target` : ""}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 flex-1 border-t border-black/5 p-6 pt-5">
+        {done ? (
+          <div className="flex h-full flex-col items-center justify-center py-4 text-center">
+            <CheckCircle2 className="h-10 w-10" style={{ color: brandColor }} />
+            <p className="mt-2 font-semibold text-ink">Thank you for your gift!</p>
+            <button onClick={() => setDone(false)} className="mt-2 text-sm font-semibold" style={{ color: brandColor }}>Give again</button>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-4 gap-2">
+              {PRESETS.map((p) => (
+                <button key={p} onClick={() => setAmount(p)}
+                  className="rounded-lg border px-1 py-2 text-sm font-semibold transition"
+                  style={amount === p ? { background: brandColor, color: onBrand, borderColor: brandColor } : { borderColor: "rgba(0,0,0,0.15)", color: "#022245" }}>
+                  {p >= 1000 ? `${p / 1000}k` : p}
+                </button>
+              ))}
+            </div>
+            <div className="mt-3 space-y-2">
+              <input type="number" min={100} value={amount} onChange={(e) => setAmount(Math.round(Number(e.target.value) || 0))}
+                placeholder="Other amount (₦)" className="w-full rounded-lg border border-ink/15 px-3 py-2 text-sm outline-none focus:border-ink/40" />
+              <input value={donor.name} onChange={(e) => setDonor((d) => ({ ...d, name: e.target.value }))}
+                placeholder="Your name (optional)" className="w-full rounded-lg border border-ink/15 px-3 py-2 text-sm outline-none focus:border-ink/40" />
+              <input type="email" value={donor.email} onChange={(e) => setDonor((d) => ({ ...d, email: e.target.value }))}
+                placeholder="Email" className="w-full rounded-lg border border-ink/15 px-3 py-2 text-sm outline-none focus:border-ink/40" />
+            </div>
+            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+            <button onClick={donate} disabled={busy}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold disabled:opacity-60"
+              style={{ background: brandColor, color: onBrand }}>
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Heart className="h-4 w-4" />} Donate {amount >= 100 ? formatNaira(amount) : ""}
+            </button>
+            {feeBearer === "customer" && <p className="mt-2 text-center text-xs text-ink/50">A small payment-processing fee is added at checkout.</p>}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ------------------- Single general-goal layout ------------------- */
+
+function GeneralDonation({ siteData, brandColor }: { siteData: SiteData; brandColor: string }) {
   const { siteId } = useStore();
   const { raised, goal, count, canDonate, refresh } = useDonation();
   const onBrand = contrastText(brandColor);
@@ -35,8 +199,6 @@ export function DonationSection({ siteData, brandColor }: { siteData: SiteData; 
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!siteData.donationEnabled) return null;
-
   const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
 
   async function donate() {
@@ -45,25 +207,14 @@ export function DonationSection({ siteData, brandColor }: { siteData: SiteData; 
     if (!donor.email || amount < 100) { setError("Enter your email and an amount of at least ₦100."); return; }
     setBusy(true);
     try {
-      const res = await fetch("/api/donations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ siteId, name: donor.name, email: donor.email, amount }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.accessCode) throw new Error(data.error || "Could not start this donation.");
-      await loadPaystack();
-      const popup = new window.PaystackPop();
-      popup.resumeTransaction(data.accessCode, {
-        onSuccess: (txn: { reference: string }) => {
-          fetch("/api/donations/confirm", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ reference: txn.reference || data.reference }),
-          }).finally(() => { setBusy(false); setDone(true); refresh(); });
-        },
-        onCancel: () => setBusy(false),
-        onError: (err: { message?: string }) => { setBusy(false); setError(err?.message || "Payment failed."); },
-      });
+      await startDonation(
+        { siteId, name: donor.name, email: donor.email, amount },
+        {
+          onSuccess: () => { setBusy(false); setDone(true); refresh(); },
+          onCancel: () => setBusy(false),
+          onError: (msg) => { setBusy(false); setError(msg); },
+        }
+      );
     } catch (e: any) {
       setBusy(false);
       setError(e.message || "Could not start this donation.");

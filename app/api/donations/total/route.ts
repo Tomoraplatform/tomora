@@ -20,14 +20,33 @@ export async function GET(request: NextRequest) {
     .maybeSingle();
   const sd = (site?.site_data as any) || {};
 
-  const { data: rows } = await admin
-    .from("donations")
-    .select("amount")
-    .eq("site_id", siteId)
-    .eq("status", "paid");
+  // project_id only exists after migration 0026 — fall back to amount-only.
+  let rows: any[] | null = null;
+  {
+    const res = await admin
+      .from("donations")
+      .select("amount, project_id")
+      .eq("site_id", siteId)
+      .eq("status", "paid");
+    rows = res.data;
+    if (res.error) {
+      const retry = await admin.from("donations").select("amount").eq("site_id", siteId).eq("status", "paid");
+      rows = retry.data;
+    }
+  }
 
   const online = (rows || []).reduce((s: number, r: any) => s + (r.amount || 0), 0);
   const manual = Math.max(0, Math.round(sd.donationManual || 0));
+
+  // Per-project raised/count, keyed by project id, for the project-card bars.
+  const projects: Record<string, { raised: number; count: number }> = {};
+  for (const r of rows || []) {
+    if (!r.project_id) continue;
+    const p = (projects[r.project_id] ||= { raised: 0, count: 0 });
+    p.raised += r.amount || 0;
+    p.count += 1;
+  }
+
   return NextResponse.json({
     online,
     manual,
@@ -36,5 +55,6 @@ export async function GET(request: NextRequest) {
     goal: Math.max(0, Math.round(sd.donationGoal || 0)),
     enabled: !!sd.donationEnabled,
     canDonate: !!site?.paystack_subaccount,
+    projects,
   });
 }

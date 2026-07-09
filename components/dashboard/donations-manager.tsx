@@ -9,13 +9,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatNaira } from "@/lib/utils";
 import { updateDonationTotals } from "@/app/dashboard/(panel)/donations/actions";
 
+export interface ProjectSummary {
+  id: string;
+  name: string;
+  goal: number;
+  raised: number;
+  count: number;
+}
+
+export interface DonationRecord {
+  id: string;
+  donorName: string | null;
+  donorEmail: string | null;
+  amount: number;
+  projectName: string | null;
+  createdAt: string;
+}
+
 export function DonationsManager({
-  online, onlineCount, manual: initialManual, goal: initialGoal,
+  online, onlineCount, manual: initialManual, goal: initialGoal, projects = [], records = [],
 }: {
   online: number;
   onlineCount: number;
   manual: number;
   goal: number;
+  projects?: ProjectSummary[];
+  records?: DonationRecord[];
 }) {
   const [manual, setManual] = useState(initialManual);
   const [goal, setGoal] = useState(initialGoal);
@@ -75,6 +94,57 @@ export function DonationsManager({
         </CardContent>
       </Card>
 
+      {/* Per-project breakdown (multi-project fundraising) */}
+      {projects.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>Projects</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            {projects.map((p) => {
+              const ppct = p.goal > 0 ? Math.min(100, Math.round((p.raised / p.goal) * 100)) : 0;
+              return (
+                <div key={p.id} className="rounded-lg border border-ink/10 p-4">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                    <p className="font-semibold text-ink">{p.name}</p>
+                    <p className="text-sm text-ink/60">
+                      <span className="font-semibold text-ink">{formatNaira(p.raised)}</span>
+                      {p.goal > 0 && <> of {formatNaira(p.goal)}</>}
+                    </p>
+                  </div>
+                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-ink/10">
+                    <div className="h-full rounded-full bg-ink transition-all" style={{ width: `${ppct}%` }} />
+                  </div>
+                  <p className="mt-1.5 text-xs text-ink/50">{p.count} {p.count === 1 ? "gift" : "gifts"}{p.goal > 0 ? ` · ${ppct}% of target` : ""}</p>
+                </div>
+              );
+            })}
+            <p className="text-xs text-ink/50">Edit project names, descriptions and targets in the editor&apos;s Donations section. Gifts made before projects were introduced appear only in the overall total.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Recent gifts */}
+      {records.length > 0 && (
+        <Card>
+          <CardHeader><CardTitle>Recent donations</CardTitle></CardHeader>
+          <CardContent>
+            <ul className="divide-y divide-ink/5">
+              {records.map((r) => (
+                <li key={r.id} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3 first:pt-0 last:pb-0">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-ink">{r.donorName || r.donorEmail || "Anonymous"}</p>
+                    <p className="truncate text-xs text-ink/50">
+                      {r.projectName ? <>{r.projectName} · </> : null}
+                      {new Date(r.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <span className="shrink-0 font-semibold text-ink">{formatNaira(r.amount)}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Editable */}
       <Card>
         <CardHeader><CardTitle>Update figures</CardTitle></CardHeader>
@@ -89,6 +159,9 @@ export function DonationsManager({
             <Label>Fundraising goal (₦)</Label>
             <Input type="number" min={0} value={goal}
               onChange={(e) => setGoal(Math.max(0, Math.round(Number(e.target.value) || 0)))} />
+            {projects.length > 0 && (
+              <p className="text-xs text-ink/50">Your site currently uses per-project targets, so this general goal isn&apos;t shown to visitors.</p>
+            )}
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Button onClick={save} disabled={saving}>

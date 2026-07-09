@@ -35,15 +35,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "This organisation hasn't set up payouts yet." }, { status: 400 });
   }
 
+  // Resolve the named project this gift is for (multi-project fundraising).
+  const projects = ((site.site_data as any)?.donationProjects || []) as { id: string; name: string }[];
+  const project = body?.projectId ? projects.find((p) => p.id === body.projectId) : undefined;
+
   const reference = `don_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  const { error } = await admin.from("donations").insert({
+  const row: Record<string, unknown> = {
     site_id: siteId,
     donor_name: name ? String(name).slice(0, 120) : null,
     donor_email: String(email).slice(0, 160),
     amount,
     paystack_reference: reference,
     status: "pending",
-  });
+  };
+  let { error } = await admin.from("donations").insert(
+    project ? { ...row, project_id: project.id, project_name: project.name } : row
+  );
+  // Pre-migration fallback: retry without the project columns so giving never breaks.
+  if (error && project) ({ error } = await admin.from("donations").insert(row));
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   try {
@@ -59,7 +68,10 @@ export async function POST(request: NextRequest) {
       amountNaira: charge,
       reference,
       callbackUrl: `${origin}/?donated=1`,
-      metadata: { custom_fields: [{ display_name: "Donation", variable_name: "donation", value: name || email }] },
+      metadata: { custom_fields: [
+        { display_name: "Donation", variable_name: "donation", value: name || email },
+        ...(project ? [{ display_name: "Project", variable_name: "project", value: project.name }] : []),
+      ] },
     });
     return NextResponse.json({ reference: init.reference, accessCode: init.access_code });
   } catch (e: any) {
