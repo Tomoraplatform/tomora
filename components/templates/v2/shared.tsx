@@ -413,11 +413,11 @@ export function navItems(siteData: SiteData, fallback: [string, string][]): [str
   return fallback;
 }
 
-/** Editable header call-to-action button (text + link). */
-export function headerCta(siteData: SiteData, defaultText: string): { text: string; href: string; external: boolean } {
+/** Editable header call-to-action button (text + link). `fallbackHref` is used until the owner sets a custom URL. */
+export function headerCta(siteData: SiteData, defaultText: string, fallbackHref = "#"): { text: string; href: string; external: boolean } {
   const b = siteData.sectionButtons?.header || {};
   const href = (b.url || "").trim();
-  return { text: b.text || defaultText, href: href || "#", external: /^https?:\/\//.test(href) };
+  return { text: b.text || defaultText, href: href || fallbackHref, external: /^https?:\/\//.test(href) };
 }
 
 /** Editable section heading. Returns the user's override or the template default. */

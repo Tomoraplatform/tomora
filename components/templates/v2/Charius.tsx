@@ -27,7 +27,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />
           <nav className="hidden gap-6 text-sm text-black/60 lg:flex">{navItems(siteData, [["Home","#"],["Donations","#causes"],["Events","#events"],["Blog","#whatwedo"],["Contact","#events"]]).map(([l, h]) => <a key={l} href={h}>{l}</a>)}</nav>
-          {(() => { const c = headerCta(siteData, "Donate Now"); return <BrandButton as="a" href={c.href} className="px-4 py-2">{c.text}</BrandButton>; })()}
+          {(() => { const c = headerCta(siteData, "Donate Now", "#donate"); return <BrandButton as="a" href={c.href} className="px-4 py-2">{c.text}</BrandButton>; })()}
         </div>
       </header>
 
