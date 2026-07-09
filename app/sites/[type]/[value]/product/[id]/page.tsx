@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { loadPublishedSite } from "@/lib/published";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Review } from "@/lib/database.types";
-import { BakeryProduct } from "@/components/published/bakery/bakery-product";
+import { StoreProductPage } from "@/components/published/store/store-product-page";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function ProductPage({ params }: Params) {
   const type = params.type === "custom" ? "custom" : "subdomain";
   const data = await loadPublishedSite(type, decodeURIComponent(params.value));
-  if (!data || !data.isLive || data.site.category !== "ecommerce" || data.site.template_id !== "shop-06") notFound();
+  if (!data || !data.isLive || data.site.category !== "ecommerce") notFound();
 
   const product = data.products.find((p) => p.id === params.id);
   if (!product) notFound();
@@ -41,7 +41,7 @@ export default async function ProductPage({ params }: Params) {
   }
 
   return (
-    <BakeryProduct
+    <StoreProductPage
       site={data.site}
       product={product}
       categoryProducts={data.products}

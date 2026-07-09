@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { loadPublishedSite } from "@/lib/published";
 import { slugify } from "@/lib/utils";
-import { BakeryCategory } from "@/components/published/bakery/bakery-category";
+import { StoreCategoryPage } from "@/components/published/store/store-category-page";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function CategoryPage({ params }: Params) {
   const type = params.type === "custom" ? "custom" : "subdomain";
   const data = await loadPublishedSite(type, decodeURIComponent(params.value));
-  if (!data || !data.isLive || data.site.category !== "ecommerce" || data.site.template_id !== "shop-06") notFound();
+  if (!data || !data.isLive || data.site.category !== "ecommerce") notFound();
 
   const slug = decodeURIComponent(params.slug);
   const inCategory = data.products.filter((p) => slugify(p.category || "") === slug);
@@ -30,7 +30,7 @@ export default async function CategoryPage({ params }: Params) {
   const categoryName = inCategory[0]?.category || tile?.name || slug;
 
   return (
-    <BakeryCategory
+    <StoreCategoryPage
       site={data.site}
       products={inCategory}
       categoryName={categoryName}

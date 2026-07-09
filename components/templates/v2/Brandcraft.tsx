@@ -6,6 +6,7 @@ import {
   TemplateProps, Brandmark, BrandButton, Img,
   heading, subheading, servicesOf, testimonialsOf, navItems, SocialIcons, CustomSections, OrderedSections,
 } from "./shared";
+import { ResultsSection } from "./ResultsSection";
 
 const DOTS = { backgroundImage: "radial-gradient(rgba(0,0,0,0.07) 1px, transparent 1px)", backgroundSize: "22px 22px" } as React.CSSProperties;
 const PROCESS_ICONS = [Compass, PenTool, Hammer, TrendingUp];
@@ -41,6 +42,7 @@ export function Brandcraft({ siteData, brandColor }: TemplateProps) {
   const link = (u?: string) => (u || "").trim();
 
   const blocks: Record<string, React.ReactNode> = {
+    beforeAfter: <ResultsSection siteData={siteData} brandColor={brandColor} />,
     hero: (
       <section style={DOTS}>
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 sm:py-20 lg:grid-cols-2">
@@ -204,7 +206,7 @@ export function Brandcraft({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "logos", "about", "process", "expertise", "projects", "testimonials", "cta"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "logos", "about", "process", "expertise", "projects", "beforeAfter", "testimonials", "cta"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
 
       <footer className="border-t border-black/5">

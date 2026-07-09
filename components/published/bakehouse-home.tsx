@@ -4,10 +4,10 @@ import Link from "next/link";
 import type { Product, Site } from "@/lib/database.types";
 import { slugify } from "@/lib/utils";
 import { productCategories } from "@/components/templates/v2/shared";
-import { BakeryChrome } from "./bakery-chrome";
-import { BakeryProductCard } from "./bakery-product-card";
+import { StoreChrome } from "./store/store-chrome";
+import { StoreProductCard } from "./store/store-product-card";
 
-export function BakeryHome({
+export function BakehouseHome({
   site, products, paystackEnabled,
 }: {
   site: Site;
@@ -23,7 +23,7 @@ export function BakeryHome({
   const featured = products.find((p) => p.is_best_seller) || products[0];
 
   return (
-    <BakeryChrome
+    <StoreChrome
       siteData={siteData} brandColor={brandColor} siteId={site.id} products={products}
       bankName={site.bank_name} accountNumber={site.account_number} accountName={site.account_name} paystackEnabled={paystackEnabled}
     >
@@ -52,7 +52,7 @@ export function BakeryHome({
           <p className="mt-6 text-sm text-black/50">Products you add in your dashboard will appear here.</p>
         ) : (
           <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-4">
-            {shownArrivals.map((p) => <BakeryProductCard key={p.id} product={p} />)}
+            {shownArrivals.map((p) => <StoreProductCard key={p.id} product={p} />)}
           </div>
         )}
       </section>
@@ -88,10 +88,10 @@ export function BakeryHome({
             <h2 className="text-2xl font-bold uppercase tracking-wide">{siteData?.sectionTitles?.featured || "Featured"}</h2>
           </div>
           <div className="mt-8 max-w-xs">
-            <BakeryProductCard product={featured} />
+            <StoreProductCard product={featured} />
           </div>
         </section>
       )}
-    </BakeryChrome>
+    </StoreChrome>
   );
 }

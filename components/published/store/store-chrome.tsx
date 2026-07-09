@@ -7,23 +7,23 @@ import type { Product, SiteData } from "@/lib/database.types";
 import { contrastText, slugify } from "@/lib/utils";
 import { CartDrawer } from "../cart-drawer";
 import { SocialIcons } from "@/components/templates/v2/shared";
-import { useBakeryCart } from "./use-bakery-cart";
+import { useStoreCart } from "./use-store-cart";
 
-interface BakeryCartApi {
+interface StoreCartApi {
   add: (product: Product, color?: string, qty?: number) => void;
   buyNow: (product: Product, color?: string, qty?: number) => void;
   count: number;
 }
 
-const BakeryCartContext = createContext<BakeryCartApi>({ add: () => {}, buyNow: () => {}, count: 0 });
-export const useBakeryCartApi = () => useContext(BakeryCartContext);
+const StoreCartContext = createContext<StoreCartApi>({ add: () => {}, buyNow: () => {}, count: 0 });
+export const useStoreCartApi = () => useContext(StoreCartContext);
 
 /**
  * Shared header + footer + cart for the Bakehouse live storefront (home,
  * category and product pages). Cart persists across full page loads via
- * localStorage — see use-bakery-cart.ts.
+ * localStorage — see use-store-cart.ts.
  */
-export function BakeryChrome({
+export function StoreChrome({
   siteData, brandColor, siteId, products, bankName, accountNumber, accountName, paystackEnabled, children,
 }: {
   siteData: SiteData;
@@ -36,12 +36,12 @@ export function BakeryChrome({
   paystackEnabled?: boolean;
   children: React.ReactNode;
 }) {
-  const name = siteData.businessName || "Bakehouse";
-  const { lines, add, setQty, count } = useBakeryCart(siteId, products);
+  const name = siteData.businessName || "Store";
+  const { lines, add, setQty, count } = useStoreCart(siteId, products);
   const [open, setOpen] = useState(false);
   const [startAtCheckout, setStartAtCheckout] = useState(false);
 
-  const cartApi: BakeryCartApi = {
+  const cartApi: StoreCartApi = {
     add: (product, color, qty) => { add(product, color, qty); setStartAtCheckout(false); setOpen(true); },
     buyNow: (product, color, qty) => { add(product, color, qty ?? 1); setStartAtCheckout(true); setOpen(true); },
     count,
@@ -50,7 +50,7 @@ export function BakeryChrome({
   const quickCats = (siteData.shopCategories || []).slice(0, 2);
 
   return (
-    <BakeryCartContext.Provider value={cartApi}>
+    <StoreCartContext.Provider value={cartApi}>
       <div className="min-h-screen bg-white font-sans text-neutral-900" style={{ ["--brand-primary" as any]: brandColor, ["--brand-on-primary" as any]: contrastText(brandColor) }}>
         <header className="border-b border-black/5">
           <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -108,7 +108,7 @@ export function BakeryChrome({
         bankName={bankName} accountNumber={accountNumber} accountName={accountName} paystackEnabled={paystackEnabled}
         startAtCheckout={startAtCheckout}
       />
-    </BakeryCartContext.Provider>
+    </StoreCartContext.Provider>
   );
 }
 

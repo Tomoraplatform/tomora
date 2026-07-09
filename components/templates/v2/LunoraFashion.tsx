@@ -69,7 +69,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
       <section className="border-y border-black/5 bg-white">
         <div className="mx-auto flex max-w-6xl gap-6 overflow-x-auto px-5 py-6">
           {catList.map((c, i) => (
-            <a key={c.name || i} href={`#cat-${slug(c.name)}`} className="flex w-20 shrink-0 flex-col items-center gap-2 text-center">
+            <a key={c.name || i} href={store.tenantHost ? `/category/${slug(c.name)}` : `#cat-${slug(c.name)}`} className="flex w-20 shrink-0 flex-col items-center gap-2 text-center">
               {c.name === "Sale" ? (
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-black text-xs font-bold text-white">SALE</div>
               ) : (
@@ -89,7 +89,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
           {catList.map((c, i) => (
-            <a key={c.name || i} href={`#cat-${slug(c.name)}`} className="group relative aspect-[16/10] overflow-hidden rounded-2xl">
+            <a key={c.name || i} href={store.tenantHost ? `/category/${slug(c.name)}` : `#cat-${slug(c.name)}`} className="group relative aspect-[16/10] overflow-hidden rounded-2xl">
               <Img src={c.image || `https://picsum.photos/seed/lun-grid${i}/900/560`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
               <div className="absolute bottom-5 left-5 text-white"><p className="text-xl font-semibold">{c.name}</p><p className="text-sm">Explore Now →</p></div>
@@ -137,7 +137,7 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
             {newArrival ? (
               <>
                 <h3 className="mt-2 font-serif text-2xl font-bold">{newArrival.name}</h3>
-                <a href={`#cat-${slug(newArrival.category || "")}`} className="mt-3 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>Explore New In →</a>
+                <a href={store.tenantHost ? `/category/${slug(newArrival.category || "")}` : `#cat-${slug(newArrival.category || "")}`} className="mt-3 inline-block text-sm font-semibold" style={{ color: "var(--brand-primary)" }}>Explore New In →</a>
               </>
             ) : (
               <p className="mt-2 text-sm text-black/50">Mark a product as “New arrival” to feature it here.</p>

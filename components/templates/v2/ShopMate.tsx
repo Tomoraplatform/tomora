@@ -5,6 +5,7 @@ import { BrandStyle } from "../brand-style";
 import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, subheading, navItems, productCategories, CustomSections, OrderedSections } from "./shared";
 import { DonationSection } from "./DonationSection";
 import { useTemplateEdit } from "../editor-context";
+import { useStore } from "../store-context";
 
 const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"];
 
@@ -13,6 +14,7 @@ const slug = (s: string) => (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").
 
 export function ShopMate({ siteData, brandColor }: TemplateProps) {
   const { editing } = useTemplateEdit();
+  const store = useStore();
   const name = siteData.businessName || "Ecommerce One";
   const products = siteData.products || [];
   const badges = siteData.trustBadges?.length
@@ -93,7 +95,7 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
         </div>
         <div className="mt-8 flex gap-6 overflow-x-auto pb-2">
           {cats.map((c, i) => (
-            <a key={c.name || i} href={`#cat-${slug(c.name)}`} className="flex w-24 shrink-0 flex-col items-center gap-2 text-center">
+            <a key={c.name || i} href={store.tenantHost ? `/category/${slug(c.name)}` : `#cat-${slug(c.name)}`} className="flex w-24 shrink-0 flex-col items-center gap-2 text-center">
               <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full" style={{ background: TINTS[i % TINTS.length] }}>
                 <Img src={c.image || `https://picsum.photos/seed/cat${i}/120`} className="h-12 w-12 rounded-full object-cover" />
               </div>

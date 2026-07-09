@@ -3,7 +3,7 @@ import { SiteRenderer } from "@/components/templates";
 import { PublishedStore } from "./published-store";
 import { SupportChat } from "./support-chat";
 import { VisitBeacon } from "./visit-beacon";
-import { BakeryHome } from "./bakery/bakery-home";
+import { BakehouseHome } from "./bakehouse-home";
 import type { Product, Review, Site } from "@/lib/database.types";
 
 /**
@@ -35,13 +35,16 @@ export function PublishedSiteView({
   const beacon = isLive ? <VisitBeacon siteId={site.id} /> : null;
 
   if (site.category === "ecommerce") {
-    // Bakehouse is a real multi-page storefront (home / category / product are
-    // genuine routes with working links) — only on the actual published site,
-    // not the same-origin dashboard preview, where those routes don't resolve.
-    if (site.template_id === "shop-06" && isLive && !preview) {
+    // Every ecommerce site is a real multi-page storefront now — home,
+    // /category/[slug] and /product/[id] are genuine routes with working
+    // links — but that navigation only resolves on the actual published site,
+    // not the same-origin dashboard preview. Bakehouse additionally has its
+    // own bespoke home page (the other templates keep their existing homes).
+    const tenantHost = isLive && !preview;
+    if (site.template_id === "shop-06" && tenantHost) {
       return (
         <>
-          <BakeryHome site={site} products={products} paystackEnabled={!!site.paystack_subaccount} />
+          <BakehouseHome site={site} products={products} paystackEnabled={!!site.paystack_subaccount} />
           {chat}
           {beacon}
         </>
@@ -60,6 +63,7 @@ export function PublishedSiteView({
           accountNumber={site.account_number}
           accountName={site.account_name}
           paystackEnabled={!!site.paystack_subaccount}
+          isTenantHost={tenantHost}
         />
         {chat}
         {beacon}

@@ -29,6 +29,7 @@ function Card({ product, siteData }: { product: CatalogProduct; siteData: SiteDa
 }
 
 export function MensClothes({ siteData, brandColor }: TemplateProps) {
+  const store = useStore();
   const name = siteData.businessName || "Men's Clothes";
   const products = siteData.products || [];
 
@@ -86,7 +87,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
     catbanners: (
       <section className="mx-auto grid max-w-6xl gap-3 px-5 py-10 md:grid-cols-3">
         {cats.map((c, i) => (
-          <a key={c.name} href={`#cat-${slug(c.name)}`} className="relative overflow-hidden rounded-lg">
+          <a key={c.name} href={store.tenantHost ? `/category/${slug(c.name)}` : `#cat-${slug(c.name)}`} className="relative overflow-hidden rounded-lg">
             <Img src={c.image || `https://picsum.photos/seed/men-cat${i}/600/400`} className="h-56 w-full object-cover" />
             <div className="absolute inset-0 bg-black/40" />
             <div className="absolute bottom-5 left-5 text-white"><p className="text-lg font-bold uppercase">{c.name}</p><p className="text-xs text-white/80">Explore the collection</p></div>

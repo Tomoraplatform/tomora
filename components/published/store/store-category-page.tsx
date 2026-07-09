@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import type { Product, Site } from "@/lib/database.types";
-import { BakeryChrome } from "./bakery-chrome";
-import { BakeryProductCard } from "./bakery-product-card";
+import { StoreChrome } from "./store-chrome";
+import { StoreProductCard } from "./store-product-card";
 
-export function BakeryCategory({
+export function StoreCategoryPage({
   site, products, categoryName, paystackEnabled,
 }: {
   site: Site;
@@ -19,7 +19,7 @@ export function BakeryCategory({
   const tile = (siteData?.shopCategories || []).find((c) => c.name.toLowerCase() === categoryName.toLowerCase());
 
   return (
-    <BakeryChrome
+    <StoreChrome
       siteData={siteData} brandColor={brandColor} siteId={site.id} products={products}
       bankName={site.bank_name} accountNumber={site.account_number} accountName={site.account_name} paystackEnabled={paystackEnabled}
     >
@@ -48,10 +48,10 @@ export function BakeryCategory({
           <p className="py-10 text-center text-sm text-black/50">No products in this category yet.</p>
         ) : (
           <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
-            {products.map((p) => <BakeryProductCard key={p.id} product={p} />)}
+            {products.map((p) => <StoreProductCard key={p.id} product={p} />)}
           </div>
         )}
       </section>
-    </BakeryChrome>
+    </StoreChrome>
   );
 }

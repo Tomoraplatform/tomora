@@ -7,6 +7,7 @@ import {
   TemplateProps, Brandmark, Img, BrandButton,
   heading, subheading, servicesOf, navItems, CustomSections, OrderedSections,
 } from "./shared";
+import { ResultsSection } from "./ResultsSection";
 
 /** TikTok glyph (Lucide has no brand icon for it). */
 function TikTokIcon({ className }: { className?: string }) {
@@ -57,6 +58,7 @@ export function Spotlight({ siteData, brandColor }: TemplateProps) {
   const svcBtn = siteData.sectionButtons?.services || {};
 
   const blocks: Record<string, React.ReactNode> = {
+    beforeAfter: <ResultsSection siteData={siteData} brandColor={brandColor} />,
     hero: (
       <section className="mx-auto max-w-6xl px-5 py-12 sm:py-16">
         <div className="grid items-center gap-8 lg:grid-cols-[1fr_minmax(260px,340px)_1fr]">
@@ -213,7 +215,7 @@ export function Spotlight({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "about", "funfact", "experience", "services", "photos", "videos", "portfolio"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "about", "funfact", "experience", "services", "beforeAfter", "photos", "videos", "portfolio"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="border-t border-black/5 py-8 text-center text-sm text-black/40">
         <FooterSocials siteData={siteData} />

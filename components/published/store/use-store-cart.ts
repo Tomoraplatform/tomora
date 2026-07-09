@@ -11,7 +11,7 @@ interface StoredLine { productId: string; qty: number; color?: string; }
  * navigations between the home / category / product pages — unlike the
  * single-page templates, this template's pages are genuine full loads.
  */
-export function useBakeryCart(siteId: string, catalog: Product[]) {
+export function useStoreCart(siteId: string, catalog: Product[]) {
   const key = `tomora_cart_${siteId}`;
   const [lines, setLinesState] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);

@@ -5,9 +5,9 @@ import Link from "next/link";
 import { Facebook, Twitter, Link2, Minus, Plus, Loader2, CheckCircle2, Star, ShieldCheck } from "lucide-react";
 import type { Product, Review, Site } from "@/lib/database.types";
 import { formatNaira } from "@/lib/utils";
-import { BakeryChrome, useBakeryCartApi } from "./bakery-chrome";
+import { StoreChrome, useStoreCartApi } from "./store-chrome";
 
-export function BakeryProduct({
+export function StoreProductPage({
   site, product, categoryProducts, reviews, paystackEnabled,
 }: {
   site: Site;
@@ -21,18 +21,18 @@ export function BakeryProduct({
   const brandColor = siteData?.brandColor || "#022245";
 
   return (
-    <BakeryChrome
+    <StoreChrome
       siteData={siteData} brandColor={brandColor} siteId={site.id} products={categoryProducts}
       bankName={site.bank_name} accountNumber={site.account_number} accountName={site.account_name} paystackEnabled={paystackEnabled}
     >
       <ProductDetail product={product} brandColor={brandColor} />
       <ProductReviews siteId={site.id} productId={product.id} reviews={reviews} brandColor={brandColor} />
-    </BakeryChrome>
+    </StoreChrome>
   );
 }
 
 function ProductDetail({ product, brandColor }: { product: Product; brandColor: string }) {
-  const cart = useBakeryCartApi();
+  const cart = useStoreCartApi();
   const colorNames = (product.color_variants?.length ? product.color_variants.map((v) => v.name) : (product.colors || [])).filter(Boolean);
   const [color, setColor] = useState<string | undefined>(colorNames[0]);
   const [qty, setQty] = useState(1);

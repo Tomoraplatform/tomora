@@ -12,6 +12,8 @@ export interface StoreApi {
   openProduct?: (product: Product) => void;
   /** Set on a published site so forms can submit leads; undefined in preview. */
   siteId?: string;
+  /** True only on the real published tenant host, where /category and /product routes resolve. */
+  tenantHost?: boolean;
 }
 
 const defaultStore: StoreApi = {

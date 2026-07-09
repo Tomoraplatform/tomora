@@ -3,7 +3,7 @@ import type { Product } from "@/lib/database.types";
 import { formatNaira } from "@/lib/utils";
 
 /** Product tile used on the home and category grids — links to the product's own page. */
-export function BakeryProductCard({ product }: { product: Product }) {
+export function StoreProductCard({ product }: { product: Product }) {
   return (
     <Link href={`/product/${product.id}`} className="group block">
       <div className="relative aspect-square overflow-hidden rounded-lg bg-neutral-100">

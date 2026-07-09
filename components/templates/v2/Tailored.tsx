@@ -6,6 +6,7 @@ import {
   TemplateProps, Brandmark, Img, BrandButton, SocialIcons,
   heading, subheading, servicesOf, testimonialsOf, navItems, VideoLinkGrid, CustomSections, OrderedSections,
 } from "./shared";
+import { ResultsSection } from "./ResultsSection";
 
 function Marquee({ text, bg }: { text: string; bg: string }) {
   return (
@@ -31,6 +32,7 @@ export function Tailored({ siteData, brandColor }: TemplateProps) {
   const col = (k: string, fb: string) => siteData.sectionColors?.[k] || fb;
 
   const blocks: Record<string, React.ReactNode> = {
+    beforeAfter: <ResultsSection siteData={siteData} brandColor={brandColor} />,
     hero: (
       <section className="relative">
         <Img src={siteData.heroImage} className="absolute inset-0 h-full w-full object-cover" />
@@ -129,7 +131,7 @@ export function Tailored({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "marquee", "about", "services", "portfolio", "testimonials", "videos", "cta"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "marquee", "about", "services", "portfolio", "beforeAfter", "testimonials", "videos", "cta"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
 
       <footer className="py-8 text-center text-sm text-white" style={{ background: "var(--brand-primary)" }}>

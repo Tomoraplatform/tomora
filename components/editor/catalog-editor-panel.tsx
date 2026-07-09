@@ -168,6 +168,17 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     ],
     make: () => ({ id: `r-${Date.now()}`, group: "Education", title: "2020 - 2024", subtitle: "Institution", detail: "Qualification" }),
   },
+  beforeAfter: {
+    key: "beforeAfterResults", title: "Before & After Results",
+    fields: [
+      { key: "beforeImage", label: "Before image", type: "image" },
+      { key: "afterImage", label: "After image", type: "image" },
+      { key: "statValue", label: "Stat (e.g. +150%, 3.2x, ₦2.4M)" },
+      { key: "statLabel", label: "What this measures (e.g. Increase in bookings)" },
+      { key: "title", label: "Caption (optional, e.g. client name)" },
+    ],
+    make: () => ({ id: `ba-${Date.now()}`, beforeImage: "", afterImage: "", statValue: "+120%", statLabel: "Growth after launch", title: "" }),
+  },
 };
 
 export function CatalogEditorPanel({

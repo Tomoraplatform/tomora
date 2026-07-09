@@ -6,6 +6,7 @@ import {
   TemplateProps, Brandmark, Img, SocialIcons,
   heading, subheading, servicesOf, navItems, VideoLinkGrid, CustomSections, OrderedSections,
 } from "./shared";
+import { ResultsSection } from "./ResultsSection";
 
 function DarkButton({ href = "#", children }: { href?: string; children: React.ReactNode }) {
   return <a href={href} className="inline-flex items-center gap-2 rounded-md bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90">{children}</a>;
@@ -36,6 +37,7 @@ export function Handle({ siteData, brandColor }: TemplateProps) {
   const col = (k: string, fb: string) => siteData.sectionColors?.[k] || fb;
 
   const blocks: Record<string, React.ReactNode> = {
+    beforeAfter: <ResultsSection siteData={siteData} brandColor={brandColor} />,
     hero: (
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 lg:grid-cols-2">
         <Img src={siteData.heroImage} className="mx-auto aspect-[4/5] w-full max-w-md rounded-2xl object-cover" />
@@ -123,7 +125,7 @@ export function Handle({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "marquee", "about", "services", "logos", "process", "videos", "cta"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "marquee", "about", "services", "logos", "process", "beforeAfter", "videos", "cta"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
 
       <footer className="border-t border-black/5 py-8 text-center text-sm text-black/40">

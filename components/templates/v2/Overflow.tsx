@@ -6,6 +6,7 @@ import {
   TemplateProps, Brandmark, Img, BrandButton, SocialIcons,
   heading, subheading, servicesOf, testimonialsOf, navItems, VideoLinkGrid, CustomSections, OrderedSections,
 } from "./shared";
+import { ResultsSection } from "./ResultsSection";
 
 const FALLBACK_OFFERS = [
   { title: "1:1 Coaching", description: "Private mentorship to help you heal money blocks and scale with alignment." },
@@ -107,6 +108,7 @@ export function Overflow({ siteData, brandColor }: TemplateProps) {
         </div>
       </section>
     ),
+    beforeAfter: <ResultsSection siteData={siteData} brandColor={brandColor} />,
     videos: (
       <section id="videos" className="bg-white">
         <div className="mx-auto max-w-6xl px-5 py-16">
@@ -142,7 +144,7 @@ export function Overflow({ siteData, brandColor }: TemplateProps) {
       </header>
 
       <CustomSections sections={siteData.customSections} at="top" />
-      <OrderedSections siteData={siteData} natural={["hero", "about", "offer", "services", "results", "videos", "cta"]} blocks={blocks} />
+      <OrderedSections siteData={siteData} natural={["hero", "about", "offer", "services", "results", "beforeAfter", "videos", "cta"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
 
       <footer className="py-8 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. Built with Tomora.</footer>

@@ -9,6 +9,7 @@ import {
 } from "./shared";
 import { DonationSection } from "./DonationSection";
 import { useTemplateEdit } from "../editor-context";
+import { useStore } from "../store-context";
 import type { CatalogProduct, SiteData } from "@/lib/database.types";
 
 const TRUST_ICONS = [Truck, RotateCcw, ShieldCheck, Headphones];
@@ -52,6 +53,7 @@ function ProductTabs({ products, siteData }: { products: CatalogProduct[]; siteD
 
 export function FashionHouse({ siteData, brandColor }: TemplateProps) {
   const { editing } = useTemplateEdit();
+  const store = useStore();
   const name = siteData.businessName || "Fashion House";
   const products = siteData.products || [];
   const badges = siteData.trustBadges?.length ? siteData.trustBadges : [
@@ -119,7 +121,7 @@ export function FashionHouse({ siteData, brandColor }: TemplateProps) {
             <div key={c.id} className="group relative overflow-hidden rounded-2xl">
               <Img src={c.image} className="aspect-[4/3] w-full object-cover transition-transform duration-300 group-hover:scale-105" />
               <div className="absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/40 to-transparent p-5">
-                <a href="#deals" className="rounded-md px-5 py-2 text-sm font-semibold" style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>{c.name || "Shop"}</a>
+                <a href={store.tenantHost ? `/category/${slug(c.name || "")}` : "#deals"} className="rounded-md px-5 py-2 text-sm font-semibold" style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>{c.name || "Shop"}</a>
               </div>
             </div>
           ))}

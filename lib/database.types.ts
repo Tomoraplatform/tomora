@@ -229,6 +229,17 @@ export interface CatalogPortfolioItem {
   /** Optional external link for the item's button (templates that show one). */
   linkUrl?: string;
 }
+export interface CatalogResultItem {
+  id: string;
+  /** Optional caption, e.g. a client or project name. */
+  title?: string;
+  beforeImage?: string;
+  afterImage?: string;
+  /** Free text — e.g. "+150%", "3.2x", "₦2.4M". The leading number animates in on scroll. */
+  statValue: string;
+  /** What the stat measures, e.g. "Increase in monthly bookings". */
+  statLabel: string;
+}
 
 export interface SiteData {
   businessName: string;
@@ -334,6 +345,8 @@ export interface SiteData {
   causes?: CatalogCause[];
   events?: CatalogEvent[];
   portfolioItems?: CatalogPortfolioItem[];
+  /** Creator template: before/after results — image pair + animated up-counting stat. */
+  beforeAfterResults?: CatalogResultItem[];
   /** Creator template: editable single-line skills list. */
   skills?: CatalogCategoryItem[];
   /** Creator template: overlapping "Experience" photos (image only). */

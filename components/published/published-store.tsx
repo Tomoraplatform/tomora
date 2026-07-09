@@ -1,17 +1,17 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ShoppingCart, Loader2, CheckCircle2, X, Star } from "lucide-react";
 import { SiteRenderer } from "@/components/templates";
 import type { StoreApi } from "@/components/templates/store-context";
 import type { Product, Review, SiteData } from "@/lib/database.types";
 import { formatNaira, contrastText } from "@/lib/utils";
-import { CartDrawer, type CartLine } from "./cart-drawer";
-
-type Line = CartLine;
+import { CartDrawer } from "./cart-drawer";
+import { useStoreCart } from "./store/use-store-cart";
 
 export function PublishedStore({
-  templateId, siteData, brandColor, products, reviews = [], siteId, bankName, accountNumber, accountName, paystackEnabled = false,
+  templateId, siteData, brandColor, products, reviews = [], siteId, bankName, accountNumber, accountName, paystackEnabled = false, isTenantHost = false,
 }: {
   templateId: string;
   siteData: SiteData;
@@ -23,60 +23,57 @@ export function PublishedStore({
   accountNumber?: string | null;
   accountName?: string | null;
   paystackEnabled?: boolean;
+  /** True only on the real published tenant host, where /category and /product routes resolve. */
+  isTenantHost?: boolean;
 }) {
-  const [lines, setLines] = useState<Line[]>([]);
+  const router = useRouter();
+  const { lines, add: cartAdd, setQty, count } = useStoreCart(siteId, products);
   const [open, setOpen] = useState(false);
   const [buyNowIntent, setBuyNowIntent] = useState(false);
-  // Product detail view (description + colour variants that swap the image).
+  // Product detail view fallback for non-tenant contexts (editor/dashboard preview),
+  // where /product/[id] doesn't resolve: description + colour variants inline.
   const [detail, setDetail] = useState<Product | null>(null);
   const [detailColor, setDetailColor] = useState<string | null>(null);
 
   const onBrand = contrastText(brandColor);
-  const count = lines.reduce((n, l) => n + l.qty, 0);
 
   const realAdd = useCallback((product: Product, color?: string) => {
-    setLines((prev) => {
-      const same = (l: Line) => l.product.id === product.id && l.color === color;
-      if (prev.some(same)) return prev.map((l) => same(l) ? { ...l, qty: l.qty + 1 } : l);
-      return [...prev, { product, qty: 1, color }];
-    });
+    cartAdd(product, color);
     setBuyNowIntent(false);
     setOpen(true);
-  }, []);
+  }, [cartAdd]);
 
   const realBuy = useCallback((product: Product, color?: string) => {
-    setLines([{ product, qty: 1, color }]);
+    cartAdd(product, color);
     setBuyNowIntent(true);
     setOpen(true);
-  }, []);
+  }, [cartAdd]);
 
   const productColorNames = (p: Product): string[] =>
     (p.color_variants?.length ? p.color_variants.map((v) => v.name) : (p.colors || [])).filter(Boolean);
 
   const openProduct = useCallback((product: Product) => {
+    if (isTenantHost) { router.push(`/product/${product.id}`); return; }
     setDetail(product);
     setDetailColor(productColorNames(product)[0] ?? null);
-  }, []);
+  }, [isTenantHost, router]);
 
   const addToCart = useCallback((product: Product) => {
-    // Products with colours (or a description) open the detail view first.
-    if (productColorNames(product).length || product.description) { openProduct(product); return; }
-    realAdd(product);
-  }, [realAdd, openProduct]);
+    // On the real site, colour/description detail lives on the product's own
+    // page — a card's "Add to Cart" just adds the default variant directly.
+    if (!isTenantHost && (productColorNames(product).length || product.description)) { openProduct(product); return; }
+    realAdd(product, isTenantHost ? productColorNames(product)[0] : undefined);
+  }, [realAdd, openProduct, isTenantHost]);
 
   const buyNow = useCallback((product: Product) => {
-    if (productColorNames(product).length || product.description) { openProduct(product); return; }
-    realBuy(product);
-  }, [realBuy, openProduct]);
+    if (!isTenantHost && (productColorNames(product).length || product.description)) { openProduct(product); return; }
+    realBuy(product, isTenantHost ? productColorNames(product)[0] : undefined);
+  }, [realBuy, openProduct, isTenantHost]);
 
-  const setQty = (id: string, color: string | undefined, delta: number) =>
-    setLines((prev) => prev.flatMap((l) => {
-      if (!(l.product.id === id && l.color === color)) return [l];
-      const qty = l.qty + delta;
-      return qty <= 0 ? [] : [{ ...l, qty }];
-    }));
-
-  const storeApi: StoreApi = useMemo(() => ({ live: true, addToCart, buyNow, openProduct }), [addToCart, buyNow, openProduct]);
+  const storeApi: StoreApi = useMemo(
+    () => ({ live: true, addToCart, buyNow, openProduct, tenantHost: isTenantHost }),
+    [addToCart, buyNow, openProduct, isTenantHost]
+  );
 
   // Image shown in the detail view: the selected colour's image, else the main image.
   const detailImage = (() => {

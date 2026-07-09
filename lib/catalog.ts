@@ -68,7 +68,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints" | "ministries" | "skills" | "experiencePhotos" | "galleryPhotos" | "galleryVideos" | "blogPosts" | "videoLinks";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints" | "ministries" | "skills" | "experiencePhotos" | "galleryPhotos" | "galleryVideos" | "blogPosts" | "videoLinks" | "beforeAfter";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["trustBadges", "testimonials"],
   "shop-02": ["trustBadges"],
@@ -439,6 +439,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "services", label: "What I Do", heading: "services", list: "services" },
     { key: "portfolio", label: "Portfolio", heading: "portfolio", list: "portfolio" },
     { key: "resume", label: "Resume", heading: "resume", list: "resume" },
+    { key: "beforeAfter", label: "Before & After Results", heading: "beforeAfter", list: "beforeAfter" },
     { key: "testimonials", label: "Testimonial", heading: "testimonials", list: "testimonials" },
     { key: "clients", label: "Client logos", list: "clientLogos" },
     { key: "booking", label: "Book a session", heading: "booking", text: true, book: true },
@@ -450,6 +451,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "about", label: "About Me", heading: "about", list: "stats" },
     { key: "services", label: "Services", heading: "services", list: "services" },
     { key: "portfolio", label: "Projects", heading: "portfolio", list: "portfolio" },
+    { key: "beforeAfter", label: "Before & After Results", heading: "beforeAfter", list: "beforeAfter" },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
     { key: "contact", label: "Contact", heading: "contact", text: true },
   ],
@@ -460,6 +462,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "process", label: "Process cards", heading: "process", text: true, list: "services" },
     { key: "expertise", label: "Services (dark)", heading: "expertise", text: true, color: true, list: "eduFeatures" },
     { key: "projects", label: "Projects", heading: "projects", text: true, button: true, list: "portfolio" },
+    { key: "beforeAfter", label: "Before & After Results", heading: "beforeAfter", list: "beforeAfter" },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
     { key: "cta", label: "Closing CTA", heading: "cta", text: true, button: true, color: true },
   ],
@@ -470,6 +473,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "services", label: "Services", heading: "services", text: true, image: true, color: true, list: "services" },
     { key: "logos", label: "Logo strip", list: "clientLogos" },
     { key: "process", label: "Process highlight", heading: "process", text: true, image: true, button: true },
+    { key: "beforeAfter", label: "Before & After Results", heading: "beforeAfter", list: "beforeAfter" },
     { key: "videos", label: "Videos", heading: "videos", text: true, list: "videoLinks" },
     { key: "cta", label: "Closing CTA", heading: "cta", text: true, button: true, color: true },
   ],
@@ -479,6 +483,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "about", label: "About the stylist", heading: "about", text: true, image: true, button: true },
     { key: "services", label: "Styling services", heading: "services", color: true, list: "services" },
     { key: "portfolio", label: "Portfolio", heading: "portfolio", color: true, list: "portfolio" },
+    { key: "beforeAfter", label: "Before & After Results", heading: "beforeAfter", color: true, list: "beforeAfter" },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", color: true, list: "testimonials" },
     { key: "videos", label: "Videos", heading: "videos", text: true, list: "videoLinks" },
     { key: "cta", label: "Closing CTA", heading: "cta", text: true, image: true, button: true, color: true },
@@ -489,6 +494,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "offer", label: "Signature offer", heading: "offer", text: true, image: true, button: true, color: true, list: "eduFeatures" },
     { key: "services", label: "What I offer", heading: "services", text: true, color: true, list: "services" },
     { key: "results", label: "Results / testimonials", heading: "results", color: true, list: "testimonials" },
+    { key: "beforeAfter", label: "Before & After Results", heading: "beforeAfter", color: true, list: "beforeAfter" },
     { key: "videos", label: "Videos", heading: "videos", text: true, list: "videoLinks" },
     { key: "cta", label: "Closing CTA", heading: "cta", text: true, button: true, color: true },
   ],
@@ -498,6 +504,7 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "funfact", label: "Fun fact", heading: "funfact", text: true, color: true },
     { key: "experience", label: "Experience", heading: "experience", text: true, button: true, list: "experiencePhotos" },
     { key: "services", label: "Services", heading: "services", button: true, list: "services" },
+    { key: "beforeAfter", label: "Before & After Results", heading: "beforeAfter", list: "beforeAfter" },
     { key: "photos", label: "My Photos", heading: "photos", list: "galleryPhotos" },
     { key: "videos", label: "Videography", heading: "videos", text: true, list: "galleryVideos" },
     { key: "portfolio", label: "Portfolio footer", heading: "portfolio", image: true, color: true },
@@ -1208,6 +1215,10 @@ export function createCatalogContent(
     // (donation defaults seeded after the switch for org/community templates)
     case "portfolio":
       data.portfolioItems = demoPortfolio(seed);
+      data.beforeAfterResults = [
+        { id: `${seed}-ba0`, title: "Client rebrand", beforeImage: img(`${seed}-before0`, 500, 625), afterImage: img(`${seed}-after0`, 500, 625), statValue: "+180%", statLabel: "Increase in monthly enquiries" },
+        { id: `${seed}-ba1`, title: "Portfolio refresh", beforeImage: img(`${seed}-before1`, 500, 625), afterImage: img(`${seed}-after1`, 500, 625), statValue: "3.4x", statLabel: "More bookings after launch" },
+      ];
       if (templateId === "portfolio-01") {
         data.resume = demoResume(seed);
         data.clientLogos = demoClientLogos(seed);
