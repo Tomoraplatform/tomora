@@ -13,7 +13,7 @@ function addMonths(date: Date, months: number) {
 
 /**
  * Records a successful platform payment, sets the plan, and (for Pro) advances
- * the 4-month billing cycle. Monthly plans renew every month. Idempotent on
+ * the 3-month billing cycle. Monthly plans renew every month. Idempotent on
  * `reference`. Activates the user's site.
  */
 export async function applyPlatformPayment(userId: string, reference: string, planId?: string) {

@@ -6,7 +6,7 @@ export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com.ng";
 export const TRIAL_DAYS = 14;
 export const FIRST_PAYMENT_AMOUNT = 29800; // NGN — Pro first payment, includes 1yr custom domain
 export const RENEWAL_AMOUNT = 24800; // NGN — Pro renewals at positions 1,2,3
-export const RENEWAL_INTERVAL_MONTHS = 4;
+export const RENEWAL_INTERVAL_MONTHS = 3;
 export const GRACE_PERIOD_DAYS = 7;
 /** Flat price to buy + activate a brand-new domain through Tomora (assisted). */
 export const NEW_DOMAIN_AMOUNT = 5000; // NGN — covers .com.ng registration (~₦2,500–3,500) + margin
@@ -163,7 +163,7 @@ export const PLANS: Plan[] = [
     name: "Pro",
     price: 29800,
     renewal: 24800,
-    period: "4 months",
+    period: "3 months",
     tagline: "Everything, plus a dedicated expert.",
     features: [
       "Everything in Growth",

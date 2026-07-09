@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   }
 
   let amount = plan.price;
-  // Pro uses the 4-month cycle; a renewal (already on Pro) uses nextCharge.
+  // Pro uses the 3-month cycle; a renewal (already on Pro) uses nextCharge.
   if (planId === "pro" && sub?.plan === "pro") {
     amount = nextCharge(sub.billing_cycle_position ?? 0).amount;
   }

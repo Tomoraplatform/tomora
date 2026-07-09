@@ -92,7 +92,7 @@ export default async function BillingPage({
                   <Badge variant="success" className="mt-1">{discounts[plan.id]}% off</Badge>
                 ) : null}
                 {plan.id === "pro" && (
-                  <p className="text-xs text-ink/50">then {formatNaira(plan.renewal!)} every 4 months</p>
+                  <p className="text-xs text-ink/50">then {formatNaira(plan.renewal!)} every {RENEWAL_INTERVAL_MONTHS} months</p>
                 )}
               </CardHeader>
               <CardContent className="space-y-4">

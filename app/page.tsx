@@ -16,6 +16,7 @@ import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 import { BrowserFrame } from "@/components/browser-frame";
 import { TemplatePreview } from "@/components/marketing/template-preview";
+import { DashboardPreview } from "@/components/marketing/dashboard-preview";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -23,7 +24,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { FAQS, PLANS } from "@/lib/constants";
+import { FAQS, PLANS, RENEWAL_INTERVAL_MONTHS } from "@/lib/constants";
 import { loadPlanDiscounts, discountedPrice } from "@/lib/discounts";
 import { CATALOG_TEMPLATES, CATALOG_CATEGORIES } from "@/lib/catalog";
 import { getTemplateOverrides } from "@/lib/template-overrides";
@@ -158,6 +159,12 @@ function Features() {
       title: "Sell products and collect payments",
       body: "Add products, show a beautiful storefront, and collect payments through Paystack straight into your own bank account.",
       visual: <CommerceVisual />,
+    },
+    {
+      eyebrow: "Dashboard",
+      title: "See your business at a glance",
+      body: "Orders, revenue and website visits update live on your Tomora dashboard — so you always know how your business is doing, right from your phone.",
+      visual: <DashboardPreview />,
     },
   ];
 
@@ -382,7 +389,7 @@ function Pricing({ discounts }: { discounts: Record<string, number> }) {
                 ) : null}
                 {plan.id === "pro" && (
                   <p className={`mt-1 text-xs ${popular ? "text-cream/60" : "text-ink/50"}`}>
-                    then {formatNaira(plan.renewal!)} every 4 months
+                    then {formatNaira(plan.renewal!)} every {RENEWAL_INTERVAL_MONTHS} months
                   </p>
                 )}
               </div>
