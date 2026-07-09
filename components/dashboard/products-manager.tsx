@@ -16,7 +16,7 @@ import { uploadImage } from "@/lib/upload";
 import { saveProduct, deleteProduct, type ProductInput } from "@/app/dashboard/store-actions";
 import type { Product } from "@/lib/database.types";
 
-const empty: ProductInput = { name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isBestSeller: false, isOffer: false, isNewArrival: false, offerPercent: 0, colors: [], colorVariants: [] };
+const empty: ProductInput = { name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isBestSeller: false, isOffer: false, isNewArrival: false, offerPercent: 0, colors: [], colorVariants: [], isPreOrder: false, preorderNote: "" };
 
 export function ProductsManager({ initial, embedded, onChanged }: { initial: Product[]; embedded?: boolean; onChanged?: () => void }) {
   const [products, setProducts] = useState<Product[]>(initial);
@@ -28,7 +28,7 @@ export function ProductsManager({ initial, embedded, onChanged }: { initial: Pro
 
   function startAdd() { setEditing({ ...empty }); setOpen(true); }
   function startEdit(p: Product) {
-    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, comparePrice: p.compare_price ?? undefined, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active, isBestSeller: p.is_best_seller, isOffer: p.is_offer, isNewArrival: p.is_new_arrival, offerPercent: p.offer_percent, colors: p.colors || [], colorVariants: p.color_variants || [] });
+    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, comparePrice: p.compare_price ?? undefined, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active, isBestSeller: p.is_best_seller, isOffer: p.is_offer, isNewArrival: p.is_new_arrival, offerPercent: p.offer_percent, colors: p.colors || [], colorVariants: p.color_variants || [], isPreOrder: p.is_pre_order, preorderNote: p.preorder_note || "" });
     setOpen(true);
   }
 
@@ -209,6 +209,18 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
       <div className="flex items-center justify-between rounded-lg border border-ink/10 px-4 py-3">
         <div><span className="text-sm font-medium">New arrival</span><p className="text-xs text-ink/50">Feature this product as a new arrival.</p></div>
         <Switch checked={!!form.isNewArrival} onCheckedChange={(v) => set("isNewArrival", v)} />
+      </div>
+      <div className="rounded-lg border border-ink/10 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div><span className="text-sm font-medium">Pre-order</span><p className="text-xs text-ink/50">Show a &ldquo;Pre-order&rdquo; badge instead of &ldquo;In stock&rdquo; — for items not ready to ship yet.</p></div>
+          <Switch checked={!!form.isPreOrder} onCheckedChange={(v) => set("isPreOrder", v)} />
+        </div>
+        {form.isPreOrder && (
+          <div className="mt-3 space-y-1">
+            <Label>Availability note (optional)</Label>
+            <Input value={form.preorderNote || ""} onChange={(e) => set("preorderNote", e.target.value)} placeholder="e.g. Ships from 17 July" />
+          </div>
+        )}
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}

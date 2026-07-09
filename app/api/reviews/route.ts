@@ -24,6 +24,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Reviews are not available for this store." }, { status: 400 });
   }
 
+  // Mark "Verified Purchase" when the reviewer's email matches a completed
+  // order for this exact product on this site.
+  let verified = false;
+  if (productId && email) {
+    const { count } = await admin
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("site_id", siteId)
+      .eq("product_id", productId)
+      .ilike("buyer_email", String(email).trim())
+      .in("status", ["paid", "shipped", "delivered"]);
+    verified = !!count && count > 0;
+  }
+
   const { error } = await admin.from("reviews").insert({
     site_id: siteId,
     product_id: productId || null,
@@ -31,7 +45,8 @@ export async function POST(request: NextRequest) {
     reviewer_email: email ? String(email).slice(0, 120) : null,
     rating: r,
     comment: comment ? String(comment).slice(0, 1000) : null,
+    verified_purchase: verified,
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, verified });
 }

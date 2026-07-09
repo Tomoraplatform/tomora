@@ -42,6 +42,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
   { id: "shop-03", name: "Men's Clothes", category: "shop", component: "MensClothes", accent: "#1A1A1A", blurb: "Catalog-style menswear shop with category banners." },
   { id: "shop-04", name: "Fashion House", category: "shop", component: "FashionHouse", accent: "#2563EB", blurb: "Bold fashion store: big sale hero, deals & featured tabs, reviews and blog." },
   { id: "shop-05", name: "Guza", category: "shop", component: "Guza", accent: "#111111", blurb: "Minimal shop grid with filters, colour swatches and a dark footer." },
+  { id: "shop-06", name: "Bakehouse", category: "shop", component: "Bakehouse", accent: "#8B5E3C", blurb: "Bakery/food shop with real category & product pages, pre-orders and per-product reviews." },
   { id: "portfolio-01", name: "Inbio", category: "portfolio", component: "Inbio", accent: "#E74C6B", blurb: "Personal portfolio with services, resume and projects." },
   { id: "portfolio-02", name: "Rizwan Ali", category: "portfolio", component: "RizwanAli", accent: "#2563EB", blurb: "Designer portfolio with stats and project filters." },
   { id: "portfolio-03", name: "Spotlight", category: "portfolio", component: "Spotlight", accent: "#7C5CFF", blurb: "Personal creator brand with photo & video galleries." },
@@ -74,6 +75,7 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-03": [],
   "shop-04": ["trustBadges", "shopCategories", "testimonials", "blogPosts"],
   "shop-05": [],
+  "shop-06": ["shopCategories"],
   "portfolio-01": ["services", "portfolio", "resume", "testimonials", "clientLogos"],
   "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
   "portfolio-03": ["skills", "experiencePhotos", "services", "galleryPhotos", "galleryVideos"],
@@ -108,6 +110,7 @@ export const TEMPLATE_NAV: Record<string, [string, string][]> = {
   "shop-03": [["New", "#new"], ["Special", "#special"], ["Shop", "#allproducts"]],
   "shop-04": [["Home", "#"], ["Categories", "#categories"], ["Great Deals", "#deals"], ["Blog", "#blog"], ["About Us", "#"]],
   "shop-05": [["Home", "#"], ["Shop", "#shop"], ["Products", "#shop"], ["Blog", "#"]],
+  "shop-06": [["Home", "#"], ["New Arrivals", "#newarrivals"], ["Categories", "#categories"], ["Featured", "#featured"]],
   "portfolio-01": [["Home", "#"], ["About", "#about"], ["Portfolio", "#portfolio"], ["Resume", "#resume"], ["Contact", "#contact"]],
   "portfolio-02": [["Home", "#"], ["About Me", "#about"], ["Services", "#services"], ["Portfolio", "#projects"], ["Testimonials", "#testimonials"], ["Contact", "#contact"]],
   "portfolio-03": [["Home", "#"], ["Experience", "#experience"], ["Service", "#services"], ["Photos", "#photos"], ["Videos", "#videos"]],
@@ -142,6 +145,7 @@ export const HERO_IMAGE_SLOTS: Record<string, number> = {
   "shop-03": 3, // big image + two banner tiles
   "shop-04": 1,
   "shop-05": 1,
+  "shop-06": 1,
 };
 export function heroImageSlots(id: string): number {
   return HERO_IMAGE_SLOTS[id] ?? 1;
@@ -210,6 +214,11 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
   ],
   "shop-05": [
     { key: "shop", label: "Shop (product grid)" },
+  ],
+  "shop-06": [
+    { key: "newarrivals", label: "New Arrivals" },
+    { key: "categories", label: "Shop by Category" },
+    { key: "featured", label: "Featured" },
   ],
   "portfolio-01": [
     { key: "about", label: "About Me" },
@@ -415,6 +424,13 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "hero", label: "Hero (page title + banner)", hero: true },
     { key: "shop", label: "Shop grid", products: true },
     { key: "banner", label: "Promo banner", image: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
+  ],
+  "shop-06": [
+    { key: "hero", label: "Hero", hero: true },
+    { key: "newarrivals", label: "New Arrivals", heading: "newarrivals", products: true },
+    { key: "categories", label: "Shop by Category", heading: "categories", list: "shopCategories" },
+    { key: "featured", label: "Featured", heading: "featured", products: true },
     { key: "donation", label: "Donations", heading: "donation", text: true, donation: true },
   ],
   "portfolio-01": [
@@ -862,6 +878,7 @@ const HERO = {
   "shop-03": { h: "Create Your Individuality", s: "The biggest choice of menswear on the web, refreshed every season.", c: "Shop Now" },
   "shop-04": { h: "EXPLOSIVE\nBig Sale", s: "Up to 50% off across our newest styles — shop the season's biggest deals while they last.", c: "Buy Now" },
   "shop-05": { h: "Shop", s: "", c: "Shop Now" },
+  "shop-06": { h: "Freshly Baked, Made With Love", s: "Handcrafted bakes made in small batches — order online for pickup or delivery.", c: "Shop Now" },
   "portfolio-01": { h: "Hi, I'm Alex — a Professional Designer", s: "I craft digital products and brands that people love to use.", c: "Work With Me" },
   "portfolio-02": { h: "Rizwan Ali", s: "Professional UI/UX & Website Designer helping brands stand out online.", c: "Hire Me" },
   "portfolio-03": { h: "Your Name", s: "", c: "" },
@@ -940,6 +957,21 @@ export function createCatalogContent(
         data.heroHeadline = "Shop";
         data.heroImage = img(`${seed}-shop-banner`, 1200, 520);
         data.sectionTitles = { ...(data.sectionTitles || {}), shop: "Shop" };
+      }
+      if (templateId === "shop-06") {
+        const bakeryNames = ["Cinnamon Roll", "Chocolate Chip Cookie", "Vanilla Cupcake", "Sourdough Loaf", "Blueberry Muffin", "Red Velvet Slice"];
+        const bakeryCats = ["Signature Rolls", "Signature Cookies", "Signature Rolls", "Breads", "Signature Cookies", "Cakes"];
+        data.products = bakeryNames.map((name, i) => ({
+          id: `${seed}-p${i}`, name, description: "Baked fresh in small batches with premium ingredients — a customer favourite.",
+          price: [9599, 5500, 4200, 6800, 3500, 7200][i],
+          comparePrice: i % 2 === 0 ? [10000, 5800, 4500, 7200, 3800, 7600][i] : undefined,
+          image: img(`${seed}-prod-${i}`), rating: 4 + (i % 2 ? 0.5 : 0.8), reviews: 12 + i * 4,
+          category: bakeryCats[i], bestSeller: i < 2, offer: i === 0, newArrival: i < 3, offerPercent: i === 0 ? 10 : 0,
+          isPreOrder: i < 4, preorderNote: i < 4 ? "Ships from 17 July" : undefined,
+        }));
+        data.shopCategories = ["Signature Rolls", "Signature Cookies"]
+          .map((name, i) => ({ id: `${seed}-sc${i}`, name, image: img(`${seed}-cat-${i}`, 500, 600) }));
+        data.sectionTitles = { ...(data.sectionTitles || {}), newarrivals: "New Arrivals", categories: "Shop by Category", featured: "Featured" };
       }
       break;
     case "education":

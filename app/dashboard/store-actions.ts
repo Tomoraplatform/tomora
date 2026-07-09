@@ -39,6 +39,8 @@ export interface ProductInput {
   offerPercent?: number;
   colors?: string[];
   colorVariants?: { name: string; image?: string }[];
+  isPreOrder?: boolean;
+  preorderNote?: string;
 }
 
 export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; error?: string }> {
@@ -59,6 +61,8 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
       is_best_seller: !!input.isBestSeller,
       is_offer: !!input.isOffer,
       is_new_arrival: !!input.isNewArrival,
+      is_pre_order: !!input.isPreOrder,
+      preorder_note: input.isPreOrder ? (String(input.preorderNote || "").trim().slice(0, 160) || null) : null,
       offer_percent: Math.max(0, Math.min(100, Math.round(input.offerPercent || 0))),
       colors: (() => {
         const fromVariants = (input.colorVariants || []).map((v) => String(v.name || "").trim()).filter(Boolean);

@@ -3,6 +3,7 @@ import { SiteRenderer } from "@/components/templates";
 import { PublishedStore } from "./published-store";
 import { SupportChat } from "./support-chat";
 import { VisitBeacon } from "./visit-beacon";
+import { BakeryHome } from "./bakery/bakery-home";
 import type { Product, Review, Site } from "@/lib/database.types";
 
 /**
@@ -34,6 +35,18 @@ export function PublishedSiteView({
   const beacon = isLive ? <VisitBeacon siteId={site.id} /> : null;
 
   if (site.category === "ecommerce") {
+    // Bakehouse is a real multi-page storefront (home / category / product are
+    // genuine routes with working links) — only on the actual published site,
+    // not the same-origin dashboard preview, where those routes don't resolve.
+    if (site.template_id === "shop-06" && isLive && !preview) {
+      return (
+        <>
+          <BakeryHome site={site} products={products} paystackEnabled={!!site.paystack_subaccount} />
+          {chat}
+          {beacon}
+        </>
+      );
+    }
     return (
       <>
         <PublishedStore

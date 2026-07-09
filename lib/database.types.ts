@@ -103,6 +103,7 @@ export interface Review {
   rating: number;
   comment: string | null;
   is_published: boolean;
+  verified_purchase: boolean;
   created_at: string;
 }
 
@@ -124,6 +125,8 @@ export interface Product {
   offer_percent: number;
   colors: string[];
   color_variants: ColorVariant[];
+  is_pre_order: boolean;
+  preorder_note: string | null;
   created_at: string;
 }
 
@@ -185,6 +188,8 @@ export interface CatalogProduct {
   offerPercent?: number;
   colors?: string[];
   colorVariants?: ColorVariant[];
+  isPreOrder?: boolean;
+  preorderNote?: string;
 }
 export interface CatalogCourse {
   id: string;

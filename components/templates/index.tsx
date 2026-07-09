@@ -23,6 +23,7 @@ import { LunoraFashion } from "./v2/LunoraFashion";
 import { MensClothes } from "./v2/MensClothes";
 import { FashionHouse } from "./v2/FashionHouse";
 import { Guza } from "./v2/Guza";
+import { Bakehouse } from "./v2/Bakehouse";
 import { Inbio } from "./v2/Inbio";
 import { RizwanAli } from "./v2/RizwanAli";
 import { Spotlight } from "./v2/Spotlight";
@@ -66,6 +67,7 @@ export const V2_REGISTRY: Record<string, V2Component> = {
   "shop-03": MensClothes,
   "shop-04": FashionHouse,
   "shop-05": Guza,
+  "shop-06": Bakehouse,
   "portfolio-01": Inbio,
   "portfolio-02": RizwanAli,
   "portfolio-03": Spotlight,
@@ -106,6 +108,8 @@ function toCatalogProducts(products?: Product[]): CatalogProduct[] | undefined {
     offerPercent: p.offer_percent,
     colors: p.colors || [],
     colorVariants: p.color_variants || [],
+    isPreOrder: p.is_pre_order,
+    preorderNote: p.preorder_note || undefined,
   }));
 }
 
