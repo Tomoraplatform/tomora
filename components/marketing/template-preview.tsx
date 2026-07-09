@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SiteRenderer } from "@/components/templates";
-import { createCatalogContent } from "@/lib/catalog";
+import { createCatalogContent, richStoreCatalog } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
 const DESKTOP_WIDTH = 1280;
@@ -20,6 +20,7 @@ export function TemplatePreview({
   autoScroll = false,
   className,
   heroOverride,
+  richCatalog = false,
 }: {
   templateId: string;
   brandColor?: string;
@@ -28,6 +29,10 @@ export function TemplatePreview({
   className?: string;
   /** Override the hero image for this preview only (keeps the landing neutral). */
   heroOverride?: string;
+  /** Marketing use only: swap in a fuller, multi-category catalog so the
+   *  store looks fully set up (many products per category) rather than the
+   *  sparse starter content real onboarding seeds. */
+  richCatalog?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [vw, setVw] = useState(DESKTOP_WIDTH);
@@ -60,9 +65,19 @@ export function TemplatePreview({
     () => {
       const d = createCatalogContent(templateId, { businessName, brandColor });
       if (heroOverride) d.heroImage = heroOverride;
+      if (richCatalog && d.products?.length) {
+        const { products, categories } = richStoreCatalog(templateId);
+        d.products = products;
+        d.shopCategories = categories;
+        d.testimonials = [
+          { id: "rt1", name: "Amara O.", role: "Customer", quote: "Beautiful pieces and my order arrived so fast. This is now my go-to store!" },
+          { id: "rt2", name: "Tunde B.", role: "Customer", quote: "Quality is even better than the photos. Checkout was smooth too." },
+          { id: "rt3", name: "Grace M.", role: "Customer", quote: "Loved the packaging and the customer support was excellent." },
+        ];
+      }
       return d;
     },
-    [templateId, businessName, brandColor, heroOverride]
+    [templateId, businessName, brandColor, heroOverride, richCatalog]
   );
 
   return (

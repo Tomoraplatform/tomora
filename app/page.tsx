@@ -103,7 +103,7 @@ function Hero() {
         <div className="relative">
           <div className="absolute -inset-6 -z-10 rounded-3xl bg-ink/5 blur-2xl" />
           <BrowserFrame url="ada-styles.tomora.com.ng" bodyClassName="h-[440px]">
-            <TemplatePreview templateId="shop-01" brandColor="#022245" businessName="Ada Styles" autoScroll />
+            <TemplatePreview templateId="shop-01" brandColor="#022245" businessName="Ada Styles" autoScroll richCatalog />
           </BrowserFrame>
         </div>
       </div>

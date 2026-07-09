@@ -661,6 +661,42 @@ function demoProducts(seed: string): CatalogProduct[] {
     bestSeller: i < 3, offer: i === 0, newArrival: i === 1, offerPercent: i === 0 ? 30 : 0,
   }));
 }
+/**
+ * A fuller, multi-category product catalog (marketing use only — e.g. the
+ * landing-page hero preview). Real onboarding still seeds the sparser
+ * `demoProducts()` above so a brand-new store looks like an empty canvas the
+ * owner fills in, not a pre-populated shop.
+ */
+export function richStoreCatalog(seed: string): { products: CatalogProduct[]; categories: import("./database.types").CatalogCategoryItem[] } {
+  const cats = [
+    { name: "Bags", items: ["Woven Tote Bag", "Leather Crossbody", "Structured Handbag", "Canvas Weekender"] },
+    { name: "Shoes", items: ["Strappy Heels", "Leather Loafers", "Ankle Boots", "Canvas Sneakers"] },
+    { name: "Jewelry", items: ["Gold Hoop Earrings", "Layered Necklace", "Beaded Bracelet", "Statement Ring"] },
+    { name: "Accessories", items: ["Silk Scarf", "Wide-Brim Hat", "Leather Belt", "Sunglasses"] },
+  ];
+  const basePrices = [24500, 38000, 19500, 12000];
+  const products: CatalogProduct[] = [];
+  cats.forEach((cat, ci) => {
+    cat.items.forEach((name, ii) => {
+      const i = ci * 4 + ii;
+      const price = basePrices[ci] + ii * 1500;
+      products.push({
+        id: `${seed}-rp${i}`, name, price,
+        comparePrice: ii === 0 ? Math.round(price * 1.25) : undefined,
+        image: img(`${seed}-rich-${ci}-${ii}`, 800, 800),
+        rating: 4.3 + (ii % 3) * 0.2, reviews: 18 + i * 7,
+        category: cat.name,
+        bestSeller: ii === 0 || ii === 1,
+        offer: ii === 0,
+        newArrival: ii === 3,
+        offerPercent: ii === 0 ? 20 : 0,
+      });
+    });
+  });
+  const categories = cats.map((cat, ci) => ({ id: `${seed}-rc${ci}`, name: cat.name, image: img(`${seed}-rich-${ci}-0`, 240, 240) }));
+  return { products, categories };
+}
+
 function demoShopCategories(templateId: string, seed: string): import("./database.types").CatalogCategoryItem[] {
   const sets: Record<string, string[]> = {
     // Placeholders — the store owner renames these to their own categories.
