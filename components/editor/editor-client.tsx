@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Save, ExternalLink, Loader2, Check, Palette, UploadCloud,
-  ChevronDown, Eye, EyeOff, Rocket, ArrowLeft,
+  ChevronDown, Eye, EyeOff, Rocket, ArrowLeft, ArrowUp,
 } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
@@ -61,6 +61,18 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
   // Click-to-edit: which section's panel controls to scroll to (+ a nonce to retrigger).
   const [focusKey, setFocusKey] = useState<string | null>(null);
   const [focusNonce, setFocusNonce] = useState(0);
+  // Back-to-top: the page shell is h-screen, so scrolling happens inside the
+  // panel/preview containers — the floating arrow scrolls whichever moved.
+  const panelRef = useRef<HTMLElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const [showTop, setShowTop] = useState(false);
+  const updateTopBtn = useCallback(() => {
+    setShowTop((panelRef.current?.scrollTop || 0) > 250 || (previewRef.current?.scrollTop || 0) > 250);
+  }, []);
+  const scrollToTop = useCallback(() => {
+    panelRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    previewRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
   const onFocusSection = useCallback((key: string) => {
     setMobileTab("edit");
     setFocusKey(key);
@@ -212,7 +224,7 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
 
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         {/* Left panel */}
-        <aside className={cn(
+        <aside ref={panelRef} onScroll={updateTopBtn} className={cn(
           "w-full shrink-0 overflow-y-auto border-b border-ink/10 bg-white p-4 lg:block lg:w-80 lg:border-b-0 lg:border-r",
           mobileTab === "edit" ? "block" : "hidden"
         )}>
@@ -265,7 +277,7 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
         </aside>
 
         {/* Preview */}
-        <div className={cn(
+        <div ref={previewRef} onScroll={updateTopBtn} className={cn(
           "min-h-0 flex-1 overflow-y-auto bg-slate-200 p-3 sm:p-6 lg:block",
           mobileTab === "preview" ? "block" : "hidden"
         )}>
@@ -274,6 +286,18 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
           </div>
         </div>
       </div>
+
+      {/* Back to top — frosted-glass arrow pinned at the side, so you can jump
+          straight back to Save/Publish instead of scrolling all the way up. */}
+      {showTop && (
+        <button
+          onClick={scrollToTop}
+          aria-label="Back to top"
+          className="fixed bottom-24 right-3 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-white/50 bg-white/40 text-ink shadow-lg backdrop-blur-md transition hover:bg-white/70 lg:bottom-8 lg:right-6"
+        >
+          <ArrowUp className="h-5 w-5" />
+        </button>
+      )}
 
       {/* Sticky publish bar (mobile) — header actions are hidden on small screens */}
       <div className="flex shrink-0 items-center gap-2 border-t border-ink/10 bg-white p-3 lg:hidden">
