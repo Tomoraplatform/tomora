@@ -1,18 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { sendEmail } from "@/lib/email";
-import { formatNaira } from "@/lib/utils";
+import { verifyTransaction } from "@/lib/paystack";
+import { confirmOrdersPaid } from "@/lib/confirm-payments";
 
 /**
- * Marks orders paid after a successful Paystack inline transaction, then
- * notifies the store owner (and emails the buyer a confirmation).
- *
- * Note: storefront payments settle to the owner's Paystack subaccount, so funds
- * go to their bank automatically. Server-side re-verification with the owner's
- * secret key isn't done; we confirm on the client callback and record the ref.
+ * Marks orders paid after a successful Paystack inline transaction. The charge
+ * is re-verified with Paystack server-side before rows flip to paid or the
+ * owner's wallet is credited; the webhook covers buyers who never return.
  */
 export async function POST(request: NextRequest) {
-  const admin = createAdminClient();
   let body: any;
   try {
     body = await request.json();
@@ -21,109 +16,22 @@ export async function POST(request: NextRequest) {
   }
 
   const reference = body?.reference;
-  if (!reference) {
+  if (!reference || typeof reference !== "string" || !reference.startsWith("tom_")) {
     return NextResponse.json({ error: "Missing reference." }, { status: 400 });
   }
 
-  // Fetch the pending orders for this reference before marking them paid.
-  const { data: pending } = await admin
-    .from("orders")
-    .select("id, site_id, product_id, buyer_name, buyer_email, buyer_phone, buyer_address, amount, color")
-    .eq("paystack_reference", reference)
-    .eq("status", "pending");
-
-  const { error } = await admin
-    .from("orders")
-    .update({ status: "paid" })
-    .eq("paystack_reference", reference)
-    .eq("status", "pending");
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  // Credit the owner's Tomora Wallet with this Paystack income (first time only —
-  // a unique index on (type, reference) also guards against double-credits).
-  if (pending && pending.length) {
-    try {
-      const total = pending.reduce((s: number, r: any) => s + (r.amount || 0), 0);
-      const { data: site } = await admin
-        .from("sites").select("user_id, site_data").eq("id", pending[0].site_id).maybeSingle();
-      if (site?.user_id && total > 0) {
-        await admin.from("wallet_transactions").insert({
-          user_id: site.user_id,
-          site_id: pending[0].site_id,
-          type: "income",
-          source: "order",
-          amount: total,
-          status: "completed",
-          reference,
-          description: `Order from ${pending[0].buyer_name || "customer"}`,
-        });
-      }
-    } catch { /* non-fatal — wallet table may not exist yet */ }
+  try {
+    const v = await verifyTransaction(reference);
+    if (!v.success) return NextResponse.json({ error: "Payment not confirmed yet." }, { status: 402 });
+  } catch {
+    // Paystack unreachable — don't fail the buyer's screen; the webhook settles it.
+    return NextResponse.json({ ok: true, deferred: true });
   }
 
-  // Best-effort notifications (only the first time, when there were pending rows).
-  if (pending && pending.length) {
-    try { await notify(admin, pending, reference); } catch { /* non-fatal */ }
-  }
-
-  return NextResponse.json({ ok: true, updated: pending?.length ?? 0 });
-}
-
-async function notify(admin: ReturnType<typeof createAdminClient>, rows: any[], reference: string) {
-  const siteId = rows[0].site_id;
-  const buyer = {
-    name: rows[0].buyer_name as string,
-    email: rows[0].buyer_email as string,
-    phone: rows[0].buyer_phone as string | null,
-    address: rows[0].buyer_address as string | null,
-  };
-  const total = rows.reduce((s, r) => s + (r.amount || 0), 0);
-
-  const productIds = rows.map((r) => r.product_id).filter(Boolean);
-  const [{ data: products }, { data: site }] = await Promise.all([
-    admin.from("products").select("id, name").in("id", productIds),
-    admin.from("sites").select("user_id, site_data").eq("id", siteId).maybeSingle(),
-  ]);
-  const nameById = new Map((products || []).map((p: any) => [p.id, p.name]));
-  const storeName = (site?.site_data as any)?.businessName || "your store";
-
-  const items = rows
-    .map((r) => `<li>${nameById.get(r.product_id) || "Item"}${r.color ? ` (${r.color})` : ""} — ${formatNaira(r.amount || 0)}</li>`)
-    .join("");
-  const buyerLine = [buyer.name, buyer.email, buyer.phone, buyer.address].filter(Boolean).join(" · ");
-
-  let ownerEmail: string | null = null;
-  if (site?.user_id) {
-    const { data: profile } = await admin.from("profiles").select("email").eq("user_id", site.user_id).maybeSingle();
-    ownerEmail = (profile?.email as string) || null;
-  }
-
-  if (ownerEmail) {
-    await sendEmail({
-      to: ownerEmail,
-      subject: `New order on ${storeName} — ${formatNaira(total)}`,
-      html: `
-        <h2>You've received a new order</h2>
-        <p>A customer just placed an order on <strong>${storeName}</strong>.</p>
-        <ul>${items}</ul>
-        <p><strong>Total paid: ${formatNaira(total)}</strong></p>
-        <p><strong>Customer:</strong> ${buyerLine}</p>
-        <p>Reference: ${reference}</p>
-        <p>Log in to your Tomora dashboard to fulfil it.</p>`,
-    });
-  }
-
-  if (buyer.email) {
-    await sendEmail({
-      to: buyer.email,
-      subject: `Your order from ${storeName} is confirmed`,
-      html: `
-        <h2>Thank you, ${buyer.name || "there"}!</h2>
-        <p>Your order from <strong>${storeName}</strong> has been placed successfully.</p>
-        <ul>${items}</ul>
-        <p><strong>Total: ${formatNaira(total)}</strong></p>
-        <p>Reference: ${reference}</p>`,
-    });
+  try {
+    const { updated } = await confirmOrdersPaid(reference);
+    return NextResponse.json({ ok: true, updated });
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }

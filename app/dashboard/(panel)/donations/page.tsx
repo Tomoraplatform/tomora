@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getDashboardData } from "@/lib/dashboard";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { reconcilePendingDonations } from "@/lib/confirm-payments";
 import { DonationsManager, type DonationRecord, type ProjectSummary } from "@/components/dashboard/donations-manager";
 
 export const metadata = { title: "Donations — Tomora" };
@@ -11,6 +12,10 @@ export default async function DonationsPage() {
   const sd = site!.site_data || {};
   const eligible = site!.category === "organization" || !!sd.donationEnabled;
   if (!eligible) redirect("/dashboard");
+
+  // Settle any donations whose Paystack charge succeeded but whose donor never
+  // returned to fire the browser confirm (marks paid + credits the wallet).
+  try { await reconcilePendingDonations(site!.id); } catch { /* best-effort */ }
 
   // Paid online (Paystack) donations. project_* columns arrive with migration
   // 0026 — fall back to the amount-only shape if it hasn't been applied yet.
