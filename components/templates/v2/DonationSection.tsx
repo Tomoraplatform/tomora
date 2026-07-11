@@ -129,6 +129,10 @@ function ProjectCard({
 
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
+      {project.image && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={project.image} alt={project.name} className="h-44 w-full object-cover" />
+      )}
       <div className="p-6 pb-0">
         <h3 className="text-lg font-bold text-ink">{project.name}</h3>
         {project.description && <p className="mt-1.5 text-sm leading-relaxed text-ink/60">{project.description}</p>}

@@ -235,6 +235,8 @@ export interface CatalogDonationProject {
   description?: string;
   /** Fundraising target for this project, in naira. */
   goal: number;
+  /** Optional card image shown above the project's details. */
+  image?: string;
 }
 export interface CatalogResultItem {
   id: string;
@@ -319,6 +321,8 @@ export interface SiteData {
   donationEnabled?: boolean;
   donationGoal?: number;   // target amount in naira
   donationManual?: number; // offline / manually-added amount in naira
+  /** Section keys the owner deleted from their page (restorable in the editor). */
+  hiddenSections?: string[];
   /** Named fundraising projects, each with its own target + progress bar. When set,
    *  the donation section shows a card per project instead of one general goal;
    *  every gift still settles to the same payout account. */

@@ -454,10 +454,11 @@ export function OrderedSections({
   blocks: Record<string, React.ReactNode>;
 }) {
   const { editing, onFocusSection } = useTemplateEdit();
+  const hidden = new Set(siteData.hiddenSections || []);
   return (
     <>
       {orderedSectionKeys(siteData.sectionOrder, natural).map((k) => {
-        if (!blocks[k]) return null;
+        if (!blocks[k] || hidden.has(k)) return null;
         // In the editor, clicking a section jumps the side panel to its controls.
         if (editing && onFocusSection) {
           return (

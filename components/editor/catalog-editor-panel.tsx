@@ -171,6 +171,7 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
   donationProjects: {
     key: "donationProjects", title: "Fundraising projects (optional)",
     fields: [
+      { key: "image", label: "Project image", type: "image" },
       { key: "name", label: "Project name" },
       { key: "description", label: "Project description", type: "textarea" },
       { key: "goal", label: "Project target (₦)", type: "number" },
@@ -239,11 +240,17 @@ export function CatalogEditorPanel({
     return [...saved, ...natural.filter((k) => !saved.includes(k))];
   })();
   const labelFor = (k: string) => reorder.find((r) => r.key === k)?.label || k;
-  function moveSection(i: number, dir: -1 | 1) {
-    const j = i + dir;
-    if (j < 0 || j >= orderKeys.length) return;
+  // Swap a section with its visible neighbour (deleted sections keep their slot).
+  function moveSection(key: string, dir: -1 | 1) {
+    const hiddenNow = data.hiddenSections || [];
+    const visible = orderKeys.filter((k) => !hiddenNow.includes(k));
+    const vi = visible.indexOf(key);
+    const vj = vi + dir;
+    if (vi < 0 || vj < 0 || vj >= visible.length) return;
+    const a = orderKeys.indexOf(visible[vi]);
+    const b = orderKeys.indexOf(visible[vj]);
     const next = [...orderKeys];
-    [next[i], next[j]] = [next[j], next[i]];
+    [next[a], next[b]] = [next[b], next[a]];
     patch({ sectionOrder: next });
   }
   const [hex, setHex] = useState("");
@@ -276,9 +283,17 @@ export function CatalogEditorPanel({
   }
 
   // Sections in the page's current order; each carries its own controls.
+  // Deleted sections drop out of the list and appear as restore chips below.
+  const hiddenKeys = data.hiddenSections || [];
   const orderedDefs = orderKeys
     .map((k) => reorder.find((r) => r.key === k))
-    .filter(Boolean) as SectionDef[];
+    .filter((d): d is SectionDef => !!d && !hiddenKeys.includes(d.key));
+  const deleteSection = (key: string, label: string) => {
+    if (typeof window !== "undefined" && !window.confirm(`Delete the "${label}" section from your page? You can restore it below (or press Undo).`)) return;
+    patch({ hiddenSections: Array.from(new Set([...hiddenKeys, key])) });
+  };
+  const restoreSection = (key: string) =>
+    patch({ hiddenSections: hiddenKeys.filter((k) => k !== key) });
   const headingDefault = (key?: string) =>
     (sections.find((s) => s.key === key)?.label || "").replace("{name}", data.businessName || "your brand");
 
@@ -368,8 +383,9 @@ export function CatalogEditorPanel({
             sectionKey={def.key}
             highlight={highlightKey === def.key}
             label={def.label}
-            onUp={reorder.length > 1 && i > 0 ? () => moveSection(i, -1) : undefined}
-            onDown={reorder.length > 1 && i < orderedDefs.length - 1 ? () => moveSection(i, 1) : undefined}
+            onUp={reorder.length > 1 && i > 0 ? () => moveSection(def.key, -1) : undefined}
+            onDown={reorder.length > 1 && i < orderedDefs.length - 1 ? () => moveSection(def.key, 1) : undefined}
+            onDelete={reorder.length > 1 ? () => deleteSection(def.key, def.label) : undefined}
           >
             {def.hero ? (
               <>
@@ -601,6 +617,20 @@ export function CatalogEditorPanel({
         );
       })}
 
+      {hiddenKeys.length > 0 && (
+        <div className="mb-4 rounded-xl border border-dashed border-ink/20 p-3">
+          <p className="text-xs font-medium text-ink/60">Deleted sections — tap to restore:</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {hiddenKeys.map((k) => (
+              <button key={k} onClick={() => restoreSection(k)}
+                className="flex items-center gap-1 rounded-full border border-ink/15 px-3 py-1.5 text-xs font-medium text-ink/70 hover:bg-ink/5">
+                <Plus className="h-3.5 w-3.5" /> {labelFor(k)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <Section title="Add sections">
         <p className="-mt-1 mb-1 text-xs text-ink/50">Add extra sections to your page — they appear above the footer.</p>
         <SectionsEditor
@@ -627,14 +657,15 @@ export function CatalogEditorPanel({
   );
 }
 
-/** A collapsible-styled group for one page section, with reorder arrows. */
+/** A collapsible-styled group for one page section, with reorder arrows + delete. */
 function SectionGroup({
-  label, children, onUp, onDown, sectionKey, highlight,
+  label, children, onUp, onDown, onDelete, sectionKey, highlight,
 }: {
   label: string;
   children: React.ReactNode;
   onUp?: () => void;
   onDown?: () => void;
+  onDelete?: () => void;
   sectionKey?: string;
   highlight?: boolean;
 }) {
@@ -648,12 +679,17 @@ function SectionGroup({
     >
       <div className="flex items-center justify-between border-b border-ink/10 bg-cream/40 px-3 py-2">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-ink/60">{label}</h3>
-        {(onUp || onDown) && (
-          <div className="flex items-center gap-1">
-            <button onClick={onUp} disabled={!onUp} className="text-ink/40 hover:text-ink disabled:opacity-25" aria-label="Move up"><ChevronUp className="h-4 w-4" /></button>
-            <button onClick={onDown} disabled={!onDown} className="text-ink/40 hover:text-ink disabled:opacity-25" aria-label="Move down"><ChevronDown className="h-4 w-4" /></button>
-          </div>
-        )}
+        <div className="flex items-center gap-1">
+          {(onUp || onDown) && (
+            <>
+              <button onClick={onUp} disabled={!onUp} className="text-ink/40 hover:text-ink disabled:opacity-25" aria-label="Move up"><ChevronUp className="h-4 w-4" /></button>
+              <button onClick={onDown} disabled={!onDown} className="text-ink/40 hover:text-ink disabled:opacity-25" aria-label="Move down"><ChevronDown className="h-4 w-4" /></button>
+            </>
+          )}
+          {onDelete && (
+            <button onClick={onDelete} className="ml-1 text-ink/40 hover:text-destructive" aria-label={`Delete ${label} section`}><Trash2 className="h-4 w-4" /></button>
+          )}
+        </div>
       </div>
       <div className="space-y-3 p-3">{children}</div>
     </div>

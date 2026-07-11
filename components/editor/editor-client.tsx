@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Save, ExternalLink, Loader2, Check, Palette, UploadCloud,
-  ChevronDown, Eye, EyeOff, Rocket, ArrowLeft, ArrowUp,
+  ChevronDown, Eye, EyeOff, Rocket, ArrowLeft, ArrowUp, Undo2,
 } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
@@ -61,6 +61,36 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
   // Click-to-edit: which section's panel controls to scroll to (+ a nonce to retrigger).
   const [focusKey, setFocusKey] = useState<string | null>(null);
   const [focusNonce, setFocusNonce] = useState(0);
+  // Undo history: every edit funnels through setData, so we snapshot the
+  // previous SiteData on change. Rapid changes within 800ms (typing bursts)
+  // collapse into one undo step, so Undo restores to before the burst.
+  const undoStack = useRef<SiteData[]>([]);
+  const prevData = useRef<SiteData | null>(null);
+  const lastEditAt = useRef(0);
+  const restoring = useRef(false);
+  const [canUndo, setCanUndo] = useState(false);
+  useEffect(() => {
+    if (prevData.current === null) { prevData.current = data; return; }
+    if (prevData.current === data) return;
+    if (restoring.current) { restoring.current = false; prevData.current = data; return; }
+    const now = Date.now();
+    if (now - lastEditAt.current > 800) {
+      undoStack.current.push(prevData.current);
+      if (undoStack.current.length > 50) undoStack.current.shift();
+      setCanUndo(true);
+    }
+    lastEditAt.current = now;
+    prevData.current = data;
+  }, [data]);
+  const undo = useCallback(() => {
+    const prev = undoStack.current.pop();
+    if (!prev) return;
+    restoring.current = true;
+    setData(prev);
+    setCanUndo(undoStack.current.length > 0);
+    setSaved(false);
+  }, []);
+
   // Back-to-top: the page shell is h-screen, so scrolling happens inside the
   // panel/preview containers — the floating arrow scrolls whichever moved.
   const panelRef = useRef<HTMLElement>(null);
@@ -199,6 +229,9 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
           </div>
           <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex"><a href="/dashboard/preview" target="_blank" rel="noreferrer"><ExternalLink className="h-4 w-4" /> Preview</a></Button>
           <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex"><a href={liveUrl} target="_blank" rel="noreferrer">View Live</a></Button>
+          <Button variant="outline" size="sm" onClick={undo} disabled={!canUndo} aria-label="Undo last edit">
+            <Undo2 className="h-4 w-4" /> <span className="hidden sm:inline">Undo</span>
+          </Button>
           <Button size="sm" onClick={save} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
             {saved ? "Saved" : "Save"}
