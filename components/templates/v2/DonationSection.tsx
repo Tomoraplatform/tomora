@@ -101,6 +101,8 @@ function ProjectCard({
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Cards lead with a clean CTA; the giving form expands on demand.
+  const [formOpen, setFormOpen] = useState(false);
 
   const raised = totals[project.id]?.raised || 0;
   const count = totals[project.id]?.count || 0;
@@ -156,8 +158,16 @@ function ProjectCard({
           <div className="flex h-full flex-col items-center justify-center py-4 text-center">
             <CheckCircle2 className="h-10 w-10" style={{ color: brandColor }} />
             <p className="mt-2 font-semibold text-ink">Thank you for your gift!</p>
-            <button onClick={() => setDone(false)} className="mt-2 text-sm font-semibold" style={{ color: brandColor }}>Give again</button>
+            <button onClick={() => { setDone(false); setFormOpen(false); }} className="mt-2 text-sm font-semibold" style={{ color: brandColor }}>Give again</button>
           </div>
+        ) : !formOpen ? (
+          <button
+            onClick={() => setFormOpen(true)}
+            className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold"
+            style={{ background: brandColor, color: onBrand }}
+          >
+            <Heart className="h-4 w-4" /> Donate Now
+          </button>
         ) : (
           <>
             <div className="grid grid-cols-4 gap-2">
@@ -184,6 +194,7 @@ function ProjectCard({
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Heart className="h-4 w-4" />} Donate {amount >= 100 ? formatNaira(amount) : ""}
             </button>
             {feeBearer === "customer" && <p className="mt-2 text-center text-xs text-ink/50">A small payment-processing fee is added at checkout.</p>}
+            <button onClick={() => setFormOpen(false)} className="mt-2 w-full text-center text-xs font-medium text-ink/50 hover:text-ink">Cancel</button>
           </>
         )}
       </div>
