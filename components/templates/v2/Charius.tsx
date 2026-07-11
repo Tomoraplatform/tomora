@@ -98,11 +98,9 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
                         <h3 className="font-semibold">{c.title}</h3><p className="mt-1 text-sm text-black/60">{c.description}</p>
                         <div className="mt-4 h-2 rounded-full bg-black/10"><div className="h-full rounded-full" style={{ width: `${pct}%`, background: "var(--brand-primary)" }} /></div>
                         <div className="mt-2 flex justify-between text-sm text-black/60"><span>Raised: {formatNaira(c.raised)}</span><span>Goal: {formatNaira(c.goal)}</span></div>
-                        {siteData.donationEnabled && (
-                          <a href="#donate" className="mt-4 flex w-full items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold" style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>
-                            Donate Now
-                          </a>
-                        )}
+                        <a href="#donate" className="mt-4 flex w-full items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold" style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>
+                          Donate Now
+                        </a>
                       </div>
                     </div>
                   );
