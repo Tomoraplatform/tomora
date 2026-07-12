@@ -8,6 +8,16 @@ export const maxDuration = 60;
 
 const MAX_MESSAGES = 40;
 const MAX_CHARS = 2000;
+const MAX_IMAGES_PER_MESSAGE = 10;
+
+/** Only pass through image URLs that live in our own Supabase storage. */
+function storageUrls(images: unknown): string[] {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!base || !Array.isArray(images)) return [];
+  return images
+    .filter((u): u is string => typeof u === "string" && u.startsWith(`${base}/storage/`))
+    .slice(0, MAX_IMAGES_PER_MESSAGE);
+}
 
 /**
  * Nova chat turn. Body: { messages: [{ role: "user"|"assistant", content: string }] }.
@@ -32,8 +42,17 @@ export async function POST(request: NextRequest) {
 
   const history = Array.isArray(body?.messages) ? body.messages.slice(-MAX_MESSAGES) : [];
   const messages: NovaMessage[] = history
-    .filter((m: any) => (m?.role === "user" || m?.role === "assistant") && typeof m?.content === "string" && m.content.trim())
-    .map((m: any) => ({ role: m.role, content: String(m.content).slice(0, MAX_CHARS) }));
+    .filter((m: any) =>
+      (m?.role === "user" || m?.role === "assistant") &&
+      ((typeof m?.content === "string" && m.content.trim()) || storageUrls(m?.images).length)
+    )
+    .map((m: any) => {
+      let content = String(m.content || "").slice(0, MAX_CHARS);
+      // Attached images travel as URLs inside the text so any model can read them.
+      const imgs = m.role === "user" ? storageUrls(m.images) : [];
+      if (imgs.length) content = `${content}\n\n[Attached images: ${imgs.join(" , ")}]`.trim();
+      return { role: m.role, content };
+    });
   if (!messages.length || messages[messages.length - 1].role !== "user") {
     return NextResponse.json({ error: "Say something to get started." }, { status: 400 });
   }

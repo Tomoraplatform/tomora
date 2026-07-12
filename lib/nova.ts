@@ -26,23 +26,32 @@ export interface NovaSpec {
   businessName: string;
   tagline?: string;
   brandColor?: string;
+  logoUrl?: string;
+  heroImage?: string;
   heroHeadline?: string;
   heroSubtext?: string;
   ctaText?: string;
   about?: string;
   services?: { title: string; description?: string }[];
-  products?: { name: string; price: number; category?: string; description?: string }[];
+  products?: { name: string; price: number; category?: string; description?: string; imageUrl?: string }[];
   courses?: { title: string; instructor?: string; category?: string; level?: string }[];
   causes?: { title: string; description: string; goal: number }[];
   events?: { title: string; date: string; location: string; description?: string }[];
   testimonials?: { name: string; quote: string; role?: string }[];
   donationEnabled?: boolean;
   donationGoal?: number;
-  donationProjects?: { name: string; description?: string; goal: number }[];
+  donationProjects?: { name: string; description?: string; goal: number; imageUrl?: string }[];
   phone?: string;
   email?: string;
   address?: string;
   social?: SocialLinks;
+}
+
+/** Only accept image URLs from our own Supabase storage (user uploads). */
+function ownImageUrl(u?: string): string | undefined {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!u || !base) return undefined;
+  return u.startsWith(`${base}/storage/`) ? u : undefined;
 }
 
 function toDbCategory(cat: string): SiteCategory {
@@ -80,7 +89,8 @@ ${templates}
 Notes:
 - For NGOs/churches (organization templates), ask if they want online donations; if they have distinct projects to fund, capture donationProjects with targets, otherwise one donationGoal.
 - For stores, capture 3-8 products (name, price, category). Group products into 2-4 categories.
-- Images and logo: the site launches with tasteful placeholder imagery; the owner replaces them in the editor. If asked about images, say exactly that.`;
+- Images: the user can attach photos in the chat. Uploaded images appear in their message as "[Attached images: <url> ...]". When you first ask about their offerings, invite them to attach their logo, a storefront/hero photo, and product photos if they have them (optional — placeholders are used otherwise). If it isn't obvious what an attached image is, ask them briefly. Assign each uploaded URL to the right field in create_site: logoUrl for the logo, heroImage for the main banner photo, imageUrl on the matching product or donation project. Use the exact URLs — never invent image URLs.
+- Anything they don't upload launches with tasteful placeholder imagery they can replace in the editor.`;
 }
 
 export const NOVA_CREATE_SITE_TOOL: Anthropic.Tool = {
@@ -94,6 +104,8 @@ export const NOVA_CREATE_SITE_TOOL: Anthropic.Tool = {
       businessName: { type: "string" },
       tagline: { type: "string" },
       brandColor: { type: "string", description: "Hex colour, e.g. #1A5C3A" },
+      logoUrl: { type: "string", description: "URL of the user's uploaded logo image, if they attached one" },
+      heroImage: { type: "string", description: "URL of the user's uploaded hero/banner photo, if they attached one" },
       heroHeadline: { type: "string" },
       heroSubtext: { type: "string" },
       ctaText: { type: "string", description: "Hero button text, e.g. Shop Now / Donate Now" },
@@ -112,6 +124,7 @@ export const NOVA_CREATE_SITE_TOOL: Anthropic.Tool = {
             price: { type: "number" },
             category: { type: "string" },
             description: { type: "string" },
+            imageUrl: { type: "string", description: "URL of the uploaded photo for this product, if any" },
           },
           required: ["name", "price"],
         },
@@ -154,7 +167,10 @@ export const NOVA_CREATE_SITE_TOOL: Anthropic.Tool = {
         type: "array",
         items: {
           type: "object",
-          properties: { name: { type: "string" }, description: { type: "string" }, goal: { type: "number" } },
+          properties: {
+            name: { type: "string" }, description: { type: "string" }, goal: { type: "number" },
+            imageUrl: { type: "string", description: "URL of the uploaded photo for this project, if any" },
+          },
           required: ["name", "goal"],
         },
       },
@@ -193,12 +209,15 @@ export async function createSiteFromNova(spec: NovaSpec): Promise<NovaCreateResu
   const tpl = catalogTemplate(spec.templateId)!;
   const dbCategory = toDbCategory(tpl.category);
   const brandColor = /^#[0-9a-fA-F]{6}$/.test(spec.brandColor || "") ? spec.brandColor! : "#022245";
+  const logoUrl = ownImageUrl(spec.logoUrl);
+  const heroImage = ownImageUrl(spec.heroImage);
 
   await supabase.from("profiles").upsert(
     {
       user_id: user.id,
       business_name: spec.businessName.trim(),
       tagline: spec.tagline || null,
+      logo_url: logoUrl || null,
       brand_color: brandColor,
       phone: spec.phone || null,
       email: spec.email || user.email,
@@ -214,8 +233,10 @@ export async function createSiteFromNova(spec: NovaSpec): Promise<NovaCreateResu
     businessName: spec.businessName.trim(),
     brandColor,
     tagline: spec.tagline,
+    logoUrl,
   });
 
+  if (heroImage) sd.heroImage = heroImage;
   if (spec.heroHeadline?.trim()) sd.heroHeadline = spec.heroHeadline.trim();
   if (spec.heroSubtext?.trim()) sd.heroSubtext = spec.heroSubtext.trim();
   if (spec.ctaText?.trim()) sd.ctaText = spec.ctaText.trim();
@@ -284,6 +305,7 @@ export async function createSiteFromNova(spec: NovaSpec): Promise<NovaCreateResu
       name: p.name,
       description: p.description,
       goal: Math.max(0, Math.round(p.goal)),
+      image: ownImageUrl(p.imageUrl),
     }));
   }
 
@@ -348,17 +370,20 @@ export async function createSiteFromNova(spec: NovaSpec): Promise<NovaCreateResu
   if (dbCategory === "ecommerce" && spec.products?.length) {
     const rows = spec.products.slice(0, 12)
       .filter((p) => p.name?.trim() && p.price > 0)
-      .map((p) => ({
-        user_id: user.id,
-        site_id: siteId,
-        name: p.name.trim(),
-        price: Math.max(0, Math.round(p.price)),
-        category: p.category?.trim() || null,
-        description: p.description?.trim() || null,
-        images: [],
-        stock: 99,
-        is_active: true,
-      }));
+      .map((p) => {
+        const img = ownImageUrl(p.imageUrl);
+        return {
+          user_id: user.id,
+          site_id: siteId,
+          name: p.name.trim(),
+          price: Math.max(0, Math.round(p.price)),
+          category: p.category?.trim() || null,
+          description: p.description?.trim() || null,
+          images: img ? [img] : [],
+          stock: 99,
+          is_active: true,
+        };
+      });
     if (rows.length) {
       try { await supabase.from("products").insert(rows); } catch { /* non-fatal */ }
     }
