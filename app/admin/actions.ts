@@ -250,6 +250,20 @@ export async function updateTemplateSettings(
   } catch (e: any) { return { ok: false, error: e.message }; }
 }
 
+/** Turns Nova (the AI setup assistant) on or off platform-wide. */
+export async function setNovaEnabled(enabled: boolean): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const admin = await guard();
+    const { error } = await admin
+      .from("app_settings")
+      .upsert({ id: 1, nova_enabled: enabled }, { onConflict: "id" });
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin");
+    revalidatePath("/onboarding");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
 /**
  * Reset the revenue figures back to zero by recording "now" as the revenue
  * baseline. The dashboard only counts payments dated after this point, so

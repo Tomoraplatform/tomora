@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { novaEnabled } from "@/lib/nova-flag";
 import { NovaChat } from "@/components/nova/nova-chat";
 
 export const metadata = { title: "Nova — AI Website Setup — Tomora" };
 
 export default async function NovaPage() {
+  if (!(await novaEnabled())) redirect("/onboarding");
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/onboarding/nova");

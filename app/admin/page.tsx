@@ -20,7 +20,7 @@ export default async function AdminPage() {
     admin.from("domains").select("*").order("created_at", { ascending: false }),
     admin.from("domain_requests").select("*").order("created_at", { ascending: false }),
     admin.from("plan_discounts").select("*"),
-    admin.from("app_settings").select("revenue_reset_at").eq("id", 1).maybeSingle(),
+    admin.from("app_settings").select("*").eq("id", 1).maybeSingle(),
   ]);
 
   const { data: payoutReqs } = await admin
@@ -29,6 +29,7 @@ export default async function AdminPage() {
     .order("created_at", { ascending: false });
 
   const revenueResetAt = (settings as { revenue_reset_at: string | null } | null)?.revenue_reset_at ?? null;
+  const novaOn = !!(settings as { nova_enabled?: boolean } | null)?.nova_enabled;
   const templateOverrides = await getTemplateOverrides();
 
   const planDiscounts: Record<string, { percent: number; active: boolean }> = {};
@@ -135,6 +136,7 @@ export default async function AdminPage() {
         planDiscounts={planDiscounts}
         templateOverrides={templateOverrides}
         revenueResetAt={revenueResetAt}
+        novaEnabled={novaOn}
         series={{ signups, liveSites: liveSiteDates, subs: subDates, payments }}
         stats={{
           totalUsers: profiles?.length ?? 0,

@@ -1,14 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Users, Globe, CreditCard, TrendingUp, Loader2, RotateCcw, Trash2 } from "lucide-react";
+import { Users, Globe, CreditCard, TrendingUp, Loader2, RotateCcw, Trash2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/utils";
-import { extendTrial, setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount, syncStoreCommission, deleteUserAccount, resetRevenue, updateTemplateSettings } from "@/app/admin/actions";
+import { extendTrial, setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount, syncStoreCommission, deleteUserAccount, resetRevenue, updateTemplateSettings, setNovaEnabled } from "@/app/admin/actions";
 import { PLANS } from "@/lib/constants";
 import { CATALOG_TEMPLATES, CATALOG_CATEGORIES } from "@/lib/catalog";
 import type { DomainStatus } from "@/lib/database.types";
@@ -59,6 +59,7 @@ export function AdminDashboard({
   rows, domains, stats, planDiscounts = {}, revenueResetAt = null,
   series = { signups: [], liveSites: [], subs: [], payments: [] },
   templateOverrides = {},
+  novaEnabled = false,
 }: {
   rows: AdminUserRow[];
   domains: AdminDomainRow[];
@@ -67,6 +68,7 @@ export function AdminDashboard({
   revenueResetAt?: string | null;
   series?: AdminSeries;
   templateOverrides?: Record<string, TemplateOverride>;
+  novaEnabled?: boolean;
 }) {
   const [busy, setBusy] = useState<string | null>(null);
   // Per-row grant duration (days). 0 = no expiry.
@@ -138,6 +140,20 @@ export function AdminDashboard({
               </button>
             ))}
           </div>
+          <Button
+            variant={novaEnabled ? "default" : "outline"}
+            size="sm"
+            disabled={busy === "nova"}
+            onClick={() => {
+              run("nova", async () => {
+                const res = await setNovaEnabled(!novaEnabled);
+                if (typeof window !== "undefined" && !res.ok) window.alert(res.error || "Failed to update Nova.");
+              });
+            }}
+          >
+            {busy === "nova" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+            Nova AI: {novaEnabled ? "On" : "Off"}
+          </Button>
           <Button
             variant="outline"
             size="sm"

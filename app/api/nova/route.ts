@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createSiteFromNova, type NovaSpec } from "@/lib/nova";
 import { runNovaTurn, novaConfigured, type NovaMessage } from "@/lib/nova-llm";
+import { novaEnabled } from "@/lib/nova-flag";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -29,8 +30,8 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Please log in first." }, { status: 401 });
 
-  if (!novaConfigured()) {
-    return NextResponse.json({ error: "Nova isn't configured yet. Please try again later." }, { status: 503 });
+  if (!(await novaEnabled()) || !novaConfigured()) {
+    return NextResponse.json({ error: "Nova isn't available right now. Please try again later." }, { status: 503 });
   }
 
   let body: any;
