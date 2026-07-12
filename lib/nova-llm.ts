@@ -54,7 +54,9 @@ async function claudeTurn(messages: NovaMessage[]): Promise<NovaTurn> {
 
 /* --------------------- Gemini free tier (fallback) --------------------- */
 
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+// Rolling alias — always the current free-tier Flash model, so it survives
+// Google retiring dated versions for new accounts.
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
 
 /** Gemini's function-declaration schema: uppercase types, no additionalProperties. */
 function toGeminiSchema(schema: any): any {
