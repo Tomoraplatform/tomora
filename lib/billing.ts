@@ -29,12 +29,14 @@ export async function applyPlatformPayment(userId: string, reference: string, pl
 
   const plan = getPlan(planId || sub?.plan || "pro");
   const isPro = plan?.id === "pro";
+  const isYearly = plan?.id === "onetime";
   const now = new Date();
 
-  // Pro keeps the 0-3 cycle; monthly plans stay at position 0.
+  // Pro keeps the 0-3 cycle; the one-time (yearly) plan and monthly plans stay at position 0.
   const position = sub?.billing_cycle_position ?? 0;
   const result = isPro ? nextCharge(position) : { nextPosition: 0, includesDomain: !!plan?.includesDomain };
-  const nextBilling = addMonths(now, isPro ? RENEWAL_INTERVAL_MONTHS : 1);
+  // The one-time plan bills again in 12 months (₦20,000/yr covers domain + infrastructure).
+  const nextBilling = addMonths(now, isPro ? RENEWAL_INTERVAL_MONTHS : isYearly ? 12 : 1);
 
   const payload = {
     user_id: userId,

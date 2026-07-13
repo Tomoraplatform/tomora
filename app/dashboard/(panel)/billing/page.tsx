@@ -71,7 +71,7 @@ export default async function BillingPage({
       </Card>
 
       {/* Plan options */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {PAID_PLANS.map((plan) => {
           const isCurrent = active && currentPlan?.id === plan.id;
           return (
@@ -93,6 +93,9 @@ export default async function BillingPage({
                 ) : null}
                 {plan.id === "pro" && (
                   <p className="text-xs text-ink/50">then {formatNaira(plan.renewal!)} every {RENEWAL_INTERVAL_MONTHS} months</p>
+                )}
+                {plan.id === "onetime" && (
+                  <p className="text-xs text-ink/50">then only {formatNaira(plan.renewal!)}/year — domain renewal &amp; maintenance</p>
                 )}
               </CardHeader>
               <CardContent className="space-y-4">

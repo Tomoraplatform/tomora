@@ -64,6 +64,10 @@ export async function POST(request: NextRequest) {
   if (planId === "pro" && sub?.plan === "pro") {
     amount = nextCharge(sub.billing_cycle_position ?? 0).amount;
   }
+  // One-time plan: ₦84,500 for the first year, then the yearly renewal price.
+  if (planId === "onetime" && sub?.plan === "onetime") {
+    amount = plan.renewal ?? plan.price;
+  }
 
   // Apply any active admin discount for this plan.
   const discounts = await loadPlanDiscounts();

@@ -21,10 +21,10 @@ export const PAYSTACK_FEE_PERCENT = 2.5;
 export const WALLET_SINGLE_WITHDRAWAL_LIMIT = 5_000;
 export const WALLET_DAILY_WITHDRAWAL_LIMIT = 500_000;
 /** Plans exempt from wallet withdrawal limits. */
-export const WALLET_UNLIMITED_PLANS = ["growth", "pro", "custom"];
+export const WALLET_UNLIMITED_PLANS = ["growth", "pro", "onetime", "custom"];
 
 /** Plans that include staff accounts (team access). */
-export const TEAM_PLANS = ["growth", "pro", "custom"];
+export const TEAM_PLANS = ["growth", "pro", "onetime", "custom"];
 /** Dashboard areas an owner can grant to a staff member. */
 export const STAFF_AREAS: { id: string; label: string; description: string }[] = [
   { id: "orders", label: "Orders", description: "View and update customer orders" },
@@ -63,7 +63,7 @@ export function nextCharge(position: number): {
 }
 
 /* ---------------- Plans ---------------- */
-export type PlanId = "trial" | "basic" | "starter" | "growth" | "pro" | "custom";
+export type PlanId = "trial" | "basic" | "starter" | "growth" | "pro" | "onetime" | "custom";
 
 export interface Plan {
   id: PlanId;
@@ -174,6 +174,26 @@ export const PLANS: Plan[] = [
       "Early access to new features",
     ],
     cta: "Choose Pro",
+    siteLimit: 10,
+    canPublish: true,
+    includesDomain: true,
+  },
+  {
+    id: "onetime",
+    name: "One-Time",
+    price: 84500,
+    renewal: 20000,
+    period: "year",
+    tagline: "Pay once for the whole year — everything in Pro.",
+    features: [
+      "Everything in Pro",
+      "One payment covers a full year",
+      "1-year custom domain included",
+      "Renews at just ₦20,000/year",
+      "Covers domain renewal & infrastructure",
+      "No monthly deductions",
+    ],
+    cta: "Pay Once",
     siteLimit: 10,
     canPublish: true,
     includesDomain: true,

@@ -351,7 +351,7 @@ function Pricing({ discounts }: { discounts: Record<string, number> }) {
         </p>
       </div>
 
-      <div className="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {PLANS.map((plan) => {
           const popular = plan.popular;
           const isCustom = plan.id === "custom";
@@ -390,6 +390,11 @@ function Pricing({ discounts }: { discounts: Record<string, number> }) {
                 {plan.id === "pro" && (
                   <p className={`mt-1 text-xs ${popular ? "text-cream/60" : "text-ink/50"}`}>
                     then {formatNaira(plan.renewal!)} every {RENEWAL_INTERVAL_MONTHS} months
+                  </p>
+                )}
+                {plan.id === "onetime" && (
+                  <p className={`mt-1 text-xs ${popular ? "text-cream/60" : "text-ink/50"}`}>
+                    then only {formatNaira(plan.renewal!)}/year — domain renewal &amp; maintenance
                   </p>
                 )}
               </div>
