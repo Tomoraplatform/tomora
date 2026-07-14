@@ -31,11 +31,20 @@ export interface T1Fields {
   /** Bridge section: big centered statement + sub-line. */
   bridgeHeadline: string;
   bridgeSub: string;
-  /** Marquee carousel of metric cards. */
-  metrics: { name: string; value: string; unit: string; description: string }[];
+  /** Marquee carousel of image cards. */
+  metrics: { name: string; value: string; unit: string; description: string; image: string }[];
   /** Pinned scroll sequence: static prefix + cycling words with sub-lines. */
   whatifPrefix: string;
   whatifItems: { word: string; sub: string }[];
+  /** Split section: image half + statement half. */
+  splitImage: string;
+  splitHeadline1: string;
+  splitHeadline2: string;
+  splitBody: string;
+  splitCta: string;
+  /** Dashboard showcase section. */
+  dashHeadline: string;
+  dashSub: string;
 }
 
 const ICON_PIE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>`;
@@ -60,14 +69,14 @@ export const T1_DEFAULTS: T1Fields = {
   bridgeHeadline: "Ready to meet the healthiest version of you?",
   bridgeSub: "A smarter, more personal way to understand your wellbeing — built for everyday people and the experts who guide them.",
   metrics: [
-    { name: "Resting Heart Rate", value: "58", unit: "bpm", description: "A calm baseline that shows how efficiently your heart recovers." },
-    { name: "Sleep Quality", value: "87", unit: "%", description: "How deeply you actually rest, night after night." },
-    { name: "Hydration Level", value: "92", unit: "%", description: "The water balance that keeps energy and focus steady." },
-    { name: "Daily Movement", value: "9,400", unit: "steps", description: "Consistent motion that quietly builds long-term strength." },
-    { name: "Stress Index", value: "Low", unit: "", description: "How your nervous system is coping with the week." },
-    { name: "Blood Oxygen", value: "98", unit: "%", description: "How well your body delivers oxygen where it's needed." },
-    { name: "Recovery Score", value: "8.6", unit: "/10", description: "Whether today should be a push day or a rest day." },
-    { name: "Energy Balance", value: "+320", unit: "kcal", description: "The gap between what you take in and what you burn." },
+    { name: "Resting Heart Rate", value: "58", unit: "bpm", description: "A calm baseline that shows how efficiently your heart recovers.", image: "https://picsum.photos/seed/tmr-m1/560/400" },
+    { name: "Sleep Quality", value: "87", unit: "%", description: "How deeply you actually rest, night after night.", image: "https://picsum.photos/seed/tmr-m2/560/400" },
+    { name: "Hydration Level", value: "92", unit: "%", description: "The water balance that keeps energy and focus steady.", image: "https://picsum.photos/seed/tmr-m3/560/400" },
+    { name: "Daily Movement", value: "9,400", unit: "steps", description: "Consistent motion that quietly builds long-term strength.", image: "https://picsum.photos/seed/tmr-m4/560/400" },
+    { name: "Stress Index", value: "Low", unit: "", description: "How your nervous system is coping with the week.", image: "https://picsum.photos/seed/tmr-m5/560/400" },
+    { name: "Blood Oxygen", value: "98", unit: "%", description: "How well your body delivers oxygen where it's needed.", image: "https://picsum.photos/seed/tmr-m6/560/400" },
+    { name: "Recovery Score", value: "8.6", unit: "/10", description: "Whether today should be a push day or a rest day.", image: "https://picsum.photos/seed/tmr-m7/560/400" },
+    { name: "Energy Balance", value: "+320", unit: "kcal", description: "The gap between what you take in and what you burn.", image: "https://picsum.photos/seed/tmr-m8/560/400" },
   ],
   whatifPrefix: "What if your health felt…",
   whatifItems: [
@@ -77,6 +86,13 @@ export const T1_DEFAULTS: T1Fields = {
     { word: "Ahead of time", sub: "Catch the small signs before they grow." },
     { word: "Yours", sub: "A picture of health you truly own." },
   ],
+  splitImage: "https://picsum.photos/seed/tmr-split/1000/1200",
+  splitHeadline1: "Wellness.",
+  splitHeadline2: "Without walls.",
+  splitBody: "Good health shouldn't depend on where you live or what you earn. It should travel with you — simple, affordable, and always within reach.",
+  splitCta: "Get Early Access",
+  dashHeadline: "Your whole story, one view",
+  dashSub: "Everything that matters about your wellbeing — habits, results and progress — gathered into a single dashboard you can actually read. Spot what's improving, see what needs attention, and know exactly where to focus next.",
 };
 
 const esc = (s: string) =>
@@ -274,23 +290,28 @@ export function t1CarouselCss(): string {
   .tmr-carousel{background:#F4F1EA;padding:0 0 130px;overflow:hidden;font-family:"Helvetica Neue",Helvetica,Arial,-apple-system,sans-serif}
   .tmr-carousel__track{display:flex;gap:18px;width:max-content;animation:tmrMarquee 42s linear infinite}
   .tmr-carousel:hover .tmr-carousel__track{animation-play-state:paused}
-  .tmr-card{width:300px;flex:none;background:#fff;border-radius:20px;padding:26px 24px;color:#101319;box-shadow:0 1px 2px rgba(16,19,25,.05)}
-  .tmr-card__name{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:#10131966}
-  .tmr-card__value{margin-top:14px;font-size:44px;font-weight:500;letter-spacing:-.03em;line-height:1}
-  .tmr-card__value small{font-size:17px;font-weight:500;color:#10131980;margin-left:6px;letter-spacing:0}
-  .tmr-card__desc{margin-top:14px;font-size:14px;line-height:1.55;color:#10131999}
-  .tmr-card__bar{margin-top:18px;height:4px;border-radius:2px;background:#1013190f;overflow:hidden}
-  .tmr-card__bar i{display:block;height:100%;width:72%;border-radius:2px;background:#101319}
+  .tmr-card{width:320px;flex:none;background:#fff;border-radius:20px;overflow:hidden;color:#101319;box-shadow:0 1px 2px rgba(16,19,25,.06)}
+  .tmr-card__img{height:210px;background-size:cover;background-position:center;filter:saturate(1.05)}
+  .tmr-card__body{padding:20px 22px 24px}
+  .tmr-card__top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+  .tmr-card__name{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#10131966}
+  .tmr-card__value{font-size:26px;font-weight:600;letter-spacing:-.02em;white-space:nowrap}
+  .tmr-card__value small{font-size:13px;font-weight:500;color:#10131980;margin-left:3px}
+  .tmr-card__desc{margin-top:10px;font-size:14px;line-height:1.55;color:#10131999}
   @keyframes tmrMarquee{to{transform:translateX(-50%)}}`;
 }
 
 export function t1CarouselHtml(f: T1Fields): string {
-  const card = (m: T1Fields["metrics"][number], i: number) => `
+  const card = (m: T1Fields["metrics"][number]) => `
     <div class="tmr-card">
-      <div class="tmr-card__name">${esc(m.name)}</div>
-      <div class="tmr-card__value">${esc(m.value)}${m.unit ? `<small>${esc(m.unit)}</small>` : ""}</div>
-      <p class="tmr-card__desc">${esc(m.description)}</p>
-      <div class="tmr-card__bar"><i style="width:${55 + ((i * 13) % 40)}%"></i></div>
+      <div class="tmr-card__img" style="background-image:url('${esc(m.image)}')"></div>
+      <div class="tmr-card__body">
+        <div class="tmr-card__top">
+          <div class="tmr-card__name">${esc(m.name)}</div>
+          <div class="tmr-card__value">${esc(m.value)}${m.unit ? `<small>${esc(m.unit)}</small>` : ""}</div>
+        </div>
+        <p class="tmr-card__desc">${esc(m.description)}</p>
+      </div>
     </div>`;
   const run = f.metrics.map(card).join("");
   // Two identical runs make the -50% translate loop seamless.
@@ -338,6 +359,164 @@ export function t1WhatifHtml(f: T1Fields): string {
   </section>`;
 }
 
+/** Split section: full-bleed image half + warm statement half with bottom-anchored copy. */
+export function t1SplitCss(): string {
+  return `
+  .tmr-split{display:grid;grid-template-columns:1fr 1fr;min-height:94vh;font-family:"Helvetica Neue",Helvetica,Arial,-apple-system,sans-serif}
+  .tmr-split__img{background-size:cover;background-position:center;min-height:56vh}
+  .tmr-split__panel{background:#C7B299;color:#17130d;display:flex;flex-direction:column;justify-content:space-between;padding:64px 56px}
+  .tmr-split__headline{font-size:clamp(40px,4.6vw,66px);font-weight:500;letter-spacing:-.03em;line-height:1.05}
+  .tmr-split__foot{max-width:520px}
+  .tmr-split__body{font-size:clamp(22px,2.2vw,30px);font-weight:500;letter-spacing:-.02em;line-height:1.3}
+  .tmr-split__foot .tmr-btn{margin-top:30px}
+  @media (max-width:900px){
+    .tmr-split{grid-template-columns:1fr}
+    .tmr-split__panel{padding:48px 24px;gap:56px}
+  }`;
+}
+
+export function t1SplitHtml(f: T1Fields): string {
+  const arrow = `<span class="tmr-btn__arrow"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg></span>`;
+  return `
+  <section class="tmr-split">
+    <div class="tmr-split__img" style="background-image:url('${esc(f.splitImage)}')" data-reveal></div>
+    <div class="tmr-split__panel">
+      <h2 class="tmr-split__headline" data-reveal>
+        <span class="tmr-mask"><span>${esc(f.splitHeadline1)}</span></span>
+        <span class="tmr-mask"><span>${esc(f.splitHeadline2)}</span></span>
+      </h2>
+      <div class="tmr-split__foot" data-reveal data-delay="180">
+        <p class="tmr-split__body">${esc(f.splitBody)}</p>
+        <a href="#" class="tmr-btn">${esc(f.splitCta)} ${arrow}</a>
+      </div>
+    </div>
+  </section>`;
+}
+
+/** Dashboard showcase: rising centered headline, sub-copy, overlapping device mockups. */
+export function t1DashCss(): string {
+  return `
+  .tmr-dash{background:#EEEEEC;color:#101319;padding:150px 24px 170px;text-align:center;font-family:"Helvetica Neue",Helvetica,Arial,-apple-system,sans-serif;overflow:hidden}
+  .tmr-dash__headline{margin:0 auto;max-width:900px;font-size:clamp(38px,5.4vw,76px);font-weight:500;letter-spacing:-.03em;line-height:1.05}
+  .tmr-dash__sub{margin:34px auto 0;max-width:540px;font-size:15px;line-height:1.65;color:#10131999}
+  .tmr-dash__stage{position:relative;margin:90px auto 0;max-width:820px}
+  .tmr-dash__tablet{background:#15181d;border-radius:26px;padding:16px;box-shadow:0 40px 90px rgba(16,19,25,.18)}
+  .tmr-dash__screen{background:#fff;border-radius:14px;overflow:hidden;text-align:left}
+  .tmr-dash__bar{display:flex;align-items:center;gap:8px;padding:12px 18px;border-bottom:1px solid #10131910}
+  .tmr-dash__pill{font-size:10px;font-weight:600;padding:5px 12px;border-radius:999px;color:#10131980}
+  .tmr-dash__pill.tmr-on{background:#1B3A5C;color:#fff}
+  .tmr-dash__grid{display:grid;grid-template-columns:200px 1fr;gap:0}
+  .tmr-dash__side{border-right:1px solid #10131910;padding:22px;text-align:center}
+  .tmr-dash__avatar{width:64px;height:64px;margin:0 auto;border-radius:50%;background:#1B3A5C;color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700}
+  .tmr-dash__uname{margin-top:10px;font-size:13px;font-weight:700}
+  .tmr-dash__utag{margin-top:4px;display:inline-block;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#0D7A4F;background:#0D7A4F14;padding:3px 8px;border-radius:999px}
+  .tmr-dash__side small{display:block;margin-top:14px;font-size:10px;color:#10131966;line-height:1.5}
+  .tmr-dash__main{padding:20px 24px}
+  .tmr-dash__mtitle{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#10131966}
+  .tmr-dash__row{display:flex;align-items:center;gap:12px;margin-top:12px}
+  .tmr-dash__rlabel{width:110px;font-size:11px;font-weight:600;flex:none}
+  .tmr-dash__track{flex:1;height:7px;border-radius:4px;background:#10131910;overflow:hidden}
+  .tmr-dash__track i{display:block;height:100%;border-radius:4px}
+  .tmr-dash__rval{width:34px;font-size:10px;font-weight:700;color:#10131980;text-align:right}
+  .tmr-dash__panel{position:absolute;left:-26px;bottom:-56px;width:290px;background:#fff;border-radius:18px;box-shadow:0 30px 70px rgba(16,19,25,.22);overflow:hidden;text-align:left;display:flex}
+  .tmr-dash__pside{width:44px;background:#1B3A5C;display:flex;flex-direction:column;align-items:center;gap:10px;padding:14px 0}
+  .tmr-dash__pside i{width:18px;height:18px;border-radius:6px;background:#ffffff2e}
+  .tmr-dash__pbody{flex:1;padding:16px 18px}
+  .tmr-dash__score{font-size:26px;font-weight:700;letter-spacing:-.02em}
+  .tmr-dash__delta{margin-left:8px;font-size:10px;font-weight:700;color:#0D7A4F;background:#0D7A4F14;padding:2px 7px;border-radius:999px;vertical-align:middle}
+  .tmr-dash__plabel{margin-top:2px;font-size:10px;color:#10131966;font-weight:600}
+  .tmr-dash__prow{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .tmr-dash__pnum{width:14px;height:14px;border-radius:50%;background:#10131910;font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+  .tmr-dash__pname{font-size:10px;font-weight:600;width:82px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tmr-dash__ptrack{flex:1;height:5px;border-radius:3px;background:#10131910;overflow:hidden}
+  .tmr-dash__ptrack i{display:block;height:100%;border-radius:3px;background:#C0392B}
+  .tmr-dash__notes{margin-top:14px;border:1px solid #10131914;border-radius:10px;padding:8px 10px;font-size:9px;color:#10131955}
+  .tmr-dash__save{margin-top:10px;display:inline-block;font-size:9px;font-weight:700;border:1px solid #10131920;border-radius:999px;padding:4px 12px}
+  @media (max-width:900px){
+    .tmr-dash{padding:100px 16px 130px}
+    .tmr-dash__grid{grid-template-columns:1fr}
+    .tmr-dash__side{border-right:none;border-bottom:1px solid #10131910}
+    .tmr-dash__panel{left:8px;bottom:-40px;width:240px}
+  }`;
+}
+
+export function t1DashHtml(f: T1Fields): string {
+  const rows = [
+    ["Sleep rhythm", 78, "#C0392B"],
+    ["Movement", 64, "#C0392B"],
+    ["Nutrition", 71, "#D98E32"],
+    ["Digestion", 65, "#D98E32"],
+    ["Mind & mood", 60, "#D98E32"],
+  ] as const;
+  const bars = rows
+    .map(
+      ([l, v, c]) => `
+      <div class="tmr-dash__row">
+        <span class="tmr-dash__rlabel">${l}</span>
+        <span class="tmr-dash__track"><i style="width:${v}%;background:${c}"></i></span>
+        <span class="tmr-dash__rval">${v}%</span>
+      </div>`
+    )
+    .join("");
+  const prows = [
+    ["Sleep, screens…", 62],
+    ["Blood sugar", 48],
+    ["Gut health", 55],
+  ] as const;
+  const priorities = prows
+    .map(
+      ([n, v], i) => `
+      <div class="tmr-dash__prow">
+        <span class="tmr-dash__pnum">${i + 1}</span>
+        <span class="tmr-dash__pname">${n}</span>
+        <span class="tmr-dash__ptrack"><i style="width:${v}%"></i></span>
+      </div>`
+    )
+    .join("");
+
+  return `
+  <section class="tmr-dash">
+    <h2 class="tmr-dash__headline" data-reveal>
+      <span class="tmr-mask"><span>${esc(f.dashHeadline)}</span></span>
+    </h2>
+    <p class="tmr-dash__sub" data-reveal data-delay="180">${esc(f.dashSub)}</p>
+    <div class="tmr-dash__stage">
+      <div class="tmr-dash__tablet" data-reveal data-delay="120">
+        <div class="tmr-dash__screen">
+          <div class="tmr-dash__bar">
+            <span class="tmr-dash__pill tmr-on">Overview</span>
+            <span class="tmr-dash__pill">Results</span>
+            <span class="tmr-dash__pill">Trends</span>
+            <span class="tmr-dash__pill">Check-ins</span>
+          </div>
+          <div class="tmr-dash__grid">
+            <div class="tmr-dash__side">
+              <div class="tmr-dash__avatar">AB</div>
+              <div class="tmr-dash__uname">Ada Bello</div>
+              <span class="tmr-dash__utag">On track</span>
+              <small>Member since March.<br>Next review in 12 days.</small>
+            </div>
+            <div class="tmr-dash__main">
+              <div class="tmr-dash__mtitle">Focus areas — this month</div>
+              ${bars}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tmr-dash__panel" data-reveal data-delay="340">
+        <div class="tmr-dash__pside"><i></i><i></i><i></i></div>
+        <div class="tmr-dash__pbody">
+          <span class="tmr-dash__score">82%</span><span class="tmr-dash__delta">▲ 4%</span>
+          <div class="tmr-dash__plabel">Overall wellness score</div>
+          ${priorities}
+          <div class="tmr-dash__notes">Add a note for your next check-in…</div>
+          <span class="tmr-dash__save">✓ Save</span>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
 /** Full standalone document for template 1 (sections appended as they're built). */
 export function renderT1(fields: Partial<T1Fields> = {}): string {
   const f = { ...T1_DEFAULTS, ...fields };
@@ -354,6 +533,8 @@ ${t1HeroCss()}
 ${t1BridgeCss()}
 ${t1CarouselCss()}
 ${t1WhatifCss()}
+${t1SplitCss()}
+${t1DashCss()}
 </style>
 </head>
 <body>
@@ -361,6 +542,8 @@ ${t1HeroHtml(f)}
 ${t1BridgeHtml(f)}
 ${t1CarouselHtml(f)}
 ${t1WhatifHtml(f)}
+${t1SplitHtml(f)}
+${t1DashHtml(f)}
 ${t1RevealScript()}
 </body>
 </html>`;
