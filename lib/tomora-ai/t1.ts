@@ -31,6 +31,11 @@ export interface T1Fields {
   /** Bridge section: big centered statement + sub-line. */
   bridgeHeadline: string;
   bridgeSub: string;
+  /** Marquee carousel of metric cards. */
+  metrics: { name: string; value: string; unit: string; description: string }[];
+  /** Pinned scroll sequence: static prefix + cycling words with sub-lines. */
+  whatifPrefix: string;
+  whatifItems: { word: string; sub: string }[];
 }
 
 const ICON_PIE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>`;
@@ -54,6 +59,24 @@ export const T1_DEFAULTS: T1Fields = {
   mediaUrl: "https://picsum.photos/seed/tmr-beyond/1920/1200",
   bridgeHeadline: "Ready to meet the healthiest version of you?",
   bridgeSub: "A smarter, more personal way to understand your wellbeing — built for everyday people and the experts who guide them.",
+  metrics: [
+    { name: "Resting Heart Rate", value: "58", unit: "bpm", description: "A calm baseline that shows how efficiently your heart recovers." },
+    { name: "Sleep Quality", value: "87", unit: "%", description: "How deeply you actually rest, night after night." },
+    { name: "Hydration Level", value: "92", unit: "%", description: "The water balance that keeps energy and focus steady." },
+    { name: "Daily Movement", value: "9,400", unit: "steps", description: "Consistent motion that quietly builds long-term strength." },
+    { name: "Stress Index", value: "Low", unit: "", description: "How your nervous system is coping with the week." },
+    { name: "Blood Oxygen", value: "98", unit: "%", description: "How well your body delivers oxygen where it's needed." },
+    { name: "Recovery Score", value: "8.6", unit: "/10", description: "Whether today should be a push day or a rest day." },
+    { name: "Energy Balance", value: "+320", unit: "kcal", description: "The gap between what you take in and what you burn." },
+  ],
+  whatifPrefix: "What if your health felt…",
+  whatifItems: [
+    { word: "Effortless", sub: "No more chasing answers — they come to you." },
+    { word: "Personal", sub: "Built around your body, not the average one." },
+    { word: "Clear", sub: "Numbers that finally make sense at a glance." },
+    { word: "Ahead of time", sub: "Catch the small signs before they grow." },
+    { word: "Yours", sub: "A picture of health you truly own." },
+  ],
 };
 
 const esc = (s: string) =>
@@ -189,6 +212,27 @@ export function t1RevealScript(): string {
     });
   }, { threshold: 0.25 });
   document.querySelectorAll("[data-reveal]").forEach(function(el){ io.observe(el); });
+
+  // Pinned "what if" sequence: scroll progress through the tall section
+  // selects the active word; passed words slide up and out.
+  var wi = document.getElementById("tmr-whatif");
+  if (wi) {
+    var items = wi.querySelectorAll(".tmr-whatif__item");
+    var dots = wi.querySelectorAll(".tmr-whatif__dots i");
+    var onScroll = function () {
+      var r = wi.getBoundingClientRect();
+      var total = r.height - window.innerHeight;
+      var p = Math.min(0.999, Math.max(0, -r.top / total));
+      var idx = Math.floor(p * items.length);
+      items.forEach(function (el, i) {
+        el.classList.toggle("tmr-act", i === idx);
+        el.classList.toggle("tmr-prev", i < idx);
+      });
+      dots.forEach(function (d, i) { d.classList.toggle("tmr-act", i === idx); });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
 })();
 </script>`;
 }
@@ -224,6 +268,76 @@ export function t1BridgeHtml(f: T1Fields): string {
   </section>`;
 }
 
+/** Infinite marquee carousel of metric cards (content duplicated for a seamless loop). */
+export function t1CarouselCss(): string {
+  return `
+  .tmr-carousel{background:#F4F1EA;padding:0 0 130px;overflow:hidden;font-family:"Helvetica Neue",Helvetica,Arial,-apple-system,sans-serif}
+  .tmr-carousel__track{display:flex;gap:18px;width:max-content;animation:tmrMarquee 42s linear infinite}
+  .tmr-carousel:hover .tmr-carousel__track{animation-play-state:paused}
+  .tmr-card{width:300px;flex:none;background:#fff;border-radius:20px;padding:26px 24px;color:#101319;box-shadow:0 1px 2px rgba(16,19,25,.05)}
+  .tmr-card__name{font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:#10131966}
+  .tmr-card__value{margin-top:14px;font-size:44px;font-weight:500;letter-spacing:-.03em;line-height:1}
+  .tmr-card__value small{font-size:17px;font-weight:500;color:#10131980;margin-left:6px;letter-spacing:0}
+  .tmr-card__desc{margin-top:14px;font-size:14px;line-height:1.55;color:#10131999}
+  .tmr-card__bar{margin-top:18px;height:4px;border-radius:2px;background:#1013190f;overflow:hidden}
+  .tmr-card__bar i{display:block;height:100%;width:72%;border-radius:2px;background:#101319}
+  @keyframes tmrMarquee{to{transform:translateX(-50%)}}`;
+}
+
+export function t1CarouselHtml(f: T1Fields): string {
+  const card = (m: T1Fields["metrics"][number], i: number) => `
+    <div class="tmr-card">
+      <div class="tmr-card__name">${esc(m.name)}</div>
+      <div class="tmr-card__value">${esc(m.value)}${m.unit ? `<small>${esc(m.unit)}</small>` : ""}</div>
+      <p class="tmr-card__desc">${esc(m.description)}</p>
+      <div class="tmr-card__bar"><i style="width:${55 + ((i * 13) % 40)}%"></i></div>
+    </div>`;
+  const run = f.metrics.map(card).join("");
+  // Two identical runs make the -50% translate loop seamless.
+  return `
+  <section class="tmr-carousel" data-reveal>
+    <div class="tmr-carousel__track">${run}${run}</div>
+  </section>`;
+}
+
+/** Pinned "what if" sequence — words swap as the visitor scrolls through. */
+export function t1WhatifCss(): string {
+  return `
+  .tmr-whatif{position:relative;height:500vh;background:#0F1218;color:#F4F1EA;font-family:"Helvetica Neue",Helvetica,Arial,-apple-system,sans-serif}
+  .tmr-whatif__sticky{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;padding:0 24px;text-align:center}
+  .tmr-whatif__prefix{font-size:clamp(18px,2vw,26px);font-weight:500;color:#F4F1EA99;letter-spacing:-.01em}
+  .tmr-whatif__stage{position:relative;margin-top:18px;width:100%;height:200px}
+  .tmr-whatif__item{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;opacity:0;transform:translateY(46px);transition:opacity .6s cubic-bezier(.22,1,.36,1),transform .6s cubic-bezier(.22,1,.36,1)}
+  .tmr-whatif__item.tmr-prev{opacity:0;transform:translateY(-46px)}
+  .tmr-whatif__item.tmr-act{opacity:1;transform:none}
+  .tmr-whatif__word{font-size:clamp(52px,8vw,116px);font-weight:500;letter-spacing:-.035em;line-height:1}
+  .tmr-whatif__sub{margin-top:22px;font-size:clamp(15px,1.6vw,19px);color:#F4F1EA8c}
+  .tmr-whatif__dots{position:absolute;bottom:44px;display:flex;gap:8px;left:50%;transform:translateX(-50%)}
+  .tmr-whatif__dots i{width:7px;height:7px;border-radius:50%;background:#F4F1EA33;transition:background .4s,transform .4s}
+  .tmr-whatif__dots i.tmr-act{background:#F4F1EA;transform:scale(1.25)}`;
+}
+
+export function t1WhatifHtml(f: T1Fields): string {
+  const items = f.whatifItems
+    .map(
+      (w, i) => `
+      <div class="tmr-whatif__item${i === 0 ? " tmr-act" : ""}">
+        <div class="tmr-whatif__word">${esc(w.word)}</div>
+        <div class="tmr-whatif__sub">${esc(w.sub)}</div>
+      </div>`
+    )
+    .join("");
+  const dots = f.whatifItems.map((_, i) => `<i${i === 0 ? ` class="tmr-act"` : ""}></i>`).join("");
+  return `
+  <section class="tmr-whatif" id="tmr-whatif">
+    <div class="tmr-whatif__sticky">
+      <div class="tmr-whatif__prefix">${esc(f.whatifPrefix)}</div>
+      <div class="tmr-whatif__stage">${items}</div>
+      <div class="tmr-whatif__dots">${dots}</div>
+    </div>
+  </section>`;
+}
+
 /** Full standalone document for template 1 (sections appended as they're built). */
 export function renderT1(fields: Partial<T1Fields> = {}): string {
   const f = { ...T1_DEFAULTS, ...fields };
@@ -238,11 +352,15 @@ export function renderT1(fields: Partial<T1Fields> = {}): string {
 ${t1RevealCss()}
 ${t1HeroCss()}
 ${t1BridgeCss()}
+${t1CarouselCss()}
+${t1WhatifCss()}
 </style>
 </head>
 <body>
 ${t1HeroHtml(f)}
 ${t1BridgeHtml(f)}
+${t1CarouselHtml(f)}
+${t1WhatifHtml(f)}
 ${t1RevealScript()}
 </body>
 </html>`;
