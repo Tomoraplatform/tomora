@@ -28,6 +28,9 @@ export interface T1Fields {
   features: T1HeroFeature[];
   /** Background image URL (owners can swap in their own image or poster). */
   mediaUrl: string;
+  /** Bridge section: big centered statement + sub-line. */
+  bridgeHeadline: string;
+  bridgeSub: string;
 }
 
 const ICON_PIE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>`;
@@ -36,19 +39,21 @@ const ICON_HEART = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 export const T1_DEFAULTS: T1Fields = {
   brand: "MyBrand",
-  nav: ["What's included", "Health conditions", "For you", "For professionals", "FAQ"],
-  navCta: "Join Waitlist",
-  headline1: "See Beyond.",
-  headline2: "Unlock Your Health",
-  statement1: "Your body holds the answers",
-  statement2: "— we help you see them.",
-  ctaText: "Join the Waitlist",
+  nav: ["How it works", "What we measure", "For individuals", "For practitioners", "Pricing"],
+  navCta: "Get Early Access",
+  headline1: "Listen Closer.",
+  headline2: "Your Body Is Talking",
+  statement1: "Real answers begin",
+  statement2: "with really knowing you.",
+  ctaText: "Reserve My Spot",
   features: [
-    { icon: ICON_PIE, title: "Real-Time Analysis", description: "Fast, actionable insights without long wait times." },
-    { icon: ICON_DNA, title: "Personalized Health Insights", description: "Tailored recommendations based on your unique biomarkers." },
-    { icon: ICON_HEART, title: "Holistic Health Monitoring", description: "Combining physical, nutritional, and mental data for a complete picture." },
+    { icon: ICON_PIE, title: "Results Without The Wait", description: "Clear, useful findings in minutes — not weeks of guessing." },
+    { icon: ICON_DNA, title: "Insights Made For You", description: "Guidance shaped by your own numbers, never by averages." },
+    { icon: ICON_HEART, title: "The Complete Picture", description: "Body, nutrition and mind — tracked together in one place." },
   ],
   mediaUrl: "https://picsum.photos/seed/tmr-beyond/1920/1200",
+  bridgeHeadline: "Ready to meet the healthiest version of you?",
+  bridgeSub: "A smarter, more personal way to understand your wellbeing — built for everyday people and the experts who guide them.",
 };
 
 const esc = (s: string) =>
@@ -66,7 +71,7 @@ export function t1HeroCss(): string {
   .tmr-hero__brand{font-size:20px;font-weight:700;letter-spacing:-.02em}
   .tmr-hero__links{display:flex;align-items:center;gap:10px;list-style:none;margin:0;padding:0;font-size:15px}
   .tmr-hero__links li{display:flex;align-items:center;gap:10px}
-  .tmr-hero__links li+li::before{content:"\\2022";font-size:10px;opacity:.7}
+  .tmr-hero__links li+li::before{content:"•";font-size:10px;opacity:.7}
   .tmr-hero__links a{color:#fff;text-decoration:none;opacity:.92;transition:opacity .25s}
   .tmr-hero__links a:hover{opacity:.6}
   .tmr-btn{display:inline-flex;align-items:center;gap:12px;border:none;cursor:pointer;text-decoration:none;background:#0a0a0a;color:#fff;font-size:15px;font-weight:500;padding:10px 10px 10px 22px;border-radius:999px;transition:transform .3s cubic-bezier(.22,1,.36,1)}
@@ -157,6 +162,68 @@ export function t1HeroHtml(f: T1Fields): string {
   </section>`;
 }
 
+/** Scroll-reveal utility styles (active only when JS adds .tmr-js on <html>). */
+export function t1RevealCss(): string {
+  return `
+  .tmr-js [data-reveal]{opacity:0;transform:translateY(34px);transition:opacity 1s cubic-bezier(.22,1,.36,1),transform 1s cubic-bezier(.22,1,.36,1)}
+  .tmr-js [data-reveal].tmr-in{opacity:1;transform:none}
+  .tmr-js .tmr-mask span{display:block;transform:translateY(112%);transition:transform 1.05s cubic-bezier(.22,1,.36,1)}
+  .tmr-js .tmr-in .tmr-mask span,.tmr-js .tmr-mask.tmr-in span{transform:translateY(0)}
+  .tmr-mask{display:block;overflow:hidden}`;
+}
+
+/** Tiny inline observer that powers scroll reveals in the exported document. */
+export function t1RevealScript(): string {
+  return `
+<script>
+(function(){
+  document.documentElement.classList.add("tmr-js");
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if(e.isIntersecting){
+        var d = e.target.getAttribute("data-delay");
+        if(d) e.target.style.transitionDelay = d + "ms";
+        e.target.classList.add("tmr-in");
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.25 });
+  document.querySelectorAll("[data-reveal]").forEach(function(el){ io.observe(el); });
+})();
+</script>`;
+}
+
+/** Bridge section: big centered conversational statement with a slow-spinning mark. */
+export function t1BridgeCss(): string {
+  return `
+  .tmr-bridge{background:#F4F1EA;color:#101319;padding:140px 24px;text-align:center;font-family:"Helvetica Neue",Helvetica,Arial,-apple-system,sans-serif}
+  .tmr-bridge__mark{width:56px;height:56px;margin:0 auto 36px;color:#101319;animation:tmrSpin 22s linear infinite}
+  .tmr-bridge__mark svg{width:100%;height:100%}
+  .tmr-bridge__headline{margin:0 auto;max-width:840px;font-size:clamp(34px,4.6vw,64px);font-weight:500;letter-spacing:-.03em;line-height:1.08}
+  .tmr-bridge__sub{margin:28px auto 0;max-width:560px;font-size:17px;line-height:1.6;color:#10131999}
+  @keyframes tmrSpin{to{transform:rotate(360deg)}}
+  @media (max-width:900px){.tmr-bridge{padding:96px 20px}}`;
+}
+
+export function t1BridgeHtml(f: T1Fields): string {
+  const mark = `<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M32 6v52M6 32h52M13.6 13.6l36.8 36.8M50.4 13.6L13.6 50.4"/><circle cx="32" cy="32" r="9" fill="currentColor" stroke="none"/></svg>`;
+  // Split the headline near the middle so it reveals as two rising lines.
+  const words = f.bridgeHeadline.split(" ");
+  const mid = Math.ceil(words.length / 2);
+  const line1 = words.slice(0, mid).join(" ");
+  const line2 = words.slice(mid).join(" ");
+
+  return `
+  <section class="tmr-bridge">
+    <div class="tmr-bridge__mark" data-reveal>${mark}</div>
+    <h2 class="tmr-bridge__headline" data-reveal>
+      <span class="tmr-mask"><span>${esc(line1)}</span></span>
+      <span class="tmr-mask"><span>${esc(line2)}</span></span>
+    </h2>
+    <p class="tmr-bridge__sub" data-reveal data-delay="220">${esc(f.bridgeSub)}</p>
+  </section>`;
+}
+
 /** Full standalone document for template 1 (sections appended as they're built). */
 export function renderT1(fields: Partial<T1Fields> = {}): string {
   const f = { ...T1_DEFAULTS, ...fields };
@@ -168,11 +235,15 @@ export function renderT1(fields: Partial<T1Fields> = {}): string {
 <title>${esc(f.brand)}</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
+${t1RevealCss()}
 ${t1HeroCss()}
+${t1BridgeCss()}
 </style>
 </head>
 <body>
 ${t1HeroHtml(f)}
+${t1BridgeHtml(f)}
+${t1RevealScript()}
 </body>
 </html>`;
 }
