@@ -45,6 +45,25 @@ export interface T1Fields {
   /** Dashboard showcase section. */
   dashHeadline: string;
   dashSub: string;
+  /** FAQ accordion. */
+  faqEyebrow: string;
+  faqHeadline: string;
+  faqs: { q: string; a: string }[];
+  /** Closing CTA section. */
+  ctaHeadline1: string;
+  ctaHeadline2: string;
+  ctaHeadline3: string;
+  ctaBody: string;
+  ctaPlaceholder: string;
+  ctaButton: string;
+  ctaNote: string;
+  ctaImage: string;
+  /** Footer. */
+  footerTagline: string;
+  footerColumns: { title: string; links: string[] }[];
+  footerEmail: string;
+  footerSocials: string[];
+  footerLegal: string[];
 }
 
 const ICON_PIE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>`;
@@ -93,6 +112,31 @@ export const T1_DEFAULTS: T1Fields = {
   splitCta: "Get Early Access",
   dashHeadline: "Your whole story, one view",
   dashSub: "Everything that matters about your wellbeing — habits, results and progress — gathered into a single dashboard you can actually read. Spot what's improving, see what needs attention, and know exactly where to focus next.",
+  faqEyebrow: "Good to know",
+  faqHeadline: "Questions, answered",
+  faqs: [
+    { q: "Do I need any special equipment to start?", a: "Not at all. You begin with a few simple questions and any results you already have — everything else builds from there, right on your phone." },
+    { q: "Is my information kept private?", a: "Always. Your data is encrypted, never sold, and only ever used to give you clearer, more personal guidance." },
+    { q: "Can my doctor or coach use it too?", a: "Yes. You can share a live view with any practitioner you trust, so the people guiding you see the same clear picture you do." },
+    { q: "How soon will I see something useful?", a: "Right away. Your first insights appear within minutes of setting up, and they keep getting sharper as you go." },
+    { q: "What does it cost?", a: "You can start free. Paid plans unlock deeper tracking and practitioner sharing whenever you're ready — no lock-in, cancel anytime." },
+  ],
+  ctaHeadline1: "Real insight.",
+  ctaHeadline2: "Made simple.",
+  ctaHeadline3: "Built for you.",
+  ctaBody: "Join the early list for first access, founding-member perks, and launch-day pricing you won't see again.",
+  ctaPlaceholder: "Enter your email",
+  ctaButton: "Join the List",
+  ctaNote: "We'll only send what matters — no noise, no spam.",
+  ctaImage: "https://picsum.photos/seed/tmr-cta/1000/1300",
+  footerTagline: "A clearer, more personal way to understand your health — wherever you are.",
+  footerColumns: [
+    { title: "Product", links: ["How it works", "What we measure", "For individuals", "For practitioners", "Pricing"] },
+    { title: "Company", links: ["About", "Blog", "Careers", "Contact"] },
+  ],
+  footerEmail: "hello@yourbrand.com",
+  footerSocials: ["Instagram", "LinkedIn", "X"],
+  footerLegal: ["Privacy Policy", "Cookie Policy", "Terms"],
 };
 
 const esc = (s: string) =>
@@ -249,6 +293,17 @@ export function t1RevealScript(): string {
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
   }
+
+  // FAQ accordion.
+  document.querySelectorAll(".tmr-faq__item").forEach(function (item) {
+    var q = item.querySelector(".tmr-faq__q");
+    var a = item.querySelector(".tmr-faq__a");
+    q.addEventListener("click", function () {
+      var open = item.classList.toggle("tmr-open");
+      q.setAttribute("aria-expanded", open ? "true" : "false");
+      a.style.maxHeight = open ? a.scrollHeight + "px" : "0px";
+    });
+  });
 })();
 </script>`;
 }
@@ -517,6 +572,155 @@ export function t1DashHtml(f: T1Fields): string {
   </section>`;
 }
 
+/** FAQ accordion: eyebrow + headline on the left, expandable questions on the right. */
+export function t1FaqCss(): string {
+  return `
+  .tmr-faq{background:#F4F1EA;color:#101319;padding:130px 24px;font-family:"Helvetica Neue",Helvetica,Arial,-apple-system,sans-serif}
+  .tmr-faq__wrap{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:0.85fr 1.15fr;gap:64px;align-items:start}
+  .tmr-faq__eyebrow{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#10131966}
+  .tmr-faq__headline{margin-top:14px;font-size:clamp(34px,4vw,54px);font-weight:500;letter-spacing:-.03em;line-height:1.05}
+  .tmr-faq__list{border-top:1px solid #10131917}
+  .tmr-faq__item{border-bottom:1px solid #10131917}
+  .tmr-faq__q{width:100%;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:26px 4px;text-align:left;font-size:clamp(17px,1.7vw,21px);font-weight:500;color:#101319;font-family:inherit}
+  .tmr-faq__icon{position:relative;width:20px;height:20px;flex:none}
+  .tmr-faq__icon::before,.tmr-faq__icon::after{content:"";position:absolute;left:50%;top:50%;width:16px;height:2px;background:#101319;transform:translate(-50%,-50%);transition:transform .35s cubic-bezier(.22,1,.36,1)}
+  .tmr-faq__icon::after{transform:translate(-50%,-50%) rotate(90deg)}
+  .tmr-faq__item.tmr-open .tmr-faq__icon::after{transform:translate(-50%,-50%) rotate(0)}
+  .tmr-faq__a{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.22,1,.36,1)}
+  .tmr-faq__a p{margin:0;padding:0 46px 28px 4px;font-size:16px;line-height:1.6;color:#10131999}
+  @media (max-width:900px){.tmr-faq{padding:88px 20px}.tmr-faq__wrap{grid-template-columns:1fr;gap:32px}}`;
+}
+
+export function t1FaqHtml(f: T1Fields): string {
+  const items = f.faqs
+    .map(
+      (item) => `
+      <div class="tmr-faq__item">
+        <button class="tmr-faq__q" type="button" aria-expanded="false">
+          <span>${esc(item.q)}</span><span class="tmr-faq__icon"></span>
+        </button>
+        <div class="tmr-faq__a"><p>${esc(item.a)}</p></div>
+      </div>`
+    )
+    .join("");
+  return `
+  <section class="tmr-faq">
+    <div class="tmr-faq__wrap">
+      <div data-reveal>
+        <div class="tmr-faq__eyebrow">${esc(f.faqEyebrow)}</div>
+        <h2 class="tmr-faq__headline">${esc(f.faqHeadline)}</h2>
+      </div>
+      <div class="tmr-faq__list" data-reveal data-delay="120">${items}</div>
+    </div>
+  </section>`;
+}
+
+/** Closing CTA: dark panel with statement + email capture beside a portrait image. */
+export function t1CtaCss(): string {
+  return `
+  .tmr-cta{background:#0F1218;color:#F4F1EA;display:grid;grid-template-columns:1.15fr 0.85fr;min-height:88vh;font-family:"Helvetica Neue",Helvetica,Arial,-apple-system,sans-serif}
+  .tmr-cta__inner{display:flex;flex-direction:column;justify-content:center;padding:96px 64px}
+  .tmr-cta__headline{font-size:clamp(40px,5vw,74px);font-weight:500;letter-spacing:-.03em;line-height:1.02}
+  .tmr-cta__headline .tmr-mask:nth-child(2) span{color:#F4F1EA;opacity:.55}
+  .tmr-cta__body{margin:28px 0 0;max-width:440px;font-size:17px;line-height:1.6;color:#F4F1EA99}
+  .tmr-cta__form{margin-top:34px;display:flex;gap:10px;max-width:480px;flex-wrap:wrap}
+  .tmr-cta__input{flex:1;min-width:220px;background:#F4F1EA0f;border:1px solid #F4F1EA24;border-radius:999px;padding:15px 22px;font-size:15px;color:#F4F1EA;font-family:inherit;outline:none;transition:border-color .3s}
+  .tmr-cta__input::placeholder{color:#F4F1EA66}
+  .tmr-cta__input:focus{border-color:#F4F1EA66}
+  .tmr-cta__note{margin-top:16px;font-size:13px;color:#F4F1EA66}
+  .tmr-cta__done{margin-top:34px;font-size:17px;color:#F4F1EA;max-width:440px;display:none}
+  .tmr-cta.tmr-sent .tmr-cta__form,.tmr-cta.tmr-sent .tmr-cta__note{display:none}
+  .tmr-cta.tmr-sent .tmr-cta__done{display:block}
+  .tmr-cta__img{background-size:cover;background-position:center;filter:brightness(.92)}
+  @media (max-width:900px){
+    .tmr-cta{grid-template-columns:1fr}
+    .tmr-cta__inner{padding:72px 24px}
+    .tmr-cta__img{min-height:56vh;order:-1}
+  }`;
+}
+
+export function t1CtaHtml(f: T1Fields): string {
+  const arrow = `<span class="tmr-btn__arrow"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg></span>`;
+  return `
+  <section class="tmr-cta" id="tmr-cta">
+    <div class="tmr-cta__inner">
+      <h2 class="tmr-cta__headline" data-reveal>
+        <span class="tmr-mask"><span>${esc(f.ctaHeadline1)}</span></span>
+        <span class="tmr-mask"><span>${esc(f.ctaHeadline2)}</span></span>
+        <span class="tmr-mask"><span>${esc(f.ctaHeadline3)}</span></span>
+      </h2>
+      <p class="tmr-cta__body" data-reveal data-delay="150">${esc(f.ctaBody)}</p>
+      <form class="tmr-cta__form" data-reveal data-delay="240" onsubmit="this.closest('.tmr-cta').classList.add('tmr-sent');return false;">
+        <input class="tmr-cta__input" type="email" required placeholder="${esc(f.ctaPlaceholder)}">
+        <button class="tmr-btn tmr-btn--light" type="submit">${esc(f.ctaButton)} ${arrow}</button>
+      </form>
+      <p class="tmr-cta__note" data-reveal data-delay="300">${esc(f.ctaNote)}</p>
+      <p class="tmr-cta__done">You're on the list — as a founding member you'll get first access and launch pricing.</p>
+    </div>
+    <div class="tmr-cta__img" style="background-image:url('${esc(f.ctaImage)}')"></div>
+  </section>`;
+}
+
+/** Footer: brand + tagline, link columns, contact, socials, legal + copyright. */
+export function t1FooterCss(): string {
+  return `
+  .tmr-footer{background:#0B0D11;color:#F4F1EA;padding:80px 40px 40px;font-family:"Helvetica Neue",Helvetica,Arial,-apple-system,sans-serif}
+  .tmr-footer__top{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:48px}
+  .tmr-footer__brand{font-size:24px;font-weight:700;letter-spacing:-.02em}
+  .tmr-footer__tag{margin-top:16px;max-width:300px;font-size:15px;line-height:1.6;color:#F4F1EA80}
+  .tmr-footer__ctitle{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#F4F1EA55}
+  .tmr-footer ul{list-style:none;margin:16px 0 0;padding:0}
+  .tmr-footer li{margin-bottom:11px}
+  .tmr-footer a{color:#F4F1EAcc;text-decoration:none;font-size:15px;transition:color .25s}
+  .tmr-footer a:hover{color:#F4F1EA}
+  .tmr-footer__bottom{max-width:1120px;margin:64px auto 0;padding-top:24px;border-top:1px solid #F4F1EA1a;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px}
+  .tmr-footer__legal{display:flex;flex-wrap:wrap;gap:20px}
+  .tmr-footer__legal a{font-size:13px;color:#F4F1EA80}
+  .tmr-footer__copy{font-size:13px;color:#F4F1EA55}
+  @media (max-width:900px){
+    .tmr-footer{padding:56px 20px 32px}
+    .tmr-footer__top{grid-template-columns:1fr 1fr;gap:32px}
+    .tmr-footer__brand-col{grid-column:1 / -1}
+  }`;
+}
+
+export function t1FooterHtml(f: T1Fields): string {
+  const cols = f.footerColumns
+    .map(
+      (c) => `
+      <div>
+        <div class="tmr-footer__ctitle">${esc(c.title)}</div>
+        <ul>${c.links.map((l) => `<li><a href="#">${esc(l)}</a></li>`).join("")}</ul>
+      </div>`
+    )
+    .join("");
+  const socials = `
+      <div>
+        <div class="tmr-footer__ctitle">Connect</div>
+        <ul>
+          ${f.footerSocials.map((s) => `<li><a href="#">${esc(s)}</a></li>`).join("")}
+          <li><a href="mailto:${esc(f.footerEmail)}">${esc(f.footerEmail)}</a></li>
+        </ul>
+      </div>`;
+  const legal = f.footerLegal.map((l) => `<a href="#">${esc(l)}</a>`).join("");
+  const year = new Date().getFullYear();
+  return `
+  <footer class="tmr-footer">
+    <div class="tmr-footer__top">
+      <div class="tmr-footer__brand-col">
+        <div class="tmr-footer__brand">${esc(f.brand)}</div>
+        <p class="tmr-footer__tag">${esc(f.footerTagline)}</p>
+      </div>
+      ${cols}
+      ${socials}
+    </div>
+    <div class="tmr-footer__bottom">
+      <span class="tmr-footer__copy">© ${year} ${esc(f.brand)}. All rights reserved.</span>
+      <div class="tmr-footer__legal">${legal}</div>
+    </div>
+  </footer>`;
+}
+
 /** Full standalone document for template 1 (sections appended as they're built). */
 export function renderT1(fields: Partial<T1Fields> = {}): string {
   const f = { ...T1_DEFAULTS, ...fields };
@@ -535,6 +739,9 @@ ${t1CarouselCss()}
 ${t1WhatifCss()}
 ${t1SplitCss()}
 ${t1DashCss()}
+${t1FaqCss()}
+${t1CtaCss()}
+${t1FooterCss()}
 </style>
 </head>
 <body>
@@ -544,6 +751,9 @@ ${t1CarouselHtml(f)}
 ${t1WhatifHtml(f)}
 ${t1SplitHtml(f)}
 ${t1DashHtml(f)}
+${t1FaqHtml(f)}
+${t1CtaHtml(f)}
+${t1FooterHtml(f)}
 ${t1RevealScript()}
 </body>
 </html>`;
