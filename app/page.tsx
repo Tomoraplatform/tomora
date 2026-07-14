@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
+import { TomoraAiTeaser } from "@/components/marketing/tomora-ai-teaser";
 import { BrowserFrame } from "@/components/browser-frame";
 import { TemplatePreview } from "@/components/marketing/template-preview";
 import { DashboardPreview } from "@/components/marketing/dashboard-preview";
@@ -62,6 +63,7 @@ export default async function Home({
       <SocialProof />
       <Features />
       <TemplateShowcase templates={showcaseTemplates} />
+      <TomoraAiTeaser />
       <Pricing discounts={discounts} />
       <Testimonials />
       <Faq />
