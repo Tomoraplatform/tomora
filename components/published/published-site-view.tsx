@@ -4,6 +4,7 @@ import { PublishedStore } from "./published-store";
 import { SupportChat } from "./support-chat";
 import { VisitBeacon } from "./visit-beacon";
 import { BakehouseHome } from "./bakehouse-home";
+import { ChronovaHome } from "./chronova/chronova-home";
 import type { Product, Review, Site } from "@/lib/database.types";
 
 /**
@@ -45,6 +46,15 @@ export function PublishedSiteView({
       return (
         <>
           <BakehouseHome site={site} products={products} paystackEnabled={!!site.paystack_subaccount} />
+          {chat}
+          {beacon}
+        </>
+      );
+    }
+    if (site.template_id === "shop-07" && tenantHost) {
+      return (
+        <>
+          <ChronovaHome site={site} products={products} paystackEnabled={!!site.paystack_subaccount} />
           {chat}
           {beacon}
         </>

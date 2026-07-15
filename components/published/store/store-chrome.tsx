@@ -24,7 +24,7 @@ export const useStoreCartApi = () => useContext(StoreCartContext);
  * localStorage — see use-store-cart.ts.
  */
 export function StoreChrome({
-  siteData, brandColor, siteId, products, bankName, accountNumber, accountName, paystackEnabled, children,
+  siteData, brandColor, siteId, products, bankName, accountNumber, accountName, paystackEnabled, pageLinks, children,
 }: {
   siteData: SiteData;
   brandColor: string;
@@ -34,6 +34,8 @@ export function StoreChrome({
   accountNumber?: string | null;
   accountName?: string | null;
   paystackEnabled?: boolean;
+  /** Optional page nav (Home/Shop/About/Contact) shown instead of category quick-links. */
+  pageLinks?: { label: string; href: string }[];
   children: React.ReactNode;
 }) {
   const name = siteData.businessName || "Store";
@@ -55,9 +57,9 @@ export function StoreChrome({
         <header className="border-b border-black/5">
           <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
             <nav className="order-2 hidden gap-4 text-[11px] font-semibold uppercase tracking-wide text-black/70 sm:order-1 md:flex">
-              {quickCats.map((c) => (
-                <Link key={c.id} href={`/category/${slugify(c.name)}`} className="hover:opacity-70">{c.name}</Link>
-              ))}
+              {pageLinks?.length
+                ? pageLinks.map((l) => <Link key={l.href} href={l.href} className="hover:opacity-70">{l.label}</Link>)
+                : quickCats.map((c) => <Link key={c.id} href={`/category/${slugify(c.name)}`} className="hover:opacity-70">{c.name}</Link>)}
             </nav>
             <div className="order-1 flex items-center justify-between sm:order-2 sm:justify-center">
               <Link href="/" className="text-lg font-bold">
