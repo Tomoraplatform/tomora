@@ -24,6 +24,7 @@ import { MensClothes } from "./v2/MensClothes";
 import { FashionHouse } from "./v2/FashionHouse";
 import { Guza } from "./v2/Guza";
 import { Bakehouse } from "./v2/Bakehouse";
+import { Chronova } from "./v2/Chronova";
 import { Inbio } from "./v2/Inbio";
 import { RizwanAli } from "./v2/RizwanAli";
 import { Spotlight } from "./v2/Spotlight";
@@ -68,6 +69,7 @@ export const V2_REGISTRY: Record<string, V2Component> = {
   "shop-04": FashionHouse,
   "shop-05": Guza,
   "shop-06": Bakehouse,
+  "shop-07": Chronova,
   "portfolio-01": Inbio,
   "portfolio-02": RizwanAli,
   "portfolio-03": Spotlight,

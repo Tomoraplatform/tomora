@@ -43,6 +43,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
   { id: "shop-04", name: "Fashion House", category: "shop", component: "FashionHouse", accent: "#2563EB", blurb: "Bold fashion store: big sale hero, deals & featured tabs, reviews and blog." },
   { id: "shop-05", name: "Guza", category: "shop", component: "Guza", accent: "#111111", blurb: "Minimal shop grid with filters, colour swatches and a dark footer." },
   { id: "shop-06", name: "Bakehouse", category: "shop", component: "Bakehouse", accent: "#8B5E3C", blurb: "Bakery/food shop with real category & product pages, pre-orders and per-product reviews." },
+  { id: "shop-07", name: "Chronova", category: "shop", component: "Chronova", accent: "#2E7DF6", blurb: "Premium watch / product store: pill nav, floating hero, real shop, product, about & contact pages." },
   { id: "portfolio-01", name: "Inbio", category: "portfolio", component: "Inbio", accent: "#E74C6B", blurb: "Personal portfolio with services, resume and projects." },
   { id: "portfolio-02", name: "Rizwan Ali", category: "portfolio", component: "RizwanAli", accent: "#2563EB", blurb: "Designer portfolio with stats and project filters." },
   { id: "portfolio-03", name: "Spotlight", category: "portfolio", component: "Spotlight", accent: "#7C5CFF", blurb: "Personal creator brand with photo & video galleries." },
@@ -76,6 +77,7 @@ export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-04": ["trustBadges", "shopCategories", "testimonials", "blogPosts"],
   "shop-05": [],
   "shop-06": ["shopCategories"],
+  "shop-07": ["shopCategories", "trustBadges"],
   "portfolio-01": ["services", "portfolio", "resume", "testimonials", "clientLogos"],
   "portfolio-02": ["services", "portfolio", "stats", "testimonials"],
   "portfolio-03": ["skills", "experiencePhotos", "services", "galleryPhotos", "galleryVideos"],
@@ -111,6 +113,7 @@ export const TEMPLATE_NAV: Record<string, [string, string][]> = {
   "shop-04": [["Home", "#"], ["Categories", "#categories"], ["Great Deals", "#deals"], ["Blog", "#blog"], ["About Us", "#"]],
   "shop-05": [["Home", "#"], ["Shop", "#shop"], ["Products", "#shop"], ["Blog", "#"]],
   "shop-06": [["Home", "#"], ["New Arrivals", "#newarrivals"], ["Categories", "#categories"], ["Featured", "#featured"]],
+  "shop-07": [["Home", "/"], ["Shop", "/shop"], ["About", "/about"], ["Contact", "/contact"]],
   "portfolio-01": [["Home", "#"], ["About", "#about"], ["Portfolio", "#portfolio"], ["Resume", "#resume"], ["Contact", "#contact"]],
   "portfolio-02": [["Home", "#"], ["About Me", "#about"], ["Services", "#services"], ["Portfolio", "#projects"], ["Testimonials", "#testimonials"], ["Contact", "#contact"]],
   "portfolio-03": [["Home", "#"], ["Experience", "#experience"], ["Service", "#services"], ["Photos", "#photos"], ["Videos", "#videos"]],
@@ -219,6 +222,12 @@ export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
     { key: "newarrivals", label: "New Arrivals" },
     { key: "categories", label: "Shop by Category" },
     { key: "featured", label: "Featured" },
+  ],
+  "shop-07": [
+    { key: "shop", label: "Explore the collection" },
+    { key: "categories", label: "Shop by style" },
+    { key: "featured", label: "This week's pick" },
+    { key: "newsletter", label: "Join the Collectors' List" },
   ],
   "portfolio-01": [
     { key: "about", label: "About Me" },
@@ -431,6 +440,14 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "newarrivals", label: "New Arrivals", heading: "newarrivals", products: true },
     { key: "categories", label: "Shop by Category", heading: "categories", list: "shopCategories" },
     { key: "featured", label: "Featured", heading: "featured", products: true },
+    { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
+  ],
+  "shop-07": [
+    { key: "hero", label: "Hero", hero: true, eyebrow: true, button: true, list: "trustBadges" },
+    { key: "shop", label: "Explore the collection", heading: "shop", products: true, list: "shopCategories" },
+    { key: "categories", label: "Shop by style", heading: "categories", list: "shopCategories" },
+    { key: "featured", label: "This week's pick", heading: "featured", products: true },
+    { key: "newsletter", label: "Newsletter", heading: "newsletter", eyebrow: true },
     { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "portfolio-01": [
@@ -922,6 +939,7 @@ const HERO = {
   "shop-04": { h: "EXPLOSIVE\nBig Sale", s: "Up to 50% off across our newest styles — shop the season's biggest deals while they last.", c: "Buy Now" },
   "shop-05": { h: "Shop", s: "", c: "Shop Now" },
   "shop-06": { h: "Freshly Baked, Made With Love", s: "Handcrafted bakes made in small batches — order online for pickup or delivery.", c: "Shop Now" },
+  "shop-07": { h: "Timepieces for the long run.", s: "A curated bench of everyday classics and rare finds — built to be worn, not stored away.", c: "Shop the Collection" },
   "portfolio-01": { h: "Hi, I'm Alex — a Professional Designer", s: "I craft digital products and brands that people love to use.", c: "Work With Me" },
   "portfolio-02": { h: "Rizwan Ali", s: "Professional UI/UX & Website Designer helping brands stand out online.", c: "Hire Me" },
   "portfolio-03": { h: "Your Name", s: "", c: "" },
@@ -1015,6 +1033,29 @@ export function createCatalogContent(
         data.shopCategories = ["Signature Rolls", "Signature Cookies"]
           .map((name, i) => ({ id: `${seed}-sc${i}`, name, image: img(`${seed}-cat-${i}`, 500, 600) }));
         data.sectionTitles = { ...(data.sectionTitles || {}), newarrivals: "New Arrivals", categories: "Shop by Category", featured: "Featured" };
+      }
+      if (templateId === "shop-07") {
+        const watchNames = ["Ranger 38", "Ultra Slim", "Reef 300", "Track One", "Heritage 62", "Moonphase", "Explorer II", "Abyss GMT", "Circuit 40"];
+        const watchCats = ["Field", "Dress", "Dive", "Chrono", "Vintage", "Dress", "Field", "Dive", "Chrono"];
+        const watchPrices = [96000, 142000, 188000, 210000, 124000, 168000, 118000, 245000, 199000];
+        data.products = watchNames.map((name, i) => ({
+          id: `${seed}-p${i}`, name,
+          description: "Precision-built and hand-checked by our watchmakers — a piece made to be worn every day.",
+          price: watchPrices[i],
+          comparePrice: i % 3 === 0 ? Math.round(watchPrices[i] * 1.15) : undefined,
+          image: img(`${seed}-watch-${i}`), rating: 4.5 + (i % 2 ? 0 : 0.3), reviews: 8 + i * 3,
+          category: watchCats[i], bestSeller: i === 3, offer: i % 3 === 0, newArrival: i < 3, offerPercent: i % 3 === 0 ? 12 : 0,
+        }));
+        data.shopCategories = ["Dress", "Dive", "Field", "Chrono", "Vintage"]
+          .map((name, i) => ({ id: `${seed}-sc${i}`, name, image: img(`${seed}-wcat-${i}`, 500, 600) }));
+        data.trustBadges = [
+          { id: `${seed}-tb0`, title: "100% Genuine", subtitle: "Verified by our watchmakers" },
+          { id: `${seed}-tb1`, title: "30-Day Returns", subtitle: "No-questions, easy swaps" },
+          { id: `${seed}-tb2`, title: "Insured Delivery", subtitle: "Tracked to your door" },
+        ];
+        data.sectionEyebrows = { ...(data.sectionEyebrows || {}), hero: "Fresh drops every week · Limited runs", newsletter: "Stay in the loop" };
+        data.sectionButtons = { ...(data.sectionButtons || {}), hero: { text: "Browse Best Sellers", url: "/shop" } };
+        data.sectionTitles = { ...(data.sectionTitles || {}), shop: "Explore the collection", categories: "Shop by style", featured: "This week's pick", newsletter: "Join the Collectors' List" };
       }
       break;
     case "education":
