@@ -4,17 +4,24 @@ import { Sparkles, ArrowRight, Check } from "lucide-react";
 /**
  * Landing-page teaser for Tomora AI (coming soon): pick a design, edit it with
  * your brand, preview it, then copy clean HTML/CSS to use on any platform.
- * The illustration is pure CSS — a design card cycling through template looks
- * while a code window "types" the exported markup.
+ * The illustration is pure CSS — a looping miniature of the first Tomora AI
+ * template's cinematic hero (Ken Burns zoom + clip-mask headline reveal) above
+ * a code window that "types" the exported markup.
  */
 export function TomoraAiTeaser() {
   return (
     <section id="tomora-ai" className="border-t border-ink/5 bg-ink py-16 text-cream md:py-24">
       <style>{`
-        @keyframes tai-cycle {
-          0%, 28% { opacity: 1; }
-          33%, 95% { opacity: 0; }
-          100% { opacity: 1; }
+        @keyframes tai-ken { 0% { transform: scale(1); } 100% { transform: scale(1.16); } }
+        @keyframes tai-rise {
+          0% { transform: translateY(115%); }
+          14%, 84% { transform: translateY(0); }
+          100% { transform: translateY(115%); }
+        }
+        @keyframes tai-fade {
+          0%, 7% { opacity: 0; transform: translateY(10px); }
+          22%, 84% { opacity: 1; transform: translateY(0); }
+          94%, 100% { opacity: 0; transform: translateY(10px); }
         }
         @keyframes tai-type {
           0% { width: 0; }
@@ -62,104 +69,50 @@ export function TomoraAiTeaser() {
           </Link>
         </div>
 
-        {/* Illustration: design card cycling + code window typing */}
+        {/* Illustration: looping miniature of Template 1's cinematic hero + code window */}
         <div className="relative mx-auto w-full max-w-md" style={{ animation: "tai-float 6s ease-in-out infinite" }}>
-          {/* Design card cycling three real miniature SaaS designs */}
-          <div className="relative h-64 overflow-hidden rounded-2xl border border-cream/15 bg-white shadow-2xl">
-            {/* Look 1 — SaaS landing page hero */}
-            <div className="absolute inset-0" style={{ animation: "tai-cycle 9s linear infinite", animationDelay: "0s" }}>
-              <div className="flex h-full flex-col bg-[#0B1020] p-4 text-white">
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center gap-1 text-[9px] font-bold"><span className="h-2.5 w-2.5 rounded-full bg-[#6366F1]" />PulseHQ</span>
-                  <span className="flex gap-2 text-[7px] text-white/60"><span>Product</span><span>Pricing</span><span>Docs</span></span>
-                  <span className="rounded-md bg-[#6366F1] px-2 py-1 text-[7px] font-semibold">Sign up</span>
-                </div>
-                <div className="mt-4 flex flex-1 gap-3">
-                  <div className="flex-1">
-                    <span className="rounded-full bg-[#6366F1]/20 px-1.5 py-0.5 text-[6px] font-semibold text-[#A5B4FC]">NEW · AI reports</span>
-                    <p className="mt-1.5 text-[13px] font-extrabold leading-tight">Know your metrics<br />before they move</p>
-                    <p className="mt-1 text-[7px] leading-snug text-white/55">Realtime analytics for growing SaaS teams.<br />Set up in minutes, no code required.</p>
-                    <div className="mt-2 flex gap-1.5">
-                      <span className="rounded-md bg-gradient-to-r from-[#6366F1] to-[#8B5CF6] px-2 py-1 text-[7px] font-bold">Start free trial</span>
-                      <span className="rounded-md border border-white/25 px-2 py-1 text-[7px] font-semibold text-white/80">Live demo</span>
-                    </div>
-                    <p className="mt-2 text-[6px] text-white/40">Trusted by 2,400+ teams · No card needed</p>
-                  </div>
-                  <div className="w-[45%] self-center rounded-lg bg-white p-2 shadow-xl">
-                    <p className="text-[6px] font-semibold text-neutral-500">Monthly revenue</p>
-                    <p className="text-[11px] font-extrabold text-neutral-900">$48,290 <span className="text-[6px] font-bold text-emerald-500">▲ 12%</span></p>
-                    <div className="mt-1.5 flex h-10 items-end gap-[3px]">
-                      {[35, 55, 40, 70, 58, 85, 100].map((h, j) => (
-                        <span key={j} className="flex-1 rounded-sm bg-gradient-to-t from-[#6366F1] to-[#A5B4FC]" style={{ height: `${h}%` }} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Mini cinematic hero — mirrors the first Tomora AI template's reveal */}
+          <div className="relative h-64 overflow-hidden rounded-2xl border border-cream/15 shadow-2xl">
+            {/* Ken Burns warm background */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(130% 110% at 30% 18%, rgba(232,181,75,.55), transparent 55%), linear-gradient(120deg, #3a2410 0%, #7a4a18 46%, #241509 100%)",
+                animation: "tai-ken 14s ease-in-out infinite alternate",
+              }}
+            />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(115deg, rgba(30,15,2,.55), rgba(74,42,8,.15) 50%, rgba(20,10,2,.55))" }} />
 
-            {/* Look 2 — SaaS features section */}
-            <div className="absolute inset-0" style={{ animation: "tai-cycle 9s linear infinite", animationDelay: "-3s" }}>
-              <div className="flex h-full flex-col bg-[#FAFAF7] p-4 text-neutral-900">
-                <p className="text-center text-[6px] font-bold uppercase tracking-wider text-[#0D9488]">Why teams choose Nimbus</p>
-                <p className="mt-0.5 text-center text-[13px] font-extrabold leading-tight">Everything your team needs<br />to ship faster</p>
-                <div className="mt-3 grid flex-1 grid-cols-3 gap-2">
-                  {[
-                    { c: "#0D9488", t: "Automations", d: "Put busywork on autopilot with rules." },
-                    { c: "#F59E0B", t: "Insights", d: "Dashboards your whole team understands." },
-                    { c: "#6366F1", t: "Integrations", d: "Connects to 80+ tools out of the box." },
-                  ].map((f) => (
-                    <div key={f.t} className="rounded-lg border border-neutral-200 bg-white p-2 shadow-sm">
-                      <span className="flex h-4 w-4 items-center justify-center rounded-md text-[7px] font-bold text-white" style={{ background: f.c }}>✓</span>
-                      <p className="mt-1 text-[8px] font-bold">{f.t}</p>
-                      <p className="mt-0.5 text-[6px] leading-snug text-neutral-500">{f.d}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-2 flex items-center justify-center gap-1.5">
-                  <span className="rounded-md bg-neutral-900 px-2.5 py-1 text-[7px] font-bold text-white">Get started — it&apos;s free</span>
-                  <span className="text-[6px] text-neutral-400">14-day trial · Cancel anytime</span>
-                </div>
+            <div className="relative flex h-full flex-col p-4 text-white">
+              {/* nav */}
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold">Aura</span>
+                <span className="hidden gap-2 text-[7px] text-white/70 sm:flex"><span>How it works</span><span>·</span><span>For you</span><span>·</span><span>Pricing</span></span>
+                <span className="rounded-full bg-black/70 px-2 py-1 text-[7px] font-semibold">Get Early Access</span>
               </div>
-            </div>
 
-            {/* Look 3 — SaaS analytics dashboard */}
-            <div className="absolute inset-0" style={{ animation: "tai-cycle 9s linear infinite", animationDelay: "-6s" }}>
-              <div className="flex h-full bg-[#F4F5F7] text-neutral-900">
-                <div className="flex w-14 flex-col gap-1.5 bg-[#111827] p-2 text-[6px] font-semibold text-white/70">
-                  <span className="mb-1 flex items-center gap-1 text-[7px] font-bold text-white"><span className="h-2 w-2 rounded-sm bg-[#22D3EE]" />Statly</span>
-                  <span className="rounded bg-white/15 px-1.5 py-1 text-white">Overview</span>
-                  <span className="px-1.5 py-1">Reports</span>
-                  <span className="px-1.5 py-1">Customers</span>
-                  <span className="px-1.5 py-1">Billing</span>
-                  <span className="px-1.5 py-1">Settings</span>
-                </div>
-                <div className="flex-1 p-2.5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[8px] font-bold">Good morning, Ada</p>
-                    <span className="rounded-md bg-[#111827] px-1.5 py-0.5 text-[6px] font-semibold text-white">Export</span>
+              {/* headline — clip-mask rise, staggered */}
+              <div className="mt-6">
+                <span className="block overflow-hidden">
+                  <span className="block text-[22px] font-medium leading-none tracking-tight" style={{ animation: "tai-rise 8s cubic-bezier(.22,1,.36,1) infinite", animationDelay: ".2s" }}>Listen Closer.</span>
+                </span>
+                <span className="mt-1 block overflow-hidden">
+                  <span className="block text-[22px] font-medium leading-none tracking-tight" style={{ animation: "tai-rise 8s cubic-bezier(.22,1,.36,1) infinite", animationDelay: ".5s" }}>Your Body Is Talking</span>
+                </span>
+              </div>
+
+              {/* features — fade up */}
+              <div className="mt-auto space-y-1.5">
+                {[
+                  { t: "Results Without The Wait", d: 0.9 },
+                  { t: "Insights Made For You", d: 1.05 },
+                ].map((f) => (
+                  <div key={f.t} className="flex items-center gap-2" style={{ animation: "tai-fade 8s cubic-bezier(.22,1,.36,1) infinite", animationDelay: `${f.d}s` }}>
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full border border-white/60 text-[7px]">✓</span>
+                    <span className="text-[8px] font-semibold">{f.t}</span>
                   </div>
-                  <div className="mt-1.5 grid grid-cols-3 gap-1.5">
-                    {[
-                      { l: "MRR", v: "$12.4k", d: "+8.2%" },
-                      { l: "Active users", v: "3,207", d: "+4.1%" },
-                      { l: "Retention", v: "98.2%", d: "+0.6%" },
-                    ].map((s) => (
-                      <div key={s.l} className="rounded-lg bg-white p-1.5 shadow-sm">
-                        <p className="text-[6px] text-neutral-500">{s.l}</p>
-                        <p className="text-[9px] font-extrabold">{s.v}</p>
-                        <p className="text-[6px] font-bold text-emerald-500">{s.d}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-1.5 rounded-lg bg-white p-1.5 shadow-sm">
-                    <p className="text-[6px] font-semibold text-neutral-500">Signups this week</p>
-                    <svg viewBox="0 0 200 40" className="mt-0.5 h-10 w-full">
-                      <polygon points="0,40 0,30 25,26 50,28 75,18 100,22 125,12 150,14 175,6 200,10 200,40" fill="#22D3EE" opacity="0.15" />
-                      <polyline points="0,30 25,26 50,28 75,18 100,22 125,12 150,14 175,6 200,10" fill="none" stroke="#0891B2" strokeWidth="2" />
-                    </svg>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
