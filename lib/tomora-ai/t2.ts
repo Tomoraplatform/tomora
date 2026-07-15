@@ -288,26 +288,309 @@ export function t2HomeHtml(f: T2Fields): string {
   ${t2Footer(f)}`;
 }
 
+/* ---------------- shop page ---------------- */
+
+export function t2ShopCss(): string {
+  return `
+  .cv-shop-head{padding:34px 0 4px}
+  .cv-shop-head h1{font-size:clamp(30px,4vw,46px);font-weight:700;letter-spacing:-.02em}
+  .cv-shop-head p{margin-top:8px;font-size:15px;color:var(--cv-muted)}`;
+}
+
+export function t2ShopHtml(f: T2Fields): string {
+  const filters = f.filters.map((x, i) => `<button class="cv-filter${i === 0 ? " cv-on" : ""}" type="button">${esc(x)}</button>`).join("");
+  const grid = f.products.map(t2ProductCard).join("");
+  return `
+  <div class="cv-wrap cv__wrap">
+    <div class="cv-shop-head"><h1>Explore Watches</h1><p>Browse curated timepieces across styles, brands and eras.</p></div>
+    <div class="cv-filters">${filters}</div>
+    <div class="cv-grid">${grid}</div>
+    ${t2Newsletter(f)}
+  </div>
+  ${t2Footer(f)}`;
+}
+
+/* ---------------- about page ---------------- */
+
+export function t2AboutCss(): string {
+  return `
+  .cv-ab{padding:34px 0 0}
+  .cv-ab__hero{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .cv-ab__intro{background:var(--cv-ink);color:#fff;border-radius:var(--cv-r);padding:38px 36px;display:flex;flex-direction:column;justify-content:center}
+  .cv-ab__eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#ffffff80}
+  .cv-ab__intro h1{margin-top:16px;font-size:clamp(34px,4vw,52px);font-weight:700;letter-spacing:-.03em;line-height:1.02}
+  .cv-ab__intro h1 span{color:#ffffff55}
+  .cv-ab__intro p{margin-top:16px;font-size:15px;line-height:1.6;color:#ffffffb3;max-width:400px}
+  .cv-ab__intro .cv-ab__btns{margin-top:26px;display:flex;gap:10px;flex-wrap:wrap}
+  .cv-ab__pic{border-radius:var(--cv-r);background-size:cover;background-position:center;min-height:340px}
+  .cv-ab__stats{margin-top:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .cv-ab__stat{background:#fff;border-radius:var(--cv-r);padding:26px}
+  .cv-ab__stat:first-child{background:var(--cv-ink);color:#fff}
+  .cv-ab__stat b{font-size:34px;font-weight:700;letter-spacing:-.02em;display:block}
+  .cv-ab__stat span{margin-top:4px;font-size:12px;color:var(--cv-muted)}
+  .cv-ab__stat:first-child span{color:#ffffff99}
+  .cv-ab__story{margin-top:16px;background:#fff;border-radius:var(--cv-r);padding:40px;display:grid;grid-template-columns:.8fr 1.2fr;gap:36px;align-items:center}
+  .cv-ab__story-pic{border-radius:16px;background-size:cover;background-position:center;min-height:280px}
+  .cv-ab__story h2{font-size:26px;font-weight:700;letter-spacing:-.02em}
+  .cv-ab__story p{margin-top:14px;font-size:15px;line-height:1.65;color:var(--cv-muted)}
+  .cv-ab__values{margin-top:56px}
+  .cv-ab__values .cv-section-head{margin-bottom:22px}
+  .cv-ab__vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .cv-ab__v{background:#fff;border-radius:16px;padding:26px}
+  .cv-ab__v .cv-ab__vic{width:38px;height:38px;border-radius:11px;background:var(--cv-bg);display:flex;align-items:center;justify-content:center;color:var(--cv-ink)}
+  .cv-ab__v h3{margin-top:16px;font-size:16px;font-weight:600}
+  .cv-ab__v p{margin-top:8px;font-size:13px;line-height:1.55;color:var(--cv-muted)}
+  .cv-ab__team{margin-top:56px}
+  .cv-ab__tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .cv-ab__tcard{border-radius:16px;overflow:hidden;background:#fff}
+  .cv-ab__tcard .cv-ab__tpic{aspect-ratio:1;background-size:cover;background-position:center}
+  .cv-ab__tcard .cv-ab__tname{padding:14px 16px;font-size:14px;font-weight:600}
+  .cv-ab__tcard .cv-ab__tname span{display:block;font-size:12px;font-weight:400;color:var(--cv-muted);margin-top:2px}
+  .cv-ab__cta{margin-top:56px;background:var(--cv-ink);color:#fff;border-radius:26px;padding:56px 40px;text-align:center}
+  .cv-ab__cta h2{font-size:clamp(28px,3.4vw,40px);font-weight:700;letter-spacing:-.02em}
+  .cv-ab__cta p{margin:12px auto 0;max-width:420px;font-size:15px;color:#ffffffb3}
+  .cv-ab__cta .cv-ab__btns{margin-top:26px;justify-content:center;display:flex;gap:10px;flex-wrap:wrap}
+  @media (max-width:900px){
+    .cv-ab__hero,.cv-ab__story{grid-template-columns:1fr}
+    .cv-ab__stats{grid-template-columns:1fr 1fr}
+    .cv-ab__vgrid{grid-template-columns:1fr}
+    .cv-ab__tgrid{grid-template-columns:1fr 1fr}
+  }`;
+}
+
+export function t2AboutHtml(f: T2Fields): string {
+  const arrowD = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
+  const stats = [["2012", "Year Founded"], ["40K+", "Happy Clients"], ["90+", "Brands Curated"], ["24", "Countries Served"]]
+    .map(([b, s], i) => `<div class="cv-ab__stat">${i === 0 ? `<div class="cv-ab__eyebrow">Since</div>` : ""}<b>${b}</b><span>${s}</span></div>`)
+    .join("");
+  const vIcon = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V5z"/></svg>`;
+  const values = [
+    ["Authenticity", "Every timepiece is checked by certified watchmakers before it reaches your wrist."],
+    ["Craft", "We obsess over the details most shops overlook — movement, finish and feel."],
+    ["Service", "White-glove support and insured delivery, from first click to final fitting."],
+    ["Reach", "Collectors in 24 countries trust us to source the pieces they can't find."],
+    ["Community", "Meetups, guides and a journal that grows the everyday-collector world."],
+    ["Care", "Free servicing reminders and a warranty that actually has your back."],
+  ].map(([t, d]) => `<div class="cv-ab__v"><span class="cv-ab__vic">${vIcon}</span><h3>${t}</h3><p>${d}</p></div>`).join("");
+  const team = [["Ada Bello", "Founder"], ["Kola Ade", "Head Watchmaker"], ["Zara Nnamdi", "Curation Lead"], ["Femi Cole", "Client Care"]]
+    .map(([n, r], i) => `<div class="cv-ab__tcard"><div class="cv-ab__tpic" style="background-image:url('https://picsum.photos/seed/cv-team${i}/400/400')"></div><div class="cv-ab__tname">${n}<span>${r}</span></div></div>`)
+    .join("");
+
+  return `
+  <div class="cv-wrap cv__wrap">
+    <section class="cv-ab">
+      <div class="cv-ab__hero">
+        <div class="cv-ab__intro">
+          <div class="cv-ab__eyebrow">Est. 2012 · Lagos</div>
+          <h1>We live &amp;<br><span>breathe</span><br>watches.</h1>
+          <p>A decade of quiet obsession, distilled into a shop for people who love a good timepiece as much as we do.</p>
+          <div class="cv-ab__btns">
+            <a href="#" class="cv-btn cv-btn--ghost">Shop the Collection ${arrowD}</a>
+            <a href="#" class="cv-btn" style="background:#ffffff1f;color:#fff">Contact Us</a>
+          </div>
+        </div>
+        <div class="cv-ab__pic" style="background-image:url('https://picsum.photos/seed/cv-about-hero/900/900')"></div>
+      </div>
+
+      <div class="cv-ab__stats">${stats}</div>
+
+      <div class="cv-ab__story">
+        <div class="cv-ab__story-pic" style="background-image:url('https://picsum.photos/seed/cv-story/700/800')"></div>
+        <div>
+          <div class="cv-ab__eyebrow" style="color:var(--cv-muted)">Our Story</div>
+          <h2>From a corner stall to a name collectors trust</h2>
+          <p>Chronova began at a single table at a Saturday market — one watchmaker, a loupe, and a stubborn belief that great watches shouldn't be locked behind glass or gatekept by jargon.</p>
+          <p>Word travelled. Collectors drove in from other cities for honest advice and fair prices. A decade on, we've grown into a trusted independent seller shipping to 24 countries — and we still treat every watch like it's going on our own wrist.</p>
+        </div>
+      </div>
+
+      <div class="cv-ab__values">
+        <div class="cv-section-head"><h2>What drives us</h2><p>Six principles behind every watch we sell.</p></div>
+        <div class="cv-ab__vgrid">${values}</div>
+      </div>
+
+      <div class="cv-ab__team">
+        <div class="cv-section-head"><h2>Meet the team</h2><p>The people behind the bench.</p></div>
+        <div class="cv-ab__tgrid">${team}</div>
+      </div>
+
+      <div class="cv-ab__cta">
+        <h2>Find your next watch</h2>
+        <p>Browse our curated collection — every piece checked, serviced and shipped with care.</p>
+        <div class="cv-ab__btns">
+          <a href="#" class="cv-btn" style="background:#fff;color:var(--cv-ink)">Shop Now ${arrowD}</a>
+          <a href="#" class="cv-btn" style="background:#ffffff1f;color:#fff">Talk to an Expert</a>
+        </div>
+      </div>
+
+      ${t2Newsletter(f)}
+    </section>
+  </div>
+  ${t2Footer(f)}`;
+}
+
+/* ---------------- contact page ---------------- */
+
+export function t2ContactCss(): string {
+  return `
+  .cv-ct{padding:20px 0 0}
+  .cv-ct__back{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--cv-muted);text-decoration:none;margin-bottom:28px}
+  .cv-ct__eyebrow{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--cv-muted)}
+  .cv-ct__h1{margin-top:12px;font-size:clamp(34px,4.4vw,52px);font-weight:700;letter-spacing:-.02em}
+  .cv-ct__intro{margin-top:14px;max-width:440px;font-size:15px;line-height:1.6;color:var(--cv-muted)}
+  .cv-ct__cards{margin-top:34px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .cv-ct__card{background:#fff;border-radius:var(--cv-r);padding:26px}
+  .cv-ct__cic{width:44px;height:44px;border-radius:50%;background:var(--cv-bg);display:flex;align-items:center;justify-content:center;color:var(--cv-ink)}
+  .cv-ct__card h3{margin-top:18px;font-size:16px;font-weight:600}
+  .cv-ct__card small{display:block;margin-top:3px;font-size:12px;color:var(--cv-muted)}
+  .cv-ct__card b{display:block;margin-top:14px;font-size:14px;font-weight:600}
+  .cv-ct__card a{display:inline-block;margin-top:12px;font-size:13px;font-weight:600;color:var(--cv-ink);text-decoration:none}
+  .cv-ct__main{margin-top:16px;display:grid;grid-template-columns:1.25fr .75fr;gap:16px}
+  .cv-ct__form,.cv-ct__faq{background:#fff;border-radius:var(--cv-r);padding:34px}
+  .cv-ct__ftitle{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--cv-muted)}
+  .cv-ct__form h2,.cv-ct__faq h2{margin-top:8px;font-size:24px;font-weight:700;letter-spacing:-.02em}
+  .cv-ct__fields{margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .cv-ct__field{display:flex;flex-direction:column;gap:7px}
+  .cv-ct__field.cv-full{grid-column:1 / -1}
+  .cv-ct__field label{font-size:13px;font-weight:600}
+  .cv-ct__field input,.cv-ct__field select,.cv-ct__field textarea{background:var(--cv-bg);border:1px solid var(--cv-line);border-radius:12px;padding:13px 15px;font-size:14px;font-family:inherit;outline:none;color:var(--cv-ink)}
+  .cv-ct__field textarea{min-height:130px;resize:vertical}
+  .cv-ct__submit{margin-top:18px;width:100%;justify-content:center}
+  .cv-ct__q{border:1px solid var(--cv-line);border-radius:14px;padding:0 18px;margin-bottom:10px}
+  .cv-ct__qbtn{width:100%;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:16px 0;font-size:14px;font-weight:600;color:var(--cv-ink);font-family:inherit;text-align:left}
+  .cv-ct__qic{width:26px;height:26px;border-radius:8px;background:var(--cv-bg);display:flex;align-items:center;justify-content:center;flex:none}
+  .cv-ct__qic svg{width:15px;height:15px}
+  .cv-ct__chev{margin-left:auto;transition:transform .3s}
+  .cv-ct__q.cv-open .cv-ct__chev{transform:rotate(180deg)}
+  .cv-ct__ans{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.22,1,.36,1)}
+  .cv-ct__ans p{margin:0;padding:0 0 16px 38px;font-size:13px;line-height:1.55;color:var(--cv-muted)}
+  .cv-ct__help{margin-top:16px;background:var(--cv-bg);border-radius:14px;padding:22px;text-align:center}
+  .cv-ct__help b{font-size:14px}
+  .cv-ct__help p{margin-top:4px;font-size:12px;color:var(--cv-muted)}
+  .cv-ct__help a{margin-top:14px;display:inline-flex}
+  @media (max-width:900px){
+    .cv-ct__cards{grid-template-columns:1fr 1fr}
+    .cv-ct__main{grid-template-columns:1fr}
+    .cv-ct__fields{grid-template-columns:1fr}
+  }`;
+}
+
+export function t2ContactHtml(f: T2Fields): string {
+  const cIcons = {
+    mail: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>`,
+    phone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>`,
+    pin: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`,
+    clock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
+  };
+  const cards = [
+    [cIcons.mail, "Email Us", "We reply within 24 hours", "hello@chronova.com", "Send Email"],
+    [cIcons.phone, "Call Us", "Mon – Fri, 9:00 – 18:00", "+234 800 000 0000", "Call Now"],
+    [cIcons.pin, "Visit Us", "Our flagship showroom", "12 Marina Rd, Lagos", "Get Directions"],
+    [cIcons.clock, "Working Hours", "We're available", "Mon – Fri, 9 – 18", ""],
+  ].map(([ic, t, s, b, a]) => `<div class="cv-ct__card"><span class="cv-ct__cic">${ic}</span><h3>${t}</h3><small>${s}</small><b>${b}</b>${a ? `<a href="#">${a} →</a>` : ""}</div>`).join("");
+
+  const faqIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9.1 9a3 3 0 1 1 5.8 1c0 2-3 2.5-3 2.5"/><path d="M12 17h.01"/></svg>`;
+  const chev = `<svg class="cv-ct__chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
+  const faqs = [
+    ["How do I track my order?", "You'll get a tracking link by email the moment your watch ships — follow it door to door."],
+    ["What's your return policy?", "Any unworn watch can come back within 30 days for a full refund, no questions asked."],
+    ["Do the watches come with a warranty?", "Yes — every timepiece includes our 2-year service warranty on the movement."],
+    ["Can I change or cancel an order?", "As long as it hasn't shipped, just reply to your confirmation email and we'll sort it."],
+  ].map(([q, a]) => `<div class="cv-ct__q"><button class="cv-ct__qbtn" type="button"><span class="cv-ct__qic">${faqIcon}</span>${q}${chev}</button><div class="cv-ct__ans"><p>${a}</p></div></div>`).join("");
+
+  const arrowD = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`;
+
+  return `
+  <div class="cv-wrap cv__wrap">
+    <section class="cv-ct">
+      <a href="#" class="cv-ct__back">← Back to home</a>
+      <div class="cv-ct__eyebrow cv-mono">Get in touch</div>
+      <h1 class="cv-ct__h1">Contact Us</h1>
+      <p class="cv-ct__intro">Have a question about a watch, an order, or just want to say hello? Our team is here to help.</p>
+
+      <div class="cv-ct__cards">${cards}</div>
+
+      <div class="cv-ct__main">
+        <div class="cv-ct__form">
+          <div class="cv-ct__ftitle cv-mono">Message us</div>
+          <h2>Send a message</h2>
+          <form class="cv-ct__fields" onsubmit="return false">
+            <div class="cv-ct__field"><label>Full name</label><input placeholder="Ada Bello"></div>
+            <div class="cv-ct__field"><label>Email address</label><input type="email" placeholder="ada@example.com"></div>
+            <div class="cv-ct__field cv-full"><label>Subject</label><select><option>Select a subject</option><option>Order help</option><option>Product question</option><option>Something else</option></select></div>
+            <div class="cv-ct__field cv-full"><label>Message</label><textarea placeholder="Tell us how we can help…"></textarea></div>
+            <div class="cv-full"><button class="cv-btn cv-btn--dark cv-ct__submit" type="submit">Send Message ${arrowD}</button></div>
+          </form>
+        </div>
+
+        <div class="cv-ct__faq">
+          <div class="cv-ct__ftitle cv-mono">Common questions</div>
+          <h2>FAQs</h2>
+          <div style="margin-top:20px">${faqs}</div>
+          <div class="cv-ct__help">
+            <b>Still need help?</b>
+            <p>Our team is available Mon – Fri, 9:00 – 18:00.</p>
+            <a href="#" class="cv-btn cv-btn--ghost">hello@chronova.com</a>
+          </div>
+        </div>
+      </div>
+
+      ${t2Newsletter(f)}
+    </section>
+  </div>
+  ${t2Footer(f)}`;
+}
+
+/* Shared toggle script for the contact FAQ accordion. */
+export function t2Script(): string {
+  return `
+<script>
+document.querySelectorAll(".cv-ct__q").forEach(function(q){
+  var btn=q.querySelector(".cv-ct__qbtn"), ans=q.querySelector(".cv-ct__ans");
+  btn.addEventListener("click",function(){
+    var open=q.classList.toggle("cv-open");
+    ans.style.maxHeight=open?ans.scrollHeight+"px":"0px";
+  });
+});
+document.querySelectorAll(".cv-filter").forEach(function(b){
+  b.addEventListener("click",function(){
+    var group=b.parentElement.querySelectorAll(".cv-filter");
+    group.forEach(function(x){x.classList.remove("cv-on")});
+    b.classList.add("cv-on");
+  });
+});
+</script>`;
+}
+
 /* ---------------- document ---------------- */
 
-export function renderT2Home(fields: Partial<T2Fields> = {}): string {
+/** Renders a full t2 page. `page` selects home/shop/about/contact. */
+export function renderT2(page: "home" | "shop" | "about" | "contact", fields: Partial<T2Fields> = {}): string {
   const f = { ...T2_DEFAULTS, ...fields };
+  const active = { home: "Home", shop: "Shop", about: "About", contact: "Contact" }[page];
+  const bodyByPage = { home: t2HomeHtml, shop: t2ShopHtml, about: t2AboutHtml, contact: t2ContactHtml }[page];
+  const cssByPage = { home: t2HomeCss, shop: t2ShopCss, about: t2AboutCss, contact: t2ContactCss }[page];
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(f.brand)} — Watches</title>
+<title>${esc(f.brand)} — ${active}</title>
 <style>
 ${t2BaseCss()}
-${t2HomeCss()}
+${cssByPage()}
 </style>
 </head>
 <body>
 <div class="cv">
-${t2Nav(f, "Home")}
-${t2HomeHtml(f)}
+${t2Nav(f, active)}
+${bodyByPage(f)}
 </div>
+${t2Script()}
 </body>
 </html>`;
+}
+
+export function renderT2Home(fields: Partial<T2Fields> = {}): string {
+  return renderT2("home", fields);
 }
