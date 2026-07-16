@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import {
-  Plus, Trash2, ChevronDown, ChevronRight, Loader2, UploadCloud, Video, FileText, Check, Eye, EyeOff, GraduationCap,
+  Plus, Trash2, ChevronDown, ChevronRight, Loader2, UploadCloud, Video, FileText, Check, Eye, EyeOff, GraduationCap, UserPlus, UserMinus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,13 +15,16 @@ import { formatNaira } from "@/lib/utils";
 import {
   createCourse, updateCourse, deleteCourse, addModule, updateModule, deleteModule,
   addLesson, updateLesson, deleteLesson, getMediaUploadUrl, getThumbnailUploadUrl,
+  grantAccess, revokeAccess,
 } from "@/app/admin/academy/actions";
 import type { CourseWithContent } from "@/lib/academy/db";
 
 const MEDIA_BUCKET = "academy-media";
 const THUMB_BUCKET = "academy-thumbnails";
 
-export function AcademyManager({ courses }: { courses: CourseWithContent[] }) {
+export type CourseRoster = Record<string, { enrollmentId: string; name: string; email: string; source: string; createdAt: string }[]>;
+
+export function AcademyManager({ courses, roster = {} }: { courses: CourseWithContent[]; roster?: CourseRoster }) {
   const router = useRouter();
   const [openId, setOpenId] = useState<string | null>(courses[0]?.id ?? null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -48,16 +51,17 @@ export function AcademyManager({ courses }: { courses: CourseWithContent[] }) {
       {courses.length === 0 && <p className="text-sm text-ink/50">No courses yet. Create your first one.</p>}
 
       {courses.map((c) => (
-        <CourseCard key={c.id} course={c} open={openId === c.id} onToggle={() => setOpenId(openId === c.id ? null : c.id)} run={run} busy={busy} />
+        <CourseCard key={c.id} course={c} students={roster[c.id] || []} open={openId === c.id} onToggle={() => setOpenId(openId === c.id ? null : c.id)} run={run} busy={busy} />
       ))}
     </div>
   );
 }
 
 function CourseCard({
-  course, open, onToggle, run, busy,
+  course, students, open, onToggle, run, busy,
 }: {
   course: CourseWithContent;
+  students: CourseRoster[string];
   open: boolean;
   onToggle: () => void;
   run: (key: string, fn: () => Promise<{ ok: boolean; error?: string }>) => Promise<boolean>;
@@ -138,6 +142,9 @@ function CourseCard({
               <Plus className="h-4 w-4" /> Add module
             </Button>
           </div>
+
+          {/* student access */}
+          <StudentsPanel courseId={course.id} students={students} run={run} busy={busy} />
 
           <div className="flex justify-end border-t border-ink/10 pt-4">
             <Button variant="outline" size="sm" className="text-destructive"
@@ -224,6 +231,73 @@ function LessonRow({
         </button>
         {slidesPath && up?.kind !== "slides" && <span className="inline-flex items-center gap-1 text-xs text-emerald-600"><Check className="h-3 w-3" /> slides</span>}
       </div>
+    </div>
+  );
+}
+
+function StudentsPanel({
+  courseId, students, run, busy,
+}: {
+  courseId: string;
+  students: CourseRoster[string];
+  run: (key: string, fn: () => Promise<{ ok: boolean; error?: string }>) => Promise<boolean>;
+  busy: string | null;
+}) {
+  const [email, setEmail] = useState("");
+
+  async function grant() {
+    const value = email.trim();
+    if (!value) return;
+    const ok = await run(`grant-${courseId}`, () => grantAccess(courseId, value));
+    if (ok) setEmail("");
+  }
+
+  return (
+    <div className="space-y-3 border-t border-ink/10 pt-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">Students with access ({students.length})</p>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          type="email"
+          placeholder="student@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") grant(); }}
+          className="h-9 w-full max-w-xs"
+        />
+        <Button variant="outline" size="sm" onClick={grant} disabled={busy === `grant-${courseId}` || !email.trim()}>
+          {busy === `grant-${courseId}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />} Grant access
+        </Button>
+      </div>
+
+      {students.length === 0 ? (
+        <p className="text-sm text-ink/50">No students have access to this course yet.</p>
+      ) : (
+        <div className="divide-y divide-ink/5 rounded-lg border border-ink/10 bg-white">
+          {students.map((s) => (
+            <div key={s.enrollmentId} className="flex items-center gap-3 px-3 py-2.5">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-ink">{s.name}</p>
+                <p className="truncate text-xs text-ink/50">{s.email}</p>
+              </div>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                s.source === "purchase" ? "bg-emerald-100 text-emerald-700" : s.source === "admin" ? "bg-blue-100 text-blue-700" : "bg-ink/10 text-ink/60"
+              }`}>
+                {s.source}
+              </span>
+              <span className="hidden text-xs text-ink/40 sm:block">{new Date(s.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}</span>
+              <button
+                title="Remove access"
+                className="text-ink/40 hover:text-destructive disabled:opacity-50"
+                disabled={busy === `revoke-${s.enrollmentId}`}
+                onClick={() => { if (window.confirm(`Remove ${s.name}'s access to this course?`)) run(`revoke-${s.enrollmentId}`, () => revokeAccess(s.enrollmentId)); }}
+              >
+                {busy === `revoke-${s.enrollmentId}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserMinus className="h-4 w-4" />}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
