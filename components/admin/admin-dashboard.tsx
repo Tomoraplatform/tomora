@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Users, Globe, CreditCard, TrendingUp, Loader2, RotateCcw, Trash2, Sparkles } from "lucide-react";
+import { Users, Globe, CreditCard, TrendingUp, Loader2, RotateCcw, Trash2, Sparkles, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -109,6 +109,9 @@ export function AdminDashboard({
           <Badge>Admin</Badge>
         </div>
         <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/academy"><GraduationCap className="h-3.5 w-3.5" /> Academy</Link>
+          </Button>
           <Button
             variant="outline"
             size="sm"
