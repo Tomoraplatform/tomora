@@ -44,7 +44,13 @@ export async function listCourses(): Promise<(AcademyCourse & { lessonCount: num
   const { data: counts } = await admin.from("academy_lessons").select("course_id");
   const byCourse: Record<string, number> = {};
   (counts as { course_id: string }[] | null)?.forEach((r) => { byCourse[r.course_id] = (byCourse[r.course_id] || 0) + 1; });
-  return ((courses as AcademyCourse[]) || []).map((c) => ({ ...c, lessonCount: byCourse[c.id] || 0 }));
+  // Free courses always list first (price 0), then by sort_order / created_at as fetched.
+  const ordered = [...((courses as AcademyCourse[]) || [])].sort((a, b) => {
+    const aFree = (a.price || 0) === 0 ? 0 : 1;
+    const bFree = (b.price || 0) === 0 ? 0 : 1;
+    return aFree - bFree;
+  });
+  return ordered.map((c) => ({ ...c, lessonCount: byCourse[c.id] || 0 }));
 }
 
 /** Published courses for the public catalog. */
