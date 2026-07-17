@@ -1,6 +1,7 @@
-import { LifeBuoy, Mail } from "lucide-react";
+import { LifeBuoy, Mail, MessageCircle } from "lucide-react";
 
 const SUPPORT_EMAIL = "tommyconcept4@gmail.com";
+const SUPPORT_WHATSAPP = "2348105220236";
 
 /**
  * Support block shown inside the student portal (below the course player and
@@ -27,6 +28,12 @@ export function SupportCard({
     courseTitle ? `Course: ${courseTitle}` : null,
   ].filter((l) => l !== null).join("\n");
   const href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const waText = [
+    "Hi Tomora Academy support,",
+    studentName ? `I'm ${studentName}${studentEmail ? ` (${studentEmail})` : ""}.` : null,
+    courseTitle ? `Course: ${courseTitle}` : null,
+  ].filter((l) => l !== null).join(" ");
+  const waHref = `https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent(waText)}`;
 
   const dark = tone === "dark";
   return (
@@ -43,14 +50,24 @@ export function SupportCard({
             </p>
           </div>
         </div>
-        <a
-          href={href}
-          className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition ${
-            dark ? "bg-white text-[#101319] hover:bg-white/90" : "bg-ink text-cream hover:bg-ink/90"
-          }`}
-        >
-          <Mail className="h-4 w-4" /> Message support
-        </a>
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href={waHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#25D366] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1EBE5B]"
+          >
+            <MessageCircle className="h-4 w-4" /> Chat on WhatsApp
+          </a>
+          <a
+            href={href}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition ${
+              dark ? "bg-white text-[#101319] hover:bg-white/90" : "bg-ink text-cream hover:bg-ink/90"
+            }`}
+          >
+            <Mail className="h-4 w-4" /> Message support
+          </a>
+        </div>
       </div>
       <p className={`mt-3 text-xs ${dark ? "text-white/30" : "text-ink/40"}`}>
         Or email us directly at <a href={`mailto:${SUPPORT_EMAIL}`} className="underline underline-offset-2">{SUPPORT_EMAIL}</a>.
