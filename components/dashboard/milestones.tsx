@@ -83,7 +83,7 @@ function GoalBar({ label, current, goal, format }: { label: string; current: num
       <div className="mt-1.5 h-2.5 w-full overflow-hidden rounded-full bg-ink/10">
         <div className="h-full rounded-full bg-ink transition-all" style={{ width: `${pct}%` }} />
       </div>
-      <p className="mt-1 text-xs text-ink/40">{pct}% of goal{pct >= 100 ? " — reached! 🎯" : ""}</p>
+      <p className="mt-1 text-xs text-ink/40">{pct}% of goal{pct >= 100 ? ", reached! 🎯" : ""}</p>
     </div>
   );
 }

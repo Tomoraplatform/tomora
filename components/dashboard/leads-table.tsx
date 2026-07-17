@@ -61,7 +61,7 @@ export function LeadsTable({ leads, siteName }: { leads: Lead[]; siteName: strin
         <td>${esc(l.phone)}</td>
         <td>${esc(l.message)}</td>
       </tr>`).join("");
-    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(siteName)} — Leads</title>
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(siteName)} | Leads</title>
       <style>
         body{font-family:Arial,Helvetica,sans-serif;color:#022245;padding:24px;}
         h1{font-size:18px;margin:0 0 2px;} p{color:#667;font-size:12px;margin:0 0 16px;}
@@ -69,7 +69,7 @@ export function LeadsTable({ leads, siteName }: { leads: Lead[]; siteName: strin
         th,td{border:1px solid #d8dde6;padding:6px 8px;text-align:left;vertical-align:top;}
         th{background:#f3f5f9;text-transform:uppercase;font-size:10px;letter-spacing:.04em;}
       </style></head><body>
-      <h1>${esc(siteName)} — Leads</h1>
+      <h1>${esc(siteName)}. Leads</h1>
       <p>${filtered.length} record(s) · exported ${esc(new Date().toLocaleString())}</p>
       <table><thead><tr><th>Date</th><th>Source</th><th>Name</th><th>Email</th><th>Phone</th><th>Message</th></tr></thead>
       <tbody>${rows || `<tr><td colspan="6">No leads.</td></tr>`}</tbody></table>

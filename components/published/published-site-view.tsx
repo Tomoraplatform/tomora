@@ -36,9 +36,9 @@ export function PublishedSiteView({
   const beacon = isLive ? <VisitBeacon siteId={site.id} /> : null;
 
   if (site.category === "ecommerce") {
-    // Every ecommerce site is a real multi-page storefront now — home,
+    // Every ecommerce site is a real multi-page storefront now, home,
     // /category/[slug] and /product/[id] are genuine routes with working
-    // links — but that navigation only resolves on the actual published site,
+    // links, but that navigation only resolves on the actual published site,
     // not the same-origin dashboard preview. Bakehouse additionally has its
     // own bespoke home page (the other templates keep their existing homes).
     const tenantHost = isLive && !preview;

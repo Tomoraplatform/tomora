@@ -1,7 +1,7 @@
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 
-export const metadata = { title: "Privacy Policy — Tomora" };
+export const metadata = { title: "Privacy Policy | Tomora" };
 
 export default function PrivacyPage() {
   return (
@@ -16,7 +16,7 @@ export default function PrivacyPage() {
 
           <h2>Information we collect</h2>
           <p>When you create an account we collect your name, email address and the details you add to your site (business name, contact details, images and content). If you enable payments or donations, we collect the bank account details needed to pay you and the transaction records created through our payment provider.</p>
-          <p>For sites you publish, we collect basic, non-identifying visit counts, and — where a visitor chooses to contact you, place an order or make a donation — the details they submit (such as name, email, phone and delivery address). That information belongs to you, the site owner, and is made available to you in your dashboard.</p>
+          <p>For sites you publish, we collect basic, non-identifying visit counts, and, where a visitor chooses to contact you, place an order or make a donation, the details they submit (such as name, email, phone and delivery address). That information belongs to you, the site owner, and is made available to you in your dashboard.</p>
 
           <h2>How we use information</h2>
           <p>We use your information to provide and maintain your account and websites, process payments and payouts, send you service and transactional emails, provide support, and keep the service secure. We do not sell your personal information.</p>

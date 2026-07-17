@@ -197,7 +197,7 @@ export function AdminDashboard({
         </div>
         {revenueResetAt && (
           <p className="-mt-5 text-xs text-ink/40">
-            Revenue reset on {new Date(revenueResetAt).toLocaleDateString()} — only payments after that date are counted.
+            Revenue reset on {new Date(revenueResetAt).toLocaleDateString()}, only payments after that date are counted.
           </p>
         )}
 

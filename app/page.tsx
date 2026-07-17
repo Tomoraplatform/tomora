@@ -85,13 +85,13 @@ function Hero() {
             Build Your Business Website in Minutes
           </h1>
           <p className="mt-5 text-lg leading-relaxed text-ink/70">
-            No code. No stress. Pick a template, add your brand, and go live —
-            built for African businesses.
+            No code. No stress. Pick a template, add your brand, and go live.
+            Built for African businesses.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg">
               <Link href="/signup">
-                Start Free — 14 Days <ArrowRight className="h-4 w-4" />
+                Start Free for 14 Days <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline">
@@ -165,7 +165,7 @@ function Features() {
     {
       eyebrow: "Dashboard",
       title: "See your business at a glance",
-      body: "Orders, revenue and website visits update live on your Tomora dashboard — so you always know how your business is doing, right from your phone.",
+      body: "Orders, revenue and website visits update live on your Tomora dashboard, so you always know how your business is doing, right from your phone.",
       visual: <DashboardPreview />,
     },
   ];
@@ -396,7 +396,7 @@ function Pricing({ discounts }: { discounts: Record<string, number> }) {
                 )}
                 {plan.id === "onetime" && (
                   <p className={`mt-1 text-xs ${popular ? "text-cream/60" : "text-ink/50"}`}>
-                    then only {formatNaira(plan.renewal!)}/year — domain renewal &amp; maintenance
+                    then only {formatNaira(plan.renewal!)}/year, domain renewal &amp; maintenance
                   </p>
                 )}
               </div>

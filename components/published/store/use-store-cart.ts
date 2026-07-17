@@ -8,7 +8,7 @@ interface StoredLine { productId: string; qty: number; color?: string; }
 
 /**
  * Cart persisted to localStorage (keyed by site) so it survives real page
- * navigations between the home / category / product pages — unlike the
+ * navigations between the home / category / product pages, unlike the
  * single-page templates, this template's pages are genuine full loads.
  */
 export function useStoreCart(siteId: string, catalog: Product[]) {

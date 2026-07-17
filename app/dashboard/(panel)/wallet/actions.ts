@@ -58,13 +58,13 @@ export async function withdrawFromWallet(amountInput: number): Promise<{ ok: boo
     const unlimited = WALLET_UNLIMITED_PLANS.includes(planId);
 
     const { balance, withdrawnToday } = await walletBalance(admin, siteId);
-    if (amount > balance) return { ok: false, error: `Insufficient balance — you have ${formatNaira(balance)} available.` };
+    if (amount > balance) return { ok: false, error: `Insufficient balance, you have ${formatNaira(balance)} available.` };
     if (!unlimited) {
       if (amount > WALLET_SINGLE_WITHDRAWAL_LIMIT) {
         return { ok: false, error: `Your plan allows up to ${formatNaira(WALLET_SINGLE_WITHDRAWAL_LIMIT)} per withdrawal. Upgrade to Growth for unlimited withdrawals.` };
       }
       if (withdrawnToday + amount > WALLET_DAILY_WITHDRAWAL_LIMIT) {
-        return { ok: false, error: `Daily limit reached — your plan allows ${formatNaira(WALLET_DAILY_WITHDRAWAL_LIMIT)} per day. Upgrade to Growth for unlimited withdrawals.` };
+        return { ok: false, error: `Daily limit reached, your plan allows ${formatNaira(WALLET_DAILY_WITHDRAWAL_LIMIT)} per day. Upgrade to Growth for unlimited withdrawals.` };
       }
     }
 
@@ -83,7 +83,7 @@ export async function withdrawFromWallet(amountInput: number): Promise<{ ok: boo
       const transfer = await initiateTransfer({ amountNaira: amount, recipient, reference });
       status = transfer.status === "success" ? "completed" : "pending";
     } catch {
-      description += " — queued, being processed by Tomora";
+      description += ", queued, being processed by Tomora";
     }
 
     const { error } = await admin.from("wallet_transactions").insert({

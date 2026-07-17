@@ -70,7 +70,7 @@ export function Fincco({ siteData, brandColor }: TemplateProps) {
           <section id="about" className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-16 lg:grid-cols-[40%_60%]">
             <h2 className="text-3xl font-bold">{heading(siteData, "experience", "15+ Years of Financial Experience")}</h2>
             <div>
-              <p className="text-black/60">{subheading(siteData, "experience", "We are the magic behind the company's best days — combining data, strategy and human insight to grow your wealth.")}</p>
+              <p className="text-black/60">{subheading(siteData, "experience", "We are the magic behind the company's best days, combining data, strategy and human insight to grow your wealth.")}</p>
               <div className="mt-4 flex items-center gap-4"><div className="flex" style={{ color: "var(--brand-primary)" }}>{[0,1,2,3,4].map((i) => <Star key={i} className="h-4 w-4 fill-current" />)}</div><div className="flex -space-x-2">{aboutAvatars.slice(0, 6).map((a) => <Img key={a.id} src={a.image} className="h-8 w-8 rounded-full border-2 border-white object-cover" />)}</div></div>
               {(aboutBtn.text ?? "Discover Work") && <BrandButton as="a" href={aboutBtn.url?.trim() || "#"} className="mt-5">{aboutBtn.text || "Discover Work"}</BrandButton>}
             </div>

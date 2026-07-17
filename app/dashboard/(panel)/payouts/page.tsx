@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { PayoutsForm } from "@/components/dashboard/payouts-form";
 import { PaymentOptions } from "@/components/dashboard/payment-options";
 
-export const metadata = { title: "Payouts — Tomora" };
+export const metadata = { title: "Payouts | Tomora" };
 
 export default async function PayoutsPage() {
   const { site } = await getDashboardData();
@@ -66,7 +66,7 @@ export default async function PayoutsPage() {
         />
       )}
 
-      {/* Store still in setup — guide them back into the rest of the flow. */}
+      {/* Store still in setup, guide them back into the rest of the flow. */}
       {!site!.is_live && (
         <div className="mx-auto flex max-w-2xl flex-col gap-3 rounded-xl border border-ink/15 bg-cream/60 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>

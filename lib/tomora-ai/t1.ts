@@ -1,7 +1,7 @@
 import "server-only";
 
 /**
- * Tomora AI — Template 1 ("Beyond"): cinematic health/wellness landing page.
+ * Tomora AI. Template 1 ("Beyond"): cinematic health/wellness landing page.
  * Each section is generated as pure, self-contained HTML + CSS so the preview
  * IS the export: what users copy renders identically on any platform. No
  * external fonts or scripts; animations are CSS-only.
@@ -80,13 +80,13 @@ export const T1_DEFAULTS: T1Fields = {
   statement2: "with really knowing you.",
   ctaText: "Reserve My Spot",
   features: [
-    { icon: ICON_PIE, title: "Results Without The Wait", description: "Clear, useful findings in minutes — not weeks of guessing." },
+    { icon: ICON_PIE, title: "Results Without The Wait", description: "Clear, useful findings in minutes | not weeks of guessing." },
     { icon: ICON_DNA, title: "Insights Made For You", description: "Guidance shaped by your own numbers, never by averages." },
-    { icon: ICON_HEART, title: "The Complete Picture", description: "Body, nutrition and mind — tracked together in one place." },
+    { icon: ICON_HEART, title: "The Complete Picture", description: "Body, nutrition and mind | tracked together in one place." },
   ],
   mediaUrl: "https://picsum.photos/seed/tmr-beyond/1920/1200",
   bridgeHeadline: "Ready to meet the healthiest version of you?",
-  bridgeSub: "A smarter, more personal way to understand your wellbeing — built for everyday people and the experts who guide them.",
+  bridgeSub: "A smarter, more personal way to understand your wellbeing, built for everyday people and the experts who guide them.",
   metrics: [
     { name: "Resting Heart Rate", value: "58", unit: "bpm", description: "A calm baseline that shows how efficiently your heart recovers.", image: "https://picsum.photos/seed/tmr-m1/560/400" },
     { name: "Sleep Quality", value: "87", unit: "%", description: "How deeply you actually rest, night after night.", image: "https://picsum.photos/seed/tmr-m2/560/400" },
@@ -99,7 +99,7 @@ export const T1_DEFAULTS: T1Fields = {
   ],
   whatifPrefix: "What if your health felt…",
   whatifItems: [
-    { word: "Effortless", sub: "No more chasing answers — they come to you." },
+    { word: "Effortless", sub: "No more chasing answers, they come to you." },
     { word: "Personal", sub: "Built around your body, not the average one." },
     { word: "Clear", sub: "Numbers that finally make sense at a glance." },
     { word: "Ahead of time", sub: "Catch the small signs before they grow." },
@@ -108,18 +108,18 @@ export const T1_DEFAULTS: T1Fields = {
   splitImage: "https://picsum.photos/seed/tmr-split/1000/1200",
   splitHeadline1: "Wellness.",
   splitHeadline2: "Without walls.",
-  splitBody: "Good health shouldn't depend on where you live or what you earn. It should travel with you — simple, affordable, and always within reach.",
+  splitBody: "Good health shouldn't depend on where you live or what you earn. It should travel with you, simple, affordable, and always within reach.",
   splitCta: "Get Early Access",
   dashHeadline: "Your whole story, one view",
-  dashSub: "Everything that matters about your wellbeing — habits, results and progress — gathered into a single dashboard you can actually read. Spot what's improving, see what needs attention, and know exactly where to focus next.",
+  dashSub: "Everything that matters about your wellbeing, habits, results and progress, gathered into a single dashboard you can actually read. Spot what's improving, see what needs attention, and know exactly where to focus next.",
   faqEyebrow: "Good to know",
   faqHeadline: "Questions, answered",
   faqs: [
-    { q: "Do I need any special equipment to start?", a: "Not at all. You begin with a few simple questions and any results you already have — everything else builds from there, right on your phone." },
+    { q: "Do I need any special equipment to start?", a: "Not at all. You begin with a few simple questions and any results you already have, everything else builds from there, right on your phone." },
     { q: "Is my information kept private?", a: "Always. Your data is encrypted, never sold, and only ever used to give you clearer, more personal guidance." },
     { q: "Can my doctor or coach use it too?", a: "Yes. You can share a live view with any practitioner you trust, so the people guiding you see the same clear picture you do." },
     { q: "How soon will I see something useful?", a: "Right away. Your first insights appear within minutes of setting up, and they keep getting sharper as you go." },
-    { q: "What does it cost?", a: "You can start free. Paid plans unlock deeper tracking and practitioner sharing whenever you're ready — no lock-in, cancel anytime." },
+    { q: "What does it cost?", a: "You can start free. Paid plans unlock deeper tracking and practitioner sharing whenever you're ready, no lock-in, cancel anytime." },
   ],
   ctaHeadline1: "Real insight.",
   ctaHeadline2: "Made simple.",
@@ -127,9 +127,9 @@ export const T1_DEFAULTS: T1Fields = {
   ctaBody: "Join the early list for first access, founding-member perks, and launch-day pricing you won't see again.",
   ctaPlaceholder: "Enter your email",
   ctaButton: "Join the List",
-  ctaNote: "We'll only send what matters — no noise, no spam.",
+  ctaNote: "We'll only send what matters, no noise, no spam.",
   ctaImage: "https://picsum.photos/seed/tmr-cta/1000/1300",
-  footerTagline: "A clearer, more personal way to understand your health — wherever you are.",
+  footerTagline: "A clearer, more personal way to understand your health, wherever you are.",
   footerColumns: [
     { title: "Product", links: ["How it works", "What we measure", "For individuals", "For practitioners", "Pricing"] },
     { title: "Company", links: ["About", "Blog", "Careers", "Contact"] },
@@ -376,7 +376,7 @@ export function t1CarouselHtml(f: T1Fields): string {
   </section>`;
 }
 
-/** Pinned "what if" sequence — words swap as the visitor scrolls through. */
+/** Pinned "what if" sequence, words swap as the visitor scrolls through. */
 export function t1WhatifCss(): string {
   return `
   .tmr-whatif{position:relative;height:500vh;background:#0F1218;color:#F4F1EA;font-family:"Helvetica Neue",Helvetica,Arial,-apple-system,sans-serif}
@@ -552,7 +552,7 @@ export function t1DashHtml(f: T1Fields): string {
               <small>Member since March.<br>Next review in 12 days.</small>
             </div>
             <div class="tmr-dash__main">
-              <div class="tmr-dash__mtitle">Focus areas — this month</div>
+              <div class="tmr-dash__mtitle">Focus areas | this month</div>
               ${bars}
             </div>
           </div>
@@ -655,7 +655,7 @@ export function t1CtaHtml(f: T1Fields): string {
         <button class="tmr-btn tmr-btn--light" type="submit">${esc(f.ctaButton)} ${arrow}</button>
       </form>
       <p class="tmr-cta__note" data-reveal data-delay="300">${esc(f.ctaNote)}</p>
-      <p class="tmr-cta__done">You're on the list — as a founding member you'll get first access and launch pricing.</p>
+      <p class="tmr-cta__done">You're on the list, as a founding member you'll get first access and launch pricing.</p>
     </div>
     <div class="tmr-cta__img" style="background-image:url('${esc(f.ctaImage)}')"></div>
   </section>`;

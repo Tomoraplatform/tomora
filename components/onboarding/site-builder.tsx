@@ -158,7 +158,7 @@ export function SiteBuilderWizard({
 
         {error && <p className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
-        {/* 0 — Brand */}
+        {/* 0. Brand */}
         {step === 0 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">Tell us the basics. You can change all of this later.</p>
@@ -167,7 +167,7 @@ export function SiteBuilderWizard({
             <Field label="Logo">
               <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-ink/25 py-3 text-sm text-ink/70">
                 {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : logoUrl ? <Check className="h-4 w-4 text-emerald-600" /> : <UploadCloud className="h-4 w-4" />}
-                {logoUrl ? "Logo uploaded — replace" : "Upload your logo"}
+                {logoUrl ? "Logo uploaded, replace" : "Upload your logo"}
                 <input type="file" accept="image/*" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; setUploadingLogo(true); const { url } = await uploadImage(f, "branding"); setUploadingLogo(false); if (url) setLogoUrl(url); }} />
               </label>
             </Field>
@@ -190,7 +190,7 @@ export function SiteBuilderWizard({
           </div>
         )}
 
-        {/* 1 — Hero image(s) */}
+        {/* 1. Hero image(s) */}
         {step === 1 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">Add the main photo(s) for the top of your website.</p>
@@ -221,7 +221,7 @@ export function SiteBuilderWizard({
           </div>
         )}
 
-        {/* 2 — Headline */}
+        {/* 2. Headline */}
         {step === 2 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">The big message at the top of your website.</p>
@@ -234,7 +234,7 @@ export function SiteBuilderWizard({
           </div>
         )}
 
-        {/* 3 — Donations (org/community only) */}
+        {/* 3. Donations (org/community only) */}
         {step === donationStep && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">Want to collect donations on your website? Turn it on, set a goal, and connect your bank. You can skip and do this later.</p>

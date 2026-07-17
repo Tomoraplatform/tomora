@@ -230,7 +230,7 @@ function ProductReviews({ siteId, productId, reviews, brandColor }: { siteId: st
         )}
 
         <div className="mt-8 space-y-4">
-          {list.length === 0 && <p className="text-sm text-black/50">No reviews yet for this product — be the first to share your experience.</p>}
+          {list.length === 0 && <p className="text-sm text-black/50">No reviews yet for this product, be the first to share your experience.</p>}
           {list.map((r) => (
             <div key={r.id} className="rounded-2xl border border-black/10 p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">

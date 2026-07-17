@@ -60,7 +60,7 @@ export function PublishedStore({
 
   const addToCart = useCallback((product: Product) => {
     // On the real site, colour/description detail lives on the product's own
-    // page — a card's "Add to Cart" just adds the default variant directly.
+    // page, a card's "Add to Cart" just adds the default variant directly.
     if (!isTenantHost && (productColorNames(product).length || product.description)) { openProduct(product); return; }
     realAdd(product, isTenantHost ? productColorNames(product)[0] : undefined);
   }, [realAdd, openProduct, isTenantHost]);

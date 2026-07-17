@@ -6,7 +6,7 @@ import { Logo } from "@/components/logo";
 import { formatNaira } from "@/lib/utils";
 
 /**
- * Animated mock of the Tomora dashboard for the landing page — stat tiles
+ * Animated mock of the Tomora dashboard for the landing page, stat tiles
  * (orders / revenue / visits) count up once in view, a sparkline traces in,
  * and a short "recent activity" feed appends new rows to feel live. Entirely
  * decorative: no real data, no network calls.
@@ -130,10 +130,10 @@ function useCountUp(start: boolean, target: number, duration: number) {
 }
 
 const FEED_ITEMS = [
-  { text: "New order — Ada's Kitchen", amount: "₦18,500" },
-  { text: "New order — Bright Styles", amount: "₦42,000" },
+  { text: "New order: Ada's Kitchen", amount: "₦18,500" },
+  { text: "New order: Bright Styles", amount: "₦42,000" },
   { text: "Donation received", amount: "₦5,000" },
-  { text: "New order — Lagos Bakes", amount: "₦9,600" },
+  { text: "New order: Lagos Bakes", amount: "₦9,600" },
 ];
 
 /** Cycles a few fake activity rows in, one at a time, to feel live. */

@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PublishedSiteView } from "@/components/published/published-site-view";
 import type { Product } from "@/lib/database.types";
 
-export const metadata = { title: "Preview — Tomora" };
+export const metadata = { title: "Preview | Tomora" };
 
 /** Owner-only preview of their site, rendered even when it is not live. */
 export default async function PreviewPage() {
@@ -26,7 +26,7 @@ export default async function PreviewPage() {
   return (
     <div className="relative">
       <div className="sticky top-0 z-[60] flex items-center justify-between bg-ink px-4 py-2 text-sm text-cream">
-        <span className="font-medium">Preview — this is how your site looks{site!.is_live ? "" : " (not yet published)"}.</span>
+        <span className="font-medium">Preview, this is how your site looks{site!.is_live ? "" : " (not yet published)"}.</span>
         <div className="flex items-center gap-2">
           <Link href="/dashboard/editor" className="inline-flex items-center gap-1.5 rounded-md bg-cream/15 px-3 py-1.5 hover:bg-cream/25">
             <Pencil className="h-4 w-4" /> Edit

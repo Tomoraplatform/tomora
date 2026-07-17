@@ -4,13 +4,13 @@ import { NEW_DOMAIN_AMOUNT, NEW_DOMAIN_TLDS } from "@/lib/constants";
 /**
  * Lightweight domain availability check for the assisted purchase flow.
  * Uses Google DNS-over-HTTPS to see whether a name already has NS records.
- * This is a heuristic — an admin confirms availability at registration time.
+ * This is a heuristic, an admin confirms availability at registration time.
  */
 async function isRegistered(domain: string): Promise<boolean> {
   try {
     const res = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=NS`, {
       headers: { accept: "application/dns-json" },
-      // Don't cache — availability changes.
+      // Don't cache, availability changes.
       cache: "no-store",
     });
     if (!res.ok) return false;

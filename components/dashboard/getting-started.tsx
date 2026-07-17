@@ -39,7 +39,7 @@ export function GettingStarted({ steps, siteId }: { steps: SetupStep[]; siteId: 
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-cream"><Rocket className="h-4 w-4" /></span>
           <div>
             <h2 className="text-lg font-bold text-ink">{allDone ? "Your store is ready!" : "Get your store ready"}</h2>
-            <p className="text-sm text-ink/60">{allDone ? "You've completed every setup step." : `${done} of ${total} steps done — finish these to start selling.`}</p>
+            <p className="text-sm text-ink/60">{allDone ? "You've completed every setup step." : `${done} of ${total} steps done, finish these to start selling.`}</p>
           </div>
         </div>
         <button onClick={hide} className="text-ink/40 hover:text-ink" aria-label="Hide checklist"><X className="h-5 w-5" /></button>

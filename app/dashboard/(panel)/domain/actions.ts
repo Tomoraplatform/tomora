@@ -10,7 +10,7 @@ import { NEW_DOMAIN_TLDS } from "@/lib/constants";
 const DOMAIN_RE = /^(?!-)([a-z0-9-]{1,63}\.)+[a-z]{2,}$/i;
 
 /**
- * Activates a NEW domain that's included in the user's plan (Growth/Pro) — no
+ * Activates a NEW domain that's included in the user's plan (Growth/Pro), no
  * payment. Creates a domain_request for an admin to register at the registrar,
  * just like the paid flow, but at ₦0.
  */

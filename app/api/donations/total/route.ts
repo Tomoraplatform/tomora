@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export const dynamic = "force-dynamic";
 
 /**
- * Public: returns the live fundraising total for a site — the manually-added
+ * Public: returns the live fundraising total for a site, the manually-added
  * (offline) amount plus the sum of paid online donations, the goal, and the
  * number of online donors. Powers the donation progress bar.
  */
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     .maybeSingle();
   const sd = (site?.site_data as any) || {};
 
-  // project_id only exists after migration 0026 — fall back to amount-only.
+  // project_id only exists after migration 0026, fall back to amount-only.
   let rows: any[] | null = null;
   {
     const res = await admin

@@ -7,7 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export const dynamic = "force-dynamic";
 
 /**
- * Returns short-lived signed playback URLs for one lesson's media —
+ * Returns short-lived signed playback URLs for one lesson's media,
  * only for the signed-in student when they're enrolled (or the lesson is a
  * free preview). This is the sole gateway to the private media bucket.
  */

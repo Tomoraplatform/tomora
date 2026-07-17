@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Records one visit to a published site. Called by a client beacon on live
- * sites (throttled to once per browser session). Best-effort — never blocks
+ * sites (throttled to once per browser session). Best-effort, never blocks
  * the page and never errors visibly.
  */
 export async function POST(request: NextRequest) {

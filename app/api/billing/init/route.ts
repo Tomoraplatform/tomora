@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    /* no body — treated as a Pro renewal below */
+    /* no body, treated as a Pro renewal below */
   }
 
   // ---- Buy + activate a brand-new domain (assisted, ₦5,000) ----

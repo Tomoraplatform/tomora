@@ -106,7 +106,7 @@ export function Editorial({ siteData, brandColor }: TemplateProps) {
         </section>
       )}
 
-      <footer className="py-8 text-center text-sm text-neutral-500">{name} — Built with Tomora</footer>
+      <footer className="py-8 text-center text-sm text-neutral-500">{name}. Built with Tomora</footer>
     </div>
   );
 }

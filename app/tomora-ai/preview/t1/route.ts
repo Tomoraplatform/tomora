@@ -1,7 +1,7 @@
 import { renderT1 } from "@/lib/tomora-ai/t1";
 
 /**
- * Internal preview of Tomora AI template 1 — serves the exact standalone
+ * Internal preview of Tomora AI template 1, serves the exact standalone
  * HTML/CSS document users will later copy. Unlinked and noindexed while the
  * product is in development.
  */

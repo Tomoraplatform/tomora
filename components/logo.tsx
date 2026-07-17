@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Tomora brand logo. Renders the icon mark + wordmark.
- * Drop a real `tomora-logo.png` into /public to swap the mark if desired —
+ * Drop a real `tomora-logo.png` into /public to swap the mark if desired,
  * this inline SVG keeps the brand consistent without any external asset.
  */
 export function Logo({

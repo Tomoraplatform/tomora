@@ -62,14 +62,14 @@ export async function POST(request: NextRequest) {
   try {
     turn = await runNovaTurn(messages);
   } catch {
-    return NextResponse.json({ error: "Nova is busy right now — please try again in a moment." }, { status: 502 });
+    return NextResponse.json({ error: "Nova is busy right now, please try again in a moment." }, { status: 502 });
   }
 
   if (turn.toolInput) {
     const result = await createSiteFromNova(turn.toolInput as unknown as NovaSpec);
     if (!result.ok) {
       return NextResponse.json({
-        message: `I hit a snag creating your site: ${result.error} Let's try again — could you confirm your business name?`,
+        message: `I hit a snag creating your site: ${result.error} Let's try again, could you confirm your business name?`,
       });
     }
     return NextResponse.json({

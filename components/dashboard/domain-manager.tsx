@@ -35,7 +35,7 @@ export function DomainManager({
   const connected = status !== "none" && !!domain;
   const hasPendingRequest = requests.some((r) => r.status === "paid" || r.status === "registered");
   // A new domain is free when the plan includes one and the site has no domain
-  // or pending request yet — Growth/Pro primary site.
+  // or pending request yet. Growth/Pro primary site.
   const freeNewDomain = included && !initialDomain && !hasPendingRequest;
 
   async function search() {
@@ -137,7 +137,7 @@ export function DomainManager({
               <p className="mt-0.5 text-ink/60">
                 {r.status === "paid"
                   ? "We've received this and are registering your domain. It will be connected to your site shortly (usually within 24 hours)."
-                  : "Registered — we're connecting it to your site now."}
+                  : "Registered, we're connecting it to your site now."}
               </p>
             </div>
           </CardContent>
@@ -153,7 +153,7 @@ export function DomainManager({
           <CardContent className="space-y-4">
             <p className="text-sm text-ink/60">
               {freeNewDomain ? (
-                <>Your plan includes a domain — search for a <span className="font-medium text-ink">.com.ng</span> name and activate it <span className="font-medium text-emerald-700">free</span>. We register it and connect it for you.</>
+                <>Your plan includes a domain, search for a <span className="font-medium text-ink">.com.ng</span> name and activate it <span className="font-medium text-emerald-700">free</span>. We register it and connect it for you.</>
               ) : (
                 <>Search for a <span className="font-medium text-ink">.com.ng</span> domain and activate it for a one-time {formatNaira(newDomainAmount)}. We register it and connect it to your site for you.</>
               )}

@@ -41,7 +41,7 @@ export function DeedsChurch({ siteData, brandColor }: TemplateProps) {
   const ministriesBtn = siteData.sectionButtons?.ministries || {};
   const aboutImgs = siteData.aboutImages?.length ? siteData.aboutImages : [{ id: "a0", name: "", image: "https://picsum.photos/seed/deeds-a1/500/600" }, { id: "a1", name: "", image: "https://picsum.photos/seed/deeds-a2/300/300" }];
   const sinceYear = siteData.sectionText?.aboutSince || "1996";
-  const aboutQuote = siteData.sectionText?.aboutQuote || "Faith, hope and love — and the greatest of these is love.";
+  const aboutQuote = siteData.sectionText?.aboutQuote || "Faith, hope and love, and the greatest of these is love.";
   const ministryCards = siteData.portfolioItems?.length ? siteData.portfolioItems : MINISTRIES.map(([title, description], i) => ({ id: `dm${i}`, title, category: "", description, image: `https://picsum.photos/seed/deeds-min${i}/500/300`, linkUrl: "" }));
 
   return (

@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { reconcilePendingDonations } from "@/lib/confirm-payments";
 import { DonationsManager, type DonationRecord, type ProjectSummary } from "@/components/dashboard/donations-manager";
 
-export const metadata = { title: "Donations — Tomora" };
+export const metadata = { title: "Donations | Tomora" };
 
 export default async function DonationsPage() {
   const { site } = await getDashboardData();
@@ -18,7 +18,7 @@ export default async function DonationsPage() {
   try { await reconcilePendingDonations(site!.id); } catch { /* best-effort */ }
 
   // Paid online (Paystack) donations. project_* columns arrive with migration
-  // 0026 — fall back to the amount-only shape if it hasn't been applied yet.
+  // 0026, fall back to the amount-only shape if it hasn't been applied yet.
   const admin = createAdminClient();
   let rows: any[] = [];
   {

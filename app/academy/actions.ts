@@ -34,7 +34,7 @@ export async function purchaseCourse(courseId: string): Promise<{ ok: boolean; e
   if (!course || !course.is_published) return { ok: false, error: "Course not found." };
   if (await isEnrolled(student.id, course.id)) return { ok: true, enrolled: true };
 
-  // Free course — enroll straight away.
+  // Free course, enroll straight away.
   if (!course.price || course.price <= 0) {
     const { error } = await admin.from("academy_enrollments").insert({
       student_id: student.id, course_id: course.id, source: "free",

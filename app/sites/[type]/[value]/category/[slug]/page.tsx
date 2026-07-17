@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const data = await loadPublishedSite(type, decodeURIComponent(params.value));
   if (!data) return { title: "Not found" };
   const name = data.site.site_data?.businessName || "Store";
-  return { title: `${decodeURIComponent(params.slug)} — ${name}` };
+  return { title: `${decodeURIComponent(params.slug)} | ${name}` };
 }
 
 export default async function CategoryPage({ params }: Params) {

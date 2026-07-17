@@ -17,7 +17,7 @@ import { formatNaira } from "@/lib/utils";
 import { GettingStarted } from "@/components/dashboard/getting-started";
 import { MySites, type MySite } from "@/components/dashboard/my-sites";
 
-export const metadata = { title: "Dashboard — Tomora" };
+export const metadata = { title: "Dashboard | Tomora" };
 
 export default async function DashboardHome() {
   const { site, sites, subscription, profile } = await getDashboardData();

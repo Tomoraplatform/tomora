@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/client";
 
 /**
  * Downscale + compress a photo in the browser before uploading. Phone photos are
- * often 3–8MB; this brings them to a few hundred KB, so uploads (and the whole
+ * often 3 to 8MB; this brings them to a few hundred KB, so uploads (and the whole
  * onboarding flow) are far faster on mobile data. Falls back to the original on
  * any failure or for non-photo types (gif/svg/video).
  */
@@ -42,7 +42,7 @@ export async function uploadImage(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated." };
 
-  // Product photos don't need full hero resolution — compress harder for speed.
+  // Product photos don't need full hero resolution, compress harder for speed.
   const compressed = bucket === "products"
     ? await compressImage(file, 1200, 0.78)
     : await compressImage(file, 1600, 0.85);

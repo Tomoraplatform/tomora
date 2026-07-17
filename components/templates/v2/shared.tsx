@@ -88,7 +88,7 @@ export function Img({ src, alt = "", className = "" }: { src?: string; alt?: str
   return <img src={src} alt={alt} loading="lazy" className={className} />;
 }
 
-/** The price the customer actually pays — applies an active offer discount. */
+/** The price the customer actually pays, applies an active offer discount. */
 export function sellingPrice(p: CatalogProduct): number {
   if (p.offer && p.offerPercent && p.offerPercent > 0) {
     return Math.round(p.price * (1 - p.offerPercent / 100));
@@ -197,7 +197,7 @@ export function ContactFormV2({
       name: (fd.get("name") as string) || undefined,
       email: (fd.get("email") as string) || undefined,
       phone: (fd.get("phone") as string) || undefined,
-      message: [choice && `${optionLabel}: ${choice}`, msg].filter(Boolean).join(" — ") || undefined,
+      message: [choice && `${optionLabel}: ${choice}`, msg].filter(Boolean).join(", ") || undefined,
     });
     if (res.ok) setStatus("done");
     else { setError(res.error || "Something went wrong."); setStatus("error"); }
@@ -291,7 +291,7 @@ export function mapEmbedUrl(address?: string): string | null {
 /**
  * A showcase contact / enquiry block: phone, email, socials, an optional
  * "Book a time" link, a lead-capturing enquiry form and a map. Shared by the
- * Artisan templates (no purchase — the goal is to book, contact or enquire).
+ * Artisan templates (no purchase, the goal is to book, contact or enquire).
  */
 export function ContactBlock({
   siteData, id = "contact", title, subtitle, tone = "light", submitText = "Send enquiry",
@@ -351,7 +351,7 @@ export function toEmbedUrl(raw?: string): string | null {
 }
 
 /**
- * Responsive grid of creator videos added by link — 2 per row on mobile, 3 on
+ * Responsive grid of creator videos added by link, 2 per row on mobile, 3 on
  * desktop, capped at 6. Embeds recognised YouTube/Vimeo links; otherwise shows
  * a "Watch video" card. Renders placeholder tiles until links are added.
  */

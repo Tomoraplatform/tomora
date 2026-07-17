@@ -120,7 +120,7 @@ export function StoreBuilderWizard({
   // Create the draft store from step 0, then move on.
   async function startDraft() {
     if (!businessName.trim()) { setError("Please enter your store name."); return; }
-    if (siteId) { setStep(1); return; } // already created — don't recreate
+    if (siteId) { setStep(1); return; } // already created, don't recreate
     setError(null); setCreating(true);
     try {
       const res = await createStoreDraft({
@@ -217,7 +217,7 @@ export function StoreBuilderWizard({
 
         {error && <p className="mb-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
 
-        {/* 0 — Store name + hero image(s) */}
+        {/* 0. Store name + hero image(s) */}
         {step === 0 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">Name your store and add the product image(s) to be displayed first at the top of your store.</p>
@@ -265,7 +265,7 @@ export function StoreBuilderWizard({
           </div>
         )}
 
-        {/* 1 — Headline */}
+        {/* 1. Headline */}
         {step === 1 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">The big message at the top of your store.</p>
@@ -278,7 +278,7 @@ export function StoreBuilderWizard({
           </div>
         )}
 
-        {/* 2 — Products */}
+        {/* 2. Products */}
         {step === 2 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">Add your products one at a time. {products.length > 0 && <span className="font-medium text-ink">{products.length} added.</span>}</p>
@@ -304,7 +304,7 @@ export function StoreBuilderWizard({
             <div className="space-y-3 rounded-xl border border-ink/10 bg-white p-4">
               <p className="text-sm font-semibold text-ink">New product</p>
               <Field label={`Product images (${form.images.length}/5)`}>
-                <p className="-mt-1 mb-1 text-xs text-ink/50">Add up to 5 — you can select several at once.</p>
+                <p className="-mt-1 mb-1 text-xs text-ink/50">Add up to 5, you can select several at once.</p>
                 <div className="flex flex-wrap gap-2">
                   {form.images.map((src, i) => (
                     <div key={i} className="relative h-16 w-16 overflow-hidden rounded-md border">
@@ -352,7 +352,7 @@ export function StoreBuilderWizard({
                   </div>
                 )}
               </Field>
-              <Field label="Colours (optional — each colour can have its own photo)">
+              <Field label="Colours (optional, each colour can have its own photo)">
                 <div className="space-y-2">
                   {(form.colorVariants || []).map((v, i) => (
                     <div key={i} className="flex items-center gap-2">
@@ -383,7 +383,7 @@ export function StoreBuilderWizard({
           </div>
         )}
 
-        {/* 3 — Bank payout */}
+        {/* 3. Bank payout */}
         {step === 3 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">Connect the bank account where your sales should be paid out. You can skip and do this later.</p>
@@ -397,7 +397,7 @@ export function StoreBuilderWizard({
           </div>
         )}
 
-        {/* 4 — Trust badges */}
+        {/* 4. Trust badges */}
         {step === 4 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">These reassure shoppers (delivery, secure payment, returns…). Edit them or leave them as they are.</p>
@@ -414,7 +414,7 @@ export function StoreBuilderWizard({
           </div>
         )}
 
-        {/* 5 — Promo banner (optional) */}
+        {/* 5. Promo banner (optional) */}
         {step === 5 && (
           <div className="space-y-4">
             <p className="text-sm text-ink/60">Want a promo banner on your store? Upload one and we&apos;ll add it right after your products. Or skip it.</p>
@@ -435,10 +435,10 @@ export function StoreBuilderWizard({
           </div>
         )}
 
-        {/* 6 — Finish */}
+        {/* 6. Finish */}
         {step === 6 && (
           <div className="space-y-4">
-            <p className="text-sm text-ink/60">Here&apos;s your store. Set your web address, then publish — or open the editor to tweak any remaining section.</p>
+            <p className="text-sm text-ink/60">Here&apos;s your store. Set your web address, then publish, or open the editor to tweak any remaining section.</p>
             <div className="overflow-hidden rounded-xl border border-ink/10 bg-white">
               <BrowserFrame>
                 <div className="h-[55vh] overflow-y-auto">

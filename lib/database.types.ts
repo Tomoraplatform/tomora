@@ -244,7 +244,7 @@ export interface CatalogResultItem {
   title?: string;
   beforeImage?: string;
   afterImage?: string;
-  /** Free text — e.g. "+150%", "3.2x", "₦2.4M". The leading number animates in on scroll. */
+  /** Free text, e.g. "+150%", "3.2x", "₦2.4M". The leading number animates in on scroll. */
   statValue: string;
   /** What the stat measures, e.g. "Increase in monthly bookings". */
   statLabel: string;
@@ -262,7 +262,7 @@ export interface SiteData {
   social?: SocialLinks;
   blocks: SiteBlock[];
 
-  // v2 template fields (optional — populated by the catalog content generator)
+  // v2 template fields (optional, populated by the catalog content generator)
   heroHeadline?: string;
   heroSubtext?: string;
   heroImage?: string;
@@ -360,7 +360,7 @@ export interface SiteData {
   causes?: CatalogCause[];
   events?: CatalogEvent[];
   portfolioItems?: CatalogPortfolioItem[];
-  /** Creator template: before/after results — image pair + animated up-counting stat. */
+  /** Creator template: before/after results, image pair + animated up-counting stat. */
   beforeAfterResults?: CatalogResultItem[];
   /** Creator template: editable single-line skills list. */
   skills?: CatalogCategoryItem[];
@@ -368,7 +368,7 @@ export interface SiteData {
   experiencePhotos?: CatalogCategoryItem[];
   /** Creator template: photo gallery (image + optional caption). */
   galleryPhotos?: CatalogCategoryItem[];
-  /** Creator template: video gallery — each item is an uploaded video (+ optional poster/title). */
+  /** Creator template: video gallery, each item is an uploaded video (+ optional poster/title). */
   galleryVideos?: CatalogVideoItem[];
   /** Shop template: editable "recent blog posts" cards. */
   blogPosts?: CatalogBlogPost[];
@@ -382,7 +382,7 @@ export interface SiteData {
   shippingZones?: { id: string; name: string; fee: number }[];
   /** Which checkout payment methods the owner has enabled. */
   paymentMethods?: { paystack?: boolean; transfer?: boolean };
-  /** Who covers the Paystack processing fee — added to the customer's total when "customer". */
+  /** Who covers the Paystack processing fee, added to the customer's total when "customer". */
   feeBearer?: "customer" | "owner";
 }
 

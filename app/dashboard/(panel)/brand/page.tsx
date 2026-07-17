@@ -1,7 +1,7 @@
 import { getDashboardData } from "@/lib/dashboard";
 import { BrandForm } from "@/components/dashboard/brand-form";
 
-export const metadata = { title: "Brand Settings — Tomora" };
+export const metadata = { title: "Brand Settings | Tomora" };
 
 export default async function BrandPage() {
   const { profile, site } = await getDashboardData();

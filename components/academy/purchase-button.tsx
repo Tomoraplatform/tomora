@@ -43,7 +43,7 @@ export function PurchaseButton({
     <div className="w-full">
       <button onClick={buy} disabled={busy} className={`${base} bg-ink text-cream disabled:opacity-60`}>
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
-        {price > 0 ? `Purchase — ${formatNaira(price)}` : "Enroll free"}
+        {price > 0 ? `Purchase, ${formatNaira(price)}` : "Enroll free"}
       </button>
       {error && <p className="mt-1.5 text-center text-xs text-red-600">{error}</p>}
     </div>

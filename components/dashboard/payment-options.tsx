@@ -38,7 +38,7 @@ export function PaymentOptions({
       <CardHeader><CardTitle>{donationOnly ? "Donation payment fee" : "Payment options at checkout"}</CardTitle></CardHeader>
       <CardContent className="space-y-5">
         {!connected && (
-          <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">Connect your payout bank above first — {donationOnly ? "this activates" : "payment options activate"} once it&apos;s set up.</p>
+          <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">Connect your payout bank above first, {donationOnly ? "this activates" : "payment options activate"} once it&apos;s set up.</p>
         )}
 
         {!donationOnly && (
@@ -48,7 +48,7 @@ export function PaymentOptions({
             <CreditCard className="mt-0.5 h-5 w-5 text-ink/60" />
             <div>
               <p className="font-medium text-ink">Pay online (Paystack)</p>
-              <p className="text-sm text-ink/55">Card, bank or USSD. Payments land in your Tomora Wallet — withdraw anytime.</p>
+              <p className="text-sm text-ink/55">Card, bank or USSD. Payments land in your Tomora Wallet, withdraw anytime.</p>
             </div>
           </div>
           <Switch checked={paystack} onCheckedChange={setPaystack} disabled={!connected} />

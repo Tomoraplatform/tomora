@@ -16,7 +16,7 @@ async function requireUserAndSite() {
   if (!user) throw new Error("Not authenticated.");
   const siteId = await currentSiteId(user.id);
   if (!siteId) throw new Error("No site found.");
-  // Rows created from the dashboard belong to the site's owner — for staff
+  // Rows created from the dashboard belong to the site's owner, for staff
   // members that's the account owner, not the staff user themselves.
   const { data: site } = await supabase.from("sites").select("user_id").eq("id", siteId).maybeSingle();
   const ownerId = (site?.user_id as string) || user.id;
@@ -213,7 +213,7 @@ export async function requestPayoutChange(input: { proofUrl?: string; note?: str
       .limit(1)
       .maybeSingle();
     if (existing?.status === "pending") return { ok: false, error: "You already have a request under review." };
-    if (existing?.status === "approved") return { ok: false, error: "Your request is approved — you can update your bank now." };
+    if (existing?.status === "approved") return { ok: false, error: "Your request is approved, you can update your bank now." };
 
     const { error } = await supabase.from("payout_change_requests").insert({
       user_id: userId,

@@ -25,8 +25,8 @@ const FEATURES = [
   { icon: Users, t: "Buddy System" }, { icon: Award, t: "Career Opportunity" },
 ];
 const FAQS = [
-  ["How long is the program?", "Most bootcamps run 8–12 weeks with flexible evening cohorts."],
-  ["Do I need prior experience?", "No — beginner tracks start from the fundamentals."],
+  ["How long is the program?", "Most bootcamps run 8 to 12 weeks with flexible evening cohorts."],
+  ["Do I need prior experience?", "No, beginner tracks start from the fundamentals."],
   ["Is there a certificate?", "Yes, you receive a verified certificate on completion."],
   ["What support do I get?", "1-on-1 mentoring, a buddy system and career coaching."],
   ["Can I pay in installments?", "Yes, flexible payment plans are available via Paystack."],

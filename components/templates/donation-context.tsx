@@ -56,7 +56,7 @@ export function DonationProvider({
       setCanDonate(!!d.canDonate);
       setProjects(d.projects || {});
     } catch { /* ignore */ }
-    // manual intentionally excluded — it's applied live from props below.
+    // manual intentionally excluded, it's applied live from props below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteId, enabled]);
 

@@ -53,7 +53,7 @@ export async function registerStudent(input: { name: string; email: string; pass
     .insert({ email, name, salt, password_hash: hash(input.password, salt) })
     .select("id").single();
   if (error) {
-    if (error.code === "23505") return { ok: false, error: "An account with this email already exists — sign in instead." };
+    if (error.code === "23505") return { ok: false, error: "An account with this email already exists, sign in instead." };
     return { ok: false, error: error.message };
   }
   await startSession(data.id);

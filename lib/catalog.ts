@@ -63,7 +63,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
   { id: "events-04", name: "Leychert", category: "events", component: "Leychert", accent: "#C4622D", blurb: "Community / municipality with news and events." },
   { id: "artisan-01", name: "Handmade", category: "artisan", component: "Handmade", accent: "#8A6D4B", dark: true, blurb: "Warm maker's site: showcase your craft and take enquiries." },
   { id: "artisan-02", name: "Atelier", category: "artisan", component: "Atelier", accent: "#C0703C", blurb: "Editorial studio: gallery, services and enquiries." },
-  { id: "artisan-03", name: "Carry", category: "artisan", component: "CarryStudio", accent: "#8DA290", blurb: "Elegant showcase for makers — display work, drive enquiries." },
+  { id: "artisan-03", name: "Carry", category: "artisan", component: "CarryStudio", accent: "#8DA290", blurb: "Elegant showcase for makers, display work, drive enquiries." },
   { id: "artisan-04", name: "Woodmore", category: "artisan", component: "Woodmore", accent: "#1F5C3A", blurb: "Furniture / product maker: collections, work and consultations." },
   { id: "artisan-05", name: "Seatwell", category: "artisan", component: "Seatwell", accent: "#C99AA6", blurb: "Soft pastel studio: catalog, popular pieces and enquiries." },
 ];
@@ -670,7 +670,7 @@ const img = (seed: string, w = 800, h = 800) =>
   `https://picsum.photos/seed/${encodeURIComponent(seed)}/${w}/${h}`;
 
 /**
- * Hero image used by the Ecommerce One (shop-01) template — its demo default and
+ * Hero image used by the Ecommerce One (shop-01) template, its demo default and
  * the landing-page preview. Swap this URL to change it everywhere at once.
  */
 export const ECOMMERCE_ONE_HERO = "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80";
@@ -686,7 +686,7 @@ function demoProducts(seed: string): CatalogProduct[] {
   }));
 }
 /**
- * A fuller, multi-category product catalog (marketing use only — e.g. the
+ * A fuller, multi-category product catalog (marketing use only, e.g. the
  * landing-page hero preview). Real onboarding still seeds the sparser
  * `demoProducts()` above so a brand-new store looks like an empty canvas the
  * owner fills in, not a pre-populated shop.
@@ -723,7 +723,7 @@ export function richStoreCatalog(seed: string): { products: CatalogProduct[]; ca
 
 function demoShopCategories(templateId: string, seed: string): import("./database.types").CatalogCategoryItem[] {
   const sets: Record<string, string[]> = {
-    // Placeholders — the store owner renames these to their own categories.
+    // Placeholders, the store owner renames these to their own categories.
     "shop-01": ["Category 1", "Category 2", "Category 3", "Category 4", "Category 5", "Category 6"],
     "shop-02": ["Category 1", "Category 2", "Category 3", "Category 4", "Category 5", "Category 6"],
     "shop-03": ["Category 1", "Category 2", "Category 3"],
@@ -790,7 +790,7 @@ const DEMO_TESTIMONIALS: Record<string, CatalogTestimonial[]> = (() => {
     shop: [
       { id: "t1", name: "Ada O.", role: "Customer", quote: "Fast delivery and great quality. I shop here every month." },
       { id: "t2", name: "Tunde B.", role: "Customer", quote: "The checkout was smooth and my order arrived early." },
-      { id: "t3", name: "Grace M.", role: "Customer", quote: "Excellent customer support — they really care." },
+      { id: "t3", name: "Grace M.", role: "Customer", quote: "Excellent customer support, they really care." },
     ],
     portfolio: [
       { id: "t1", name: "Tunde Bello", role: "CEO, Bello Co.", quote: "Working together was effortless. The result exceeded our expectations." },
@@ -817,7 +817,7 @@ function demoTestimonials(category: CatalogCategoryId): CatalogTestimonial[] {
   return DEMO_TESTIMONIALS[category] || DEMO_TESTIMONIALS.shop;
 }
 
-/** All seeded demo review quotes — used to detect unedited placeholder reviews. */
+/** All seeded demo review quotes, used to detect unedited placeholder reviews. */
 export const DEMO_REVIEW_QUOTES: Set<string> = new Set(
   Object.values(DEMO_TESTIMONIALS).flat().map((t) => t.quote)
 );
@@ -897,10 +897,10 @@ function demoClientLogos(seed: string): import("./database.types").CatalogCatego
 
 function demoResume(seed: string): import("./database.types").CatalogResumeItem[] {
   return [
-    { id: `${seed}-r1`, group: "Education", title: "2016 - 2020", subtitle: "University of Lagos", detail: "BSc Computer Science" },
-    { id: `${seed}-r2`, group: "Education", title: "2020 - 2022", subtitle: "Design Academy", detail: "Product Design Diploma" },
-    { id: `${seed}-r3`, group: "Experience", title: "2022 - Now", subtitle: "Senior Designer, Studio", detail: "Leading product design" },
-    { id: `${seed}-r4`, group: "Experience", title: "2020 - 2022", subtitle: "Designer, Agency", detail: "Client work across web & mobile" },
+    { id: `${seed}-r1`, group: "Education", title: "2016 to 2020", subtitle: "University of Lagos", detail: "BSc Computer Science" },
+    { id: `${seed}-r2`, group: "Education", title: "2020 to 2022", subtitle: "Design Academy", detail: "Product Design Diploma" },
+    { id: `${seed}-r3`, group: "Experience", title: "2022 to Now", subtitle: "Senior Designer, Studio", detail: "Leading product design" },
+    { id: `${seed}-r4`, group: "Experience", title: "2020 to 2022", subtitle: "Designer, Agency", detail: "Client work across web & mobile" },
     { id: `${seed}-r5`, group: "Skills", title: "Design", subtitle: "Figma, UI/UX", detail: "Expert" },
     { id: `${seed}-r6`, group: "Skills", title: "Development", subtitle: "React, Next.js", detail: "Advanced" },
   ];
@@ -908,8 +908,8 @@ function demoResume(seed: string): import("./database.types").CatalogResumeItem[
 
 function demoFaqs(seed: string): import("./database.types").CatalogFaq[] {
   return [
-    { id: `${seed}-f1`, question: "How long is the program?", answer: "Most bootcamps run 8–12 weeks with flexible evening cohorts." },
-    { id: `${seed}-f2`, question: "Do I need prior experience?", answer: "No — beginner tracks start from the fundamentals." },
+    { id: `${seed}-f1`, question: "How long is the program?", answer: "Most bootcamps run 8 to 12 weeks with flexible evening cohorts." },
+    { id: `${seed}-f2`, question: "Do I need prior experience?", answer: "No, beginner tracks start from the fundamentals." },
     { id: `${seed}-f3`, question: "Is there a certificate?", answer: "Yes, you receive a verified certificate on completion." },
     { id: `${seed}-f4`, question: "What support do I get?", answer: "1-on-1 mentoring, a buddy system and career coaching." },
   ];
@@ -933,14 +933,14 @@ function demoHours(seed: string): import("./database.types").CatalogHour[] {
 
 /* ============================ Content generator ============================ */
 const HERO = {
-  "shop-01": { h: "Discover The Best Products for You", s: "Quality products, fast delivery, and secure Paystack checkout — all in one place.", c: "Shop Now" },
+  "shop-01": { h: "Discover The Best Products for You", s: "Quality products, fast delivery, and secure Paystack checkout, all in one place.", c: "Shop Now" },
   "shop-02": { h: "Elevate Your Everyday Style", s: "Curated fashion essentials designed to make every day feel like an occasion.", c: "Shop Now" },
   "shop-03": { h: "Create Your Individuality", s: "The biggest choice of menswear on the web, refreshed every season.", c: "Shop Now" },
-  "shop-04": { h: "EXPLOSIVE\nBig Sale", s: "Up to 50% off across our newest styles — shop the season's biggest deals while they last.", c: "Buy Now" },
+  "shop-04": { h: "EXPLOSIVE\nBig Sale", s: "Up to 50% off across our newest styles, shop the season's biggest deals while they last.", c: "Buy Now" },
   "shop-05": { h: "Shop", s: "", c: "Shop Now" },
-  "shop-06": { h: "Freshly Baked, Made With Love", s: "Handcrafted bakes made in small batches — order online for pickup or delivery.", c: "Shop Now" },
-  "shop-07": { h: "Timepieces for the long run.", s: "A curated bench of everyday classics and rare finds — built to be worn, not stored away.", c: "Shop the Collection" },
-  "portfolio-01": { h: "Hi, I'm Alex — a Professional Designer", s: "I craft digital products and brands that people love to use.", c: "Work With Me" },
+  "shop-06": { h: "Freshly Baked, Made With Love", s: "Handcrafted bakes made in small batches, order online for pickup or delivery.", c: "Shop Now" },
+  "shop-07": { h: "Timepieces for the long run.", s: "A curated bench of everyday classics and rare finds, built to be worn, not stored away.", c: "Shop the Collection" },
+  "portfolio-01": { h: "Hi, I'm Alex, a Professional Designer", s: "I craft digital products and brands that people love to use.", c: "Work With Me" },
   "portfolio-02": { h: "Rizwan Ali", s: "Professional UI/UX & Website Designer helping brands stand out online.", c: "Hire Me" },
   "portfolio-03": { h: "Your Name", s: "", c: "" },
   "portfolio-04": { h: "We craft brands & digital experiences", s: "A design studio helping ambitious teams launch brands and products people remember.", c: "Start a project" },
@@ -951,13 +951,13 @@ const HERO = {
   "education-02": { h: "Exploring The Future", s: "A worldwide conference bringing together the brightest minds and ideas.", c: "Register" },
   "org-01": { h: "Give A Helping Hand To Those Who Need It", s: "Last year we supported programs that served over 700,000 children in 23 countries.", c: "Donate Now" },
   "org-02": { h: "Believe in The Better Future of Others", s: "Together we can bring hope, education and care to communities that need it most.", c: "Join Our Campaign" },
-  "org-03": { h: "Smart Financial Solutions for Your Future", s: "Consulting is a long-term investment in your goals — let's build yours together.", c: "Free Consultation" },
+  "org-03": { h: "Smart Financial Solutions for Your Future", s: "Consulting is a long-term investment in your goals, let's build yours together.", c: "Free Consultation" },
   "org-04": { h: "Last year we supported programs that served over 700,000 children in 23 countries.", s: "Together we can bring hope, education and care to the communities that need it most.", c: "Donate Now!" },
   "events-01": { h: "The Conference for Builders & Dreamers", s: "Two days of talks, workshops and connections that move your work forward.", c: "Register" },
   "events-02": { h: "Welcome To Our Community", s: "A place to belong, grow and serve. What can we help you find today?", c: "Plan Your Visit" },
   "events-03": { h: "A Place to Grow in Faith and Community", s: "Join us this week as we worship, learn and serve together.", c: "Plan Your Visit" },
   "events-04": { h: "Our Community, Our Home", s: "News, events and services for everyone who lives and works here.", c: "Explore" },
-  "artisan-01": { h: "Handmade Knitted Products", s: "Made with love — cosy, one-of-a-kind pieces knitted just for you.", c: "Contact me" },
+  "artisan-01": { h: "Handmade Knitted Products", s: "Made with love, cosy, one-of-a-kind pieces knitted just for you.", c: "Contact me" },
   "artisan-02": { h: "Handcrafted with intention", s: "A small studio creating timeless, handmade pieces for modern living.", c: "Make an enquiry" },
   "artisan-03": { h: "Carry style in every step", s: "Beautifully made pieces, crafted to be part of your everyday story.", c: "Enquire now" },
   "artisan-04": { h: "Explore our modern furniture collection", s: "Handmade, made-to-order furniture designed to last a lifetime.", c: "Book a consultation" },
@@ -1023,7 +1023,7 @@ export function createCatalogContent(
         const bakeryNames = ["Cinnamon Roll", "Chocolate Chip Cookie", "Vanilla Cupcake", "Sourdough Loaf", "Blueberry Muffin", "Red Velvet Slice"];
         const bakeryCats = ["Signature Rolls", "Signature Cookies", "Signature Rolls", "Breads", "Signature Cookies", "Cakes"];
         data.products = bakeryNames.map((name, i) => ({
-          id: `${seed}-p${i}`, name, description: "Baked fresh in small batches with premium ingredients — a customer favourite.",
+          id: `${seed}-p${i}`, name, description: "Baked fresh in small batches with premium ingredients, a customer favourite.",
           price: [9599, 5500, 4200, 6800, 3500, 7200][i],
           comparePrice: i % 2 === 0 ? [10000, 5800, 4500, 7200, 3800, 7600][i] : undefined,
           image: img(`${seed}-prod-${i}`), rating: 4 + (i % 2 ? 0.5 : 0.8), reviews: 12 + i * 4,
@@ -1040,7 +1040,7 @@ export function createCatalogContent(
         const watchPrices = [96000, 142000, 188000, 210000, 124000, 168000, 118000, 245000, 199000];
         data.products = watchNames.map((name, i) => ({
           id: `${seed}-p${i}`, name,
-          description: "Precision-built and hand-checked by our watchmakers — a piece made to be worn every day.",
+          description: "Precision-built and hand-checked by our watchmakers, a piece made to be worn every day.",
           price: watchPrices[i],
           comparePrice: i % 3 === 0 ? Math.round(watchPrices[i] * 1.15) : undefined,
           image: img(`${seed}-watch-${i}`), rating: 4.5 + (i % 2 ? 0 : 0.3), reviews: 8 + i * 3,
@@ -1144,7 +1144,7 @@ export function createCatalogContent(
         };
         data.sectionText = {
           ...(data.sectionText || {}),
-          helping: "We work alongside local communities to deliver lasting change — providing care, education and opportunity to children and families who need it most.",
+          helping: "We work alongside local communities to deliver lasting change, providing care, education and opportunity to children and families who need it most.",
           volunteers: "We're looking for compassionate volunteers to join our teams on the ground. Give your time and help us bring hope to communities across the region.",
         };
         data.sectionImages = {
@@ -1203,7 +1203,7 @@ export function createCatalogContent(
         data.sectionText = {
           ...(data.sectionText || {}),
           aboutSince: "1996",
-          aboutQuote: "Faith, hope and love — and the greatest of these is love.",
+          aboutQuote: "Faith, hope and love, and the greatest of these is love.",
         };
         data.aboutImages = [
           { id: `${seed}-da0`, name: "", image: img(`${seed}-deeds-a1`, 500, 600) },
@@ -1278,7 +1278,7 @@ export function createCatalogContent(
         data.skills = ["Branding", "Strategy", "Web", "Motion"].map((name, i) => ({ id: `${seed}-ch${i}`, name }));
         data.services = [
           { id: `${seed}-pr0`, title: "Discover", description: "We dig into your goals, audience and market to set the right direction." },
-          { id: `${seed}-pr1`, title: "Design", description: "We shape the brand and interface — look, feel and every detail." },
+          { id: `${seed}-pr1`, title: "Design", description: "We shape the brand and interface | look, feel and every detail." },
           { id: `${seed}-pr2`, title: "Build", description: "We turn the design into a fast, responsive, production-ready site." },
           { id: `${seed}-pr3`, title: "Evolve", description: "We measure, refine and keep improving long after launch." },
         ];
@@ -1299,7 +1299,7 @@ export function createCatalogContent(
         data.sectionText = {
           ...(data.sectionText || {}),
           about: "We're a small, senior team partnering with founders and brands to design identities and digital products that perform as good as they look.",
-          process: "A simple, proven way of working that keeps you involved at every step — from first idea to launch and beyond.",
+          process: "A simple, proven way of working that keeps you involved at every step, from first idea to launch and beyond.",
           expertise: "From the first sketch to the final pixel, we cover everything you need to launch and grow a memorable brand.",
           projects: "A selection of recent work across branding, web and product design.",
           cta: "Tell us what you're building. We'll get back to you within one working day.",
@@ -1323,7 +1323,7 @@ export function createCatalogContent(
           ...(data.sectionText || {}),
           about: "We handle the strategy, content and day-to-day so you can focus on serving your clients and growing what matters most.",
           services: "A full-service team behind your brand, from idea to execution.",
-          process: "A proven process that turns your ideas into results — thoughtfully planned, beautifully executed.",
+          process: "A proven process that turns your ideas into results, thoughtfully planned, beautifully executed.",
           videos: "A look at the work we've created for brands like yours.",
           cta: "Let's take the busywork off your plate. Book a free discovery call today.",
         };
@@ -1348,7 +1348,7 @@ export function createCatalogContent(
         };
         data.sectionText = {
           ...(data.sectionText || {}),
-          about: "Style is more than what you wear — it's how you feel. I help you build a wardrobe that reflects your individuality and elevates every day.",
+          about: "Style is more than what you wear, it's how you feel. I help you build a wardrobe that reflects your individuality and elevates every day.",
           videos: "Style tips, lookbooks and behind-the-scenes from recent sessions.",
           cta: "Step into your world of fashion with a free guide designed to elevate your look.",
         };
@@ -1372,13 +1372,13 @@ export function createCatalogContent(
         };
         data.sectionText = {
           ...(data.sectionText || {}),
-          about: "I guide heart-led women into overflow with integrity, softness and strategy. This isn't just about making money — it's about feeling safe to receive it, hold it, and expand with it.",
+          about: "I guide heart-led women into overflow with integrity, softness and strategy. This isn't just about making money, it's about feeling safe to receive it, hold it, and expand with it.",
           offer: "Unlock the energetic blueprint of wealth, self-worth and aligned business. Inside The Overflow Code you'll shift from scarcity into soul-aligned overflow.",
-          services: "Step into your next level with offers that meet you where you are — and lead you where you're meant to go.",
+          services: "Step into your next level with offers that meet you where you are, and lead you where you're meant to go.",
           videos: "Talks, trainings and moments from the work.",
-          cta: "You've done the mindset work. Now it's time to move from waiting to receiving — with softness, strategy and soul.",
+          cta: "You've done the mindset work. Now it's time to move from waiting to receiving, with softness, strategy and soul.",
         };
-        data.skills = ["Feminine leadership that feels like home", "Clients who value your magic — and pay accordingly", "A business that honours your nervous system", "Soft power, strong boundaries, rich results"].map((name, i) => ({ id: `${seed}-sk${i}`, name }));
+        data.skills = ["Feminine leadership that feels like home", "Clients who value your magic, and pay accordingly", "A business that honours your nervous system", "Soft power, strong boundaries, rich results"].map((name, i) => ({ id: `${seed}-sk${i}`, name }));
         data.eduFeatures = [
           { id: `${seed}-ef0`, title: "5 transformative modules", description: "" },
           { id: `${seed}-ef1`, title: "Sessions for worth & wealth", description: "" },
@@ -1425,8 +1425,8 @@ export function createCatalogContent(
           ...(data.sectionText || {}),
           about: "I'm a multidisciplinary creative who turns ideas into work people remember. I partner with brands and people to craft visuals, products and stories that stand out.",
           skillsTitle: "My Skills",
-          funfact: "Beyond the work, I'm endlessly curious — always exploring new tools, places and ideas. When I'm not designing you'll find me behind a camera capturing everyday moments.",
-          experience: "A snapshot of the work and clients I've grown with over the years — from brand identities to full creative direction.",
+          funfact: "Beyond the work, I'm endlessly curious, always exploring new tools, places and ideas. When I'm not designing you'll find me behind a camera capturing everyday moments.",
+          experience: "A snapshot of the work and clients I've grown with over the years, from brand identities to full creative direction.",
           videos: "Contents I Created",
         };
         data.skills = ["Brand & Visual Design", "UI / UX Design", "Photography", "Video Editing", "Art Direction"]
@@ -1456,7 +1456,7 @@ export function createCatalogContent(
           { id: `${seed}-w3`, title: "Made in 5 days", description: "Most orders are ready within five working days." },
         ];
         data.portfolioItems = showcase([["Sweater", "Cosy, made-to-measure knitwear."], ["Hat", "Warm hats with a soft pom-pom."], ["Mittens", "Hand-knitted mittens in your colours."]]);
-        data.sectionText = { ...(data.sectionText || {}), about: "Hello everybody! My name is Victoria and knitting is my whole life. What began as a hobby became a passion — and now I knit for a living, and I'm sure this is my vocation!", contact: "Have something in mind? Send me a message and let's make it together." };
+        data.sectionText = { ...(data.sectionText || {}), about: "Hello everybody! My name is Victoria and knitting is my whole life. What began as a hobby became a passion, and now I knit for a living, and I'm sure this is my vocation!", contact: "Have something in mind? Send me a message and let's make it together." };
         data.sectionColors = { ...(data.sectionColors || {}), catalog: "#241C14", contact: "#241C14" };
         data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-me`, 500, 620) };
       }
@@ -1469,19 +1469,19 @@ export function createCatalogContent(
         data.portfolioItems = showcase([["Signature Collection", "Our most-loved designs."], ["Studio Series", "Limited pieces from the studio."], ["Custom Commission", "Made just for you."], ["Archive", "Past work and inspiration."], ["Materials", "Natural, honest materials."], ["Process", "Behind the scenes."]]);
         data.testimonials = [
           { id: "t1", name: "Amara O.", role: "Client", quote: "Beautiful craftsmanship and a lovely process from start to finish." },
-          { id: "t2", name: "Daniel K.", role: "Client", quote: "Exactly what I imagined — and even better in person." },
+          { id: "t2", name: "Daniel K.", role: "Client", quote: "Exactly what I imagined, and even better in person." },
         ];
-        data.sectionText = { ...(data.sectionText || {}), about: "We're a small studio creating timeless, handmade pieces for modern homes. Every commission is a collaboration — considered, unhurried and made to last.", gallery: "A selection of recent work." };
+        data.sectionText = { ...(data.sectionText || {}), about: "We're a small studio creating timeless, handmade pieces for modern homes. Every commission is a collaboration, considered, unhurried and made to last.", gallery: "A selection of recent work." };
         data.sectionColors = { ...(data.sectionColors || {}), services: "#F3E8DE" };
         data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-studio`, 640, 520) };
       }
       if (templateId === "artisan-03") {
         data.portfolioItems = showcase([["Signature piece", "Our hero design, loved by many."], ["Everyday essential", "Made for daily life."], ["Statement piece", "For when you want to stand out."], ["New arrival", "Fresh from the studio."], ["Classic", "A timeless favourite."], ["Limited edition", "Only a few available."]]);
         data.testimonials = [
-          { id: "t1", name: "Emma & Daisy", role: "Clients", quote: "We're obsessed — the quality and detail are unmatched." },
+          { id: "t1", name: "Emma & Daisy", role: "Clients", quote: "We're obsessed, the quality and detail are unmatched." },
           { id: "t2", name: "Zara N.", role: "Client", quote: "Beautiful, functional and clearly made with love." },
         ];
-        data.sectionText = { ...(data.sectionText || {}), showcase: "A look at some of our favourite pieces.", about: "We create pieces where style and function intertwine — made to elevate your everyday and last for years to come." };
+        data.sectionText = { ...(data.sectionText || {}), showcase: "A look at some of our favourite pieces.", about: "We create pieces where style and function intertwine, made to elevate your everyday and last for years to come." };
         data.sectionButtons = { ...(data.sectionButtons || {}), about: { text: "Make an enquiry", url: "" } };
         data.sectionColors = { ...(data.sectionColors || {}), about: "#E7EEEA", testimonials: "#E7EEEA" };
         data.sectionImages = { ...(data.sectionImages || {}), about: img(`${seed}-about`, 560, 620) };
@@ -1509,7 +1509,7 @@ export function createCatalogContent(
           { id: `${seed}-c2`, title: "Chairs", description: "Designer chairs, made to order." },
         ];
         data.portfolioItems = showcase([["Fluffy chair", "A cosy statement chair."], ["Hospitable sofa", "Made for gathering."], ["Cute pouf", "A soft, playful accent."], ["Accent chair", "Comfort with character."]]);
-        data.sectionText = { ...(data.sectionText || {}), about: "Step into a world where furniture becomes a canvas for personal expression — pieces curated and crafted specifically for you.", categories: "Explore the pieces we make." };
+        data.sectionText = { ...(data.sectionText || {}), about: "Step into a world where furniture becomes a canvas for personal expression, pieces curated and crafted specifically for you.", categories: "Explore the pieces we make." };
         data.sectionButtons = { ...(data.sectionButtons || {}), hero: { text: "Learn more", url: "" } };
         data.sectionColors = { ...(data.sectionColors || {}), categories: "#F5DEE4" };
         data.sectionImages = { ...(data.sectionImages || {}), hero: img(`${seed}-chair`, 520, 560) };

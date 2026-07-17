@@ -51,7 +51,7 @@ export async function saveSite(
   if (error) return { ok: false, error: error.message };
   revalidatePath("/dashboard");
   if (gated) {
-    return { ok: true, gated: true, error: "Saved. Publishing extra sites needs the Growth plan or higher — upgrade to take this one live." };
+    return { ok: true, gated: true, error: "Saved. Publishing extra sites needs the Growth plan or higher, upgrade to take this one live." };
   }
   return { ok: true };
 }

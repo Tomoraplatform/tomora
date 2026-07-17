@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { SupportMessage } from "@/lib/database.types";
 import { MessagesInbox, type Conversation } from "@/components/dashboard/messages-inbox";
 
-export const metadata = { title: "Messages — Tomora" };
+export const metadata = { title: "Messages | Tomora" };
 
 export default async function MessagesPage() {
   const { site } = await getDashboardData();

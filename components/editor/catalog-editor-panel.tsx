@@ -166,7 +166,7 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
       { key: "subtitle", label: "Institution / role" },
       { key: "detail", label: "Qualification / note" },
     ],
-    make: () => ({ id: `r-${Date.now()}`, group: "Education", title: "2020 - 2024", subtitle: "Institution", detail: "Qualification" }),
+    make: () => ({ id: `r-${Date.now()}`, group: "Education", title: "2020 to 2024", subtitle: "Institution", detail: "Qualification" }),
   },
   donationProjects: {
     key: "donationProjects", title: "Fundraising projects (optional)",
@@ -367,7 +367,7 @@ export function CatalogEditorPanel({
       </Section>
 
       <div className="mb-2 mt-4 border-t border-ink/10 pt-4">
-        <p className="text-xs text-ink/50">Page sections — edit each one; use the arrows to reorder them on your page.</p>
+        <p className="text-xs text-ink/50">Page sections, edit each one; use the arrows to reorder them on your page.</p>
       </div>
 
       {orderedDefs.length === 0 && (
@@ -518,7 +518,7 @@ export function CatalogEditorPanel({
                       <FieldRow label="Manually added (₦)"><Input type="number" min={0} value={data.donationManual ?? 0} onChange={(e) => patch({ donationManual: Math.max(0, Math.round(Number(e.target.value) || 0)) })} /></FieldRow>
                     </div>
                     {payoutConnected ? (
-                      <p className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">✓ Payout bank connected — online donations will settle to your account.</p>
+                      <p className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">✓ Payout bank connected, online donations will settle to your account.</p>
                     ) : (
                       <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2.5">
                         <p className="text-xs font-medium text-amber-800">Connect your bank to receive donations</p>
@@ -528,7 +528,7 @@ export function CatalogEditorPanel({
                     )}
                     <p className="text-xs text-ink/50">Online gifts add to the bar automatically. Use “Manually added” for offline/cash gifts.</p>
                     {(data.donationProjects?.length || 0) > 0 && (
-                      <p className="rounded-md bg-cream px-3 py-2 text-xs text-ink/70">You&apos;ve added fundraising projects below — your site shows a card per project with its own target, and the general goal above is ignored. All gifts still settle to the same payout account.</p>
+                      <p className="rounded-md bg-cream px-3 py-2 text-xs text-ink/70">You&apos;ve added fundraising projects below, your site shows a card per project with its own target, and the general goal above is ignored. All gifts still settle to the same payout account.</p>
                     )}
                   </>
                 )}
@@ -619,7 +619,7 @@ export function CatalogEditorPanel({
 
       {hiddenKeys.length > 0 && (
         <div className="mb-4 rounded-xl border border-dashed border-ink/20 p-3">
-          <p className="text-xs font-medium text-ink/60">Deleted sections — tap to restore:</p>
+          <p className="text-xs font-medium text-ink/60">Deleted sections, tap to restore:</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {hiddenKeys.map((k) => (
               <button key={k} onClick={() => restoreSection(k)}
@@ -632,7 +632,7 @@ export function CatalogEditorPanel({
       )}
 
       <Section title="Add sections">
-        <p className="-mt-1 mb-1 text-xs text-ink/50">Add extra sections to your page — they appear above the footer.</p>
+        <p className="-mt-1 mb-1 text-xs text-ink/50">Add extra sections to your page, they appear above the footer.</p>
         <SectionsEditor
           sections={data.customSections || []}
           onChange={(next: CustomSection[]) => patch({ customSections: next })}

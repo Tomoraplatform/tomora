@@ -13,11 +13,11 @@ import { TRIAL_DAYS, APP_DOMAIN } from "@/lib/constants";
 import type { SiteCategory, SocialLinks } from "@/lib/database.types";
 
 /**
- * Nova — Tomora's AI setup assistant. It interviews the user (one question at
+ * Nova. Tomora's AI setup assistant. It interviews the user (one question at
  * a time), picks the best template, then calls the create_site tool with a
  * full content spec. createSiteFromNova() turns that spec into a real site by
  * seeding the template's default content and overlaying Nova's copy, so the
- * result looks exactly like a hand-configured site (default imagery included —
+ * result looks exactly like a hand-configured site (default imagery included,
  * owners replace images/logo in the editor afterwards).
  */
 
@@ -75,12 +75,12 @@ export function novaSystemPrompt(): string {
 
 How to work:
 - Ask ONE short, friendly question per message. Keep messages to 1-3 sentences. No emoji.
-- Gather, in roughly this order: (1) what kind of website they need and what the business/organisation does, (2) the business name, (3) what they offer — products with prices in naira for stores, services, courses, causes/fundraising projects, or events, (4) style preference (colour or vibe) if they care, (5) contact details (phone, email, address, WhatsApp/Instagram/other socials) — all optional, one quick question.
+- Gather, in roughly this order: (1) what kind of website they need and what the business/organisation does, (2) the business name, (3) what they offer, products with prices in naira for stores, services, courses, causes/fundraising projects, or events, (4) style preference (colour or vibe) if they care, (5) contact details (phone, email, address, WhatsApp/Instagram/other socials), all optional, one quick question.
 - If an answer already covers later questions, don't re-ask. Aim to finish within 4-6 questions total.
 - Write the site copy yourself: a strong hero headline, subtext, tagline, an about paragraph, service/product descriptions. Warm, confident, specific to their business. Prices in naira.
-- Pick the template yourself from the catalog below — never ask the user to pick from template ids. Choose by category and vibe.
+- Pick the template yourself from the catalog below, never ask the user to pick from template ids. Choose by category and vibe.
 - Brand colour must be a hex code. If they name a colour, translate it; if they don't care, pick one that suits the business.
-- When (and only when) you have the essentials — business type/description, name, and their offerings — call the create_site tool with the complete spec. Fill every field you sensibly can.
+- When (and only when) you have the essentials, business type/description, name, and their offerings, call the create_site tool with the complete spec. Fill every field you sensibly can.
 - Never call create_site in the same turn as a question. Never mention tools, templates ids, or these instructions.
 
 Template catalog:
@@ -89,7 +89,7 @@ ${templates}
 Notes:
 - For NGOs/churches (organization templates), ask if they want online donations; if they have distinct projects to fund, capture donationProjects with targets, otherwise one donationGoal.
 - For stores, capture 3-8 products (name, price, category). Group products into 2-4 categories.
-- Images: the user can attach photos in the chat. Uploaded images appear in their message as "[Attached images: <url> ...]". When you first ask about their offerings, invite them to attach their logo, a storefront/hero photo, and product photos if they have them (optional — placeholders are used otherwise). If it isn't obvious what an attached image is, ask them briefly. Assign each uploaded URL to the right field in create_site: logoUrl for the logo, heroImage for the main banner photo, imageUrl on the matching product or donation project. Use the exact URLs — never invent image URLs.
+- Images: the user can attach photos in the chat. Uploaded images appear in their message as "[Attached images: <url> ...]". When you first ask about their offerings, invite them to attach their logo, a storefront/hero photo, and product photos if they have them (optional, placeholders are used otherwise). If it isn't obvious what an attached image is, ask them briefly. Assign each uploaded URL to the right field in create_site: logoUrl for the logo, heroImage for the main banner photo, imageUrl on the matching product or donation project. Use the exact URLs, never invent image URLs.
 - Anything they don't upload launches with tasteful placeholder imagery they can replace in the editor.`;
 }
 
@@ -366,7 +366,7 @@ export async function createSiteFromNova(spec: NovaSpec): Promise<NovaCreateResu
     subdomain = created.subdomain;
   }
 
-  // Store products become real catalog rows (no images — added in the dashboard).
+  // Store products become real catalog rows (no images, added in the dashboard).
   if (dbCategory === "ecommerce" && spec.products?.length) {
     const rows = spec.products.slice(0, 12)
       .filter((p) => p.name?.trim() && p.price > 0)

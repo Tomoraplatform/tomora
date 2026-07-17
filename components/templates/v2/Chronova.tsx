@@ -11,7 +11,7 @@ import { useStore } from "../store-context";
 import { slugify } from "@/lib/utils";
 
 /**
- * Chronova — watch/e-commerce storefront (light grey, white cards, pill nav).
+ * Chronova, watch/e-commerce storefront (light grey, white cards, pill nav).
  * Editor / onboarding preview version. The live site renders the real
  * multi-page store (home / shop / product / about / contact) with working
  * links; this single-page version keeps it editable like every catalog template.

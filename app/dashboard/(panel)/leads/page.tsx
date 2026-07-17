@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Lead } from "@/lib/database.types";
 import { LeadsTable } from "@/components/dashboard/leads-table";
 
-export const metadata = { title: "Leads — Tomora" };
+export const metadata = { title: "Leads | Tomora" };
 
 export default async function LeadsPage() {
   const { site } = await getDashboardData();

@@ -5,7 +5,7 @@ import { productCategories } from "@/components/templates/v2/shared";
 import { StoreProductCard } from "../store/store-product-card";
 import { ChronovaShell } from "./chronova-shell";
 
-/** Chronova live shop page — all products with category filter links. */
+/** Chronova live shop page, all products with category filter links. */
 export function ChronovaShop({
   site, products, paystackEnabled,
 }: {

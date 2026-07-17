@@ -140,7 +140,7 @@ export function OnboardingWizard({
       )}
 
       <main className="container py-10">
-        {/* STEP 1 — Category */}
+        {/* STEP 1. Category */}
         {step === 1 && (
           <Section title="What kind of website do you need?" subtitle="Pick the option that best fits your goals.">
             <div className="mx-auto grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -161,7 +161,7 @@ export function OnboardingWizard({
           </Section>
         )}
 
-        {/* STEP 2 — Template */}
+        {/* STEP 2. Template */}
         {step === 2 && category && (
           <Section title="Choose your starting template" subtitle="You can fully customise it next.">
             <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -200,7 +200,7 @@ export function OnboardingWizard({
             {previewId && (
               <div className="fixed inset-0 z-50 flex flex-col bg-black/60" onClick={() => setPreviewId(null)}>
                 <div className="flex items-center justify-between gap-3 bg-white px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                  <p className="truncate text-sm font-semibold text-ink">{templatesFor(category).find((t) => t.id === previewId)?.name} — Preview</p>
+                  <p className="truncate text-sm font-semibold text-ink">{templatesFor(category).find((t) => t.id === previewId)?.name}. Preview</p>
                   <div className="flex items-center gap-2">
                     <Button size="sm" onClick={() => { setTemplateId(previewId); setPreviewId(null); setStep(3); }}><Check className="h-4 w-4" /> Use this</Button>
                     <button onClick={() => setPreviewId(null)} aria-label="Close" className="rounded-md p-1.5 text-ink/50 hover:bg-ink/5"><X className="h-5 w-5" /></button>
@@ -214,9 +214,9 @@ export function OnboardingWizard({
           </Section>
         )}
 
-        {/* STEP 3 — Brand info */}
+        {/* STEP 3. Brand info */}
         {step === 3 && (
-          <Section title="Tell us about your brand" subtitle="Only your business name is required — the rest is optional.">
+          <Section title="Tell us about your brand" subtitle="Only your business name is required | the rest is optional.">
             <div className="mx-auto max-w-xl space-y-5">
               <Field label="Business name" required>
                 <Input value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="Ada Styles" />
@@ -248,7 +248,7 @@ export function OnboardingWizard({
                       {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-5 w-5" />}
                     </span>
                   )}
-                  <span className="text-sm text-ink/60">{logoUrl ? "Logo uploaded — click to replace" : "Upload your logo (PNG or SVG)"}</span>
+                  <span className="text-sm text-ink/60">{logoUrl ? "Logo uploaded, click to replace" : "Upload your logo (PNG or SVG)"}</span>
                   <input type="file" accept="image/*" className="hidden" onChange={(e) => onLogo(e.target.files?.[0])} />
                 </label>
               </Field>
@@ -269,7 +269,7 @@ export function OnboardingWizard({
           </Section>
         )}
 
-        {/* STEP 4 — Preview */}
+        {/* STEP 4. Preview */}
         {step === 4 && previewData && templateId && (
           <Section title="Here's your site" subtitle="This is a live preview with your brand applied.">
             <div className="mx-auto max-w-4xl">
@@ -295,7 +295,7 @@ export function OnboardingWizard({
           </Section>
         )}
 
-        {/* STEP 5 — Published */}
+        {/* STEP 5. Published */}
         {step === 5 && subdomain && (
           <div className="mx-auto max-w-lg py-10 text-center">
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-ink text-cream">

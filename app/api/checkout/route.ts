@@ -9,7 +9,7 @@ import { PAYSTACK_FEE_PERCENT } from "@/lib/constants";
 /**
  * Records a storefront order as pending and returns the store owner's bank
  * details so the customer can pay by direct transfer. Amounts are computed
- * server-side from the database — never trusted from the client. The owner
+ * server-side from the database, never trusted from the client. The owner
  * confirms the order as paid from their dashboard once the transfer lands.
  */
 export async function POST(request: NextRequest) {
@@ -190,9 +190,9 @@ async function notify(
   ]);
   const nameById = new Map((dbProducts || []).map((p: any) => [p.id, p.name]));
   const storeName = (site?.site_data as any)?.businessName || "your store";
-  const items = rows.map((r) => `<li>${nameById.get(r.product_id) || "Item"}${r.color ? ` (${r.color})` : ""} — ${formatNaira(r.amount || 0)}</li>`).join("");
+  const items = rows.map((r) => `<li>${nameById.get(r.product_id) || "Item"}${r.color ? ` (${r.color})` : ""}, ${formatNaira(r.amount || 0)}</li>`).join("");
   const buyerLine = [buyer.name, buyer.email, buyer.phone, buyer.address].filter(Boolean).join(" · ");
-  const bankLine = `${bank.holder || ""} — ${bank.account}${bank.name ? ` (${bank.name})` : ""}`;
+  const bankLine = `${bank.holder || ""}, ${bank.account}${bank.name ? ` (${bank.name})` : ""}`;
 
   // Prefer the profile email, fall back to the account's login email.
   let ownerEmail = (profile?.email as string) || null;
@@ -205,8 +205,8 @@ async function notify(
   if (ownerEmail) {
     await sendEmail({
       to: ownerEmail,
-      subject: `New order on ${storeName} — ${formatNaira(total)} (awaiting transfer)`,
-      html: `<h2>New order — confirm the bank transfer</h2>
+      subject: `New order on ${storeName}, ${formatNaira(total)} (awaiting transfer)`,
+      html: `<h2>New order, confirm the bank transfer</h2>
         <p>A customer placed an order on <strong>${storeName}</strong> and was asked to transfer to your account.</p>
         <ul>${items}</ul>
         <p><strong>Total: ${formatNaira(total)}</strong></p>
@@ -218,7 +218,7 @@ async function notify(
   if (buyer.email) {
     await sendEmail({
       to: buyer.email,
-      subject: `Your order from ${storeName} — complete your transfer`,
+      subject: `Your order from ${storeName}, complete your transfer`,
       html: `<h2>Thank you, ${buyer.name || "there"}!</h2>
         <p>To complete your order from <strong>${storeName}</strong>, please transfer <strong>${formatNaira(total)}</strong> to:</p>
         <p style="font-size:16px"><strong>${bankLine}</strong></p>

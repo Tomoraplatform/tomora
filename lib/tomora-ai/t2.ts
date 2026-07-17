@@ -1,7 +1,7 @@
 import "server-only";
 
 /**
- * Tomora AI — Template 2 ("Chronova"): a multi-page watch storefront modeled
+ * Tomora AI. Template 2 ("Chronova"): a multi-page watch storefront modeled
  * on the Deo reference (style/arrangement only; all content original, and a
  * different set of watches). Pure HTML + CSS so the preview IS the export.
  * Built page by page: home first. A shared shell (nav + newsletter + footer)
@@ -51,7 +51,7 @@ export const T2_DEFAULTS: T2Fields = {
   heroBadge: "Fresh drops every week · Limited runs",
   heroHeadline1: "Timepieces",
   heroHeadline2: "for the long run.",
-  heroSub: "A curated bench of everyday classics and rare finds from makers we trust — built to be worn, not stored away.",
+  heroSub: "A curated bench of everyday classics and rare finds from makers we trust, built to be worn, not stored away.",
   heroCta1: "Shop the Collection",
   heroCta2: "Browse Best Sellers",
   trust: [
@@ -366,7 +366,7 @@ export function t2AboutHtml(f: T2Fields): string {
   const vIcon = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V5z"/></svg>`;
   const values = [
     ["Authenticity", "Every timepiece is checked by certified watchmakers before it reaches your wrist."],
-    ["Craft", "We obsess over the details most shops overlook — movement, finish and feel."],
+    ["Craft", "We obsess over the details most shops overlook, movement, finish and feel."],
     ["Service", "White-glove support and insured delivery, from first click to final fitting."],
     ["Reach", "Collectors in 24 countries trust us to source the pieces they can't find."],
     ["Community", "Meetups, guides and a journal that grows the everyday-collector world."],
@@ -399,8 +399,8 @@ export function t2AboutHtml(f: T2Fields): string {
         <div>
           <div class="cv-ab__eyebrow" style="color:var(--cv-muted)">Our Story</div>
           <h2>From a corner stall to a name collectors trust</h2>
-          <p>Chronova began at a single table at a Saturday market — one watchmaker, a loupe, and a stubborn belief that great watches shouldn't be locked behind glass or gatekept by jargon.</p>
-          <p>Word travelled. Collectors drove in from other cities for honest advice and fair prices. A decade on, we've grown into a trusted independent seller shipping to 24 countries — and we still treat every watch like it's going on our own wrist.</p>
+          <p>Chronova began at a single table at a Saturday market, one watchmaker, a loupe, and a stubborn belief that great watches shouldn't be locked behind glass or gatekept by jargon.</p>
+          <p>Word travelled. Collectors drove in from other cities for honest advice and fair prices. A decade on, we've grown into a trusted independent seller shipping to 24 countries, and we still treat every watch like it's going on our own wrist.</p>
         </div>
       </div>
 
@@ -416,7 +416,7 @@ export function t2AboutHtml(f: T2Fields): string {
 
       <div class="cv-ab__cta">
         <h2>Find your next watch</h2>
-        <p>Browse our curated collection — every piece checked, serviced and shipped with care.</p>
+        <p>Browse our curated collection, every piece checked, serviced and shipped with care.</p>
         <div class="cv-ab__btns">
           <a href="#" class="cv-btn" style="background:#fff;color:var(--cv-ink)">Shop Now ${arrowD}</a>
           <a href="#" class="cv-btn" style="background:#ffffff1f;color:#fff">Talk to an Expert</a>
@@ -484,17 +484,17 @@ export function t2ContactHtml(f: T2Fields): string {
   };
   const cards = [
     [cIcons.mail, "Email Us", "We reply within 24 hours", "hello@chronova.com", "Send Email"],
-    [cIcons.phone, "Call Us", "Mon – Fri, 9:00 – 18:00", "+234 800 000 0000", "Call Now"],
+    [cIcons.phone, "Call Us", "Mon to Fri, 9:00 to 18:00", "+234 800 000 0000", "Call Now"],
     [cIcons.pin, "Visit Us", "Our flagship showroom", "12 Marina Rd, Lagos", "Get Directions"],
-    [cIcons.clock, "Working Hours", "We're available", "Mon – Fri, 9 – 18", ""],
+    [cIcons.clock, "Working Hours", "We're available", "Mon to Fri, 9 to 18", ""],
   ].map(([ic, t, s, b, a]) => `<div class="cv-ct__card"><span class="cv-ct__cic">${ic}</span><h3>${t}</h3><small>${s}</small><b>${b}</b>${a ? `<a href="#">${a} →</a>` : ""}</div>`).join("");
 
   const faqIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9.1 9a3 3 0 1 1 5.8 1c0 2-3 2.5-3 2.5"/><path d="M12 17h.01"/></svg>`;
   const chev = `<svg class="cv-ct__chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>`;
   const faqs = [
-    ["How do I track my order?", "You'll get a tracking link by email the moment your watch ships — follow it door to door."],
+    ["How do I track my order?", "You'll get a tracking link by email the moment your watch ships, follow it door to door."],
     ["What's your return policy?", "Any unworn watch can come back within 30 days for a full refund, no questions asked."],
-    ["Do the watches come with a warranty?", "Yes — every timepiece includes our 2-year service warranty on the movement."],
+    ["Do the watches come with a warranty?", "Yes, every timepiece includes our 2-year service warranty on the movement."],
     ["Can I change or cancel an order?", "As long as it hasn't shipped, just reply to your confirmation email and we'll sort it."],
   ].map(([q, a]) => `<div class="cv-ct__q"><button class="cv-ct__qbtn" type="button"><span class="cv-ct__qic">${faqIcon}</span>${q}${chev}</button><div class="cv-ct__ans"><p>${a}</p></div></div>`).join("");
 
@@ -529,7 +529,7 @@ export function t2ContactHtml(f: T2Fields): string {
           <div style="margin-top:20px">${faqs}</div>
           <div class="cv-ct__help">
             <b>Still need help?</b>
-            <p>Our team is available Mon – Fri, 9:00 – 18:00.</p>
+            <p>Our team is available Mon to Fri, 9:00 to 18:00.</p>
             <a href="#" class="cv-btn cv-btn--ghost">hello@chronova.com</a>
           </div>
         </div>
@@ -575,7 +575,7 @@ export function renderT2(page: "home" | "shop" | "about" | "contact", fields: Pa
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(f.brand)} — ${active}</title>
+<title>${esc(f.brand)} | ${active}</title>
 <style>
 ${t2BaseCss()}
 ${cssByPage()}

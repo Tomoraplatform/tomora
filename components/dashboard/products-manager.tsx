@@ -154,7 +154,7 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>Product images ({form.images.length}/5)</Label>
-        <p className="text-xs text-ink/50">Add up to 5 — you can select several at once.</p>
+        <p className="text-xs text-ink/50">Add up to 5, you can select several at once.</p>
         <div className="flex flex-wrap gap-2">
           {form.images.map((src, i) => (
             <div key={i} className="relative h-16 w-16 overflow-hidden rounded-md border">
@@ -212,7 +212,7 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
       </div>
       <div className="rounded-lg border border-ink/10 px-4 py-3">
         <div className="flex items-center justify-between">
-          <div><span className="text-sm font-medium">Pre-order</span><p className="text-xs text-ink/50">Show a &ldquo;Pre-order&rdquo; badge instead of &ldquo;In stock&rdquo; — for items not ready to ship yet.</p></div>
+          <div><span className="text-sm font-medium">Pre-order</span><p className="text-xs text-ink/50">Show a &ldquo;Pre-order&rdquo; badge instead of &ldquo;In stock&rdquo;, for items not ready to ship yet.</p></div>
           <Switch checked={!!form.isPreOrder} onCheckedChange={(v) => set("isPreOrder", v)} />
         </div>
         {form.isPreOrder && (
@@ -239,7 +239,7 @@ function ColorVariantsField({ value, onChange }: { value: { name: string; image?
     onChange(value.map((v, j) => (j === i ? { ...v, ...patch } : v)));
   return (
     <div className="space-y-2">
-      <Label>Colours <span className="font-normal text-ink/40">(optional — each colour can have its own photo)</span></Label>
+      <Label>Colours <span className="font-normal text-ink/40">(optional, each colour can have its own photo)</span></Label>
       <div className="space-y-2">
         {value.map((v, i) => (
           <div key={i} className="flex items-center gap-2">

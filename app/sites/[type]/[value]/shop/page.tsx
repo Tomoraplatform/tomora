@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const type = params.type === "custom" ? "custom" : "subdomain";
   const data = await loadPublishedSite(type, decodeURIComponent(params.value));
   const name = data?.site.site_data?.businessName || "Store";
-  return { title: `Shop — ${name}` };
+  return { title: `Shop | ${name}` };
 }
 
 export default async function ShopPage({ params }: Params) {

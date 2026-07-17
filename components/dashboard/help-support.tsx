@@ -40,7 +40,7 @@ export function HelpAndSupport() {
         <CardContent className="space-y-4">
           {sent ? (
             <div className="flex items-center gap-2 rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800">
-              <Check className="h-5 w-5 shrink-0" /> Thanks — we&apos;ve got your message and will reply to your email shortly.
+              <Check className="h-5 w-5 shrink-0" /> Thanks, we&apos;ve got your message and will reply to your email shortly.
               <button onClick={() => setSent(false)} className="ml-auto text-xs font-semibold underline">Send another</button>
             </div>
           ) : (
@@ -67,7 +67,7 @@ export function HelpAndSupport() {
       <Card>
         <CardHeader><CardTitle className="flex items-center gap-2"><Info className="h-5 w-5" /> About Tomora</CardTitle></CardHeader>
         <CardContent className="space-y-3 text-sm leading-relaxed text-ink/70">
-          <p>Tomora is a no-code website builder for African businesses, creators, organisations and NGOs. Pick a template, make it yours, and go live on your own address — with online store, bookings, donations and secure Paystack payments built in.</p>
+          <p>Tomora is a no-code website builder for African businesses, creators, organisations and NGOs. Pick a template, make it yours, and go live on your own address, with online store, bookings, donations and secure Paystack payments built in.</p>
           <p>We handle the hosting, the checkout and the payouts so you can focus on your business. Payments settle straight to your own bank account.</p>
         </CardContent>
       </Card>

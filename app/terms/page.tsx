@@ -1,7 +1,7 @@
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 
-export const metadata = { title: "Terms of Use — Tomora" };
+export const metadata = { title: "Terms of Use | Tomora" };
 
 export default function TermsPage() {
   return (

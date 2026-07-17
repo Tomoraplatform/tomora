@@ -5,7 +5,7 @@ import { novaEnabled } from "@/lib/nova-flag";
 import { OnboardingWizard } from "@/components/onboarding/wizard";
 import { getTemplateOverrides } from "@/lib/template-overrides";
 
-export const metadata = { title: "Set Up Your Site — Tomora" };
+export const metadata = { title: "Set Up Your Site | Tomora" };
 
 export default async function OnboardingPage() {
   const supabase = createClient();
@@ -35,7 +35,7 @@ export default async function OnboardingPage() {
           className="flex items-center justify-center gap-2 bg-ink px-4 py-2.5 text-center text-sm font-medium text-cream hover:opacity-95"
         >
           <Sparkles className="h-4 w-4 shrink-0" />
-          <span>New: let <strong>Nova</strong>, our AI assistant, build your website for you — answer a few questions and go live.</span>
+          <span>New: let <strong>Nova</strong>, our AI assistant, build your website for you, answer a few questions and go live.</span>
         </a>
       )}
       <OnboardingWizard

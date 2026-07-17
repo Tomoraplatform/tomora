@@ -37,7 +37,7 @@ export async function addStaff(input: StaffInput): Promise<{ ok: boolean; error?
     const areas = (input.areas || []).filter((a) => validAreaIds.includes(a));
     if (!name) return { ok: false, error: "Enter the staff member's name." };
     if (!/^\S+@\S+\.\S+$/.test(email)) return { ok: false, error: "Enter a valid email address." };
-    if (email === (user.email || "").toLowerCase()) return { ok: false, error: "That's your own email — you already have full access." };
+    if (email === (user.email || "").toLowerCase()) return { ok: false, error: "That's your own email, you already have full access." };
     if (!areas.length) return { ok: false, error: "Select at least one area they can access." };
 
     const { error } = await supabase.from("staff_members").insert({
@@ -94,7 +94,7 @@ export async function updateStaff(id: string, patch: Partial<StaffInput>): Promi
   }
 }
 
-/** Removes a staff member — their access ends immediately. */
+/** Removes a staff member, their access ends immediately. */
 export async function removeStaff(id: string): Promise<{ ok: boolean; error?: string }> {
   try {
     const supabase = createClient();

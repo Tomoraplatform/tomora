@@ -14,7 +14,7 @@ interface ChatMessage {
 }
 
 const OPENER =
-  "Hi, I'm Nova. I'll build your whole website for you — just answer a few quick questions. You can also attach photos along the way (your logo, shop photos, product pictures) and I'll put them in the right places. First: what kind of website do you need, and what does your business or organisation do?";
+  "Hi, I'm Nova. I'll build your whole website for you, just answer a few quick questions. You can also attach photos along the way (your logo, shop photos, product pictures) and I'll put them in the right places. First: what kind of website do you need, and what does your business or organisation do?";
 
 const MAX_ATTACH = 10;
 
@@ -75,7 +75,7 @@ export function NovaChat() {
         setDone({ liveUrl: data.liveUrl, subdomain: data.subdomain });
       }
     } catch (e: any) {
-      setError(e.message || "Something went wrong — please try again.");
+      setError(e.message || "Something went wrong, please try again.");
       // Roll everything back into the composer so nothing is lost.
       setMessages(messages);
       setInput(content);
@@ -90,7 +90,7 @@ export function NovaChat() {
       <header className="flex shrink-0 items-center justify-between border-b border-ink/10 bg-white px-4 py-3">
         <Logo />
         <span className="flex items-center gap-1.5 rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-cream">
-          <Sparkles className="h-3.5 w-3.5" /> Nova — AI setup
+          <Sparkles className="h-3.5 w-3.5" /> Nova. AI setup
         </span>
       </header>
 

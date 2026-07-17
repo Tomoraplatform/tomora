@@ -42,7 +42,7 @@ export function WalletManager({
     try {
       const res = await withdrawFromWallet(amount);
       if (!res.ok) setNotice({ kind: "error", text: res.error || "Could not process the withdrawal." });
-      else if (res.pending) setNotice({ kind: "pending", text: "Withdrawal requested — it's being processed and will land in your bank shortly." });
+      else if (res.pending) setNotice({ kind: "pending", text: "Withdrawal requested, it's being processed and will land in your bank shortly." });
       else setNotice({ kind: "ok", text: "Withdrawal sent to your bank." });
       if (res.ok) setAmount(0);
     } finally {

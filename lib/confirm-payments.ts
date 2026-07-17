@@ -6,7 +6,7 @@ import { formatNaira } from "@/lib/utils";
 
 /**
  * Server-side settlement for visitor payments (donations `don_*` and store
- * orders `tom_*`). Each confirm is idempotent — it only acts when pending rows
+ * orders `tom_*`). Each confirm is idempotent, it only acts when pending rows
  * flip to paid, and a unique index on wallet (type, reference) guards credits.
  * Called from the browser confirm endpoints, the Paystack webhook, and the
  * dashboard reconcile pass, so a donor closing the tab after paying can no
@@ -40,7 +40,7 @@ export async function confirmDonationPaid(reference: string): Promise<{ updated:
         description: `Donation${row.donor_name ? ` from ${row.donor_name}` : ""}`,
       });
     }
-  } catch { /* non-fatal — wallet table may not exist yet */ }
+  } catch { /* non-fatal, wallet table may not exist yet */ }
 
   return { updated: true };
 }
@@ -79,7 +79,7 @@ export async function confirmOrdersPaid(reference: string): Promise<{ updated: n
         description: `Order from ${pending[0].buyer_name || "customer"}`,
       });
     }
-  } catch { /* non-fatal — wallet table may not exist yet */ }
+  } catch { /* non-fatal, wallet table may not exist yet */ }
 
   try { await notifyOrder(admin, pending, reference); } catch { /* non-fatal */ }
 
@@ -112,7 +112,7 @@ export async function reconcilePendingDonations(siteId: string): Promise<number>
         const { updated } = await confirmDonationPaid(r.paystack_reference);
         if (updated) settled += 1;
       }
-    } catch { /* skip — try again next visit */ }
+    } catch { /* skip, try again next visit */ }
   }
   return settled;
 }
@@ -136,7 +136,7 @@ async function notifyOrder(admin: ReturnType<typeof createAdminClient>, rows: an
   const storeName = (site?.site_data as any)?.businessName || "your store";
 
   const items = rows
-    .map((r) => `<li>${nameById.get(r.product_id) || "Item"}${r.color ? ` (${r.color})` : ""} — ${formatNaira(r.amount || 0)}</li>`)
+    .map((r) => `<li>${nameById.get(r.product_id) || "Item"}${r.color ? ` (${r.color})` : ""}, ${formatNaira(r.amount || 0)}</li>`)
     .join("");
   const buyerLine = [buyer.name, buyer.email, buyer.phone, buyer.address].filter(Boolean).join(" · ");
 
@@ -149,7 +149,7 @@ async function notifyOrder(admin: ReturnType<typeof createAdminClient>, rows: an
   if (ownerEmail) {
     await sendEmail({
       to: ownerEmail,
-      subject: `New order on ${storeName} — ${formatNaira(total)}`,
+      subject: `New order on ${storeName}, ${formatNaira(total)}`,
       html: `
         <h2>You've received a new order</h2>
         <p>A customer just placed an order on <strong>${storeName}</strong>.</p>

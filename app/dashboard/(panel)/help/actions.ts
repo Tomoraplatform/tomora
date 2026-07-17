@@ -31,7 +31,7 @@ export async function sendSupportMessage(input: { subject: string; message: stri
     if (user.email) {
       await sendEmail({
         to: user.email,
-        subject: "We've received your message — Tomora Support",
+        subject: "We've received your message. Tomora Support",
         html: `<p>Thanks for reaching out. Our team has your message and will reply to this email address shortly.</p><p style="color:#666">Your message:</p><p style="white-space:pre-wrap;color:#666">${message.replace(/</g, "&lt;")}</p>`,
       });
     }

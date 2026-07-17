@@ -15,7 +15,7 @@ type Lesson = CourseWithContent["modules"][number]["lessons"][number];
 
 /**
  * Udemy-style course player: video stage + curriculum sidebar. Media is
- * fetched per lesson as short-lived signed URLs from /api/academy/lesson —
+ * fetched per lesson as short-lived signed URLs from /api/academy/lesson,
  * the private bucket is never exposed directly, and the player blocks
  * download/PiP/context-menu so lessons are watched in-portal only.
  */

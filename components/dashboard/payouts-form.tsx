@@ -105,7 +105,7 @@ export function PayoutsForm({ initial, changeStatus = null }: { initial: Initial
       <div className="flex items-start gap-2 rounded-lg bg-cream p-4 text-sm text-ink/70">
         <Info className="mt-0.5 h-4 w-4 shrink-0" />
         <span>
-          When someone pays or donates on your site, the money settles straight to this bank account through Paystack —
+          When someone pays or donates on your site, the money settles straight to this bank account through Paystack,
           you don&apos;t need your own Paystack account.
         </span>
       </div>
@@ -113,7 +113,7 @@ export function PayoutsForm({ initial, changeStatus = null }: { initial: Initial
       {connected && accountName && (
         <div className="flex items-center gap-2 rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800">
           <CheckCircle2 className="h-5 w-5 shrink-0" />
-          <span>Payouts active — money goes to <span className="font-semibold">{accountName}</span>{bankLabel ? ` (${bankLabel})` : ""}.</span>
+          <span>Payouts active, money goes to <span className="font-semibold">{accountName}</span>{bankLabel ? ` (${bankLabel})` : ""}.</span>
         </div>
       )}
 
@@ -189,7 +189,7 @@ function ChangeRequest({ status, onSubmitted }: { status: string | null; onSubmi
           </div>
         )}
         <p className="text-sm text-ink/60">
-          For your security, your payout bank is locked. To change it, request access and upload <span className="font-medium">proof of ownership</span> of the new account —
+          For your security, your payout bank is locked. To change it, request access and upload <span className="font-medium">proof of ownership</span> of the new account,
           an image or PDF of a bank statement showing a name that matches the current account holder.
         </p>
 

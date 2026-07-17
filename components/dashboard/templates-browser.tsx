@@ -122,7 +122,7 @@ export function TemplatesBrowser({
       <div className="border-t border-ink/10 pt-2">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-ink/50">Add another website</h2>
         <p className="mt-1 text-sm text-ink/50">
-          {atLimit ? "You've reached your plan limit — delete one above to add a different template." : "Pick a template to spin up another website."}
+          {atLimit ? "You've reached your plan limit, delete one above to add a different template." : "Pick a template to spin up another website."}
         </p>
       </div>
 
@@ -160,7 +160,7 @@ export function TemplatesBrowser({
           {preview && (
             <>
               <div className="flex items-center justify-between border-b px-4 py-2.5">
-                <span className="text-sm font-semibold text-ink">{preview.name} — preview</span>
+                <span className="text-sm font-semibold text-ink">{preview.name}, preview</span>
                 <button onClick={() => setPreview(null)}><X className="h-5 w-5 text-ink/50" /></button>
               </div>
               <div className="max-h-[78vh] overflow-y-auto">

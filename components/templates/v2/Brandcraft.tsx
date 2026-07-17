@@ -14,7 +14,7 @@ const EXPERTISE_ICONS = [Megaphone, Layout, MousePointer2, ShoppingBag, Code2, C
 
 const FALLBACK_PROCESS = [
   { title: "Discover", description: "We dig into your goals, audience and market to set the right direction." },
-  { title: "Design", description: "We shape the brand and interface — look, feel and every detail." },
+  { title: "Design", description: "We shape the brand and interface | look, feel and every detail." },
   { title: "Build", description: "We turn the design into a fast, responsive, production-ready site." },
   { title: "Evolve", description: "We measure, refine and keep improving long after launch." },
 ];

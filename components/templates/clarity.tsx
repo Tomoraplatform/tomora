@@ -120,7 +120,7 @@ export function Clarity({ siteData, brandColor }: TemplateProps) {
                   {[0,1,2,3,4].map((n) => <Star key={n} className="h-4 w-4 fill-current" />)}
                 </div>
                 <blockquote className="text-sm text-slate-600">&ldquo;{t.quote}&rdquo;</blockquote>
-                <figcaption className="mt-4 text-sm font-semibold">{t.name}<span className="font-normal text-slate-400"> — {t.role}</span></figcaption>
+                <figcaption className="mt-4 text-sm font-semibold">{t.name}<span className="font-normal text-slate-400">, {t.role}</span></figcaption>
               </figure>
             ))}
           </div>

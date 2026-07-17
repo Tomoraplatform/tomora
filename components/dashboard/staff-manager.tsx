@@ -57,7 +57,7 @@ export function StaffManager({ staff, hasTeamPlan }: { staff: StaffRow[]; hasTea
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-ink">Staff</h1>
-        <p className="mt-1 text-ink/60">Give your team access to the parts of your dashboard they need. Staff sign in with their own account — no shared passwords.</p>
+        <p className="mt-1 text-ink/60">Give your team access to the parts of your dashboard they need. Staff sign in with their own account, no shared passwords.</p>
       </div>
 
       {!hasTeamPlan && (
@@ -82,7 +82,7 @@ export function StaffManager({ staff, hasTeamPlan }: { staff: StaffRow[]; hasTea
             </CardHeader>
             <CardContent className="space-y-3">
               {staff.length === 0 && !showForm && (
-                <p className="rounded-lg border border-dashed border-ink/15 py-8 text-center text-sm text-ink/50">No staff yet — add your first team member.</p>
+                <p className="rounded-lg border border-dashed border-ink/15 py-8 text-center text-sm text-ink/50">No staff yet, add your first team member.</p>
               )}
               {staff.map((s) => (
                 <div key={s.id} className="rounded-xl border border-ink/10 p-4">

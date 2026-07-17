@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoginForm } from "@/components/auth/auth-forms";
 
-export const metadata = { title: "Log In — Tomora" };
+export const metadata = { title: "Log In | Tomora" };
 
 export default function LoginPage({
   searchParams,

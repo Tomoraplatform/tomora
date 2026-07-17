@@ -5,7 +5,7 @@ import { APP_DOMAIN, NEW_DOMAIN_AMOUNT } from "@/lib/constants";
 import { domainAccess } from "@/lib/domain-access";
 import type { DomainRequest } from "@/lib/database.types";
 
-export const metadata = { title: "Custom Domain — Tomora" };
+export const metadata = { title: "Custom Domain | Tomora" };
 
 export default async function DomainPage() {
   const { site, sites, subscription } = await getDashboardData();

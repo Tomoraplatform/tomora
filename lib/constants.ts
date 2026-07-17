@@ -4,12 +4,12 @@ export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com.ng";
 
 /* ---------------- Billing ---------------- */
 export const TRIAL_DAYS = 14;
-export const FIRST_PAYMENT_AMOUNT = 29800; // NGN — Pro first payment, includes 1yr custom domain
-export const RENEWAL_AMOUNT = 24800; // NGN — Pro renewals at positions 1,2,3
+export const FIRST_PAYMENT_AMOUNT = 29800; // NGN. Pro first payment, includes 1yr custom domain
+export const RENEWAL_AMOUNT = 24800; // NGN. Pro renewals at positions 1,2,3
 export const RENEWAL_INTERVAL_MONTHS = 3;
 export const GRACE_PERIOD_DAYS = 7;
 /** Flat price to buy + activate a brand-new domain through Tomora (assisted). */
-export const NEW_DOMAIN_AMOUNT = 5000; // NGN — covers .com.ng registration (~₦2,500–3,500) + margin
+export const NEW_DOMAIN_AMOUNT = 5000; // NGN, covers .com.ng registration (~₦2,500 to 3,500) + margin
 
 /** Tomora's commission on each storefront sale (0 = owner receives the full payment). */
 export const STORE_COMMISSION_PERCENT = 0;
@@ -91,7 +91,7 @@ export const PLANS: Plan[] = [
     name: "Free Trial",
     price: 0,
     period: "14 days",
-    tagline: "Build and preview — no credit card.",
+    tagline: "Build and preview, no credit card.",
     features: [
       "14 days free",
       "1 website on a Tomora subdomain",
@@ -184,7 +184,7 @@ export const PLANS: Plan[] = [
     price: 84500,
     renewal: 20000,
     period: "year",
-    tagline: "Pay once for the whole year — everything in Pro.",
+    tagline: "Pay once for the whole year, everything in Pro.",
     features: [
       "Everything in Pro",
       "One payment covers a full year",
@@ -340,7 +340,7 @@ export function getTemplate(id: string): TemplateMeta | undefined {
 export const FAQS = [
   {
     q: "Is Tomora free to use?",
-    a: "Yes. You can build and publish your website on a free 14-day trial with a Tomora subdomain — no credit card required. Upgrade to Pro whenever you're ready for a custom domain and e-commerce.",
+    a: "Yes. You can build and publish your website on a free 14-day trial with a Tomora subdomain, no credit card required. Upgrade to Pro whenever you're ready for a custom domain and e-commerce.",
   },
   {
     q: "Can I use my own domain name?",
@@ -360,6 +360,6 @@ export const FAQS = [
   },
   {
     q: "What types of businesses can use Tomora?",
-    a: "Small businesses, personal brands, creators, NGOs, churches, schools and coaches — anyone who needs a professional website fast, built for African businesses.",
+    a: "Small businesses, personal brands, creators, NGOs, churches, schools and coaches, anyone who needs a professional website fast, built for African businesses.",
   },
 ];

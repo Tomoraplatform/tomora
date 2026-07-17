@@ -133,7 +133,7 @@ export async function grantAccess(courseId: string, email: string): Promise<R> {
     const admin = await guard();
     const norm = email.trim().toLowerCase();
     const { data: student } = await admin.from("academy_students").select("id").eq("email", norm).maybeSingle();
-    if (!student) return { ok: false, error: "No student account with that email yet — they need to register on /academy first." };
+    if (!student) return { ok: false, error: "No student account with that email yet, they need to register on /academy first." };
     const { error } = await admin.from("academy_enrollments").insert({ student_id: student.id, course_id: courseId, source: "admin" });
     if (error && error.code !== "23505") return { ok: false, error: error.message };
     if (error?.code === "23505") return { ok: false, error: "That student already has access to this course." };

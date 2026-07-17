@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const product = data?.products.find((p) => p.id === params.id);
   if (!data || !product) return { title: "Product not found" };
   const name = data.site.site_data?.businessName || "Store";
-  return { title: `${product.name} — ${name}`, description: product.description || undefined };
+  return { title: `${product.name} | ${name}`, description: product.description || undefined };
 }
 
 export default async function ProductPage({ params }: Params) {

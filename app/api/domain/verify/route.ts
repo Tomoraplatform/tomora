@@ -31,7 +31,7 @@ export async function POST() {
     const cnames = await dns.resolveCname(site.custom_domain).catch(() => [] as string[]);
     verified = cnames.some((c) => c.includes(APP_DOMAIN) || c.includes("vercel"));
     if (!verified) {
-      // apex domains may use A/ALIAS — accept any resolving record as a soft check
+      // apex domains may use A/ALIAS, accept any resolving record as a soft check
       const a = await dns.resolve4(site.custom_domain).catch(() => [] as string[]);
       verified = a.length > 0 && cnames.some((c) => c.includes(target));
     }

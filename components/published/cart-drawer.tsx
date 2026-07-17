@@ -23,7 +23,7 @@ function loadPaystack(): Promise<void> {
 /**
  * Shared cart / checkout drawer: line items, discount code, shipping location,
  * payment method (Paystack popup or bank transfer) and order placement. Used
- * by every e-commerce template — the caller only owns the cart lines.
+ * by every e-commerce template, the caller only owns the cart lines.
  */
 export function CartDrawer({
   open, onClose, lines, setQty,
@@ -194,7 +194,7 @@ export function CartDrawer({
                       className="w-full rounded-md border border-ink/15 px-4 py-3 text-sm text-ink outline-none focus:border-ink"
                     >
                       <option value="">Select delivery location…</option>
-                      {zones.map((z) => <option key={z.id} value={z.id}>{z.name} — {z.fee > 0 ? formatNaira(z.fee) : "Free"}</option>)}
+                      {zones.map((z) => <option key={z.id} value={z.id}>{z.name}, {z.fee > 0 ? formatNaira(z.fee) : "Free"}</option>)}
                     </select>
                   )}
 

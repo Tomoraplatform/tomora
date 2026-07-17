@@ -3,7 +3,7 @@ import { getTemplate } from "./constants";
 
 /**
  * The nine editable block types. Templates render the subset they use, in a
- * fixed order — users edit content but cannot reorder/restructure.
+ * fixed order, users edit content but cannot reorder/restructure.
  */
 export const BLOCK_TYPES = [
   "hero",
@@ -53,7 +53,7 @@ function defaultContent(type: BlockType, name: string, category: SiteCategory): 
     case "hero":
       return {
         headline: byCategory({
-          business: `${name} — Professional Services You Can Trust`,
+          business: `${name}. Professional Services You Can Trust`,
           ecommerce: `Shop the ${name} Collection`,
           creator: name,
           organization: `Together, ${name} Makes a Difference`,

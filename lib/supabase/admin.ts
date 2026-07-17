@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 /**
- * Service-role Supabase client. Bypasses RLS — use ONLY in trusted server
+ * Service-role Supabase client. Bypasses RLS, use ONLY in trusted server
  * contexts (webhooks, admin actions, background jobs). Never import into
  * client components.
  */

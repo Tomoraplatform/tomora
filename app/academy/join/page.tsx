@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { AcademyHeader } from "@/components/academy/academy-header";
 import { AcademyAuthForm } from "@/components/academy/auth-form";
 
-export const metadata = { title: "Join — Tomora Academy" };
+export const metadata = { title: "Join | Tomora Academy" };
 export const dynamic = "force-dynamic";
 
 export default async function AcademyJoinPage({ searchParams }: { searchParams: { course?: string } }) {
@@ -32,7 +32,7 @@ export default async function AcademyJoinPage({ searchParams }: { searchParams: 
         </h1>
         <p className="mt-2 max-w-sm text-center text-sm text-ink/60">
           {courseTitle
-            ? "Create your account (or sign in) to continue to payment — the course opens in your portal right after."
+            ? "Create your account (or sign in) to continue to payment, the course opens in your portal right after."
             : "Create your account or sign in to access your courses."}
         </p>
         <div className="mt-8 w-full max-w-md rounded-2xl border border-ink/10 bg-white p-6 shadow-sm">

@@ -6,9 +6,9 @@ import type { Site } from "@/lib/database.types";
 import { ChronovaShell } from "./chronova-shell";
 
 const FAQS = [
-  ["How do I track my order?", "You'll get a tracking link by email the moment your watch ships — follow it door to door."],
+  ["How do I track my order?", "You'll get a tracking link by email the moment your watch ships, follow it door to door."],
   ["What's your return policy?", "Any unworn watch can come back within 30 days for a full refund, no questions asked."],
-  ["Do the watches come with a warranty?", "Yes — every timepiece includes our 2-year service warranty on the movement."],
+  ["Do the watches come with a warranty?", "Yes, every timepiece includes our 2-year service warranty on the movement."],
   ["Can I change or cancel an order?", "As long as it hasn't shipped, just reply to your confirmation email and we'll sort it."],
 ];
 
@@ -30,7 +30,7 @@ export function ChronovaContact({ site, paystackEnabled }: { site: Site; paystac
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           siteId: site.id, source: "contact", name: form.name, email: form.email,
-          message: [form.subject && `Subject: ${form.subject}`, form.message].filter(Boolean).join(" — "),
+          message: [form.subject && `Subject: ${form.subject}`, form.message].filter(Boolean).join(", "),
         }),
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Could not send. Please try again.");
@@ -42,9 +42,9 @@ export function ChronovaContact({ site, paystackEnabled }: { site: Site; paystac
 
   const cards = [
     { icon: Mail, title: "Email Us", sub: "We reply within 24 hours", value: email, action: "Send Email" },
-    { icon: Phone, title: "Call Us", sub: "Mon – Fri, 9:00 – 18:00", value: siteData?.phone || "+234 800 000 0000", action: "Call Now" },
+    { icon: Phone, title: "Call Us", sub: "Mon to Fri, 9:00 to 18:00", value: siteData?.phone || "+234 800 000 0000", action: "Call Now" },
     { icon: MapPin, title: "Visit Us", sub: "Our flagship showroom", value: siteData?.address || "12 Marina Rd, Lagos", action: "Get Directions" },
-    { icon: Clock, title: "Working Hours", sub: "We're available", value: "Mon – Fri, 9 – 18", action: "" },
+    { icon: Clock, title: "Working Hours", sub: "We're available", value: "Mon to Fri, 9 to 18", action: "" },
   ];
 
   return (
@@ -76,7 +76,7 @@ export function ChronovaContact({ site, paystackEnabled }: { site: Site; paystac
               <h2 className="mt-1 text-2xl font-bold tracking-tight">Send a message</h2>
               {status === "done" ? (
                 <div className="mt-6 flex items-center gap-2 rounded-xl bg-emerald-50 p-4 text-sm text-emerald-700">
-                  <CheckCircle2 className="h-5 w-5" /> Thanks — your message has been sent. We&apos;ll be in touch soon.
+                  <CheckCircle2 className="h-5 w-5" /> Thanks, your message has been sent. We&apos;ll be in touch soon.
                 </div>
               ) : (
                 <form className="mt-6 grid gap-4 sm:grid-cols-2" onSubmit={submit}>
@@ -124,7 +124,7 @@ export function ChronovaContact({ site, paystackEnabled }: { site: Site; paystac
               </div>
               <div className="mt-4 rounded-xl bg-[#F3F3F2] p-5 text-center">
                 <p className="text-sm font-semibold">Still need help?</p>
-                <p className="mt-1 text-xs text-neutral-500">Our team is available Mon – Fri, 9:00 – 18:00.</p>
+                <p className="mt-1 text-xs text-neutral-500">Our team is available Mon to Fri, 9:00 to 18:00.</p>
                 <a href={`mailto:${email}`} className="mt-3 inline-block rounded-full border border-black/10 px-5 py-2.5 text-sm font-semibold" style={{ color: brandColor }}>{email}</a>
               </div>
             </div>

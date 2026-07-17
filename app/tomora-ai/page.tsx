@@ -4,7 +4,7 @@ import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 
 export const metadata = {
-  title: "Tomora AI — Coming Soon",
+  title: "Tomora AI | Coming Soon",
   description: "Design with ready-made templates, personalise with your brand, and export clean HTML & CSS to use on any platform.",
 };
 
@@ -20,13 +20,13 @@ export default function TomoraAiPage() {
         <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">Tomora AI</h1>
         <p className="mt-4 max-w-xl text-lg text-ink/70">
           A new way to design. Choose from beautiful templates, edit them with your details,
-          images and brand — then copy the exact HTML &amp; CSS and use your design anywhere.
+          images and brand, then copy the exact HTML &amp; CSS and use your design anywhere.
         </p>
 
         <div className="mt-10 grid w-full max-w-3xl gap-4 sm:grid-cols-3">
           {[
             { icon: LayoutTemplate, t: "Pick a design", d: "Browse a library of ready-made templates." },
-            { icon: Palette, t: "Make it yours", d: "Your text, photos and brand colours — previewed live." },
+            { icon: Palette, t: "Make it yours", d: "Your text, photos and brand colours, previewed live." },
             { icon: Code2, t: "Copy the code", d: "Clean HTML & CSS that renders exactly as designed, on any platform." },
           ].map(({ icon: Icon, t, d }) => (
             <div key={t} className="rounded-2xl border border-ink/10 bg-white p-6 text-left">

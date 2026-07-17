@@ -168,7 +168,7 @@ export function DonationsManager({
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? <Check className="h-4 w-4" /> : null}
             {saving ? "Saving…" : saved ? "Saved" : "Save changes"}
           </Button>
-          <p className="text-xs text-ink/50">Changes update your live progress bar right away — no need to republish.</p>
+          <p className="text-xs text-ink/50">Changes update your live progress bar right away, no need to republish.</p>
         </CardContent>
       </Card>
     </div>

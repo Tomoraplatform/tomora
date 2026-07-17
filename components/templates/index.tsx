@@ -164,7 +164,7 @@ export function SiteRenderer({
           siteId={siteId}
           enabled={!!v2Data.donationEnabled}
           // With named projects each card carries its own target, so there is
-          // no general goal — the hero then shows only the running total.
+          // no general goal, the hero then shows only the running total.
           goal={v2Data.donationProjects?.length ? 0 : v2Data.donationGoal || 0}
           manual={v2Data.donationManual || 0}
         >

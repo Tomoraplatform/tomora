@@ -6,7 +6,7 @@ import { productCategories } from "@/components/templates/v2/shared";
 import { StoreProductCard } from "../store/store-product-card";
 import { ChronovaShell } from "./chronova-shell";
 
-/** Chronova live home page — watch-store hero + product grid + categories + featured. */
+/** Chronova live home page, watch-store hero + product grid + categories + featured. */
 export function ChronovaHome({
   site, products, paystackEnabled,
 }: {

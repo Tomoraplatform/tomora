@@ -41,12 +41,12 @@ export async function POST(request: NextRequest) {
       case "charge.success": {
         const ref: string = data?.reference || "";
         if (ref.startsWith("don_")) {
-          // Donor paid — settle even if they never returned to the site.
+          // Donor paid, settle even if they never returned to the site.
           await confirmDonationPaid(ref);
         } else if (ref.startsWith("tom_")) {
           await confirmOrdersPaid(ref);
         } else if (ref.startsWith("acad_")) {
-          // Course purchase — enroll even if the buyer never returned.
+          // Course purchase, enroll even if the buyer never returned.
           await settleAcademyPayment(ref);
         } else if (purpose === "domain" && userId && data?.metadata?.siteId) {
           await applyDomainPurchase(userId, data.metadata.siteId);

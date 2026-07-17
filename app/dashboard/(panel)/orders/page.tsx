@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { OrdersManager } from "@/components/dashboard/orders-manager";
 import type { Order, Product } from "@/lib/database.types";
 
-export const metadata = { title: "Orders — Tomora" };
+export const metadata = { title: "Orders | Tomora" };
 
 export default async function OrdersPage() {
   const { site } = await getDashboardData();

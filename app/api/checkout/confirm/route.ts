@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const v = await verifyTransaction(reference);
     if (!v.success) return NextResponse.json({ error: "Payment not confirmed yet." }, { status: 402 });
   } catch {
-    // Paystack unreachable — don't fail the buyer's screen; the webhook settles it.
+    // Paystack unreachable, don't fail the buyer's screen; the webhook settles it.
     return NextResponse.json({ ok: true, deferred: true });
   }
 

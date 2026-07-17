@@ -103,7 +103,7 @@ export function Vivid({ siteData, brandColor, products }: TemplateProps) {
         <button className="mt-6 rounded-full bg-white px-7 py-3 text-sm font-bold text-amber-950">{cta.buttonText || "Browse the Shop"}</button>
       </section>
 
-      <footer className="py-8 text-center text-sm text-amber-900/50">{name} — Built with Tomora</footer>
+      <footer className="py-8 text-center text-sm text-amber-900/50">{name}. Built with Tomora</footer>
     </div>
   );
 }

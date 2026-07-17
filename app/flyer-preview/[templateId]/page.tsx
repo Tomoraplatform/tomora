@@ -4,7 +4,7 @@ import { SiteRenderer } from "@/components/templates";
 import { createCatalogContent, isCatalogTemplate, catalogTemplate, richStoreCatalog } from "@/lib/catalog";
 
 /**
- * Marketing-only template preview with rich demo content — used to capture
+ * Marketing-only template preview with rich demo content, used to capture
  * screenshots/recordings of templates for flyers and social assets.
  * Not linked anywhere and excluded from search indexing.
  */

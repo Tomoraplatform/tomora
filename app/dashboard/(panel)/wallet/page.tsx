@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { WALLET_UNLIMITED_PLANS } from "@/lib/constants";
 import { WalletManager, type WalletTx } from "@/components/dashboard/wallet-manager";
 
-export const metadata = { title: "Tomora Wallet — Tomora" };
+export const metadata = { title: "Tomora Wallet | Tomora" };
 
 export default async function WalletPage() {
   const { site, subscription } = await getDashboardData();

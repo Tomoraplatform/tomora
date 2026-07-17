@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
   const { siteId, name, rating, comment, email, productId } = body || {};
   const r = Math.round(Number(rating));
   if (!siteId || !name?.trim() || !(r >= 1 && r <= 5)) {
-    return NextResponse.json({ error: "Name and a 1–5 rating are required." }, { status: 400 });
+    return NextResponse.json({ error: "Name and a 1 to 5 rating are required." }, { status: 400 });
   }
 
   // Only accept reviews for live e-commerce sites.

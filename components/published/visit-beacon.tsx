@@ -11,7 +11,7 @@ export function VisitBeacon({ siteId }: { siteId: string }) {
       if (sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, "1");
     } catch {
-      /* private mode — still count once per load */
+      /* private mode, still count once per load */
     }
     fetch("/api/track-visit", {
       method: "POST",

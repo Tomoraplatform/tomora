@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Bright Mind — shared team dashboard API. State lives in public.bright_mind_kv:
+ * Bright Mind, shared team dashboard API. State lives in public.bright_mind_kv:
  *   bm_user:<email>     -> member record (auth, profile, 31-day sheet, goal meta)
  *   bm_session:<token>  -> { email }
  *   bm_docs / bm_doc:<id>      -> shared document metadata + per-file payloads
@@ -44,7 +44,7 @@ type Profile = {
 };
 type Todo = { id: string; text: string; done: boolean };
 type DayBucket = { items: Todo[] };
-// `manual` marks a sheet whose start date an admin set by hand — those don't
+// `manual` marks a sheet whose start date an admin set by hand, those don't
 // auto-reset on the 1st of the month, only after a full 31-day window.
 type Sheet = { cycle: number; startDate: string; days: DayBucket[]; manual?: boolean };
 type DocItem = { id: string; title: string; kind: "link" | "file"; url?: string; mime?: string; name?: string };

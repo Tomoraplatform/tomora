@@ -42,7 +42,7 @@ export function TemplateThumb({
         <div className="mt-1 h-3 w-12 rounded" style={{ background: onAccent, opacity: 0.9 }} />
       </div>
 
-      {/* body — varies by category */}
+      {/* body, varies by category */}
       <div className="flex-1 p-3">
         <CategoryBody category={template.category} accent={accent} block={block} />
       </div>

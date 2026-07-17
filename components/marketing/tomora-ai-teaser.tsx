@@ -4,7 +4,7 @@ import { Sparkles, ArrowRight, Check } from "lucide-react";
 /**
  * Landing-page teaser for Tomora AI (coming soon): pick a design, edit it with
  * your brand, preview it, then copy clean HTML/CSS to use on any platform.
- * The illustration is pure CSS — a looping miniature of the first Tomora AI
+ * The illustration is pure CSS, a looping miniature of the first Tomora AI
  * template's cinematic hero (Ken Burns zoom + clip-mask headline reveal) above
  * a code window that "types" the exported markup.
  */
@@ -44,7 +44,7 @@ export function TomoraAiTeaser() {
           </span>
           <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">Tomora AI</h2>
           <p className="mt-4 max-w-lg text-lg text-cream/75">
-            Pick a beautiful design, make it yours with your brand, text and photos — then copy
+            Pick a beautiful design, make it yours with your brand, text and photos, then copy
             the exact HTML &amp; CSS and use it anywhere: your own site, a client project, or any
             other platform. What you design is exactly what you get.
           </p>
@@ -52,7 +52,7 @@ export function TomoraAiTeaser() {
             {[
               "A library of ready-made designs",
               "Edit with your details, images and brand colours",
-              "Preview instantly — no publishing needed",
+              "Preview instantly, no publishing needed",
               "Copy clean HTML / CSS that works on any platform",
             ].map((f) => (
               <li key={f} className="flex items-start gap-2.5">
@@ -71,7 +71,7 @@ export function TomoraAiTeaser() {
 
         {/* Illustration: looping miniature of Template 1's cinematic hero + code window */}
         <div className="relative mx-auto w-full max-w-md" style={{ animation: "tai-float 6s ease-in-out infinite" }}>
-          {/* Mini cinematic hero — mirrors the first Tomora AI template's reveal */}
+          {/* Mini cinematic hero, mirrors the first Tomora AI template's reveal */}
           <div className="relative h-64 overflow-hidden rounded-2xl border border-cream/15 shadow-2xl">
             {/* Ken Burns warm background */}
             <div
@@ -92,7 +92,7 @@ export function TomoraAiTeaser() {
                 <span className="rounded-full bg-black/70 px-2 py-1 text-[7px] font-semibold">Get Early Access</span>
               </div>
 
-              {/* headline — clip-mask rise, staggered */}
+              {/* headline, clip-mask rise, staggered */}
               <div className="mt-6">
                 <span className="block overflow-hidden">
                   <span className="block text-[22px] font-medium leading-none tracking-tight" style={{ animation: "tai-rise 8s cubic-bezier(.22,1,.36,1) infinite", animationDelay: ".2s" }}>Listen Closer.</span>
@@ -102,7 +102,7 @@ export function TomoraAiTeaser() {
                 </span>
               </div>
 
-              {/* features — fade up */}
+              {/* features, fade up */}
               <div className="mt-auto space-y-1.5">
                 {[
                   { t: "Results Without The Wait", d: 0.9 },

@@ -55,7 +55,7 @@ export function BellevueChurch({ siteData, brandColor }: TemplateProps) {
         mission: (
           <section className="mx-auto max-w-3xl px-5 py-16 text-center">
             {siteData.sectionTitles?.mission && <h2 className="mb-4 text-3xl font-bold">{siteData.sectionTitles.mission}</h2>}
-            <p className="text-xl leading-relaxed text-black/70">{subheading(siteData, "mission", `${siteData.heroSubtext || ""} We are a community committed to faith, hope and love — come as you are and grow with us.`.trim())}</p>
+            <p className="text-xl leading-relaxed text-black/70">{subheading(siteData, "mission", `${siteData.heroSubtext || ""} We are a community committed to faith, hope and love, come as you are and grow with us.`.trim())}</p>
           </section>
         ),
         ministries: (

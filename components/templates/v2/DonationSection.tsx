@@ -73,7 +73,7 @@ function ProjectsDonation({
     <section id="donate" className="mx-auto max-w-6xl px-5 py-16">
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="text-3xl font-bold text-ink">{heading(siteData, "donation", "Support Our Cause")}</h2>
-        <p className="mt-3 text-ink/60">{subheading(siteData, "donation", "Choose a project below — every contribution counts.")}</p>
+        <p className="mt-3 text-ink/60">{subheading(siteData, "donation", "Choose a project below, every contribution counts.")}</p>
       </div>
 
       <div className={`mt-10 grid gap-6 md:grid-cols-2 ${projects.length >= 3 ? "xl:grid-cols-3" : ""}`}>

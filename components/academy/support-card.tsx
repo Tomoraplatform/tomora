@@ -15,7 +15,7 @@ export function SupportCard({
   studentName?: string;
   studentEmail?: string;
 }) {
-  const subject = courseTitle ? `Tomora Academy support — ${courseTitle}` : "Tomora Academy support";
+  const subject = courseTitle ? `Tomora Academy support | ${courseTitle}` : "Tomora Academy support";
   const body = [
     "Hi Tomora Academy support,",
     "",

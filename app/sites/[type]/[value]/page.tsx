@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const name = data.site.site_data?.businessName || "Website";
   return {
     title: name,
-    description: data.site.site_data?.tagline || `${name} — built with Tomora`,
+    description: data.site.site_data?.tagline || `${name}, built with Tomora`,
   };
 }
 

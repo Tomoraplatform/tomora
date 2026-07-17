@@ -7,7 +7,7 @@ import { PayoutRequestsPanel, type PayoutRequestRow } from "@/components/admin/p
 import { APP_DOMAIN, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, getPlan } from "@/lib/constants";
 import type { Profile, Site, Subscription, Domain, DomainRequest } from "@/lib/database.types";
 
-export const metadata = { title: "Admin — Tomora" };
+export const metadata = { title: "Admin | Tomora" };
 
 export default async function AdminPage() {
   await requireAdmin();

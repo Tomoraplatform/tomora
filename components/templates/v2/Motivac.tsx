@@ -22,7 +22,7 @@ export function Motivac({ siteData, brandColor }: TemplateProps) {
 
   return (
     <BrandStyle brandColor={brandColor} className="bg-white font-sans text-neutral-900">
-      <div className="bg-[#1A0533] py-2 text-center text-xs text-white/80">Upcoming: Worldwide Conference — register before tickets sell out</div>
+      <div className="bg-[#1A0533] py-2 text-center text-xs text-white/80">Upcoming: Worldwide Conference, register before tickets sell out</div>
 
       <header className="bg-[#1A0533] text-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">

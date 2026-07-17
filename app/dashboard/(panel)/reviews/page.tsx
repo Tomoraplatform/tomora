@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Review } from "@/lib/database.types";
 
-export const metadata = { title: "Reviews — Tomora" };
+export const metadata = { title: "Reviews | Tomora" };
 
 export default async function ReviewsPage() {
   const { site } = await getDashboardData();

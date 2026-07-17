@@ -123,7 +123,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
       <footer className="bg-[#1A1208] text-white">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-3">
           <div><p className="text-lg font-bold">{name}</p><p className="mt-2 text-sm text-white/50">{siteData.address || "Town Hall, Main Street"}</p></div>
-          <div><h4 className="text-sm font-semibold">Opening Hours</h4><ul className="mt-3 space-y-1 text-sm text-white/50"><li>Mon–Fri: 8:00 – 17:00</li><li>Sat: 9:00 – 13:00</li></ul></div>
+          <div><h4 className="text-sm font-semibold">Opening Hours</h4><ul className="mt-3 space-y-1 text-sm text-white/50"><li>Mon to Fri: 8:00 to 17:00</li><li>Sat: 9:00 to 13:00</li></ul></div>
           <div><h4 className="text-sm font-semibold">Contact</h4><p className="mt-3 text-sm text-white/50">{siteData.phone || "+234 800 000 0000"}<br />{siteData.email || "hello@leychert.gov"}</p></div>
         </div>
         <div className="flex justify-center pb-3 pt-1"><SocialIcons social={siteData.social} className="opacity-70" /></div>

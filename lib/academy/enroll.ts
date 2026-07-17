@@ -4,7 +4,7 @@ import { verifyTransaction } from "@/lib/paystack";
 
 /**
  * Settles a paid academy purchase (`acad_*` reference): verifies the charge
- * with Paystack, then enrolls the student. Idempotent — the unique
+ * with Paystack, then enrolls the student. Idempotent, the unique
  * (student_id, course_id) constraint makes double-settles harmless. Called
  * from the payment callback and the Paystack webhook, so a buyer who closes
  * the tab after paying still gets access.

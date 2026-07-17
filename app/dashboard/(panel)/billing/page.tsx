@@ -8,7 +8,7 @@ import { PLANS, getPlan, nextCharge, RENEWAL_INTERVAL_MONTHS } from "@/lib/const
 import { loadPlanDiscounts, discountedPrice } from "@/lib/discounts";
 import { formatNaira } from "@/lib/utils";
 
-export const metadata = { title: "Billing — Tomora" };
+export const metadata = { title: "Billing | Tomora" };
 
 const PAID_PLANS = PLANS.filter((p) => p.id !== "trial" && p.id !== "custom");
 
@@ -95,7 +95,7 @@ export default async function BillingPage({
                   <p className="text-xs text-ink/50">then {formatNaira(plan.renewal!)} every {RENEWAL_INTERVAL_MONTHS} months</p>
                 )}
                 {plan.id === "onetime" && (
-                  <p className="text-xs text-ink/50">then only {formatNaira(plan.renewal!)}/year — domain renewal &amp; maintenance</p>
+                  <p className="text-xs text-ink/50">then only {formatNaira(plan.renewal!)}/year, domain renewal &amp; maintenance</p>
                 )}
               </CardHeader>
               <CardContent className="space-y-4">

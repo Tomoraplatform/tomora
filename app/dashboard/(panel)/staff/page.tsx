@@ -4,11 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { TEAM_PLANS } from "@/lib/constants";
 import { StaffManager, type StaffRow } from "@/components/dashboard/staff-manager";
 
-export const metadata = { title: "Staff — Tomora" };
+export const metadata = { title: "Staff | Tomora" };
 
 export default async function StaffPage() {
   const { userId, subscription, isStaff } = await getDashboardData();
-  // Staff members can't manage the team — owners only.
+  // Staff members can't manage the team, owners only.
   if (isStaff) redirect("/dashboard");
 
   const planId = subscription?.status === "active" ? subscription.plan || "" : "";

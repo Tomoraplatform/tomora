@@ -3,7 +3,7 @@ import { ShieldCheck } from "lucide-react";
 import type { Site } from "@/lib/database.types";
 import { ChronovaShell } from "./chronova-shell";
 
-/** Chronova live About page — brand story, stats, values, CTA. */
+/** Chronova live About page, brand story, stats, values, CTA. */
 export function ChronovaAbout({ site, paystackEnabled }: { site: Site; paystackEnabled: boolean }) {
   const siteData = site.site_data;
   const name = siteData?.businessName || "Chronova";
@@ -14,7 +14,7 @@ export function ChronovaAbout({ site, paystackEnabled }: { site: Site; paystackE
     ? siteData.services
     : [
         { id: "v0", title: "Authenticity", description: "Every timepiece is checked by our watchmakers before it reaches your wrist." },
-        { id: "v1", title: "Craft", description: "We obsess over the details most shops overlook — movement, finish and feel." },
+        { id: "v1", title: "Craft", description: "We obsess over the details most shops overlook | movement, finish and feel." },
         { id: "v2", title: "Service", description: "White-glove support and insured delivery, from first click to final fitting." },
       ];
 
@@ -59,7 +59,7 @@ export function ChronovaAbout({ site, paystackEnabled }: { site: Site; paystackE
 
           <div className="mt-12 rounded-3xl bg-[#17181b] p-14 text-center text-white">
             <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">Find your next watch</h2>
-            <p className="mx-auto mt-3 max-w-md text-white/70">Browse our curated collection — every piece checked, serviced and shipped with care.</p>
+            <p className="mx-auto mt-3 max-w-md text-white/70">Browse our curated collection, every piece checked, serviced and shipped with care.</p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link href="/shop" className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-neutral-900">Shop Now</Link>
               <Link href="/contact" className="rounded-full px-6 py-3 text-sm font-semibold text-white" style={{ background: brandColor }}>Talk to an Expert</Link>

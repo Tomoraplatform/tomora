@@ -75,7 +75,7 @@ function ResultCard({ item, brandColor }: { item: CatalogResultItem; brandColor:
 /**
  * Before/after case-study cards: paired images plus a stat that counts up
  * from 0 once scrolled into view. Shared across the Portfolio & Creator
- * templates — see beforeAfterResults on SiteData.
+ * templates, see beforeAfterResults on SiteData.
  */
 export function ResultsSection({
   siteData, brandColor, sectionKey = "beforeAfter",

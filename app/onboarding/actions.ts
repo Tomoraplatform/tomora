@@ -22,7 +22,7 @@ export interface OnboardingPayload {
   email?: string;
   address?: string;
   social: SocialLinks;
-  /** Uploaded hero image(s) — persisted to the draft so they aren't lost on resume. */
+  /** Uploaded hero image(s), persisted to the draft so they aren't lost on resume. */
   heroImage?: string;
   heroImages?: string[];
 }
@@ -161,7 +161,7 @@ export async function completeOnboarding(
 }
 
 /**
- * Guided store builder — step 1: create the store as a DRAFT (not yet live) so
+ * Guided store builder, step 1: create the store as a DRAFT (not yet live) so
  * the following steps (payouts, products, content) can attach to a real site.
  * Sets the active-site cookie so saveProduct / savePayoutSettings target it.
  */
@@ -251,7 +251,7 @@ export interface FinalizeStoreInput {
   publish: boolean;
 }
 
-/** Guided store builder — final step: write the content into site_data and (optionally) publish. */
+/** Guided store builder, final step: write the content into site_data and (optionally) publish. */
 export async function finalizeStoreBuild(input: FinalizeStoreInput): Promise<{ ok: boolean; error?: string }> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -285,13 +285,13 @@ export async function finalizeStoreBuild(input: FinalizeStoreInput): Promise<{ o
     const { count } = await supabase
       .from("sites").select("id", { count: "exact", head: true })
       .eq("subdomain", wantedSub).neq("id", input.siteId);
-    if (count && count > 0) return { ok: false, error: "That web address is already taken — try another." };
+    if (count && count > 0) return { ok: false, error: "That web address is already taken, try another." };
     update.subdomain = wantedSub;
   }
 
   const { error } = await supabase.from("sites").update(update).eq("id", input.siteId);
   if (error) {
-    if ((error as any).code === "23505") return { ok: false, error: "That web address is already taken — try another." };
+    if ((error as any).code === "23505") return { ok: false, error: "That web address is already taken, try another." };
     return { ok: false, error: error.message };
   }
   revalidatePath("/dashboard");

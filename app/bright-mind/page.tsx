@@ -377,7 +377,7 @@ function AuthScreen({ onAuthed, flash }: { onAuthed: (token: string, user: Membe
         <div className="relative"><Logo onDark size={44} /></div>
         <div className="relative">
           <h1 className="bm-display text-5xl font-extrabold leading-[1.05]">Lead your<br />team into the<br /><span style={{ color: "#8C97FF" }}>bright light.</span></h1>
-          <p className="mt-5 text-white/70 max-w-sm">One shared workspace for every member&apos;s profile and daily goals — updated live for the whole team.</p>
+          <p className="mt-5 text-white/70 max-w-sm">One shared workspace for every member&apos;s profile and daily goals, updated live for the whole team.</p>
         </div>
         <div className="relative text-xs text-white/40">Built for high-performing teams.</div>
       </div>
@@ -393,7 +393,7 @@ function AuthScreen({ onAuthed, flash }: { onAuthed: (token: string, user: Membe
             ))}
           </div>
           <h2 className="bm-display text-2xl font-extrabold text-[#2B2B33] mb-1">{mode === "login" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}</h2>
-          <p className="text-sm text-slate-500 mb-5">{mode === "login" ? "Log in to your team workspace." : mode === "signup" ? "Just your email and a password to start — you'll set up your profile next." : "Enter your email and we'll send you a link to set a new password."}</p>
+          <p className="text-sm text-slate-500 mb-5">{mode === "login" ? "Log in to your team workspace." : mode === "signup" ? "Just your email and a password to start, you'll set up your profile next." : "Enter your email and we'll send you a link to set a new password."}</p>
 
           {mode === "forgot" && sent ? (
             <div className="space-y-4">
@@ -431,7 +431,7 @@ function ResetScreen({ token, onDone }: { token: string; onDone: (msg: string) =
     if (password.length < 4) return setErr("Password must be at least 4 characters.");
     if (password !== confirm) return setErr("Passwords don't match.");
     setErr(""); setBusy(true);
-    try { await api("reset-password", { token, password }); onDone("Password updated — you can now log in with your new password."); }
+    try { await api("reset-password", { token, password }); onDone("Password updated, you can now log in with your new password."); }
     catch (e: any) { setErr(e.message); setBusy(false); }
   }
 
@@ -774,7 +774,7 @@ function AnnouncementsManager({ anns, addAnn, removeAnn }: { anns: Announcement[
     <div className="rounded-3xl bg-white border border-slate-200 p-6">
       <div className="flex items-center gap-2 mb-1">
         <div className="grid place-items-center h-9 w-9 rounded-xl text-white" style={{ background: BLUE }}><Megaphone size={18} strokeWidth={2.4} /></div>
-        <div><h3 className="bm-display font-extrabold text-[#2B2B33] leading-tight">Announcements</h3><p className="text-xs text-slate-400">Upload upcoming-event flyers — shown on every member&apos;s Team page</p></div>
+        <div><h3 className="bm-display font-extrabold text-[#2B2B33] leading-tight">Announcements</h3><p className="text-xs text-slate-400">Upload upcoming-event flyers, shown on every member&apos;s Team page</p></div>
       </div>
       {anns.length > 0 && (
         <div className="mt-4 grid sm:grid-cols-3 gap-3 mb-3">
@@ -1109,11 +1109,11 @@ export default function BrightMindPage() {
         {tab === "team" && (
           <>
             <AnnouncementsBanner anns={anns} />
-            <div className="mb-6"><h1 className="bm-display text-3xl font-extrabold text-[#2B2B33]">The Team</h1><p className="text-slate-500">Everyone&apos;s profile, live. You can edit only your own — view everyone else.</p></div>
+            <div className="mb-6"><h1 className="bm-display text-3xl font-extrabold text-[#2B2B33]">The Team</h1><p className="text-slate-500">Everyone&apos;s profile, live. You can edit only your own, view everyone else.</p></div>
             {loading && members.length === 0 ? (
               <div className="grid place-items-center py-20 text-slate-400"><Loader2 className="animate-spin" /></div>
             ) : members.length === 0 ? (
-              <div className="rounded-3xl border border-dashed border-slate-300 py-16 text-center text-slate-400">No members yet — be the first to set up your profile.</div>
+              <div className="rounded-3xl border border-dashed border-slate-300 py-16 text-center text-slate-400">No members yet, be the first to set up your profile.</div>
             ) : (
               <TeamByStatus members={members} meEmail={meEmail} />
             )}
@@ -1122,7 +1122,7 @@ export default function BrightMindPage() {
 
         {tab === "workspace" && me && (
           <>
-            <div className="mb-6"><h1 className="bm-display text-3xl font-extrabold text-[#2B2B33]">My Workspace</h1><p className="text-slate-500">Update your profile, photo, to-do sheet and monthly goal — saved instantly for the whole team.</p></div>
+            <div className="mb-6"><h1 className="bm-display text-3xl font-extrabold text-[#2B2B33]">My Workspace</h1><p className="text-slate-500">Update your profile, photo, to-do sheet and monthly goal, saved instantly for the whole team.</p></div>
             <Workspace me={me} docs={docs} save={save} saveGoal={saveGoal} />
           </>
         )}

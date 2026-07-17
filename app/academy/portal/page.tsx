@@ -7,7 +7,7 @@ import { AcademyHeader } from "@/components/academy/academy-header";
 import { PurchaseButton } from "@/components/academy/purchase-button";
 import { SupportCard } from "@/components/academy/support-card";
 
-export const metadata = { title: "My Portal — Tomora Academy" };
+export const metadata = { title: "My Portal | Tomora Academy" };
 export const dynamic = "force-dynamic";
 
 export default async function AcademyPortalPage({ searchParams }: { searchParams: { status?: string } }) {
@@ -46,13 +46,13 @@ export default async function AcademyPortalPage({ searchParams }: { searchParams
 
         {searchParams.status === "pending" && (
           <div className="mt-4 rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
-            We&apos;re confirming your payment — your course will unlock here within a few minutes.
+            We&apos;re confirming your payment, your course will unlock here within a few minutes.
           </div>
         )}
 
         <h2 className="mt-8 text-sm font-semibold uppercase tracking-wide text-ink/50">My courses</h2>
         {mine.length === 0 ? (
-          <p className="mt-3 text-sm text-ink/50">You haven&apos;t enrolled in a course yet — browse the courses below.</p>
+          <p className="mt-3 text-sm text-ink/50">You haven&apos;t enrolled in a course yet, browse the courses below.</p>
         ) : (
           <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {mine.map((c) => {

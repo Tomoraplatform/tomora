@@ -21,7 +21,7 @@ export const useStoreCartApi = () => useContext(StoreCartContext);
 /**
  * Shared header + footer + cart for the Bakehouse live storefront (home,
  * category and product pages). Cart persists across full page loads via
- * localStorage — see use-store-cart.ts.
+ * localStorage, see use-store-cart.ts.
  */
 export function StoreChrome({
   siteData, brandColor, siteId, products, bankName, accountNumber, accountName, paystackEnabled, pageLinks, children,

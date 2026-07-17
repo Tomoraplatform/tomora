@@ -22,7 +22,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
 
   return (
     <BrandStyle brandColor={brandColor} className="bg-white font-sans text-neutral-900">
-      <div className="bg-[#0D0D0D] py-2 text-center text-xs text-white/80">Join our upcoming campaign — every gift counts</div>
+      <div className="bg-[#0D0D0D] py-2 text-center text-xs text-white/80">Join our upcoming campaign, every gift counts</div>
       <header className="border-b border-black/5">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <Brandmark siteData={siteData} name={name} className="text-lg font-bold" />

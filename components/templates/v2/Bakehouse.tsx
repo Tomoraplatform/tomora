@@ -13,7 +13,7 @@ import { slugify } from "@/lib/utils";
 /**
  * Editor / onboarding preview only. The live published site renders the real
  * multi-page storefront (components/published/bakery/*) with working links to
- * /category/[slug] and /product/[id] — this single-page version exists so the
+ * /category/[slug] and /product/[id], this single-page version exists so the
  * template can be edited and previewed like every other catalog template.
  */
 export function Bakehouse({ siteData, brandColor }: TemplateProps) {

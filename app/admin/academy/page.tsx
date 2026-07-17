@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { listCourses, getCourseWithContent } from "@/lib/academy/db";
 import { AcademyManager, type CourseRoster } from "@/components/admin/academy-manager";
 
-export const metadata = { title: "Academy — Admin — Tomora" };
+export const metadata = { title: "Academy | Admin | Tomora" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminAcademyPage() {

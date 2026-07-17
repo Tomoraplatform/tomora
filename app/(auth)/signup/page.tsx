@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { SignupForm } from "@/components/auth/auth-forms";
 
-export const metadata = { title: "Get Started — Tomora" };
+export const metadata = { title: "Get Started | Tomora" };
 
 export default function SignupPage() {
   return (

@@ -144,7 +144,7 @@ export async function setSiteLive(siteId: string, live: boolean): Promise<{ ok: 
 /**
  * Fulfil an assisted domain purchase.
  *  - registered: bought at the registrar (DNS being pointed).
- *  - connected: live — also attaches the domain to the site so it routes.
+ *  - connected: live, also attaches the domain to the site so it routes.
  *  - cancelled: refunded / abandoned.
  */
 export async function updateDomainRequest(

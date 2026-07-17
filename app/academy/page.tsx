@@ -6,8 +6,8 @@ import { AcademyHeader } from "@/components/academy/academy-header";
 import { PurchaseButton } from "@/components/academy/purchase-button";
 
 export const metadata = {
-  title: "Tomora Academy — Learn practical skills",
-  description: "Practical, structured courses you can watch lesson by lesson — right in your browser.",
+  title: "Tomora Academy | Learn practical skills",
+  description: "Practical, structured courses you can watch lesson by lesson, right in your browser.",
 };
 export const dynamic = "force-dynamic";
 
@@ -31,7 +31,7 @@ export default async function AcademyPage() {
         </span>
         <h1 className="mt-5 text-3xl font-bold tracking-tight text-ink sm:text-5xl">Learn skills that pay</h1>
         <p className="mx-auto mt-4 max-w-xl text-lg text-ink/60">
-          Practical courses you can watch module by module, lesson by lesson — right in your browser. Buy once, learn at your pace.
+          Practical courses you can watch module by module, lesson by lesson, right in your browser. Buy once, learn at your pace.
         </p>
       </section>
 
@@ -40,7 +40,7 @@ export default async function AcademyPage() {
           <div className="rounded-2xl border border-dashed border-ink/20 bg-white/60 p-16 text-center">
             <BookOpen className="mx-auto h-8 w-8 text-ink/30" />
             <p className="mt-3 font-semibold text-ink">Courses are coming soon</p>
-            <p className="mt-1 text-sm text-ink/50">We&apos;re preparing the first course — check back shortly.</p>
+            <p className="mt-1 text-sm text-ink/50">We&apos;re preparing the first course, check back shortly.</p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

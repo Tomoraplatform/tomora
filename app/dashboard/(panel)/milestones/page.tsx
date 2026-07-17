@@ -2,7 +2,7 @@ import { getDashboardData } from "@/lib/dashboard";
 import { createClient } from "@/lib/supabase/server";
 import { MilestonesGoals } from "@/components/dashboard/milestones";
 
-export const metadata = { title: "Milestones & Goals — Tomora" };
+export const metadata = { title: "Milestones & Goals | Tomora" };
 
 const dayKey = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 const monthKey = (iso: string) => new Date(iso).toISOString().slice(0, 7);

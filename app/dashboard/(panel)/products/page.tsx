@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ProductsManager } from "@/components/dashboard/products-manager";
 import type { Product } from "@/lib/database.types";
 
-export const metadata = { title: "Products — Tomora" };
+export const metadata = { title: "Products | Tomora" };
 
 export default async function ProductsPage() {
   const { site } = await getDashboardData();

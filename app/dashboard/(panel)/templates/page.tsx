@@ -4,7 +4,7 @@ import { catalogTemplate } from "@/lib/catalog";
 import { getTemplateOverrides } from "@/lib/template-overrides";
 import { TemplatesBrowser } from "@/components/dashboard/templates-browser";
 
-export const metadata = { title: "Templates — Tomora" };
+export const metadata = { title: "Templates | Tomora" };
 
 export default async function TemplatesPage() {
   const { site, sites, subscription } = await getDashboardData();

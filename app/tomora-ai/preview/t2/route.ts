@@ -1,6 +1,6 @@
 import { renderT2Home } from "@/lib/tomora-ai/t2";
 
-/** Internal preview of Tomora AI template 2 (Chronova watch store — home page). */
+/** Internal preview of Tomora AI template 2 (Chronova watch store, home page). */
 export const dynamic = "force-dynamic";
 
 export function GET() {

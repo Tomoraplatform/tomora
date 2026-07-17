@@ -20,9 +20,9 @@ const SERVICES = [
 ];
 
 const RESUME: Record<string, { a: string; b: string; c: string }[]> = {
-  Education: [{ a: "2016 - 2020", b: "University of Lagos", c: "BSc Computer Science" }, { a: "2020 - 2022", b: "Design Academy", c: "Product Design Diploma" }],
+  Education: [{ a: "2016 to 2020", b: "University of Lagos", c: "BSc Computer Science" }, { a: "2020 to 2022", b: "Design Academy", c: "Product Design Diploma" }],
   "Professional Skills": [{ a: "Design", b: "Figma, UI/UX", c: "Expert" }, { a: "Development", b: "React, Next.js", c: "Advanced" }],
-  Experience: [{ a: "2022 - Now", b: "Senior Designer, Studio", c: "Leading product design" }, { a: "2020 - 2022", b: "Designer, Agency", c: "Client work" }],
+  Experience: [{ a: "2022 to Now", b: "Senior Designer, Studio", c: "Leading product design" }, { a: "2020 to 2022", b: "Designer, Agency", c: "Client work" }],
   Interview: [{ a: "Available", b: "Open to projects", c: "Let's talk" }],
 };
 
