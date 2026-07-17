@@ -104,34 +104,18 @@ export const PLANS: Plan[] = [
     canPublish: true,
   },
   {
-    id: "basic",
-    name: "Basic",
-    price: 4800,
-    period: "month",
-    tagline: "Get one website online.",
-    features: [
-      "1 published website",
-      "Free Tomora subdomain",
-      "Mobile-responsive design",
-      "Paystack payment gateway setup",
-      "Lead capture with CSV / PDF export",
-      "Standard support",
-    ],
-    cta: "Choose Basic",
-    siteLimit: 1,
-    canPublish: true,
-  },
-  {
     id: "starter",
     name: "Starter",
     price: 9800,
     period: "month",
-    tagline: "Build and publish up to 3 websites.",
+    tagline: "Get your business online, up to 3 websites.",
     features: [
-      "Everything in Basic",
       "Up to 3 published websites",
+      "Free Tomora subdomain",
+      "Mobile-responsive design",
       "Online store with Paystack checkout",
       "Product & order management",
+      "Lead capture with CSV / PDF export",
       "Priority email support",
     ],
     cta: "Choose Starter",
@@ -218,8 +202,34 @@ export const PLANS: Plan[] = [
   },
 ];
 
+/**
+ * Retired plans kept resolvable so existing subscribers' dashboards and
+ * billing keep working. Not shown on pricing pages. "basic" was merged into
+ * "starter" (2026-07-17).
+ */
+const LEGACY_PLANS: Plan[] = [
+  {
+    id: "basic",
+    name: "Basic (legacy)",
+    price: 4800,
+    period: "month",
+    tagline: "Get one website online.",
+    features: [
+      "1 published website",
+      "Free Tomora subdomain",
+      "Mobile-responsive design",
+      "Paystack payment gateway setup",
+      "Lead capture with CSV / PDF export",
+      "Standard support",
+    ],
+    cta: "Choose Basic",
+    siteLimit: 1,
+    canPublish: true,
+  },
+];
+
 export function getPlan(id: string): Plan | undefined {
-  return PLANS.find((p) => p.id === id);
+  return PLANS.find((p) => p.id === id) || LEGACY_PLANS.find((p) => p.id === id);
 }
 
 /** The minimum plan that allows publishing a paid live site (Growth). */

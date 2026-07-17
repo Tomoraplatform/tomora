@@ -29,11 +29,11 @@ export async function extendTrial(siteId: string, days = TRIAL_DAYS): Promise<{ 
 /**
  * Manually grant (comp) a user a paid plan without a Paystack payment.
  * Activates the subscription + their site. Used by admins to approve users
- * onto Basic or Starter.
+ * onto Starter.
  */
 export async function grantPlan(
   userId: string,
-  planId: "basic" | "starter",
+  planId: "starter",
   days = 30
 ): Promise<{ ok: boolean; error?: string }> {
   try {

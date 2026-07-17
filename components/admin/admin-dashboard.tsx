@@ -263,10 +263,6 @@ export function AdminDashboard({
                             <option value={365}>1 year</option>
                             <option value={0}>No expiry</option>
                           </select>
-                          <Button size="sm" variant="outline" disabled={busy === r.userId + "b"}
-                            onClick={() => run(r.userId + "b", () => grantPlan(r.userId, "basic", grantDays[r.userId] ?? 30))}>
-                            {busy === r.userId + "b" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Grant Basic"}
-                          </Button>
                           <Button size="sm" variant="outline" disabled={busy === r.userId + "s"}
                             onClick={() => run(r.userId + "s", () => grantPlan(r.userId, "starter", grantDays[r.userId] ?? 30))}>
                             {busy === r.userId + "s" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Grant Starter"}
