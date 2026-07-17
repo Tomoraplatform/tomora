@@ -121,10 +121,15 @@ export function CoursePlayer({
                 autoPlay
               />
             )}
-            {!loading && !mediaError && media && !media.videoUrl && (
+            {!loading && !mediaError && media && !media.videoUrl && media.slidesUrl && (
+              <div className="bg-white" onContextMenu={(e) => e.preventDefault()}>
+                <iframe src={`${media.slidesUrl}#toolbar=0`} className="h-[75vh] w-full" title="Lesson slides" />
+              </div>
+            )}
+            {!loading && !mediaError && media && !media.videoUrl && !media.slidesUrl && (
               <div className="flex aspect-video flex-col items-center justify-center gap-2 text-white/50">
                 <PlayCircle className="h-10 w-10" />
-                <p className="text-sm">No video uploaded for this lesson yet.</p>
+                <p className="text-sm">No content uploaded for this lesson yet.</p>
               </div>
             )}
           </div>
@@ -154,7 +159,7 @@ export function CoursePlayer({
               <button disabled={!next} onClick={() => next && setActive(next)} className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3.5 py-2 text-sm font-medium text-white/80 disabled:opacity-30">
                 Next <ChevronRight className="h-4 w-4" />
               </button>
-              {media?.slidesUrl && (
+              {media?.slidesUrl && media?.videoUrl && (
                 <button onClick={() => setShowSlides((v) => !v)} className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 px-3.5 py-2 text-sm font-medium text-white/80">
                   <FileText className="h-4 w-4" /> {showSlides ? "Hide slides" : "View slides"}
                 </button>
