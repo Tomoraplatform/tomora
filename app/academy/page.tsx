@@ -23,6 +23,30 @@ export default async function AcademyPage() {
 
   return (
     <div className="min-h-screen bg-cream">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            name: "Tomora Academy courses",
+            itemListElement: courses.map((c, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              item: {
+                "@type": "Course",
+                name: c.title,
+                description: c.short_description || undefined,
+                url: "https://www.tomora.com.ng/academy",
+                image: c.thumbnail_url || undefined,
+                provider: { "@type": "Organization", name: "Tomora Academy", url: "https://www.tomora.com.ng/academy" },
+                offers: { "@type": "Offer", price: String(c.price), priceCurrency: "NGN", availability: "https://schema.org/InStock" },
+                hasCourseInstance: { "@type": "CourseInstance", courseMode: "online", courseWorkload: "PT3H" },
+              },
+            })),
+          }),
+        }}
+      />
       <AcademyHeader student={student} />
 
       <section className="mx-auto max-w-6xl px-5 pb-4 pt-12 text-center">
@@ -49,7 +73,7 @@ export default async function AcademyPage() {
                 <div className="aspect-video bg-ink/5">
                   {c.thumbnail_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={c.thumbnail_url} alt={c.title} className="h-full w-full object-cover" />
+                    <img src={c.thumbnail_url} alt={c.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center"><GraduationCap className="h-10 w-10 text-ink/20" /></div>
                   )}

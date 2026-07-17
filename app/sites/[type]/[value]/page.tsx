@@ -16,9 +16,24 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const data = await loadPublishedSite(type, decodeURIComponent(params.value));
   if (!data) return { title: "Site not found" };
   const name = data.site.site_data?.businessName || "Website";
+  const description = data.site.site_data?.tagline || `${name}, built with Tomora`;
+  const ogImage = data.site.site_data?.heroImage || data.site.site_data?.logoUrl;
   return {
     title: name,
-    description: data.site.site_data?.tagline || `${name}, built with Tomora`,
+    description,
+    openGraph: {
+      type: "website",
+      title: name,
+      description,
+      siteName: name,
+      ...(ogImage ? { images: [{ url: ogImage }] } : {}),
+    },
+    twitter: {
+      card: ogImage ? "summary_large_image" : "summary",
+      title: name,
+      description,
+      ...(ogImage ? { images: [ogImage] } : {}),
+    },
   };
 }
 

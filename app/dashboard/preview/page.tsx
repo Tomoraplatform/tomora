@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { PublishedSiteView } from "@/components/published/published-site-view";
 import type { Product } from "@/lib/database.types";
 
-export const metadata = { title: "Preview | Tomora" };
+export const metadata = { robots: { index: false, follow: false },  title: "Preview | Tomora" };
 
 /** Owner-only preview of their site, rendered even when it is not live. */
 export default async function PreviewPage() {

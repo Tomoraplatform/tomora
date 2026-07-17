@@ -44,7 +44,7 @@ export async function registerStudent(input: { name: string; email: string; pass
   const email = normEmail(input.email || "");
   if (!name) return { ok: false, error: "Please enter your name." };
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, error: "Please enter a valid email address." };
-  if (!input.password || input.password.length < 6) return { ok: false, error: "Password must be at least 6 characters." };
+  if (!input.password || input.password.length < 8) return { ok: false, error: "Password must be at least 8 characters." };
 
   const admin = createAdminClient();
   const salt = randomBytes(16).toString("hex");

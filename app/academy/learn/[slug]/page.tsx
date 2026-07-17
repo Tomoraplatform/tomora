@@ -10,7 +10,7 @@ interface Params { params: { slug: string } }
 
 export async function generateMetadata({ params }: Params) {
   const course = await getCourseWithContent(decodeURIComponent(params.slug));
-  return { title: course ? `${course.title} | Tomora Academy` : "Course | Tomora Academy" };
+  return { robots: { index: false, follow: false }, title: course ? `${course.title} | Tomora Academy` : "Course | Tomora Academy" };
 }
 
 export default async function LearnPage({ params }: Params) {

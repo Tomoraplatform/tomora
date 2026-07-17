@@ -1,0 +1,24 @@
+# Tomora
+
+> Tomora is a no-code website builder made for African businesses, NGOs, churches, artisans and creators. Users pick a professionally designed template, add their brand, text, photos and products, and publish a live website in minutes at their own subdomain (yourname.tomora.com.ng) or a custom domain. Payments are handled through Paystack and payouts go directly to the owner's bank account.
+
+Tomora is built and operated in Nigeria. Pricing is in Nigerian Naira with a 14 day free trial.
+
+## What Tomora offers
+
+- [Website builder](https://www.tomora.com.ng): 15+ templates across Business & Services, Ecommerce, Organisations & NGOs, Portfolio & Creators, and Restaurants & Food. Live editing, custom branding, hero videos, testimonials, before and after results, and donation projects with progress bars.
+- [Online stores](https://www.tomora.com.ng): full ecommerce with product catalogs, categories, product pages, carts, Paystack checkout, order management and delivery settings.
+- [Donations for NGOs and churches](https://www.tomora.com.ng): multiple fundraising projects per site, each with its own target and progress bar. Donations go to the site owner's wallet and are withdrawn to their own bank account.
+- [Tomora Academy](https://www.tomora.com.ng/academy): practical video and slide courses watched inside the portal, such as building websites and digital products with AI.
+- [Tomora AI](https://www.tomora.com.ng/tomora-ai): a template library where users customise premium designs and copy the exact HTML and CSS for use on any platform.
+
+## Plans
+
+- Free trial: 14 days.
+- Starter, Pro and a One-Time plan (first year covers everything in Pro, then a small yearly renewal for domain and infrastructure).
+- Custom domains (.com.ng and others) can be requested inside the dashboard.
+
+## Support
+
+- Email: tommyconcept4@gmail.com
+- Website: https://www.tomora.com.ng

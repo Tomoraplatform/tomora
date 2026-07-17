@@ -58,6 +58,39 @@ export default async function Home({
     .map((t) => ({ ...t, name: templateOverrides[t.id]?.displayName || t.name }));
   return (
     <div className="bg-cream text-ink">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify([
+            {
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Tomora",
+              url: "https://www.tomora.com.ng",
+              logo: "https://www.tomora.com.ng/icon.png",
+              description: "No-code website builder for African businesses, NGOs, churches and creators. Pick a template, add your brand, and go live in minutes.",
+              email: "mailto:tommyconcept4@gmail.com",
+              areaServed: "NG",
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "Tomora",
+              url: "https://www.tomora.com.ng",
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "Tomora",
+              applicationCategory: "BusinessApplication",
+              operatingSystem: "Web",
+              url: "https://www.tomora.com.ng",
+              description: "Build and publish a business website with online payments, no code required.",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "NGN", description: "14 day free trial" },
+            },
+          ]),
+        }}
+      />
       <MarketingNav />
       <Hero />
       <SocialProof />

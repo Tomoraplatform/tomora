@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { novaEnabled } from "@/lib/nova-flag";
 import { NovaChat } from "@/components/nova/nova-chat";
 
-export const metadata = { title: "Nova | AI Website Setup | Tomora" };
+export const metadata = { robots: { index: false, follow: false },  title: "Nova | AI Website Setup | Tomora" };
 
 export default async function NovaPage() {
   if (!(await novaEnabled())) redirect("/onboarding");

@@ -7,14 +7,23 @@ import { initTransaction } from "@/lib/paystack";
 import { registerStudent, loginStudent, logoutStudent, currentStudent } from "@/lib/academy/auth";
 import { isEnrolled } from "@/lib/academy/db";
 import { APP_DOMAIN } from "@/lib/constants";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 type R = { ok: boolean; error?: string };
 
+const TOO_MANY = "Too many attempts. Please wait a few minutes and try again.";
+
 export async function signUpStudent(input: { name: string; email: string; password: string }): Promise<R> {
+  if (!rateLimit(`acad-signup:${clientIp()}`, 5, 10 * 60_000)) return { ok: false, error: TOO_MANY };
   return registerStudent(input);
 }
 
 export async function signInStudent(input: { email: string; password: string }): Promise<R> {
+  const ip = clientIp();
+  if (!rateLimit(`acad-signin:${ip}`, 10, 10 * 60_000) ||
+      !rateLimit(`acad-signin-email:${(input.email || "").toLowerCase().trim()}`, 8, 10 * 60_000)) {
+    return { ok: false, error: TOO_MANY };
+  }
   return loginStudent(input);
 }
 

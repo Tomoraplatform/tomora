@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { DashboardShell, type NavItem } from "@/components/dashboard/shell";
 import { siteLiveUrl } from "@/lib/site-url";
 
+export const metadata = { robots: { index: false, follow: false } };
+
 export default async function PanelLayout({
   children,
 }: {

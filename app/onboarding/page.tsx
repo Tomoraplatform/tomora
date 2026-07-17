@@ -5,7 +5,7 @@ import { novaEnabled } from "@/lib/nova-flag";
 import { OnboardingWizard } from "@/components/onboarding/wizard";
 import { getTemplateOverrides } from "@/lib/template-overrides";
 
-export const metadata = { title: "Set Up Your Site | Tomora" };
+export const metadata = { robots: { index: false, follow: false },  title: "Set Up Your Site | Tomora" };
 
 export default async function OnboardingPage() {
   const supabase = createClient();

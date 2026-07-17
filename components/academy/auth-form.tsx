@@ -55,7 +55,7 @@ export function AcademyAuthForm({ courseId }: { courseId?: string }) {
         )}
         <input className={input} type="email" placeholder="Email address" value={form.email} required
           onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        <input className={input} type="password" placeholder={mode === "register" ? "Set a password (min 6 characters)" : "Password"} value={form.password} required minLength={6}
+        <input className={input} type="password" placeholder={mode === "register" ? "Set a password (min 8 characters)" : "Password"} value={form.password} required minLength={mode === "register" ? 8 : 6}
           onChange={(e) => setForm({ ...form, password: e.target.value })} />
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-lg bg-ink py-3 text-sm font-semibold text-cream disabled:opacity-60">

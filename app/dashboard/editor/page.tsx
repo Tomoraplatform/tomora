@@ -2,7 +2,7 @@ import { getDashboardData } from "@/lib/dashboard";
 import { EditorClient } from "@/components/editor/editor-client";
 import { siteLiveUrl } from "@/lib/site-url";
 
-export const metadata = { title: "Site Editor | Tomora" };
+export const metadata = { robots: { index: false, follow: false },  title: "Site Editor | Tomora" };
 
 export default async function EditorPage() {
   const { site } = await getDashboardData();

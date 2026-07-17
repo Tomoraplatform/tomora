@@ -7,7 +7,7 @@ import { AcademyHeader } from "@/components/academy/academy-header";
 import { PurchaseButton } from "@/components/academy/purchase-button";
 import { SupportCard } from "@/components/academy/support-card";
 
-export const metadata = { title: "My Portal | Tomora Academy" };
+export const metadata = { robots: { index: false, follow: false },  title: "My Portal | Tomora Academy" };
 export const dynamic = "force-dynamic";
 
 export default async function AcademyPortalPage({ searchParams }: { searchParams: { status?: string } }) {
@@ -62,7 +62,7 @@ export default async function AcademyPortalPage({ searchParams }: { searchParams
                   <div className="aspect-video bg-ink/5">
                     {c.thumbnail_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={c.thumbnail_url} alt={c.title} className="h-full w-full object-cover" />
+                      <img src={c.thumbnail_url} alt={c.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     ) : <div className="flex h-full items-center justify-center"><GraduationCap className="h-10 w-10 text-ink/20" /></div>}
                   </div>
                   <div className="flex flex-1 flex-col p-5">
@@ -95,7 +95,7 @@ export default async function AcademyPortalPage({ searchParams }: { searchParams
                   <div className="aspect-video bg-ink/5">
                     {c.thumbnail_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={c.thumbnail_url} alt={c.title} className="h-full w-full object-cover" />
+                      <img src={c.thumbnail_url} alt={c.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     ) : <div className="flex h-full items-center justify-center"><GraduationCap className="h-10 w-10 text-ink/20" /></div>}
                   </div>
                   <div className="flex flex-1 flex-col p-5">
