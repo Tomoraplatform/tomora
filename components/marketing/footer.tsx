@@ -62,8 +62,9 @@ export function MarketingFooter() {
       </div>
 
       <div className="border-t border-cream/15">
-        <div className="container py-6 text-center text-sm text-cream/60">
-          2025 Tomora. All rights reserved.
+        <div className="container flex flex-col items-center gap-1 py-6 text-center text-sm text-cream/60">
+          <span>2026 Tomora. All rights reserved.</span>
+          <span>Built by Toriva.</span>
         </div>
       </div>
     </footer>
