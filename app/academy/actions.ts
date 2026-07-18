@@ -89,5 +89,7 @@ export async function setLessonComplete(lessonId: string, complete: boolean): Pr
   } else {
     await admin.from("academy_progress").delete().eq("student_id", student.id).eq("lesson_id", lessonId);
   }
+  // Invalidate the portal so its progress bars reflect this without a manual refresh.
+  revalidatePath("/academy/portal");
   return { ok: true };
 }
