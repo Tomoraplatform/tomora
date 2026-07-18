@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry("", 1, "weekly"),
     entry("/academy", 0.9, "weekly"),
     entry("/tomora-ai", 0.8, "monthly"),
+    entry("/tomora-ai/designs", 0.85, "weekly"),
     entry("/signup", 0.7, "monthly"),
     entry("/login", 0.5, "monthly"),
     entry("/academy/join", 0.6, "monthly"),
