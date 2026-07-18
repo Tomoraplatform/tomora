@@ -112,6 +112,9 @@ export function AdminDashboard({
           <Button asChild variant="outline" size="sm">
             <Link href="/admin/academy"><GraduationCap className="h-3.5 w-3.5" /> Academy</Link>
           </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/tomivo"><Sparkles className="h-3.5 w-3.5" /> AI Designs</Link>
+          </Button>
           <Button
             variant="outline"
             size="sm"

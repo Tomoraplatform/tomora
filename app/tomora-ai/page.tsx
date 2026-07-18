@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sparkles, ArrowLeft, LayoutTemplate, Palette, Code2 } from "lucide-react";
+import { Sparkles, ArrowLeft, ArrowRight, LayoutTemplate, Palette, Code2 } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 
@@ -39,8 +39,21 @@ export default function TomoraAiPage() {
           ))}
         </div>
 
-        <p className="mt-10 text-sm text-ink/50">
-          We&apos;re building it now. In the meantime, you can launch a full website today.
+        <div className="mt-10 w-full max-w-2xl rounded-2xl border border-ink/10 bg-ink p-6 text-left text-cream sm:p-8">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-cream/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wide">
+            <Sparkles className="h-3 w-3" /> Live now
+          </span>
+          <h2 className="mt-3 text-2xl font-bold">Design Gallery</h2>
+          <p className="mt-2 text-sm text-cream/70">
+            Preview animated landing pages, backgrounds and gradients, then copy the prompt, HTML and CSS to use anywhere. Free designs plus a Pro library, with new designs every two weeks.
+          </p>
+          <Link href="/tomora-ai/designs" className="mt-5 inline-flex items-center gap-2 rounded-lg bg-cream px-6 py-3 text-sm font-semibold text-ink hover:opacity-90">
+            Explore the gallery <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <p className="mt-8 text-sm text-ink/50">
+          The template editor is coming next. In the meantime, you can launch a full website today.
         </p>
         <div className="mt-4 flex flex-col gap-3 sm:flex-row">
           <Link href="/signup" className="rounded-lg bg-ink px-6 py-3 text-sm font-semibold text-cream hover:opacity-90">

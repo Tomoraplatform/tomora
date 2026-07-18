@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { applyPlatformPayment, applyPaymentFailure, disableSubscription, applyDomainPurchase } from "@/lib/billing";
 import { confirmDonationPaid, confirmOrdersPaid } from "@/lib/confirm-payments";
 import { settleAcademyPayment } from "@/lib/academy/enroll";
+import { settleTomivoPayment } from "@/lib/tomivo/subscribe";
 
 /**
  * Paystack webhook. Verifies the x-paystack-signature (HMAC SHA512 of the raw
@@ -48,6 +49,9 @@ export async function POST(request: NextRequest) {
         } else if (ref.startsWith("acad_")) {
           // Course purchase, enroll even if the buyer never returned.
           await settleAcademyPayment(ref);
+        } else if (ref.startsWith("tomdsn_")) {
+          // Tomora AI Designs subscription, activate even if the buyer never returned.
+          await settleTomivoPayment(ref);
         } else if (purpose === "domain" && userId && data?.metadata?.siteId) {
           await applyDomainPurchase(userId, data.metadata.siteId);
         } else if (purpose === "platform" && userId && ref) {
