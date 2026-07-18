@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { SupportCard } from "@/components/academy/support-card";
+import { SlideViewer } from "@/components/academy/slide-viewer";
 import { setLessonComplete } from "@/app/academy/actions";
 import type { CourseWithContent } from "@/lib/academy/db";
 
@@ -122,8 +123,10 @@ export function CoursePlayer({
               />
             )}
             {!loading && !mediaError && media && !media.videoUrl && media.slidesUrl && (
-              <div className="bg-white" onContextMenu={(e) => e.preventDefault()}>
-                <iframe src={`${media.slidesUrl}#toolbar=0`} className="h-[75vh] w-full" title="Lesson slides" />
+              <div className="max-h-[80vh] overflow-y-auto bg-[#0B0E13] px-3 py-4 sm:px-6" onContextMenu={(e) => e.preventDefault()}>
+                <div className="mx-auto max-w-4xl">
+                  <SlideViewer url={media.slidesUrl} />
+                </div>
               </div>
             )}
             {!loading && !mediaError && media && !media.videoUrl && !media.slidesUrl && (
@@ -167,11 +170,13 @@ export function CoursePlayer({
             </div>
 
             {showSlides && media?.slidesUrl && (
-              <div className="relative mt-4 overflow-hidden rounded-xl border border-white/10 bg-white">
-                <button onClick={() => setShowSlides(false)} className="absolute right-2 top-2 z-10 rounded-full bg-[#101319] p-1.5 text-white" aria-label="Close slides">
+              <div className="relative mt-4 max-h-[75vh] overflow-y-auto rounded-xl border border-white/10 bg-[#0B0E13] px-3 py-4 sm:px-5">
+                <button onClick={() => setShowSlides(false)} className="absolute right-2 top-2 z-10 rounded-full bg-white/15 p-1.5 text-white" aria-label="Close slides">
                   <X className="h-4 w-4" />
                 </button>
-                <iframe src={`${media.slidesUrl}#toolbar=0`} className="h-[70vh] w-full" title="Lesson slides" />
+                <div className="mx-auto max-w-4xl">
+                  <SlideViewer url={media.slidesUrl} />
+                </div>
               </div>
             )}
 
