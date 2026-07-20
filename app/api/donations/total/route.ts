@@ -39,10 +39,19 @@ export async function GET(request: NextRequest) {
   const manual = Math.max(0, Math.round(sd.donationManual || 0));
 
   // Per-project raised/count, keyed by project id, for the project-card bars.
-  const projects: Record<string, { raised: number; count: number }> = {};
+  // Each project starts at its owner-entered offline amount (manualRaised),
+  // then online gifts tagged to that project are added on top. The offline
+  // amount is display-only, it never credits the wallet.
+  const projectDefs = (sd.donationProjects || []) as { id: string; manualRaised?: number }[];
+  const projects: Record<string, { raised: number; count: number; manual: number }> = {};
+  for (const p of projectDefs) {
+    if (!p?.id) continue;
+    const m = Math.max(0, Math.round(p.manualRaised || 0));
+    projects[p.id] = { raised: m, count: 0, manual: m };
+  }
   for (const r of rows || []) {
     if (!r.project_id) continue;
-    const p = (projects[r.project_id] ||= { raised: 0, count: 0 });
+    const p = (projects[r.project_id] ||= { raised: 0, count: 0, manual: 0 });
     p.raised += r.amount || 0;
     p.count += 1;
   }

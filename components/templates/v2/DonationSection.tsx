@@ -104,8 +104,12 @@ function ProjectCard({
   // Cards lead with a clean CTA; the giving form expands on demand.
   const [formOpen, setFormOpen] = useState(false);
 
-  const raised = totals[project.id]?.raised || 0;
-  const count = totals[project.id]?.count || 0;
+  // Online gifts come from the server; the offline amount comes from the live
+  // project data (props), so editing it in the editor moves the bar at once.
+  const t = totals[project.id];
+  const online = t ? Math.max(0, t.raised - Math.max(0, Math.round(t.manual || 0))) : 0;
+  const raised = online + Math.max(0, Math.round(project.manualRaised || 0));
+  const count = t?.count || 0;
   const goal = Math.max(0, Math.round(project.goal || 0));
   const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
 

@@ -6,6 +6,18 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "/Users/tommy/tripsend", "run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "tomiwa-portfolio",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4173", "-d", "/Users/tommy/tomiwa-graphics-portfolio"],
+      "port": 4173
+    },
+    {
+      "name": "toran-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "/Users/tommy/toran/apps/web", "dev"],
+      "port": 3000
     }
   ]
 }

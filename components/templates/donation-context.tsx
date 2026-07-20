@@ -9,8 +9,8 @@ export type DonationState = {
   goal: number;
   count: number;
   canDonate: boolean;
-  /** Paid online totals per fundraising project, keyed by project id. */
-  projects: Record<string, { raised: number; count: number }>;
+  /** Totals per fundraising project, keyed by project id (raised = online + offline manual). */
+  projects: Record<string, { raised: number; count: number; manual?: number }>;
   refresh: () => void;
 };
 
@@ -43,7 +43,7 @@ export function DonationProvider({
   const [online, setOnline] = useState(0);
   const [count, setCount] = useState(0);
   const [canDonate, setCanDonate] = useState(false);
-  const [projects, setProjects] = useState<Record<string, { raised: number; count: number }>>({});
+  const [projects, setProjects] = useState<Record<string, { raised: number; count: number; manual?: number }>>({});
 
   const refresh = useCallback(async () => {
     if (!siteId || !enabled) return;

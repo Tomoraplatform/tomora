@@ -175,8 +175,9 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
       { key: "name", label: "Project name" },
       { key: "description", label: "Project description", type: "textarea" },
       { key: "goal", label: "Project target (₦)", type: "number" },
+      { key: "manualRaised", label: "Funds received off-platform (₦)", type: "number" },
     ],
-    make: () => ({ id: `dp-${Date.now()}`, name: "New project", description: "What this project funds.", goal: 500000 }),
+    make: () => ({ id: `dp-${Date.now()}`, name: "New project", description: "What this project funds.", goal: 500000, manualRaised: 0 }),
   },
   beforeAfter: {
     key: "beforeAfterResults", title: "Before & After Results",

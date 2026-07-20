@@ -237,6 +237,12 @@ export interface CatalogDonationProject {
   goal: number;
   /** Optional card image shown above the project's details. */
   image?: string;
+  /**
+   * Funds this project received off-platform (cash, direct bank transfer, etc.),
+   * entered by the owner. Added to online gifts for the progress bar only, it
+   * never touches the Tomora wallet.
+   */
+  manualRaised?: number;
 }
 export interface CatalogResultItem {
   id: string;
