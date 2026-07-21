@@ -141,7 +141,7 @@ export function Foundation({ siteData, brandColor }: TemplateProps) {
             </div>
           ))}
         </div>
-        <div className="border-t border-white/10 py-5 text-center text-sm text-white/40">Built with Tomora</div>
+        <div className="border-t border-white/10 py-5 text-center text-sm text-white/40">{siteData.footerCredit ?? "Built with Tomora"}</div>
       </footer>
     </div>
   );

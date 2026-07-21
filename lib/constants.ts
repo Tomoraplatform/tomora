@@ -9,12 +9,19 @@ export const RENEWAL_AMOUNT = 24800; // NGN. Pro renewals at positions 1,2,3
 export const RENEWAL_INTERVAL_MONTHS = 3;
 export const GRACE_PERIOD_DAYS = 7;
 /** Flat price to buy + activate a brand-new domain through Tomora (assisted). */
-export const NEW_DOMAIN_AMOUNT = 5000; // NGN, covers .com.ng registration (~₦2,500 to 3,500) + margin
+export const NEW_DOMAIN_AMOUNT = 5550; // NGN base fee, covers .com.ng registration + margin (VAT added on top)
 
 /** Tomora's commission on each storefront sale (0 = owner receives the full payment). */
 export const STORE_COMMISSION_PERCENT = 0;
 /** Paystack processing fee added to the customer's total when the owner passes it on. */
 export const PAYSTACK_FEE_PERCENT = 2.5;
+
+/** Nigerian VAT added on top of Tomora's own charges (subscriptions + domains). */
+export const VAT_PERCENT = 7.5;
+/** Adds VAT to a naira amount, rounded to the nearest naira. */
+export function withVat(amountNaira: number): number {
+  return Math.round(amountNaira * (1 + VAT_PERCENT / 100));
+}
 
 /** Tomora Wallet withdrawal limits for free / starter / basic plans (naira).
  *  Growth, Pro and Custom plans have no limits. */

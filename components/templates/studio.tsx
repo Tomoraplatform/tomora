@@ -105,7 +105,7 @@ export function Studio({ siteData, brandColor }: TemplateProps) {
         </section>
       )}
 
-      <footer className="py-8 text-center text-sm text-white/40">{name}. Built with Tomora</footer>
+      <footer className="py-8 text-center text-sm text-white/40">{name}. {siteData.footerCredit ?? "Built with Tomora"}</footer>
     </div>
   );
 }

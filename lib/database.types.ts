@@ -260,6 +260,10 @@ export interface SiteData {
   businessName: string;
   tagline?: string;
   logoUrl?: string;
+  /** Footer credit text (defaults to "Built with Tomora"; empty string hides it). */
+  footerCredit?: string;
+  /** Custom browser-tab favicon URL (paid plans only). */
+  faviconUrl?: string;
   brandColor: string;
   brandColorSecondary?: string;
   phone?: string;

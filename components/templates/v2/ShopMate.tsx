@@ -197,12 +197,12 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
       <CustomSections sections={siteData.customSections} at="top" />
       <OrderedSections siteData={siteData} natural={["hero", "trust", "categories", "allproducts", "banner", "bestsellers", "offer", "testimonials", "donation"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
-      <ShopFooter name={name} social={siteData.social} />
+      <ShopFooter name={name} social={siteData.social} credit={siteData.footerCredit ?? "Built with Tomora"} />
     </BrandStyle>
   );
 }
 
-function ShopFooter({ name, social }: { name: string; social?: any }) {
+function ShopFooter({ name, social, credit }: { name: string; social?: any; credit: string }) {
   return (
       <footer className="border-t border-black/5 bg-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 lg:grid-cols-4">
@@ -213,7 +213,7 @@ function ShopFooter({ name, social }: { name: string; social?: any }) {
           <div className="mt-3 flex gap-2"><input className="min-w-0 flex-1 rounded-md border border-black/15 px-3 py-2 text-sm" placeholder="Email" /><BrandButton className="px-4 py-2">Join</BrandButton></div>
         </div>
       </div>
-      <div className="border-t border-black/5 py-5 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. Built with Tomora.</div>
+      <div className="border-t border-black/5 py-5 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. {credit}</div>
     </footer>
   );
 }

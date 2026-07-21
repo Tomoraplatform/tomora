@@ -155,7 +155,7 @@ export function Upskill({ siteData, brandColor }: TemplateProps) {
           ))}
         </div>
         <div className="flex justify-center pb-3 pt-1"><SocialIcons social={siteData.social} className="opacity-70" /></div>
-        <div className="border-t border-black/5 py-5 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. Built with Tomora.</div>
+        <div className="border-t border-black/5 py-5 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. {siteData.footerCredit ?? "Built with Tomora"}</div>
       </footer>
     </BrandStyle>
   );

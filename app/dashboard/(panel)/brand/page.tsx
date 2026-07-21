@@ -4,10 +4,12 @@ import { BrandForm } from "@/components/dashboard/brand-form";
 export const metadata = { title: "Brand Settings | Tomora" };
 
 export default async function BrandPage() {
-  const { profile, site } = await getDashboardData();
+  const { profile, site, subscription } = await getDashboardData();
   const sd = site?.site_data;
+  const isPaid = subscription?.status === "active";
   return (
     <BrandForm
+      isPaid={isPaid}
       initial={{
         businessName: sd?.businessName || profile?.business_name || "",
         tagline: sd?.tagline || profile?.tagline || "",
@@ -20,6 +22,8 @@ export default async function BrandPage() {
         heroHeadline: sd?.heroHeadline || "",
         heroSubtext: sd?.heroSubtext || "",
         heroImage: sd?.heroImage || "",
+        footerCredit: sd?.footerCredit ?? "",
+        faviconUrl: sd?.faviconUrl || "",
       }}
     />
   );

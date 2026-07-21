@@ -130,7 +130,7 @@ export function Handle({ siteData, brandColor }: TemplateProps) {
 
       <footer className="border-t border-black/5 py-8 text-center text-sm text-black/40">
         <SocialIcons social={siteData.social} className="mb-3 justify-center" />
-        © {new Date().getFullYear()} {name}. Built with Tomora.
+        © {new Date().getFullYear()} {name}. {siteData.footerCredit ?? "Built with Tomora"}
       </footer>
     </BrandStyle>
   );

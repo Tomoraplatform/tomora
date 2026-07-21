@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Check, UploadCloud } from "lucide-react";
+import Link from "next/link";
+import { Loader2, Check, UploadCloud, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,12 +14,13 @@ import { cn } from "@/lib/utils";
 
 const PRESET = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777", "#111111"];
 
-export function BrandForm({ initial }: { initial: BrandInput }) {
+export function BrandForm({ initial, isPaid }: { initial: BrandInput; isPaid: boolean }) {
   const [form, setForm] = useState<BrandInput>(initial);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
+  const [uploadingFav, setUploadingFav] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const set = (k: keyof BrandInput, v: any) => { setForm((f) => ({ ...f, [k]: v })); setSaved(false); };
@@ -38,6 +40,14 @@ export function BrandForm({ initial }: { initial: BrandInput }) {
     const { url } = await uploadImage(file, "branding");
     setUploadingHero(false);
     if (url) set("heroImage", url);
+  }
+
+  async function onFavicon(file?: File) {
+    if (!file) return;
+    setUploadingFav(true);
+    const { url } = await uploadImage(file, "branding");
+    setUploadingFav(false);
+    if (url) set("faviconUrl", url);
   }
 
   async function submit() {
@@ -107,6 +117,48 @@ export function BrandForm({ initial }: { initial: BrandInput }) {
               <span className="text-sm text-ink/60">{form.heroImage ? "Click to replace hero image" : "Upload your hero image"}</span>
               <input type="file" accept="image/*" className="hidden" onChange={(e) => onHeroImage(e.target.files?.[0])} />
             </label>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Website</CardTitle></CardHeader>
+        <CardContent className="space-y-5">
+          <div className="space-y-2">
+            <Label>Footer credit</Label>
+            <Input value={form.footerCredit ?? ""} onChange={(e) => set("footerCredit", e.target.value)} placeholder="Built with Tomora" />
+            <p className="text-xs text-ink/50">Shown at the bottom of your site. Leave empty to remove it.</p>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Label>Favicon</Label>
+              {!isPaid && <span className="inline-flex items-center gap-1 rounded-full bg-ink/10 px-2 py-0.5 text-[10px] font-semibold text-ink/60"><Lock className="h-3 w-3" /> Paid plans</span>}
+            </div>
+            {isPaid ? (
+              <>
+                <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-ink/25 p-4 hover:bg-ink/[0.02]">
+                  {form.faviconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={form.faviconUrl} alt="" className="h-10 w-10 rounded object-contain" />
+                  ) : (
+                    <span className="flex h-10 w-10 items-center justify-center rounded bg-ink text-cream">
+                      {uploadingFav ? <Loader2 className="h-5 w-5 animate-spin" /> : <UploadCloud className="h-5 w-5" />}
+                    </span>
+                  )}
+                  <span className="text-sm text-ink/60">{form.faviconUrl ? "Click to replace favicon" : "Upload a favicon (square PNG, at least 48×48)"}</span>
+                  <input type="file" accept="image/png,image/x-icon,image/svg+xml,image/jpeg" className="hidden" onChange={(e) => onFavicon(e.target.files?.[0])} />
+                </label>
+                {form.faviconUrl && (
+                  <button type="button" onClick={() => set("faviconUrl", "")} className="text-xs text-ink/50 underline hover:text-ink">Remove favicon</button>
+                )}
+                <p className="text-xs text-ink/50">The small icon shown in the browser tab.</p>
+              </>
+            ) : (
+              <div className="rounded-lg border border-dashed border-ink/20 bg-ink/[0.02] p-4 text-sm text-ink/60">
+                Set a custom browser-tab icon on a paid plan. <Link href="/dashboard/billing" className="font-medium text-ink underline">Upgrade</Link> to unlock it.
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

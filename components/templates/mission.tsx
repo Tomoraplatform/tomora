@@ -112,7 +112,7 @@ export function Mission({ siteData, brandColor }: TemplateProps) {
       )}
 
       <footer className="py-8 text-center text-sm" style={{ background: brandColor, color: onBrand }}>
-        {name}. Built with Tomora
+        {name}. {siteData.footerCredit ?? "Built with Tomora"}
       </footer>
     </div>
   );

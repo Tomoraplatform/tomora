@@ -133,7 +133,7 @@ export function RizwanAli({ siteData, brandColor }: TemplateProps) {
       <CustomSections sections={siteData.customSections} at="top" />
       <OrderedSections siteData={siteData} natural={["hero", "about", "services", "portfolio", "beforeAfter", "testimonials", "contact", "donation"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
-      <footer className="bg-[#F7F9FC] py-8 text-center text-sm text-black/40"><SocialIcons social={siteData.social} className="mb-3 justify-center" />© {new Date().getFullYear()} {name}. Built with Tomora.</footer>
+      <footer className="bg-[#F7F9FC] py-8 text-center text-sm text-black/40"><SocialIcons social={siteData.social} className="mb-3 justify-center" />© {new Date().getFullYear()} {name}. {siteData.footerCredit ?? "Built with Tomora"}</footer>
     </BrandStyle>
   );
 }

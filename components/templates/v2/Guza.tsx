@@ -197,7 +197,7 @@ export function Guza({ siteData, brandColor }: TemplateProps) {
         </div>
         <div className="border-t border-white/10">
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-5 py-5 text-sm text-white/50 sm:flex-row">
-            <span className="font-bold text-white">{name} <span className="font-normal text-white/40">© {new Date().getFullYear()}. Built with Tomora.</span></span>
+            <span className="font-bold text-white">{name} <span className="font-normal text-white/40">© {new Date().getFullYear()}. {siteData.footerCredit ?? "Built with Tomora"}</span></span>
             <div className="flex items-center gap-2">
               {["VISA", "MC", "Stripe", "PayPal"].map((p) => (
                 <span key={p} className="rounded bg-white/10 px-2 py-1 text-[11px] font-semibold text-white/70">{p}</span>

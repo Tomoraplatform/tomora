@@ -145,16 +145,16 @@ export function Clarity({ siteData, brandColor }: TemplateProps) {
         </section>
       )}
 
-      <Footer name={name} brandColor={brandColor} />
+      <Footer name={name} brandColor={brandColor} credit={siteData.footerCredit ?? "Built with Tomora"} />
     </div>
   );
 }
 
-function Footer({ name, brandColor }: { name: string; brandColor: string }) {
+function Footer({ name, brandColor, credit }: { name: string; brandColor: string; credit: string }) {
   return (
     <footer className="py-10 text-center text-sm" style={{ background: brandColor, color: contrastText(brandColor) }}>
       <div className="opacity-90">{name}</div>
-      <div className="mt-1 opacity-60">Built with Tomora</div>
+      {credit && <div className="mt-1 opacity-60">{credit}</div>}
     </footer>
   );
 }

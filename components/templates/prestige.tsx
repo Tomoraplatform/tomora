@@ -104,7 +104,7 @@ export function Prestige({ siteData, brandColor }: TemplateProps) {
       )}
 
       <footer className="border-t border-white/10 py-8 text-center text-sm text-white/50">
-        {name}. Built with Tomora
+        {name}. {siteData.footerCredit ?? "Built with Tomora"}
       </footer>
     </div>
   );

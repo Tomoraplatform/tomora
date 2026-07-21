@@ -149,7 +149,7 @@ export function Charius({ siteData, brandColor }: TemplateProps) {
             <div key={h}><h4 className="text-sm font-semibold">{h}</h4><ul className="mt-3 space-y-2 text-sm text-white/50">{items.map((x: string) => <li key={x}>{x}</li>)}</ul></div>
           ))}
         </div>
-        <div className="border-t border-white/10 py-5 text-center text-sm text-white/40">© {new Date().getFullYear()} {name}. Built with Tomora.</div>
+        <div className="border-t border-white/10 py-5 text-center text-sm text-white/40">© {new Date().getFullYear()} {name}. {siteData.footerCredit ?? "Built with Tomora"}</div>
       </footer>
     </BrandStyle>
   );

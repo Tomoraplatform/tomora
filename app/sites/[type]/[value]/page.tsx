@@ -18,9 +18,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const name = data.site.site_data?.businessName || "Website";
   const description = data.site.site_data?.tagline || `${name}, built with Tomora`;
   const ogImage = data.site.site_data?.heroImage || data.site.site_data?.logoUrl;
+  const favicon = data.site.site_data?.faviconUrl;
   return {
     title: name,
     description,
+    ...(favicon ? { icons: { icon: favicon, shortcut: favicon, apple: favicon } } : {}),
     openGraph: {
       type: "website",
       title: name,

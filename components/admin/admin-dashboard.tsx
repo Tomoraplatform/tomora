@@ -110,6 +110,9 @@ export function AdminDashboard({
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
+            <Link href="/admin/transactions"><TrendingUp className="h-3.5 w-3.5" /> Transactions</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
             <Link href="/admin/academy"><GraduationCap className="h-3.5 w-3.5" /> Academy</Link>
           </Button>
           <Button asChild variant="outline" size="sm">

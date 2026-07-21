@@ -147,7 +147,7 @@ export function Overflow({ siteData, brandColor }: TemplateProps) {
       <OrderedSections siteData={siteData} natural={["hero", "about", "offer", "services", "results", "beforeAfter", "videos", "cta"]} blocks={blocks} />
       <CustomSections sections={siteData.customSections} at="bottom" />
 
-      <footer className="py-8 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. Built with Tomora.</footer>
+      <footer className="py-8 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. {siteData.footerCredit ?? "Built with Tomora"}</footer>
     </BrandStyle>
   );
 }

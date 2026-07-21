@@ -191,7 +191,7 @@ export function HelpingHands({ siteData, brandColor }: TemplateProps) {
             </a>
           </div>
         </div>
-        <div className="border-t border-black/5 py-5 text-center text-xs text-black/40">© {year} {name}. Built with Tomora.</div>
+        <div className="border-t border-black/5 py-5 text-center text-xs text-black/40">© {year} {name}. {siteData.footerCredit ?? "Built with Tomora"}</div>
       </footer>
     </BrandStyle>
   );

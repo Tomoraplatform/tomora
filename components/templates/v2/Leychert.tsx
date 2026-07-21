@@ -127,7 +127,7 @@ export function Leychert({ siteData, brandColor }: TemplateProps) {
           <div><h4 className="text-sm font-semibold">Contact</h4><p className="mt-3 text-sm text-white/50">{siteData.phone || "+234 800 000 0000"}<br />{siteData.email || "hello@leychert.gov"}</p></div>
         </div>
         <div className="flex justify-center pb-3 pt-1"><SocialIcons social={siteData.social} className="opacity-70" /></div>
-        <div className="border-t border-white/10 py-5 text-center text-sm text-white/40">© {new Date().getFullYear()} {name}. Built with Tomora.</div>
+        <div className="border-t border-white/10 py-5 text-center text-sm text-white/40">© {new Date().getFullYear()} {name}. {siteData.footerCredit ?? "Built with Tomora"}</div>
       </footer>
     </BrandStyle>
   );

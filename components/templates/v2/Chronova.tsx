@@ -185,7 +185,7 @@ export function Chronova({ siteData, brandColor }: TemplateProps) {
               </div>
             </div>
           </div>
-          <div className="mt-8 border-t border-black/5 pt-6 text-center text-xs text-neutral-400">© {new Date().getFullYear()} {name}. Built with Tomora.</div>
+          <div className="mt-8 border-t border-black/5 pt-6 text-center text-xs text-neutral-400">© {new Date().getFullYear()} {name}. {siteData.footerCredit ?? "Built with Tomora"}</div>
         </div>
       </footer>
     </BrandStyle>

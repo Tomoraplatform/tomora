@@ -115,7 +115,7 @@ export function OpenHeart({ siteData, brandColor }: TemplateProps) {
           <div><p className="text-lg font-bold">{name}</p><p className="mt-2 text-sm text-black/50">{siteData.address || "Lagos, Nigeria"}<br />{siteData.phone || "+234 800 000 0000"}<br />{siteData.email || "hello@openheart.org"}</p><SocialIcons social={siteData.social} className="mt-3 text-black/60" /></div>
           <div><p className="text-sm font-semibold">Newsletter</p><div className="mt-3 flex gap-2"><input className="rounded-md border border-black/15 px-3 py-2 text-sm" placeholder="Email" /><BrandButton className="px-4 py-2">Subscribe</BrandButton></div></div>
         </div>
-        <div className="border-t border-black/5 py-5 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. Built with Tomora.</div>
+        <div className="border-t border-black/5 py-5 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. {siteData.footerCredit ?? "Built with Tomora"}</div>
       </footer>
     </BrandStyle>
   );

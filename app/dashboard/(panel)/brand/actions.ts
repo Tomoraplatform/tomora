@@ -18,6 +18,10 @@ export interface BrandInput {
   heroHeadline?: string;
   heroSubtext?: string;
   heroImage?: string;
+  /** Footer credit text (defaults to "Built with Tomora"; empty hides it). */
+  footerCredit?: string;
+  /** Custom browser-tab favicon (paid plans only; ignored server-side otherwise). */
+  faviconUrl?: string;
 }
 
 export async function updateBrand(input: BrandInput): Promise<{ ok: boolean; error?: string }> {
@@ -36,6 +40,11 @@ export async function updateBrand(input: BrandInput): Promise<{ ok: boolean; err
     address: input.address || null,
     social_links: input.social || {},
   }).eq("user_id", user.id);
+
+  // A custom favicon is a paid-plan feature; verify server-side.
+  const { data: sub } = await supabase
+    .from("subscriptions").select("status").eq("user_id", user.id).maybeSingle();
+  const isPaid = (sub as { status?: string } | null)?.status === "active";
 
   // Sync the brand fields into the current site's site_data so templates reflect them.
   const siteId = await currentSiteId(user.id);
@@ -58,6 +67,10 @@ export async function updateBrand(input: BrandInput): Promise<{ ok: boolean; err
       heroHeadline: input.heroHeadline !== undefined ? input.heroHeadline : sd.heroHeadline,
       heroSubtext: input.heroSubtext !== undefined ? input.heroSubtext : sd.heroSubtext,
       heroImage: input.heroImage !== undefined ? (input.heroImage || undefined) : sd.heroImage,
+      // Footer credit is editable by everyone; empty string clears it to hide the credit.
+      footerCredit: input.footerCredit !== undefined ? input.footerCredit : sd.footerCredit,
+      // Favicon: only persist changes for paid plans; free plans keep whatever's there.
+      faviconUrl: isPaid ? (input.faviconUrl || undefined) : sd.faviconUrl,
     };
     await supabase.from("sites").update({ site_data: updated }).eq("id", site.id);
   }

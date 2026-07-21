@@ -219,7 +219,7 @@ export function Spotlight({ siteData, brandColor }: TemplateProps) {
       <CustomSections sections={siteData.customSections} at="bottom" />
       <footer className="border-t border-black/5 py-8 text-center text-sm text-black/40">
         <FooterSocials siteData={siteData} />
-        © {new Date().getFullYear()} {name}. Built with Tomora.
+        © {new Date().getFullYear()} {name}. {siteData.footerCredit ?? "Built with Tomora"}
       </footer>
     </BrandStyle>
   );

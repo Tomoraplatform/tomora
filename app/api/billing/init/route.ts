@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { initTransaction } from "@/lib/paystack";
-import { getPlan, nextCharge, NEW_DOMAIN_AMOUNT, NEW_DOMAIN_TLDS } from "@/lib/constants";
+import { getPlan, nextCharge, NEW_DOMAIN_AMOUNT, NEW_DOMAIN_TLDS, withVat } from "@/lib/constants";
 import { loadPlanDiscounts, discountedPrice } from "@/lib/discounts";
 
 /** Starts a Paystack checkout for a platform plan, Pro renewal, or a domain. */
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     try {
       const data = await initTransaction({
         email: user.email,
-        amountNaira: NEW_DOMAIN_AMOUNT,
+        amountNaira: withVat(NEW_DOMAIN_AMOUNT), // includes 7.5% VAT
         reference,
         callbackUrl: `${request.nextUrl.origin}/api/billing/callback`,
         metadata: { userId: user.id, purpose: "new_domain", siteId: body.siteId, domain },
@@ -72,6 +72,8 @@ export async function POST(request: NextRequest) {
   // Apply any active admin discount for this plan.
   const discounts = await loadPlanDiscounts();
   amount = discountedPrice(amount, discounts[planId]);
+  // Add 7.5% VAT on top of the (possibly discounted) plan price.
+  amount = withVat(amount);
 
   const reference = `tomplat_${user.id.slice(0, 8)}_${Date.now()}`;
 

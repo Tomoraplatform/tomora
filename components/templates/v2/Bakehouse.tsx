@@ -137,7 +137,7 @@ export function Bakehouse({ siteData, brandColor }: TemplateProps) {
             <p className="mt-2 text-sm text-black/60">Join our world and receive early access to new drops.</p>
           </div>
         </div>
-        <div className="border-t border-black/5 py-5 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. Built with Tomora.</div>
+        <div className="border-t border-black/5 py-5 text-center text-sm text-black/40">© {new Date().getFullYear()} {name}. {siteData.footerCredit ?? "Built with Tomora"}</div>
       </footer>
     </BrandStyle>
   );

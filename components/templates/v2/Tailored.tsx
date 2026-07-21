@@ -136,7 +136,7 @@ export function Tailored({ siteData, brandColor }: TemplateProps) {
 
       <footer className="py-8 text-center text-sm text-white" style={{ background: "var(--brand-primary)" }}>
         <SocialIcons social={siteData.social} className="mb-3 justify-center text-white" />
-        © {new Date().getFullYear()} {name}. Built with Tomora.
+        © {new Date().getFullYear()} {name}. {siteData.footerCredit ?? "Built with Tomora"}
       </footer>
     </BrandStyle>
   );
