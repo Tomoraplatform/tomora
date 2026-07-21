@@ -31,8 +31,10 @@ function getTenant(host: string): { type: "subdomain" | "custom"; value: string 
     return sub && sub !== "www" ? { type: "subdomain", value: sub } : null;
   }
 
-  // Anything else is a connected custom domain.
-  return { type: "custom", value: hostname };
+  // Anything else is a connected custom domain. Treat www.<domain> the same as
+  // the apex, so a site connected on the bare domain also answers on www.
+  const custom = hostname.startsWith("www.") ? hostname.slice(4) : hostname;
+  return { type: "custom", value: custom };
 }
 
 export async function middleware(request: NextRequest) {
