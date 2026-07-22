@@ -25,6 +25,7 @@ const THUMB_BUCKET = "academy-thumbnails";
 
 export type CourseRoster = Record<string, { enrollmentId: string; name: string; email: string; source: string; createdAt: string }[]>;
 export type ReviewsByCourse = Record<string, AcademyReview[]>;
+export type WaitlistByCourse = Record<string, { id: string; email: string; createdAt: string }[]>;
 export interface AdminCoupon {
   id: string; code: string; discount_type: string; discount_value: number;
   course_id: string | null; max_uses: number | null; used_count: number; active: boolean; expires_at: string | null;
@@ -32,8 +33,8 @@ export interface AdminCoupon {
 
 type RunFn = (key: string, fn: () => Promise<{ ok: boolean; error?: string }>) => Promise<boolean>;
 
-export function AcademyManager({ courses, roster = {}, coupons = [], reviews = {} }: {
-  courses: CourseWithContent[]; roster?: CourseRoster; coupons?: AdminCoupon[]; reviews?: ReviewsByCourse;
+export function AcademyManager({ courses, roster = {}, coupons = [], reviews = {}, waitlist = {} }: {
+  courses: CourseWithContent[]; roster?: CourseRoster; coupons?: AdminCoupon[]; reviews?: ReviewsByCourse; waitlist?: WaitlistByCourse;
 }) {
   const router = useRouter();
   const [openId, setOpenId] = useState<string | null>(courses[0]?.id ?? null);
@@ -61,7 +62,7 @@ export function AcademyManager({ courses, roster = {}, coupons = [], reviews = {
       {courses.length === 0 && <p className="text-sm text-ink/50">No courses yet. Create your first one.</p>}
 
       {courses.map((c) => (
-        <CourseCard key={c.id} course={c} students={roster[c.id] || []} reviews={reviews[c.id] || []} open={openId === c.id} onToggle={() => setOpenId(openId === c.id ? null : c.id)} run={run} busy={busy} />
+        <CourseCard key={c.id} course={c} students={roster[c.id] || []} reviews={reviews[c.id] || []} waitlist={waitlist[c.id] || []} open={openId === c.id} onToggle={() => setOpenId(openId === c.id ? null : c.id)} run={run} busy={busy} />
       ))}
 
       <CouponsSection coupons={coupons} courses={courses} run={run} busy={busy} />
@@ -139,11 +140,12 @@ function CouponsSection({ coupons, courses, run, busy }: { coupons: AdminCoupon[
 }
 
 function CourseCard({
-  course, students, reviews, open, onToggle, run, busy,
+  course, students, reviews, waitlist, open, onToggle, run, busy,
 }: {
   course: CourseWithContent;
   students: CourseRoster[string];
   reviews: AcademyReview[];
+  waitlist: WaitlistByCourse[string];
   open: boolean;
   onToggle: () => void;
   run: (key: string, fn: () => Promise<{ ok: boolean; error?: string }>) => Promise<boolean>;
@@ -223,6 +225,40 @@ function CourseCard({
             <Button variant="outline" size="sm" onClick={() => run(`addmod-${course.id}`, () => addModule(course.id, "New module"))} disabled={busy === `addmod-${course.id}`}>
               <Plus className="h-4 w-4" /> Add module
             </Button>
+          </div>
+
+          {/* coming soon */}
+          <div className="space-y-3 border-t border-ink/10 pt-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <label className="flex items-center gap-2 text-sm font-medium text-ink">
+                <Switch checked={!!course.is_coming_soon} onCheckedChange={(v) => run(`soon-${course.id}`, () => updateCourse(course.id, { is_coming_soon: v }))} />
+                Coming soon (students join a notify list instead of buying)
+              </label>
+              {course.is_coming_soon && (
+                <div className="flex items-center gap-2 text-sm text-ink/60">
+                  Lessons shown:
+                  <Input type="number" min={0} className="h-8 w-24" defaultValue={course.coming_soon_lessons || 0}
+                    onBlur={(e) => updateCourse(course.id, { coming_soon_lessons: Math.max(0, Math.round(Number(e.target.value) || 0)) })} />
+                </div>
+              )}
+            </div>
+            {(course.is_coming_soon || waitlist.length > 0) && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">Notify list ({waitlist.length})</p>
+                {waitlist.length === 0 ? (
+                  <p className="mt-1 text-sm text-ink/50">No emails yet. They&apos;ll appear here when students sign up to be notified.</p>
+                ) : (
+                  <div className="mt-2 divide-y divide-ink/5 rounded-lg border border-ink/10 bg-white">
+                    {waitlist.map((w) => (
+                      <div key={w.id} className="flex items-center justify-between gap-3 px-3 py-2">
+                        <span className="truncate text-sm text-ink">{w.email}</span>
+                        <span className="shrink-0 text-xs text-ink/40">{new Date(w.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* student access */}

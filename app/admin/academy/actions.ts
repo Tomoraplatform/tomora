@@ -35,7 +35,7 @@ export async function createCourse(input: { title: string }): Promise<R> {
   } catch (e: any) { return { ok: false, error: e.message }; }
 }
 
-export async function updateCourse(id: string, patch: Partial<{ title: string; slug: string; short_description: string; thumbnail_url: string; price: number; is_published: boolean; sort_order: number }>): Promise<R> {
+export async function updateCourse(id: string, patch: Partial<{ title: string; slug: string; short_description: string; thumbnail_url: string; price: number; is_published: boolean; sort_order: number; is_coming_soon: boolean; coming_soon_lessons: number }>): Promise<R> {
   try {
     const admin = await guard();
     const clean: Record<string, unknown> = { ...patch };

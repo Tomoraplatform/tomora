@@ -5,6 +5,7 @@ import { listPublishedCourses } from "@/lib/academy/db";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AcademyHeader } from "@/components/academy/academy-header";
 import { PurchaseButton } from "@/components/academy/purchase-button";
+import { NotifyButton } from "@/components/academy/notify-button";
 import { SupportCard } from "@/components/academy/support-card";
 
 export const metadata = { robots: { index: false, follow: false },  title: "My Portal | Tomora Academy" };
@@ -101,9 +102,13 @@ export default async function AcademyPortalPage({ searchParams }: { searchParams
                   <div className="flex flex-1 flex-col p-5">
                     <h3 className="font-bold text-ink">{c.title}</h3>
                     {c.short_description && <p className="mt-1.5 line-clamp-2 text-sm text-ink/60">{c.short_description}</p>}
-                    <p className="mt-2 inline-flex items-center gap-1 text-sm text-ink/50"><BookOpen className="h-4 w-4" /> {c.lessonCount} lessons</p>
+                    <p className="mt-2 inline-flex items-center gap-1 text-sm text-ink/50"><BookOpen className="h-4 w-4" /> {c.is_coming_soon ? (c.coming_soon_lessons || 0) : c.lessonCount} lessons</p>
                     <div className="mt-auto pt-4">
-                      <PurchaseButton courseId={c.id} slug={c.slug} price={c.price} signedIn />
+                      {c.is_coming_soon ? (
+                        <NotifyButton courseId={c.id} defaultEmail={student.email} />
+                      ) : (
+                        <PurchaseButton courseId={c.id} slug={c.slug} price={c.price} signedIn />
+                      )}
                     </div>
                   </div>
                 </div>

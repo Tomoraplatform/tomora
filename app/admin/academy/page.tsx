@@ -15,12 +15,18 @@ export default async function AdminAcademyPage() {
 
   // Per-course roster: who has access, how they got it.
   const admin = createAdminClient();
-  const [{ data: enrollments }, { data: students }, { data: couponRows }, reviewRows] = await Promise.all([
+  const [{ data: enrollments }, { data: students }, { data: couponRows }, reviewRows, { data: notifyRows }] = await Promise.all([
     admin.from("academy_enrollments").select("id, student_id, course_id, source, created_at"),
     admin.from("academy_students").select("id, name, email"),
     admin.from("academy_coupons").select("*").order("created_at", { ascending: false }),
     listAllReviews(),
+    admin.from("academy_notify_requests").select("id, course_id, email, created_at").order("created_at", { ascending: false }),
   ]);
+
+  const waitlist: Record<string, { id: string; email: string; createdAt: string }[]> = {};
+  (notifyRows as { id: string; course_id: string; email: string; created_at: string }[] | null)?.forEach((n) => {
+    (waitlist[n.course_id] ||= []).push({ id: n.id, email: n.email, createdAt: n.created_at });
+  });
 
   const coupons = (couponRows as AdminCoupon[] | null) || [];
   const reviewsByCourse: ReviewsByCourse = {};
@@ -49,6 +55,7 @@ export default async function AdminAcademyPage() {
             roster={roster}
             coupons={coupons}
             reviews={reviewsByCourse}
+            waitlist={waitlist}
           />
         </div>
       </div>

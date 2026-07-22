@@ -11,6 +11,10 @@ export interface AcademyCourse {
   is_published: boolean;
   sort_order: number;
   created_at: string;
+  /** Not open yet; students join a notify-me waitlist instead of purchasing. */
+  is_coming_soon?: boolean;
+  /** Lesson count shown on the card while the course has no real lessons. */
+  coming_soon_lessons?: number;
 }
 
 export interface AcademyModule {

@@ -4,6 +4,7 @@ import { currentStudent } from "@/lib/academy/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AcademyHeader } from "@/components/academy/academy-header";
 import { PurchaseButton } from "@/components/academy/purchase-button";
+import { NotifyButton } from "@/components/academy/notify-button";
 
 function Stars({ value, className = "h-3.5 w-3.5" }: { value: number; className?: string }) {
   return (
@@ -85,19 +86,22 @@ export default async function AcademyPage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {courses.map((c) => (
               <div key={c.id} className="flex flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-sm">
-                <div className="aspect-video bg-ink/5">
+                <div className="relative aspect-video bg-ink/5">
                   {c.thumbnail_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={c.thumbnail_url} alt={c.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center"><GraduationCap className="h-10 w-10 text-ink/20" /></div>
                   )}
+                  {c.is_coming_soon && (
+                    <span className="absolute right-3 top-3 rounded-full bg-amber-500 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">Coming soon</span>
+                  )}
                 </div>
                 <div className="flex flex-1 flex-col p-5">
                   <h2 className="text-lg font-bold text-ink">{c.title}</h2>
                   {c.short_description && <p className="mt-1.5 line-clamp-3 text-sm text-ink/60">{c.short_description}</p>}
                   <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-ink/50">
-                    <span className="inline-flex items-center gap-1"><BookOpen className="h-4 w-4" /> {c.lessonCount} lesson{c.lessonCount === 1 ? "" : "s"}</span>
+                    <span className="inline-flex items-center gap-1"><BookOpen className="h-4 w-4" /> {c.is_coming_soon ? (c.coming_soon_lessons || 0) : c.lessonCount} lesson{(c.is_coming_soon ? (c.coming_soon_lessons || 0) : c.lessonCount) === 1 ? "" : "s"}</span>
                     {ratings[c.id] && (
                       <span className="inline-flex items-center gap-1">
                         <Stars value={ratings[c.id].avg} />
@@ -107,10 +111,14 @@ export default async function AcademyPage() {
                     )}
                   </div>
                   <div className="mt-auto pt-4">
-                    <PurchaseButton
-                      courseId={c.id} slug={c.slug} price={c.price}
-                      signedIn={!!student} enrolled={enrolledIds.has(c.id)}
-                    />
+                    {c.is_coming_soon ? (
+                      <NotifyButton courseId={c.id} defaultEmail={student?.email || ""} />
+                    ) : (
+                      <PurchaseButton
+                        courseId={c.id} slug={c.slug} price={c.price}
+                        signedIn={!!student} enrolled={enrolledIds.has(c.id)}
+                      />
+                    )}
                   </div>
                 </div>
               </div>

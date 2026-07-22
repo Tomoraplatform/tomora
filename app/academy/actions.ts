@@ -40,8 +40,9 @@ export async function purchaseCourse(courseId: string, couponCode?: string): Pro
 
   const admin = createAdminClient();
   const { data: course } = await admin
-    .from("academy_courses").select("id, title, price, is_published").eq("id", courseId).maybeSingle();
+    .from("academy_courses").select("*").eq("id", courseId).maybeSingle();
   if (!course || !course.is_published) return { ok: false, error: "Course not found." };
+  if (course.is_coming_soon) return { ok: false, error: "This course is coming soon. Join the notify list instead." };
   if (await isEnrolled(student.id, course.id)) return { ok: true, enrolled: true };
 
   // Free course, enroll straight away.
@@ -93,6 +94,22 @@ export async function purchaseCourse(courseId: string, couponCode?: string): Pro
   } catch (e: any) {
     return { ok: false, error: e.message || "Could not start payment." };
   }
+}
+
+/** Joins the notify-me waitlist for a coming-soon course. */
+export async function notifyMe(courseId: string, email: string): Promise<R> {
+  const clean = (email || "").trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(clean)) return { ok: false, error: "Enter a valid email address." };
+  if (!rateLimit(`acad-notify:${clientIp()}`, 6, 10 * 60_000)) return { ok: false, error: TOO_MANY };
+
+  const admin = createAdminClient();
+  const { data: course } = await admin.from("academy_courses").select("id").eq("id", courseId).maybeSingle();
+  if (!course) return { ok: false, error: "Course not found." };
+
+  const { error } = await admin.from("academy_notify_requests").insert({ course_id: courseId, email: clean });
+  // Duplicate = already on the list; treat as success.
+  if (error && error.code !== "23505") return { ok: false, error: error.message };
+  return { ok: true };
 }
 
 /** Checks a coupon and returns the discounted price for the checkout UI. */
