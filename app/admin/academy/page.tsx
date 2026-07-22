@@ -2,8 +2,8 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { listCourses, getCourseWithContent } from "@/lib/academy/db";
-import { AcademyManager, type CourseRoster } from "@/components/admin/academy-manager";
+import { listCourses, getCourseWithContent, listAllReviews } from "@/lib/academy/db";
+import { AcademyManager, type CourseRoster, type ReviewsByCourse, type AdminCoupon } from "@/components/admin/academy-manager";
 
 export const metadata = { robots: { index: false, follow: false },  title: "Academy | Admin | Tomora" };
 export const dynamic = "force-dynamic";
@@ -15,10 +15,16 @@ export default async function AdminAcademyPage() {
 
   // Per-course roster: who has access, how they got it.
   const admin = createAdminClient();
-  const [{ data: enrollments }, { data: students }] = await Promise.all([
+  const [{ data: enrollments }, { data: students }, { data: couponRows }, reviewRows] = await Promise.all([
     admin.from("academy_enrollments").select("id, student_id, course_id, source, created_at"),
     admin.from("academy_students").select("id, name, email"),
+    admin.from("academy_coupons").select("*").order("created_at", { ascending: false }),
+    listAllReviews(),
   ]);
+
+  const coupons = (couponRows as AdminCoupon[] | null) || [];
+  const reviewsByCourse: ReviewsByCourse = {};
+  reviewRows.forEach((r) => { (reviewsByCourse[r.course_id] ||= []).push(r); });
   const studentById = new Map((students as { id: string; name: string; email: string }[] | null)?.map((s) => [s.id, s]));
   const roster: CourseRoster = {};
   (enrollments as { id: string; student_id: string; course_id: string; source: string; created_at: string }[] | null)?.forEach((e) => {
@@ -38,7 +44,12 @@ export default async function AdminAcademyPage() {
           Create and manage courses, modules and lessons. Manage student access inside each course. {students?.length || 0} registered student{(students?.length || 0) === 1 ? "" : "s"}.
         </p>
         <div className="mt-6">
-          <AcademyManager courses={detailed.filter(Boolean) as NonNullable<(typeof detailed)[number]>[]} roster={roster} />
+          <AcademyManager
+            courses={detailed.filter(Boolean) as NonNullable<(typeof detailed)[number]>[]}
+            roster={roster}
+            coupons={coupons}
+            reviews={reviewsByCourse}
+          />
         </div>
       </div>
     </div>

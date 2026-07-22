@@ -58,6 +58,44 @@ export async function listPublishedCourses(): Promise<(AcademyCourse & { lessonC
   return (await listCourses()).filter((c) => c.is_published);
 }
 
+export interface AcademyReview {
+  id: string;
+  course_id: string;
+  author_name: string;
+  rating: number;
+  body: string;
+  sort_order: number;
+  created_at: string;
+}
+
+/** All reviews, admin view. */
+export async function listAllReviews(): Promise<AcademyReview[]> {
+  const admin = createAdminClient();
+  const { data } = await admin.from("academy_reviews").select("*").order("sort_order").order("created_at", { ascending: false });
+  return (data as AcademyReview[]) || [];
+}
+
+/** Reviews for one course. */
+export async function listCourseReviews(courseId: string): Promise<AcademyReview[]> {
+  const admin = createAdminClient();
+  const { data } = await admin.from("academy_reviews").select("*").eq("course_id", courseId).order("sort_order").order("created_at", { ascending: false });
+  return (data as AcademyReview[]) || [];
+}
+
+/** Average rating + count per course id, for the catalog cards. */
+export async function courseRatings(): Promise<Record<string, { avg: number; count: number }>> {
+  const admin = createAdminClient();
+  const { data } = await admin.from("academy_reviews").select("course_id, rating");
+  const acc: Record<string, { total: number; count: number }> = {};
+  (data as { course_id: string; rating: number }[] | null)?.forEach((r) => {
+    const a = (acc[r.course_id] ||= { total: 0, count: 0 });
+    a.total += r.rating || 0; a.count += 1;
+  });
+  const out: Record<string, { avg: number; count: number }> = {};
+  for (const [id, a] of Object.entries(acc)) out[id] = { avg: a.count ? a.total / a.count : 0, count: a.count };
+  return out;
+}
+
 /** One course with its modules + lessons in order. */
 export async function getCourseWithContent(courseIdOrSlug: string): Promise<CourseWithContent | null> {
   const admin = createAdminClient();

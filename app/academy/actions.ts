@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { initTransaction } from "@/lib/paystack";
 import { registerStudent, loginStudent, logoutStudent, currentStudent } from "@/lib/academy/auth";
 import { isEnrolled } from "@/lib/academy/db";
+import { validateCoupon, redeemCoupon } from "@/lib/academy/coupons";
 import { APP_DOMAIN } from "@/lib/constants";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 
@@ -33,7 +34,7 @@ export async function signOutStudent(): Promise<R> {
 }
 
 /** Starts a Paystack checkout for a course. Free courses enroll instantly. */
-export async function purchaseCourse(courseId: string): Promise<{ ok: boolean; error?: string; url?: string; enrolled?: boolean }> {
+export async function purchaseCourse(courseId: string, couponCode?: string): Promise<{ ok: boolean; error?: string; url?: string; enrolled?: boolean }> {
   const student = await currentStudent();
   if (!student) return { ok: false, error: "Please sign in first." };
 
@@ -53,16 +54,38 @@ export async function purchaseCourse(courseId: string): Promise<{ ok: boolean; e
     return { ok: true, enrolled: true };
   }
 
+  // Apply a discount coupon if one was entered.
+  let price = course.price;
+  let couponId: string | undefined;
+  if (couponCode?.trim()) {
+    const res = await validateCoupon(couponCode, course.id, course.price);
+    if (!res.ok) return { ok: false, error: res.error };
+    price = res.discountedPrice ?? course.price;
+    couponId = res.couponId;
+  }
+
+  // A 100% (or large fixed) coupon can zero out the price, enroll free and redeem.
+  if (price <= 0) {
+    const { error } = await admin.from("academy_enrollments").insert({
+      student_id: student.id, course_id: course.id, source: "purchase",
+    });
+    if (error && error.code !== "23505") return { ok: false, error: error.message };
+    if (couponId) await redeemCoupon(couponId);
+    revalidatePath("/academy/portal");
+    return { ok: true, enrolled: true };
+  }
+
   const origin = headers().get("origin") || `https://${APP_DOMAIN}`;
   const reference = `acad_${student.id.slice(0, 8)}_${Date.now()}`;
   try {
     const data = await initTransaction({
       email: student.email,
-      amountNaira: course.price,
+      amountNaira: price,
       reference,
       callbackUrl: `${origin}/api/academy/callback`,
       metadata: {
         purpose: "academy", studentId: student.id, courseId: course.id,
+        ...(couponId ? { couponId } : {}),
         custom_fields: [{ display_name: "Course", variable_name: "course", value: course.title }],
       },
     });
@@ -70,6 +93,17 @@ export async function purchaseCourse(courseId: string): Promise<{ ok: boolean; e
   } catch (e: any) {
     return { ok: false, error: e.message || "Could not start payment." };
   }
+}
+
+/** Checks a coupon and returns the discounted price for the checkout UI. */
+export async function checkCoupon(courseId: string, code: string): Promise<{ ok: boolean; error?: string; discountedPrice?: number; discountLabel?: string }> {
+  const admin = createAdminClient();
+  const { data: course } = await admin.from("academy_courses").select("price").eq("id", courseId).maybeSingle();
+  if (!course) return { ok: false, error: "Course not found." };
+  const res = await validateCoupon(code, courseId, course.price);
+  return res.ok
+    ? { ok: true, discountedPrice: res.discountedPrice, discountLabel: res.discountLabel }
+    : { ok: false, error: res.error };
 }
 
 /** Toggles a lesson's completed state for the signed-in, enrolled student. */

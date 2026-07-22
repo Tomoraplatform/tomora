@@ -1,9 +1,19 @@
-import { GraduationCap, BookOpen } from "lucide-react";
-import { listPublishedCourses } from "@/lib/academy/db";
+import { GraduationCap, BookOpen, Star } from "lucide-react";
+import { listPublishedCourses, courseRatings, listAllReviews } from "@/lib/academy/db";
 import { currentStudent } from "@/lib/academy/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AcademyHeader } from "@/components/academy/academy-header";
 import { PurchaseButton } from "@/components/academy/purchase-button";
+
+function Stars({ value, className = "h-3.5 w-3.5" }: { value: number; className?: string }) {
+  return (
+    <span className="inline-flex">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star key={n} className={`${className} ${n <= Math.round(value) ? "fill-amber-400 text-amber-400" : "text-ink/15"}`} />
+      ))}
+    </span>
+  );
+}
 
 export const metadata = {
   title: "Tomora Academy | Learn practical skills",
@@ -12,7 +22,12 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AcademyPage() {
-  const [courses, student] = await Promise.all([listPublishedCourses(), currentStudent()]);
+  const [courses, student, ratings, reviews] = await Promise.all([
+    listPublishedCourses(), currentStudent(), courseRatings(), listAllReviews(),
+  ]);
+  const publishedIds = new Set(courses.map((c) => c.id));
+  const courseTitle = new Map(courses.map((c) => [c.id, c.title]));
+  const shownReviews = reviews.filter((r) => publishedIds.has(r.course_id)).slice(0, 9);
 
   let enrolledIds = new Set<string>();
   if (student) {
@@ -81,8 +96,15 @@ export default async function AcademyPage() {
                 <div className="flex flex-1 flex-col p-5">
                   <h2 className="text-lg font-bold text-ink">{c.title}</h2>
                   {c.short_description && <p className="mt-1.5 line-clamp-3 text-sm text-ink/60">{c.short_description}</p>}
-                  <div className="mt-3 flex items-center gap-3 text-sm text-ink/50">
+                  <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-ink/50">
                     <span className="inline-flex items-center gap-1"><BookOpen className="h-4 w-4" /> {c.lessonCount} lesson{c.lessonCount === 1 ? "" : "s"}</span>
+                    {ratings[c.id] && (
+                      <span className="inline-flex items-center gap-1">
+                        <Stars value={ratings[c.id].avg} />
+                        <span className="text-ink/60">{ratings[c.id].avg.toFixed(1)}</span>
+                        <span className="text-ink/40">({ratings[c.id].count})</span>
+                      </span>
+                    )}
                   </div>
                   <div className="mt-auto pt-4">
                     <PurchaseButton
@@ -96,6 +118,26 @@ export default async function AcademyPage() {
           </div>
         )}
       </section>
+
+      {shownReviews.length > 0 && (
+        <section className="border-t border-ink/10 bg-white/50">
+          <div className="mx-auto max-w-6xl px-5 py-14">
+            <h2 className="text-center text-2xl font-bold text-ink">What students say</h2>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {shownReviews.map((r) => (
+                <figure key={r.id} className="flex flex-col rounded-2xl border border-ink/10 bg-white p-5 shadow-sm">
+                  <Stars value={r.rating} className="h-4 w-4" />
+                  {r.body && <blockquote className="mt-3 flex-1 text-sm leading-relaxed text-ink/70">“{r.body}”</blockquote>}
+                  <figcaption className="mt-4 text-sm">
+                    <span className="font-semibold text-ink">{r.author_name}</span>
+                    <span className="block text-xs text-ink/45">{courseTitle.get(r.course_id)}</span>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <footer className="border-t border-ink/10 py-8 text-center text-sm text-ink/40">
         © {new Date().getFullYear()} Tomora Academy · Courses are streamed for enrolled students and not downloadable.

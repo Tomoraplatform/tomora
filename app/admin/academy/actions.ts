@@ -152,6 +152,90 @@ export async function revokeAccess(enrollmentId: string): Promise<R> {
   } catch (e: any) { return { ok: false, error: e.message }; }
 }
 
+/* ---------------- coupons ---------------- */
+
+export async function createCoupon(input: {
+  code: string; discountType: "percent" | "fixed"; discountValue: number;
+  courseId?: string | null; maxUses?: number | null; expiresAt?: string | null;
+}): Promise<R> {
+  try {
+    const admin = await guard();
+    const code = (input.code || "").trim().toUpperCase().replace(/\s+/g, "");
+    if (!code) return { ok: false, error: "Enter a coupon code." };
+    const value = Math.max(0, Math.round(input.discountValue || 0));
+    if (input.discountType === "percent" && value > 100) return { ok: false, error: "Percent discount can't exceed 100." };
+    const { error } = await admin.from("academy_coupons").insert({
+      code, discount_type: input.discountType, discount_value: value,
+      course_id: input.courseId || null,
+      max_uses: input.maxUses && input.maxUses > 0 ? Math.round(input.maxUses) : null,
+      expires_at: input.expiresAt || null, active: true,
+    });
+    if (error) return { ok: false, error: error.code === "23505" ? "That code already exists." : error.message };
+    revalidatePath("/admin/academy");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+export async function setCouponActive(id: string, active: boolean): Promise<R> {
+  try {
+    const admin = await guard();
+    const { error } = await admin.from("academy_coupons").update({ active }).eq("id", id);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin/academy");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+export async function deleteCoupon(id: string): Promise<R> {
+  try {
+    const admin = await guard();
+    const { error } = await admin.from("academy_coupons").delete().eq("id", id);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin/academy");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/* ---------------- reviews ---------------- */
+
+export async function addReview(input: { courseId: string; authorName: string; rating: number; body: string }): Promise<R> {
+  try {
+    const admin = await guard();
+    const name = (input.authorName || "").trim();
+    if (!name) return { ok: false, error: "Enter the student's name." };
+    const rating = Math.min(5, Math.max(1, Math.round(input.rating || 5)));
+    const { error } = await admin.from("academy_reviews").insert({
+      course_id: input.courseId, author_name: name, rating, body: (input.body || "").trim(),
+      sort_order: Date.now() % 100000,
+    });
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin/academy"); revalidatePath("/academy");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+export async function updateReview(id: string, patch: Partial<{ author_name: string; rating: number; body: string }>): Promise<R> {
+  try {
+    const admin = await guard();
+    const clean: Record<string, unknown> = { ...patch };
+    if (patch.rating !== undefined) clean.rating = Math.min(5, Math.max(1, Math.round(patch.rating)));
+    const { error } = await admin.from("academy_reviews").update(clean).eq("id", id);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin/academy"); revalidatePath("/academy");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+export async function deleteReview(id: string): Promise<R> {
+  try {
+    const admin = await guard();
+    const { error } = await admin.from("academy_reviews").delete().eq("id", id);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin/academy"); revalidatePath("/academy");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
 /* ---------------- uploads (signed URLs) ---------------- */
 
 export async function getMediaUploadUrl(kind: "video" | "slides", ext: string): Promise<{ ok: boolean; error?: string; path?: string; token?: string }> {

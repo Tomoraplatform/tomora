@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyTransaction } from "@/lib/paystack";
+import { redeemCoupon } from "@/lib/academy/coupons";
 
 /**
  * Settles a paid academy purchase (`acad_*` reference): verifies the charge
@@ -17,6 +18,7 @@ export async function settleAcademyPayment(reference: string): Promise<{ ok: boo
   const meta = v.metadata || {};
   const studentId = meta.studentId as string | undefined;
   const courseId = meta.courseId as string | undefined;
+  const couponId = meta.couponId as string | undefined;
   if (!studentId || !courseId) return { ok: false, error: "Missing purchase details." };
 
   const admin = createAdminClient();
@@ -27,5 +29,7 @@ export async function settleAcademyPayment(reference: string): Promise<{ ok: boo
     paystack_reference: reference,
   });
   if (error && error.code !== "23505") return { ok: false, error: error.message };
+  // Count the coupon redemption only on a fresh enrollment (not a duplicate settle).
+  if (couponId && !error) await redeemCoupon(couponId);
   return { ok: true, courseId };
 }

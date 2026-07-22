@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import {
-  Plus, Trash2, ChevronDown, ChevronRight, Loader2, UploadCloud, Video, FileText, Check, Eye, EyeOff, GraduationCap, UserPlus, UserMinus,
+  Plus, Trash2, ChevronDown, ChevronRight, Loader2, UploadCloud, Video, FileText, Check, Eye, EyeOff, GraduationCap, UserPlus, UserMinus, Tag, Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,15 +16,25 @@ import {
   createCourse, updateCourse, deleteCourse, addModule, updateModule, deleteModule,
   addLesson, updateLesson, deleteLesson, getMediaUploadUrl, getThumbnailUploadUrl,
   grantAccess, revokeAccess,
+  createCoupon, setCouponActive, deleteCoupon, addReview, deleteReview,
 } from "@/app/admin/academy/actions";
-import type { CourseWithContent } from "@/lib/academy/db";
+import type { CourseWithContent, AcademyReview } from "@/lib/academy/db";
 
 const MEDIA_BUCKET = "academy-media";
 const THUMB_BUCKET = "academy-thumbnails";
 
 export type CourseRoster = Record<string, { enrollmentId: string; name: string; email: string; source: string; createdAt: string }[]>;
+export type ReviewsByCourse = Record<string, AcademyReview[]>;
+export interface AdminCoupon {
+  id: string; code: string; discount_type: string; discount_value: number;
+  course_id: string | null; max_uses: number | null; used_count: number; active: boolean; expires_at: string | null;
+}
 
-export function AcademyManager({ courses, roster = {} }: { courses: CourseWithContent[]; roster?: CourseRoster }) {
+type RunFn = (key: string, fn: () => Promise<{ ok: boolean; error?: string }>) => Promise<boolean>;
+
+export function AcademyManager({ courses, roster = {}, coupons = [], reviews = {} }: {
+  courses: CourseWithContent[]; roster?: CourseRoster; coupons?: AdminCoupon[]; reviews?: ReviewsByCourse;
+}) {
   const router = useRouter();
   const [openId, setOpenId] = useState<string | null>(courses[0]?.id ?? null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -51,17 +61,89 @@ export function AcademyManager({ courses, roster = {} }: { courses: CourseWithCo
       {courses.length === 0 && <p className="text-sm text-ink/50">No courses yet. Create your first one.</p>}
 
       {courses.map((c) => (
-        <CourseCard key={c.id} course={c} students={roster[c.id] || []} open={openId === c.id} onToggle={() => setOpenId(openId === c.id ? null : c.id)} run={run} busy={busy} />
+        <CourseCard key={c.id} course={c} students={roster[c.id] || []} reviews={reviews[c.id] || []} open={openId === c.id} onToggle={() => setOpenId(openId === c.id ? null : c.id)} run={run} busy={busy} />
       ))}
+
+      <CouponsSection coupons={coupons} courses={courses} run={run} busy={busy} />
     </div>
   );
 }
 
+function CouponsSection({ coupons, courses, run, busy }: { coupons: AdminCoupon[]; courses: CourseWithContent[]; run: RunFn; busy: string | null }) {
+  const [form, setForm] = useState({ code: "", discountType: "percent" as "percent" | "fixed", discountValue: 10, courseId: "", maxUses: "", expiresAt: "" });
+  const courseName = (id: string | null) => id ? (courses.find((c) => c.id === id)?.title || "a course") : "All courses";
+
+  async function create() {
+    const ok = await run("new-coupon", () => createCoupon({
+      code: form.code, discountType: form.discountType, discountValue: Number(form.discountValue) || 0,
+      courseId: form.courseId || null,
+      maxUses: form.maxUses ? Number(form.maxUses) : null,
+      expiresAt: form.expiresAt || null,
+    }));
+    if (ok) setForm({ code: "", discountType: "percent", discountValue: 10, courseId: "", maxUses: "", expiresAt: "" });
+  }
+
+  return (
+    <Card>
+      <CardContent className="space-y-4 pt-6">
+        <div className="flex items-center gap-2">
+          <Tag className="h-4 w-4 text-ink/60" />
+          <h3 className="text-sm font-bold uppercase tracking-wide text-ink/60">Discount coupons</h3>
+        </div>
+
+        <div className="grid gap-3 rounded-lg border border-ink/10 bg-white p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Field label="Code"><Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="STUDENT20" /></Field>
+          <Field label="Type">
+            <select className="h-10 w-full rounded-md border border-ink/15 bg-white px-3 text-sm" value={form.discountType} onChange={(e) => setForm({ ...form, discountType: e.target.value as "percent" | "fixed" })}>
+              <option value="percent">Percent (%)</option>
+              <option value="fixed">Fixed (₦)</option>
+            </select>
+          </Field>
+          <Field label={form.discountType === "percent" ? "Percent off" : "Naira off"}><Input type="number" min={0} value={form.discountValue} onChange={(e) => setForm({ ...form, discountValue: Number(e.target.value) })} /></Field>
+          <Field label="Applies to">
+            <select className="h-10 w-full rounded-md border border-ink/15 bg-white px-3 text-sm" value={form.courseId} onChange={(e) => setForm({ ...form, courseId: e.target.value })}>
+              <option value="">All courses</option>
+              {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+            </select>
+          </Field>
+          <Field label="Max uses (optional)"><Input type="number" min={0} value={form.maxUses} onChange={(e) => setForm({ ...form, maxUses: e.target.value })} placeholder="Unlimited" /></Field>
+          <Field label="Expires (optional)"><Input type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} /></Field>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <Button size="sm" onClick={create} disabled={busy === "new-coupon" || !form.code.trim()}>
+              {busy === "new-coupon" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Create coupon
+            </Button>
+          </div>
+        </div>
+
+        {coupons.length === 0 ? (
+          <p className="text-sm text-ink/50">No coupons yet.</p>
+        ) : (
+          <div className="divide-y divide-ink/5 rounded-lg border border-ink/10 bg-white">
+            {coupons.map((c) => (
+              <div key={c.id} className="flex flex-wrap items-center gap-3 px-3 py-2.5">
+                <span className="rounded bg-ink/5 px-2 py-1 font-mono text-sm font-bold text-ink">{c.code}</span>
+                <span className="text-sm text-ink/70">{c.discount_type === "fixed" ? `₦${c.discount_value.toLocaleString()} off` : `${c.discount_value}% off`}</span>
+                <span className="text-xs text-ink/45">{courseName(c.course_id)}</span>
+                <span className="text-xs text-ink/45">{c.used_count}{c.max_uses != null ? `/${c.max_uses}` : ""} used{c.expires_at ? ` · exp ${new Date(c.expires_at).toLocaleDateString()}` : ""}</span>
+                <div className="ml-auto flex items-center gap-2">
+                  <label className="flex items-center gap-1.5 text-xs text-ink/60"><Switch checked={c.active} onCheckedChange={(v) => run(`cpt-${c.id}`, () => setCouponActive(c.id, v))} /> {c.active ? "Active" : "Off"}</label>
+                  <button className="text-ink/40 hover:text-destructive" onClick={() => { if (window.confirm(`Delete coupon ${c.code}?`)) run(`cpd-${c.id}`, () => deleteCoupon(c.id)); }}><Trash2 className="h-4 w-4" /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function CourseCard({
-  course, students, open, onToggle, run, busy,
+  course, students, reviews, open, onToggle, run, busy,
 }: {
   course: CourseWithContent;
   students: CourseRoster[string];
+  reviews: AcademyReview[];
   open: boolean;
   onToggle: () => void;
   run: (key: string, fn: () => Promise<{ ok: boolean; error?: string }>) => Promise<boolean>;
@@ -145,6 +227,9 @@ function CourseCard({
 
           {/* student access */}
           <StudentsPanel courseId={course.id} students={students} run={run} busy={busy} />
+
+          {/* reviews */}
+          <ReviewsPanel courseId={course.id} reviews={reviews} run={run} busy={busy} />
 
           <div className="flex justify-end border-t border-ink/10 pt-4">
             <Button variant="outline" size="sm" className="text-destructive"
@@ -304,4 +389,64 @@ function StudentsPanel({
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <div className="space-y-1.5"><label className="text-xs font-medium text-ink/60">{label}</label>{children}</div>;
+}
+
+function StarPicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button key={n} type="button" onClick={() => onChange(n)} aria-label={`${n} star`}>
+          <Star className={`h-5 w-5 ${n <= value ? "fill-amber-400 text-amber-400" : "text-ink/20"}`} />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ReviewsPanel({ courseId, reviews, run, busy }: {
+  courseId: string; reviews: AcademyReview[]; run: RunFn; busy: string | null;
+}) {
+  const [form, setForm] = useState({ authorName: "", rating: 5, body: "" });
+
+  async function add() {
+    if (!form.authorName.trim()) return;
+    const ok = await run(`addrev-${courseId}`, () => addReview({ courseId, authorName: form.authorName, rating: form.rating, body: form.body }));
+    if (ok) setForm({ authorName: "", rating: 5, body: "" });
+  }
+
+  return (
+    <div className="space-y-3 border-t border-ink/10 pt-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-ink/50">Reviews ({reviews.length})</p>
+
+      <div className="space-y-3 rounded-lg border border-ink/10 bg-white p-3">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Student name"><Input value={form.authorName} onChange={(e) => setForm({ ...form, authorName: e.target.value })} placeholder="e.g. Ada O." /></Field>
+          <Field label="Rating"><StarPicker value={form.rating} onChange={(n) => setForm({ ...form, rating: n })} /></Field>
+        </div>
+        <Field label="Review"><Textarea rows={2} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder="What the student said…" /></Field>
+        <Button size="sm" onClick={add} disabled={busy === `addrev-${courseId}` || !form.authorName.trim()}>
+          {busy === `addrev-${courseId}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Add review
+        </Button>
+      </div>
+
+      {reviews.length > 0 && (
+        <div className="divide-y divide-ink/5 rounded-lg border border-ink/10 bg-white">
+          {reviews.map((r) => (
+            <div key={r.id} className="flex items-start gap-3 px-3 py-2.5">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-ink">{r.author_name}</span>
+                  <span className="flex">{[1, 2, 3, 4, 5].map((n) => <Star key={n} className={`h-3.5 w-3.5 ${n <= r.rating ? "fill-amber-400 text-amber-400" : "text-ink/15"}`} />)}</span>
+                </div>
+                {r.body && <p className="mt-0.5 text-sm text-ink/60">{r.body}</p>}
+              </div>
+              <button className="shrink-0 text-ink/40 hover:text-destructive" onClick={() => { if (window.confirm(`Delete this review from ${r.author_name}?`)) run(`delrev-${r.id}`, () => deleteReview(r.id)); }}>
+                {busy === `delrev-${r.id}` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
