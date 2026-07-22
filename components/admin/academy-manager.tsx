@@ -16,7 +16,7 @@ import {
   createCourse, updateCourse, deleteCourse, addModule, updateModule, deleteModule,
   addLesson, updateLesson, deleteLesson, getMediaUploadUrl, getThumbnailUploadUrl,
   grantAccess, revokeAccess,
-  createCoupon, setCouponActive, deleteCoupon, addReview, deleteReview,
+  createCoupon, setCouponActive, deleteCoupon, addReview, deleteReview, removeNotify,
 } from "@/app/admin/academy/actions";
 import type { CourseWithContent, AcademyReview } from "@/lib/academy/db";
 
@@ -252,7 +252,13 @@ function CourseCard({
                     {waitlist.map((w) => (
                       <div key={w.id} className="flex items-center justify-between gap-3 px-3 py-2">
                         <span className="truncate text-sm text-ink">{w.email}</span>
-                        <span className="shrink-0 text-xs text-ink/40">{new Date(w.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}</span>
+                        <div className="flex shrink-0 items-center gap-3">
+                          <span className="text-xs text-ink/40">{new Date(w.createdAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}</span>
+                          <button className="text-ink/40 hover:text-destructive" title="Remove"
+                            onClick={() => { if (window.confirm(`Remove ${w.email} from the notify list?`)) run(`rmn-${w.id}`, () => removeNotify(w.id)); }}>
+                            {busy === `rmn-${w.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>

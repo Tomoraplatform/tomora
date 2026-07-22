@@ -236,6 +236,18 @@ export async function deleteReview(id: string): Promise<R> {
   } catch (e: any) { return { ok: false, error: e.message }; }
 }
 
+/* ---------------- notify-me waitlist ---------------- */
+
+export async function removeNotify(id: string): Promise<R> {
+  try {
+    const admin = await guard();
+    const { error } = await admin.from("academy_notify_requests").delete().eq("id", id);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin/academy");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
 /* ---------------- uploads (signed URLs) ---------------- */
 
 export async function getMediaUploadUrl(kind: "video" | "slides", ext: string): Promise<{ ok: boolean; error?: string; path?: string; token?: string }> {
