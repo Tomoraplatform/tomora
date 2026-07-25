@@ -7,6 +7,7 @@ import { AcademyClosed } from "@/components/academy/academy-closed";
 import { getCreatorByStudent, listCreatorCourses, getCreatorCourse } from "@/lib/creator/db";
 import { AcademyHeader } from "@/components/academy/academy-header";
 import { AuthorProfileForm } from "@/components/creator/author-profile-form";
+import { BrandForm } from "@/components/creator/brand-form";
 import { CoursesManager } from "@/components/creator/courses-manager";
 import { PayoutForm } from "@/components/creator/payout-form";
 import { WalletPanel } from "@/components/creator/wallet-panel";
@@ -120,6 +121,16 @@ export default async function SellPage() {
             authorBio: creator.author_bio,
             authorPhotoUrl: creator.author_photo_url || "",
             showAuthor: creator.show_author,
+          }} />
+        </section>
+
+        <section className="mt-10">
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-ink/60">Brand and colours</h2>
+          <BrandForm initial={{
+            brandName: creator.brand_name || "",
+            logoUrl: creator.logo_url || "",
+            brandColor: creator.brand_color || "#242B3D",
+            brandColor2: creator.brand_color_2 || "#F3E969",
           }} />
         </section>
 

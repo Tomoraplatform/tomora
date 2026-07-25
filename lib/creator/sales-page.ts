@@ -55,10 +55,9 @@ const uid = (p: string) => `${p}-${Math.random().toString(36).slice(2, 8)}`;
 /** The starter template (mirrors the reference design). */
 export function defaultSalesPage(course: { title: string; description: string }): SalesPage {
   return {
-    // Template defaults: deep navy sections with a bright accent for CTAs.
-    // Creators can change both in the page editor.
-    color: "#242B3D",
-    color2: "#F3E969",
+    // Colours are intentionally left unset so the creator's own two brand
+    // colours drive the page. SalesPageView falls back to the template's
+    // navy/accent defaults when a creator hasn't chosen any.
     sections: [
       {
         id: uid("hero"), type: "hero",

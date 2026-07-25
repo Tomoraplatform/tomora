@@ -145,7 +145,18 @@ export async function updateCreatorCourse(courseId: string, patch: Partial<{
     if (patch.title !== undefined && !String(patch.title).trim()) return { ok: false, error: "Title can't be empty." };
     const { error } = await admin.from("creator_courses").update(clean).eq("id", courseId);
     if (error) return { ok: false, error: error.message };
+
     revalidatePath("/academy/sell");
+    // Push the change to the live sales page too, so editing after publishing
+    // updates what visitors see straight away.
+    const { data: row } = await admin.from("creator_courses").select("slug, creator_id").eq("id", courseId).maybeSingle();
+    if (row) {
+      const { data: c } = await admin.from("academy_creators").select("slug").eq("id", row.creator_id).maybeSingle();
+      if (c?.slug) {
+        revalidatePath(`/c/${c.slug}`);
+        revalidatePath(`/c/${c.slug}/${row.slug}`);
+      }
+    }
     return { ok: true };
   } catch (e: any) { return { ok: false, error: e.message }; }
 }

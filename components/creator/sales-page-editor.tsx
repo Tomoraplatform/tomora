@@ -28,6 +28,7 @@ export function SalesPageEditor({ initialPage, creator, course, courses }: {
   /** Other active courses, for button links. */
   courses: { id: string; title: string }[];
 }) {
+  const [live, setLive] = useState(course.is_published);
   const router = useRouter();
   const [page, setPage] = useState<SalesPage>(initialPage);
   const [selected, setSelected] = useState<string | null>(initialPage.sections[0]?.id ?? null);
@@ -67,11 +68,16 @@ export function SalesPageEditor({ initialPage, creator, course, courses }: {
     setSaved(false);
   }
 
-  async function save() {
+  /** Saves the design. `publish: true` also takes the page live. */
+  async function save(publish = false) {
     setSaving(true);
-    const res = await updateCreatorCourse(course.id, { sales_page: page as unknown as Record<string, unknown> });
+    const res = await updateCreatorCourse(course.id, {
+      sales_page: page as unknown as Record<string, unknown>,
+      ...(publish ? { is_published: true } : {}),
+    });
     setSaving(false);
     if (!res.ok) { window.alert(res.error || "Could not save."); return; }
+    if (publish) setLive(true);
     setSaved(true);
     router.refresh();
   }
@@ -89,12 +95,27 @@ export function SalesPageEditor({ initialPage, creator, course, courses }: {
 
       {/* inspector */}
       <aside className="w-full shrink-0 border-t border-ink/10 bg-cream lg:h-screen lg:w-96 lg:overflow-y-auto lg:border-l lg:border-t-0">
-        <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-ink/10 bg-cream px-4 py-3">
-          <p className="text-sm font-bold text-ink">Sales page</p>
-          <Button size="sm" onClick={save} disabled={saving}>
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-            {saved ? "Saved" : "Save"}
-          </Button>
+        <div className="sticky top-0 z-10 space-y-2 border-b border-ink/10 bg-cream px-4 py-3">
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-bold text-ink">Sales page</p>
+            <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${live ? "bg-emerald-100 text-emerald-700" : "bg-ink/10 text-ink/60"}`}>
+              {live ? "Live" : "Draft"}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => save(true)} disabled={saving} className="flex-1">
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
+              {saved ? "Saved" : live ? "Update live page" : "Save & publish"}
+            </Button>
+            {live && (
+              <Button size="sm" variant="outline" onClick={() => save(false)} disabled={saving}>
+                Save only
+              </Button>
+            )}
+          </div>
+          <p className="text-[11px] text-ink/50">
+            {live ? "Changes go live as soon as you update." : "Publishing makes this page public."}
+          </p>
         </div>
 
         <div className="space-y-5 p-4">
@@ -113,6 +134,14 @@ export function SalesPageEditor({ initialPage, creator, course, courses }: {
                 <input type="color" value={page.color2 || creator.brand_color_2} onChange={(e) => patchPage({ color2: e.target.value })} className="h-8 w-10 cursor-pointer rounded border border-ink/15" />
               </label>
             </div>
+            {page.color || page.color2 ? (
+              <button type="button" onClick={() => patchPage({ color: undefined, color2: undefined })}
+                className="text-[11px] text-ink/55 underline hover:text-ink">
+                Use my brand colours instead
+              </button>
+            ) : (
+              <p className="text-[11px] text-ink/50">Using your brand colours. Change them here to override just this page.</p>
+            )}
           </div>
 
           {/* sections list */}
