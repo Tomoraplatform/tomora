@@ -1,5 +1,7 @@
 import { GraduationCap, BookOpen, Star } from "lucide-react";
 import { listPublishedCourses, courseRatings, listAllReviews } from "@/lib/academy/db";
+import { listFeaturedCreatorCourses } from "@/lib/creator/db";
+import { formatNaira } from "@/lib/utils";
 import { currentStudent } from "@/lib/academy/auth";
 import { academyOpen } from "@/lib/academy/settings";
 import { AcademyClosed } from "@/components/academy/academy-closed";
@@ -26,8 +28,8 @@ export const dynamic = "force-dynamic";
 
 export default async function AcademyPage() {
   if (!(await academyOpen())) return <AcademyClosed />;
-  const [courses, student, ratings, reviews] = await Promise.all([
-    listPublishedCourses(), currentStudent(), courseRatings(), listAllReviews(),
+  const [courses, student, ratings, reviews, featured] = await Promise.all([
+    listPublishedCourses(), currentStudent(), courseRatings(), listAllReviews(), listFeaturedCreatorCourses(),
   ]);
   const publishedIds = new Set(courses.map((c) => c.id));
   const courseTitle = new Map(courses.map((c) => [c.id, c.title]));
@@ -129,6 +131,34 @@ export default async function AcademyPage() {
           </div>
         )}
       </section>
+
+      {featured.length > 0 && (
+        <section className="mx-auto max-w-6xl px-5 pb-6">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-ink/50">From Tomora creators</h2>
+          <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((c) => (
+              <a key={c.id} href={`/c/${c.creatorSlug}/${c.slug}`}
+                className="flex flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-sm transition hover:shadow-md">
+                <div className="aspect-video bg-ink/5">
+                  {c.banner_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={c.banner_url} alt={c.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                  ) : <div className="flex h-full items-center justify-center"><GraduationCap className="h-10 w-10 text-ink/20" /></div>}
+                </div>
+                <div className="flex flex-1 flex-col p-5">
+                  <h3 className="font-bold text-ink">{c.title}</h3>
+                  <p className="mt-1 text-xs text-ink/50">by {c.authorName}</p>
+                  {c.description && <p className="mt-1.5 line-clamp-2 text-sm text-ink/60">{c.description}</p>}
+                  <div className="mt-3 flex items-center justify-between text-sm">
+                    <span className="inline-flex items-center gap-1 text-ink/50"><BookOpen className="h-4 w-4" /> {c.lessonCount} lessons</span>
+                    <span className="font-bold text-ink">{c.price > 0 ? formatNaira(c.price) : "Free"}</span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       {shownReviews.length > 0 && (
         <section className="border-t border-ink/10 bg-white/50">

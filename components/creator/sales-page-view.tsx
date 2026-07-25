@@ -1,6 +1,6 @@
 import { Check, Play } from "lucide-react";
 import { contrastText, formatNaira } from "@/lib/utils";
-import { toEmbedUrl } from "@/lib/creator/media";
+import { toEmbedUrl } from "@/lib/creator/embed";
 import type { SalesPage, SalesSection } from "@/lib/creator/sales-page";
 import type { AcademyCreator, CreatorCourseWithContent } from "@/lib/creator/db";
 

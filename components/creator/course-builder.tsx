@@ -216,9 +216,12 @@ export function CourseCard({ course, creatorSlug, open, onToggle }: {
               <Switch checked={course.is_active} onCheckedChange={(v) => run(`act-${course.id}`, () => updateCreatorCourse(course.id, { is_active: v }))} />
               Course active
             </label>
+            <Link href={`/academy/sell/design/${course.id}`} className="inline-flex items-center gap-1.5 rounded-lg border border-ink/20 px-3.5 py-2 text-sm font-semibold text-ink hover:bg-ink/5">
+              Design sales page
+            </Link>
             {course.is_published && (
               <a href={salesUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-medium text-ink/70 underline hover:text-ink">
-                <ExternalLink className="h-3.5 w-3.5" /> View sales page
+                <ExternalLink className="h-3.5 w-3.5" /> View live
               </a>
             )}
             <div className="ml-auto">
