@@ -4,6 +4,10 @@ import { toEmbedUrl } from "@/lib/creator/embed";
 import type { SalesPage, SalesSection } from "@/lib/creator/sales-page";
 import type { AcademyCreator, CreatorCourseWithContent } from "@/lib/creator/db";
 
+/** The template's display face. Applied directly because the project's
+ *  `font-serif` utility points at a CSS variable that isn't defined. */
+const DISPLAY = { fontFamily: 'Georgia, "Times New Roman", Times, serif' } as const;
+
 /**
  * Renders a creator's sales page. Mobile is centre-aligned throughout and
  * opens out to the two-column layout from the template on large screens.
@@ -37,7 +41,7 @@ export function SalesPageView({
               // eslint-disable-next-line @next/next/no-img-element
               <img src={creator.logo_url} alt={creator.brand_name || creator.author_name} className="h-9 w-auto max-w-[150px] object-contain" />
             ) : (
-              <span className="truncate font-serif text-xl font-bold tracking-tight sm:text-2xl" style={{ color: hasHero ? onColor : undefined }}>
+              <span style={{ ...DISPLAY, color: hasHero ? onColor : undefined }} className="truncate text-xl font-bold tracking-tight sm:text-2xl">
                 {creator.brand_name || creator.author_name}
               </span>
             )}
@@ -105,12 +109,12 @@ function Section(ctx: Ctx) {
                   <span className="text-sm opacity-80">{creator.author_name}</span>
                 </div>
               )}
-              <h1 className="font-serif text-[1.75rem] font-bold leading-[1.2] sm:text-4xl lg:text-[2.6rem]">{s.heading}</h1>
+              <h1 style={DISPLAY} className="text-[1.75rem] font-bold leading-[1.2] sm:text-4xl lg:text-[2.6rem]">{s.heading}</h1>
               {s.subheading && <p className="mx-auto mt-4 max-w-xl text-sm opacity-75 sm:text-base lg:mx-0">{s.subheading}</p>}
               {s.body && <p className="mx-auto mt-3 max-w-xl text-sm opacity-60 lg:mx-0">{s.body}</p>}
 
               <div className="mt-7 flex flex-wrap items-baseline justify-center gap-3 lg:justify-start">
-                <span className="font-serif text-3xl font-bold italic sm:text-4xl">
+                <span style={DISPLAY} className="text-3xl font-bold italic sm:text-4xl">
                   {course.price > 0 ? formatNaira(course.price) : "Free"}
                 </span>
                 {course.compare_price ? (
@@ -140,13 +144,13 @@ function Section(ctx: Ctx) {
       return (
         <section className="px-5 py-14 sm:py-20">
           <div className="mx-auto max-w-6xl text-center">
-            <h2 className="font-serif text-2xl font-bold sm:text-3xl">{s.heading}</h2>
+            <h2 style={DISPLAY} className="text-2xl font-bold sm:text-3xl">{s.heading}</h2>
             {s.subheading && <p className="mx-auto mt-3 max-w-lg text-sm text-black/55 sm:text-base">{s.subheading}</p>}
             <div className="mt-10 grid gap-5 text-center sm:grid-cols-2 sm:text-left lg:grid-cols-3">
               {entries.map((e) => (
                 <div key={e.key} className="rounded-xl border border-black/15 p-6">
                   <span className="text-xs font-bold uppercase tracking-wide" style={{ color: pickLabelColor(color2) }}>{e.label}</span>
-                  <h3 className="mt-2 font-serif text-xl font-bold">{e.title}</h3>
+                  <h3 style={DISPLAY} className="mt-2 text-xl font-bold">{e.title}</h3>
                   {e.body && <p className="mt-2 line-clamp-3 text-sm text-black/55">{e.body}</p>}
                 </div>
               ))}
@@ -161,11 +165,11 @@ function Section(ctx: Ctx) {
       return (
         <section className="px-5 py-14 sm:py-20 lg:rounded-tl-[3.5rem]" style={{ background: color, color: onColor }}>
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="font-serif text-2xl font-bold sm:text-3xl">{s.heading}</h2>
+            <h2 style={DISPLAY} className="text-2xl font-bold sm:text-3xl">{s.heading}</h2>
             <ul className="mt-9 space-y-3 text-left">
               {(s.items || []).map((it, i) => (
                 <li key={it.id} className="flex items-start gap-3 rounded-xl bg-white px-5 py-3.5 text-neutral-900">
-                  <span className="font-serif text-2xl font-bold leading-none">{i + 1}.</span>
+                  <span style={DISPLAY} className="text-2xl font-bold leading-none">{i + 1}.</span>
                   <span className="min-w-0 pt-1 text-sm sm:text-base">{it.body}</span>
                 </li>
               ))}
@@ -180,7 +184,7 @@ function Section(ctx: Ctx) {
         <section className="px-5 py-14 sm:py-20" style={{ background: tint(color2) }}>
           <div className="mx-auto max-w-5xl text-center">
             {s.subheading && <p className="text-sm text-black/60">{s.subheading}</p>}
-            <h2 className="mt-1 font-serif text-2xl font-bold sm:text-3xl">{s.heading}</h2>
+            <h2 style={DISPLAY} className="mt-1 text-2xl font-bold sm:text-3xl">{s.heading}</h2>
             {(s.images || []).length > 0 && (
               <div className="mt-9 grid gap-5 sm:grid-cols-2">
                 {(s.images || []).map((src, i) => (
@@ -211,7 +215,7 @@ function Section(ctx: Ctx) {
                   {s.subheading}
                 </p>
               )}
-              {s.heading && <h2 className="mt-2 font-serif text-2xl font-bold sm:text-3xl">{s.heading}</h2>}
+              {s.heading && <h2 style={DISPLAY} className="mt-2 text-2xl font-bold sm:text-3xl">{s.heading}</h2>}
               {s.body && <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-black/60 lg:mx-0">{s.body}</p>}
 
               {links.length > 0 && (
@@ -241,12 +245,12 @@ function Section(ctx: Ctx) {
       return (
         <section className="px-5 py-14 sm:py-20 lg:rounded-tl-[3.5rem]" style={{ background: color, color: onColor }}>
           <div className="mx-auto max-w-5xl text-center">
-            <h2 className="font-serif text-2xl font-bold sm:text-3xl">{s.heading}</h2>
+            <h2 style={DISPLAY} className="text-2xl font-bold sm:text-3xl">{s.heading}</h2>
             <div className="mt-9 grid gap-5 text-left sm:grid-cols-2">
               {(s.items || []).map((t) => (
-                <figure key={t.id} className="rounded-xl bg-black/10 p-6">
-                  <blockquote className="text-sm leading-relaxed opacity-85">{t.body}</blockquote>
-                  {t.title && <figcaption className="mt-3 text-sm font-semibold opacity-95">{t.title}</figcaption>}
+                <figure key={t.id} className="rounded-xl bg-neutral-200 p-6 text-neutral-900">
+                  <blockquote className="text-sm leading-relaxed text-black/70">{t.body}</blockquote>
+                  {t.title && <figcaption className="mt-3 text-sm font-semibold">{t.title}</figcaption>}
                 </figure>
               ))}
               {(s.items || []).length === 0 && <p className="text-sm opacity-70">No feedback added yet.</p>}
@@ -265,7 +269,7 @@ function Section(ctx: Ctx) {
               <img src={creator.author_photo_url} alt={creator.author_name} className="h-24 w-24 shrink-0 rounded-full object-cover" />
             )}
             <div className="min-w-0">
-              <h2 className="font-serif text-xl font-bold sm:text-2xl">{s.heading}</h2>
+              <h2 style={DISPLAY} className="text-xl font-bold sm:text-2xl">{s.heading}</h2>
               <p className="mt-1 font-semibold" style={{ color: pickLabelColor(color2) }}>{creator.author_name}</p>
               {creator.author_bio && <p className="mt-2 text-sm leading-relaxed text-black/60">{creator.author_bio}</p>}
             </div>
@@ -293,7 +297,7 @@ function Section(ctx: Ctx) {
               <img src={s.image} alt="" className="mx-auto w-full max-w-md rounded-2xl object-cover lg:max-w-none" />
             )}
             <div className="min-w-0 text-center lg:text-left">
-              {s.heading && <h2 className="font-serif text-2xl font-bold sm:text-3xl">{s.heading}</h2>}
+              {s.heading && <h2 style={DISPLAY} className="text-2xl font-bold sm:text-3xl">{s.heading}</h2>}
               {s.body && <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-black/60 sm:text-base lg:mx-0">{s.body}</p>}
               {s.cta && <div className="mt-6"><Cta {...ctx} /></div>}
             </div>
@@ -326,7 +330,7 @@ function Section(ctx: Ctx) {
               <div className="flex aspect-video items-center justify-center rounded-2xl bg-black/5 text-black/30"><Play className="h-8 w-8" /></div>
             )}
             <div className="min-w-0 text-center lg:text-left">
-              {s.heading && <h2 className="font-serif text-2xl font-bold sm:text-3xl">{s.heading}</h2>}
+              {s.heading && <h2 style={DISPLAY} className="text-2xl font-bold sm:text-3xl">{s.heading}</h2>}
               {s.body && <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-black/60 sm:text-base lg:mx-0">{s.body}</p>}
               {s.cta && <div className="mt-6"><Cta {...ctx} /></div>}
             </div>
@@ -343,7 +347,7 @@ function Section(ctx: Ctx) {
             <img src={s.image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />
           )}
           <div className="relative mx-auto max-w-3xl text-center" style={{ color: onColor }}>
-            {s.heading && <h2 className="font-serif text-2xl font-bold sm:text-4xl">{s.heading}</h2>}
+            {s.heading && <h2 style={DISPLAY} className="text-2xl font-bold sm:text-4xl">{s.heading}</h2>}
             {s.body && <p className="mx-auto mt-4 max-w-xl text-sm opacity-85 sm:text-base">{s.body}</p>}
             {s.cta && <div className="mt-7"><Cta {...ctx} /></div>}
           </div>
@@ -367,7 +371,7 @@ function Section(ctx: Ctx) {
       return (
         <section className="px-5 py-14">
           <div className="mx-auto max-w-6xl text-center">
-            {s.heading && <h2 className="font-serif text-2xl font-bold sm:text-3xl">{s.heading}</h2>}
+            {s.heading && <h2 style={DISPLAY} className="text-2xl font-bold sm:text-3xl">{s.heading}</h2>}
             <div className="mt-9 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {(s.items || []).map((it) => (
                 <div key={it.id} className="flex flex-col overflow-hidden rounded-2xl border border-black/10">
@@ -376,7 +380,7 @@ function Section(ctx: Ctx) {
                     <img src={it.image} alt="" className="aspect-video w-full object-cover" />
                   )}
                   <div className="flex flex-1 flex-col p-5">
-                    {it.title && <h3 className="font-serif text-lg font-bold">{it.title}</h3>}
+                    {it.title && <h3 style={DISPLAY} className="text-lg font-bold">{it.title}</h3>}
                     {it.body && <p className="mt-1.5 text-sm text-black/55">{it.body}</p>}
                     {it.cta?.label && (
                       <a href={ctaHref(it.cta.courseId, it.cta.url)}
