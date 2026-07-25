@@ -7,6 +7,8 @@ import { AcademyHeader } from "@/components/academy/academy-header";
 import { PurchaseButton } from "@/components/academy/purchase-button";
 import { NotifyButton } from "@/components/academy/notify-button";
 import { SupportCard } from "@/components/academy/support-card";
+import { CreatorCta } from "@/components/creator/creator-cta";
+import { getCreatorByStudent, listPurchasedCreatorCourses } from "@/lib/creator/db";
 
 export const metadata = { robots: { index: false, follow: false },  title: "My Portal | Tomora Academy" };
 export const dynamic = "force-dynamic";
@@ -16,11 +18,13 @@ export default async function AcademyPortalPage({ searchParams }: { searchParams
   if (!student) redirect("/academy/join");
 
   const admin = createAdminClient();
-  const [courses, { data: enrollments }, { data: progress }, { data: lessons }] = await Promise.all([
+  const [courses, { data: enrollments }, { data: progress }, { data: lessons }, creator, creatorCourses] = await Promise.all([
     listPublishedCourses(),
     admin.from("academy_enrollments").select("course_id").eq("student_id", student.id),
     admin.from("academy_progress").select("lesson_id").eq("student_id", student.id),
     admin.from("academy_lessons").select("id, course_id"),
+    getCreatorByStudent(student.id),
+    listPurchasedCreatorCourses(student.id),
   ]);
 
   const enrolledIds = new Set((enrollments as { course_id: string }[] | null)?.map((r) => r.course_id));
@@ -87,6 +91,33 @@ export default async function AcademyPortalPage({ searchParams }: { searchParams
           </div>
         )}
 
+        {creatorCourses.length > 0 && (
+          <>
+            <h2 className="mt-10 text-sm font-semibold uppercase tracking-wide text-ink/50">From Tomora creators</h2>
+            <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {creatorCourses.map((c) => (
+                <div key={c.id} className="flex flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-sm">
+                  <div className="aspect-video bg-ink/5">
+                    {c.banner_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={c.banner_url} alt={c.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                    ) : <div className="flex h-full items-center justify-center"><GraduationCap className="h-10 w-10 text-ink/20" /></div>}
+                  </div>
+                  <div className="flex flex-1 flex-col p-5">
+                    <h3 className="font-bold text-ink">{c.title}</h3>
+                    <p className="mt-2 inline-flex items-center gap-1 text-sm text-ink/50"><BookOpen className="h-4 w-4" /> {c.lessonCount} lessons</p>
+                    <div className="mt-auto pt-4">
+                      <a href={`/c/${c.creatorSlug}/${c.slug}/learn`} className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90">
+                        Continue learning
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
         {others.length > 0 && (
           <>
             <h2 className="mt-10 text-sm font-semibold uppercase tracking-wide text-ink/50">Available courses</h2>
@@ -118,6 +149,10 @@ export default async function AcademyPortalPage({ searchParams }: { searchParams
         )}
 
         <div className="mt-12">
+          <CreatorCta creatorSlug={creator?.slug ?? null} />
+        </div>
+
+        <div className="mt-6">
           <SupportCard studentName={student.name} studentEmail={student.email} />
         </div>
       </div>
