@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Users, Globe, CreditCard, TrendingUp, Loader2, RotateCcw, Trash2, Sparkles, GraduationCap } from "lucide-react";
+import { Users, Globe, CreditCard, TrendingUp, Loader2, RotateCcw, Trash2, Sparkles, GraduationCap, Store } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/utils";
 import { extendTrial, setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount, syncStoreCommission, deleteUserAccount, resetRevenue, updateTemplateSettings, setNovaEnabled } from "@/app/admin/actions";
+import { setAcademyOpen } from "@/app/admin/creators/actions";
 import { PLANS } from "@/lib/constants";
 import { CATALOG_TEMPLATES, CATALOG_CATEGORIES } from "@/lib/catalog";
 import type { DomainStatus } from "@/lib/database.types";
@@ -60,6 +61,7 @@ export function AdminDashboard({
   series = { signups: [], liveSites: [], subs: [], payments: [] },
   templateOverrides = {},
   novaEnabled = false,
+  academyOpen = true,
 }: {
   rows: AdminUserRow[];
   domains: AdminDomainRow[];
@@ -69,6 +71,7 @@ export function AdminDashboard({
   series?: AdminSeries;
   templateOverrides?: Record<string, TemplateOverride>;
   novaEnabled?: boolean;
+  academyOpen?: boolean;
 }) {
   const [busy, setBusy] = useState<string | null>(null);
   // Per-row grant duration (days). 0 = no expiry.
@@ -111,6 +114,9 @@ export function AdminDashboard({
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
             <Link href="/admin/transactions"><TrendingUp className="h-3.5 w-3.5" /> Transactions</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin/creators"><Store className="h-3.5 w-3.5" /> Creators</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/admin/academy"><GraduationCap className="h-3.5 w-3.5" /> Academy</Link>
@@ -162,6 +168,20 @@ export function AdminDashboard({
           >
             {busy === "nova" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
             Nova AI: {novaEnabled ? "On" : "Off"}
+          </Button>
+          <Button
+            variant={academyOpen ? "default" : "outline"}
+            size="sm"
+            disabled={busy === "academy"}
+            onClick={() => {
+              run("academy", async () => {
+                const res = await setAcademyOpen(!academyOpen);
+                if (typeof window !== "undefined" && !res.ok) window.alert(res.error || "Failed to update the Academy.");
+              });
+            }}
+          >
+            {busy === "academy" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <GraduationCap className="h-3.5 w-3.5" />}
+            Academy: {academyOpen ? "Open" : "Closed"}
           </Button>
           <Button
             variant="outline"

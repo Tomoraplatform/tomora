@@ -2,8 +2,9 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   nextCharge, RENEWAL_INTERVAL_MONTHS, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, GRACE_PERIOD_DAYS,
-  getPlan, NEW_DOMAIN_AMOUNT,
+  getPlan, NEW_DOMAIN_AMOUNT, VAT_PERCENT,
 } from "@/lib/constants";
+import { creditPlatform, recordTransaction } from "@/lib/creator/money";
 
 function addMonths(date: Date, months: number) {
   const d = new Date(date);
@@ -64,6 +65,21 @@ export async function applyPlatformPayment(userId: string, reference: string, pl
     const expires = addMonths(now, 12).toISOString();
     await admin.from("domains").update({ expires_at: expires }).eq("user_id", userId);
   }
+
+  // Subscription revenue is Tomora's: credit the platform wallet and record it
+  // in the unified ledger. The charge included 7.5% VAT, split back out here.
+  const charged = payload.first_payment_amount || 0;
+  const base = Math.round(charged / (1 + VAT_PERCENT / 100));
+  const vat = charged - base;
+  await Promise.all([
+    creditPlatform({ source: "subscription", amount: base, reference, description: `${plan?.name || "Plan"} subscription` }),
+    creditPlatform({ source: "vat", amount: vat, reference, isVat: true, description: "VAT on subscription" }),
+    recordTransaction({
+      kind: "subscription", reference, grossAmount: charged,
+      platformAmount: base, vatAmount: vat, userId,
+      description: `${plan?.name || "Plan"} subscription`,
+    }),
+  ]);
 
   return { already: false };
 }
@@ -149,4 +165,16 @@ export async function applyNewDomainRequest(
     status: "paid",
   });
   await admin.from("sites").update({ domain_purchased: true }).eq("id", siteId).eq("user_id", userId);
+
+  // Domain fee is Tomora revenue; the charge included 7.5% VAT.
+  const vat = Math.round((NEW_DOMAIN_AMOUNT * VAT_PERCENT) / 100);
+  await Promise.all([
+    creditPlatform({ source: "domain", amount: NEW_DOMAIN_AMOUNT, reference, description: `Domain: ${domain}` }),
+    creditPlatform({ source: "vat", amount: vat, reference, isVat: true, description: `VAT on domain ${domain}` }),
+    recordTransaction({
+      kind: "domain", reference, grossAmount: NEW_DOMAIN_AMOUNT + vat,
+      platformAmount: NEW_DOMAIN_AMOUNT, vatAmount: vat, userId, siteId,
+      description: `Domain: ${domain}`,
+    }),
+  ]);
 }

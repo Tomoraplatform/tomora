@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { recordTransaction } from "@/lib/creator/money";
 import { verifyTransaction } from "@/lib/paystack";
 import { sendEmail } from "@/lib/email";
 import { formatNaira } from "@/lib/utils";
@@ -39,6 +40,12 @@ export async function confirmDonationPaid(reference: string): Promise<{ updated:
         reference,
         description: `Donation${row.donor_name ? ` from ${row.donor_name}` : ""}`,
       });
+      // Donations are the owner's money; recorded for platform-wide stats only.
+      await recordTransaction({
+        kind: "donation", reference, grossAmount: row.amount,
+        payeeAmount: row.amount, userId: site.user_id, siteId: row.site_id,
+        description: `Donation${row.donor_name ? ` from ${row.donor_name}` : ""}`,
+      });
     }
   } catch { /* non-fatal, wallet table may not exist yet */ }
 
@@ -76,6 +83,12 @@ export async function confirmOrdersPaid(reference: string): Promise<{ updated: n
         amount: total,
         status: "completed",
         reference,
+        description: `Order from ${pending[0].buyer_name || "customer"}`,
+      });
+      // Store sales belong to the owner; recorded for platform-wide stats.
+      await recordTransaction({
+        kind: "store_order", reference, grossAmount: total,
+        payeeAmount: total, userId: site.user_id, siteId: pending[0].site_id,
         description: `Order from ${pending[0].buyer_name || "customer"}`,
       });
     }

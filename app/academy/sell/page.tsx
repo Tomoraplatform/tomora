@@ -2,11 +2,16 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Store, ExternalLink, Wallet, Users, TrendingUp } from "lucide-react";
 import { currentStudent } from "@/lib/academy/auth";
+import { academyOpen } from "@/lib/academy/settings";
+import { AcademyClosed } from "@/components/academy/academy-closed";
 import { getCreatorByStudent, listCreatorCourses, getCreatorCourse } from "@/lib/creator/db";
 import { AcademyHeader } from "@/components/academy/academy-header";
 import { AuthorProfileForm } from "@/components/creator/author-profile-form";
 import { CoursesManager } from "@/components/creator/courses-manager";
 import { PayoutForm } from "@/components/creator/payout-form";
+import { WalletPanel } from "@/components/creator/wallet-panel";
+import { creatorBalance } from "@/lib/creator/money";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { formatNaira } from "@/lib/utils";
 import { APP_DOMAIN } from "@/lib/constants";
 
@@ -14,6 +19,7 @@ export const metadata = { robots: { index: false, follow: false }, title: "Sell 
 export const dynamic = "force-dynamic";
 
 export default async function SellPage() {
+  if (!(await academyOpen())) return <AcademyClosed />;
   const student = await currentStudent();
   if (!student) redirect("/academy/join?next=/academy/sell");
 
@@ -49,6 +55,14 @@ export default async function SellPage() {
   const totalSales = summaries.reduce((s, c) => s + (c.purchases || 0), 0);
   const liveCount = summaries.filter((c) => c.is_published).length;
 
+  const wallet = await creatorBalance(creator.id);
+  const { data: walletTx } = await createAdminClient()
+    .from("creator_wallet_transactions")
+    .select("id, type, source, amount, status, description, created_at")
+    .eq("creator_id", creator.id)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
   return (
     <div className="min-h-screen bg-cream">
       <AcademyHeader student={student} />
@@ -72,8 +86,20 @@ export default async function SellPage() {
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           <Stat icon={Store} label="Courses" value={`${summaries.length}`} sub={`${liveCount} live`} />
           <Stat icon={Users} label="Total sales" value={`${totalSales}`} sub="across all courses" />
-          <Stat icon={TrendingUp} label="You keep" value="95%" sub="Tomora fee is 5%" />
+          <Stat icon={Wallet} label="Wallet" value={formatNaira(wallet.balance)} sub="available to withdraw" />
         </div>
+
+        <section className="mt-8">
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-ink/60">Earnings</h2>
+          <WalletPanel
+            balance={wallet.balance}
+            earned={wallet.earned}
+            withdrawn={wallet.withdrawn}
+            hasBank={!!creator.account_number}
+            transactions={(walletTx as any[]) || []}
+          />
+          <p className="mt-2 text-xs text-ink/50">You keep 95% of every sale. Tomora&apos;s fee is 5%. Students pay 7.5% VAT on top of your price.</p>
+        </section>
 
         <section className="mt-8">
           <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-ink/60">Your courses</h2>

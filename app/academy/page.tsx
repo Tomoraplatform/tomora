@@ -1,6 +1,8 @@
 import { GraduationCap, BookOpen, Star } from "lucide-react";
 import { listPublishedCourses, courseRatings, listAllReviews } from "@/lib/academy/db";
 import { currentStudent } from "@/lib/academy/auth";
+import { academyOpen } from "@/lib/academy/settings";
+import { AcademyClosed } from "@/components/academy/academy-closed";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AcademyHeader } from "@/components/academy/academy-header";
 import { PurchaseButton } from "@/components/academy/purchase-button";
@@ -23,6 +25,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AcademyPage() {
+  if (!(await academyOpen())) return <AcademyClosed />;
   const [courses, student, ratings, reviews] = await Promise.all([
     listPublishedCourses(), currentStudent(), courseRatings(), listAllReviews(),
   ]);

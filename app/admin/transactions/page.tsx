@@ -1,40 +1,70 @@
 import Link from "next/link";
-import { ArrowLeft, ShoppingBag, HeartHandshake, CreditCard, Globe, TrendingUp, Layers } from "lucide-react";
+import { ArrowLeft, ShoppingBag, HeartHandshake, CreditCard, Globe, TrendingUp, Layers, GraduationCap, Store, Sparkles } from "lucide-react";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getPlan } from "@/lib/constants";
+import { platformBalance } from "@/lib/creator/money";
+import { PlatformWallet } from "@/components/admin/platform-wallet";
 import { formatNaira } from "@/lib/utils";
 
 export const metadata = { robots: { index: false, follow: false }, title: "Transactions | Admin | Tomora" };
 export const dynamic = "force-dynamic";
 
-const sum = (rows: { amount?: number | null }[] | null | undefined) =>
-  (rows || []).reduce((s, r) => s + (r.amount || 0), 0);
+type Row = {
+  kind: string; gross_amount: number; platform_amount: number;
+  payee_amount: number; vat_amount: number; created_at: string; description: string | null;
+};
+
+const KIND_META: Record<string, { label: string; icon: React.ComponentType<{ className?: string }> }> = {
+  subscription: { label: "Subscriptions", icon: CreditCard },
+  domain: { label: "Domains", icon: Globe },
+  academy_course: { label: "Academy courses", icon: GraduationCap },
+  creator_course: { label: "Creator courses (5% fee)", icon: Store },
+  designs: { label: "AI Designs", icon: Sparkles },
+  store_order: { label: "Store sales", icon: ShoppingBag },
+  donation: { label: "Donations", icon: HeartHandshake },
+};
+
+/** Tomora's own revenue kinds (the rest is users' money we only process). */
+const TOMORA_KINDS = ["subscription", "domain", "academy_course", "creator_course", "designs"];
+
+function since(days: number) {
+  return Date.now() - days * 86400000;
+}
 
 export default async function AdminTransactionsPage() {
   await requireAdmin();
   const admin = createAdminClient();
 
-  const [{ data: orders }, { data: donations }, { data: subs }, { data: domainReqs }] = await Promise.all([
-    admin.from("orders").select("amount, status, created_at").eq("status", "paid"),
-    admin.from("donations").select("amount, status, created_at, project_name").eq("status", "paid"),
-    admin.from("subscriptions").select("plan, status, last_payment_date, created_at"),
-    admin.from("domain_requests").select("amount, status, domain, created_at"),
+  const [{ data: ledger }, wallet, { data: walletTx }] = await Promise.all([
+    admin.from("transactions").select("kind, gross_amount, platform_amount, payee_amount, vat_amount, created_at, description").order("created_at", { ascending: false }).limit(5000),
+    platformBalance(),
+    admin.from("platform_wallet_transactions").select("id, type, source, amount, status, description, created_at, is_vat").order("created_at", { ascending: false }).limit(12),
   ]);
 
-  // ---- Platform volume (money processed for users: stores + donations) ----
-  const storeTotal = sum(orders);
-  const donationTotal = sum(donations);
-  const platformVolume = storeTotal + donationTotal;
+  const rows = (ledger as Row[]) || [];
+  const inPeriod = (r: Row, days?: number) => !days || new Date(r.created_at).getTime() >= since(days);
 
-  // ---- Tomora revenue (subscriptions + domains) ----
-  const paidSubs = (subs as { plan: string | null; last_payment_date: string | null }[] | null || [])
-    .filter((s) => s.last_payment_date);
-  const subRevenue = paidSubs.reduce((s, r) => s + (getPlan(r.plan || "")?.price ?? 0), 0);
-  const paidDomains = (domainReqs as { amount: number | null; status: string }[] | null || [])
-    .filter((d) => d.status !== "cancelled");
-  const domainRevenue = sum(paidDomains);
-  const tomoraRevenue = subRevenue + domainRevenue;
+  // Tomora revenue by period.
+  const tomoraRevenue = (days?: number) => rows
+    .filter((r) => TOMORA_KINDS.includes(r.kind) && inPeriod(r, days))
+    .reduce((s, r) => s + (r.platform_amount || 0), 0);
+
+  // Everything processed on the platform (users' money included).
+  const totalVolume = (days?: number) => rows
+    .filter((r) => inPeriod(r, days))
+    .reduce((s, r) => s + (r.gross_amount || 0), 0);
+
+  const byKind = Object.keys(KIND_META).map((kind) => {
+    const list = rows.filter((r) => r.kind === kind);
+    return {
+      kind,
+      count: list.length,
+      gross: list.reduce((s, r) => s + (r.gross_amount || 0), 0),
+      tomora: list.reduce((s, r) => s + (r.platform_amount || 0), 0),
+    };
+  }).filter((k) => k.count > 0);
+
+  const vatCollected = rows.reduce((s, r) => s + (r.vat_amount || 0), 0);
 
   return (
     <div className="min-h-screen bg-cream">
@@ -43,74 +73,98 @@ export default async function AdminTransactionsPage() {
           <ArrowLeft className="h-4 w-4" /> Back to admin
         </Link>
         <h1 className="text-2xl font-bold text-ink">Transactions</h1>
-        <p className="mt-1 text-ink/60">Money moving through Tomora, split by what belongs to your users and what is Tomora&apos;s own revenue.</p>
+        <p className="mt-1 text-ink/60">Every payment that flows through Tomora, and what belongs to Tomora.</p>
 
-        {/* Section 1 — Platform transactions (users' money) */}
+        {/* Tomora wallet */}
         <section className="mt-8">
           <div className="mb-3 flex items-center gap-2">
-            <Layers className="h-5 w-5 text-ink/70" />
-            <h2 className="text-lg font-bold text-ink">Platform transactions</h2>
+            <TrendingUp className="h-5 w-5 text-ink/70" />
+            <h2 className="text-lg font-bold text-ink">Tomora wallet</h2>
           </div>
-          <p className="mb-4 text-sm text-ink/55">Payments processed on user sites. This money settles to the owners&apos; Tomora Wallets, not to Tomora.</p>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Stat icon={TrendingUp} label="Total volume" value={formatNaira(platformVolume)} sub={`${(orders?.length || 0) + (donations?.length || 0)} transactions`} accent />
-            <Stat icon={ShoppingBag} label="Store sales" value={formatNaira(storeTotal)} sub={`${orders?.length || 0} orders`} />
-            <Stat icon={HeartHandshake} label="Donations" value={formatNaira(donationTotal)} sub={`${donations?.length || 0} gifts`} />
+          <PlatformWallet
+            balance={wallet.balance}
+            earned={wallet.earned}
+            withdrawn={wallet.withdrawn}
+            vatHeld={wallet.vatHeld}
+            transactions={(walletTx as any[]) || []}
+          />
+        </section>
+
+        {/* Revenue by period */}
+        <section className="mt-10">
+          <h2 className="mb-3 text-lg font-bold text-ink">Tomora revenue</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Stat label="Overall" value={formatNaira(tomoraRevenue())} accent />
+            <Stat label="This year" value={formatNaira(tomoraRevenue(365))} />
+            <Stat label="This month" value={formatNaira(tomoraRevenue(30))} />
+            <Stat label="This week" value={formatNaira(tomoraRevenue(7))} />
           </div>
         </section>
 
-        {/* Section 2 — Tomora revenue */}
+        {/* Platform volume by period */}
         <section className="mt-10">
           <div className="mb-3 flex items-center gap-2">
-            <CreditCard className="h-5 w-5 text-ink/70" />
-            <h2 className="text-lg font-bold text-ink">Subscriptions &amp; domains</h2>
+            <Layers className="h-5 w-5 text-ink/70" />
+            <h2 className="text-lg font-bold text-ink">Total volume processed</h2>
           </div>
-          <p className="mb-4 text-sm text-ink/55">Tomora&apos;s own revenue from plan subscriptions and assisted domain purchases (figures shown before VAT).</p>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <Stat icon={TrendingUp} label="Tomora revenue" value={formatNaira(tomoraRevenue)} sub={`${paidSubs.length + paidDomains.length} payments`} accent />
-            <Stat icon={CreditCard} label="Subscriptions" value={formatNaira(subRevenue)} sub={`${paidSubs.length} paid`} />
-            <Stat icon={Globe} label="Domains" value={formatNaira(domainRevenue)} sub={`${paidDomains.length} domains`} />
+          <p className="mb-4 text-sm text-ink/55">Everything charged through Tomora, including money that settles to users.</p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Stat label="Overall" value={formatNaira(totalVolume())} accent />
+            <Stat label="This year" value={formatNaira(totalVolume(365))} />
+            <Stat label="This month" value={formatNaira(totalVolume(30))} />
+            <Stat label="This week" value={formatNaira(totalVolume(7))} />
           </div>
+        </section>
 
-          {paidDomains.length > 0 && (
-            <div className="mt-5 overflow-hidden rounded-xl border border-ink/10 bg-white">
-              <table className="w-full text-sm">
+        {/* Breakdown by product */}
+        <section className="mt-10">
+          <h2 className="mb-3 text-lg font-bold text-ink">By product</h2>
+          {byKind.length === 0 ? (
+            <p className="text-sm text-ink/50">No transactions recorded yet. New payments will appear here.</p>
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-ink/10 bg-white">
+              <table className="w-full min-w-[520px] text-sm">
                 <thead className="bg-ink/[0.03] text-left text-xs uppercase tracking-wide text-ink/50">
-                  <tr><th className="px-4 py-2.5 font-semibold">Domain</th><th className="px-4 py-2.5 font-semibold">Status</th><th className="px-4 py-2.5 text-right font-semibold">Amount</th></tr>
+                  <tr>
+                    <th className="px-4 py-2.5 font-semibold">Product</th>
+                    <th className="px-4 py-2.5 font-semibold">Count</th>
+                    <th className="px-4 py-2.5 text-right font-semibold">Volume</th>
+                    <th className="px-4 py-2.5 text-right font-semibold">Tomora</th>
+                  </tr>
                 </thead>
                 <tbody className="divide-y divide-ink/5">
-                  {(domainReqs as { amount: number | null; status: string; domain: string; created_at: string }[] || [])
-                    .filter((d) => d.status !== "cancelled")
-                    .slice(0, 12)
-                    .map((d, i) => (
-                      <tr key={i}>
-                        <td className="px-4 py-2.5 font-medium text-ink">{d.domain}</td>
-                        <td className="px-4 py-2.5 capitalize text-ink/60">{d.status}</td>
-                        <td className="px-4 py-2.5 text-right text-ink">{formatNaira(d.amount || 0)}</td>
+                  {byKind.map((k) => {
+                    const meta = KIND_META[k.kind];
+                    const Icon = meta.icon;
+                    return (
+                      <tr key={k.kind}>
+                        <td className="px-4 py-2.5">
+                          <span className="inline-flex items-center gap-2 font-medium text-ink">
+                            <Icon className="h-4 w-4 text-ink/45" /> {meta.label}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 text-ink/60">{k.count}</td>
+                        <td className="px-4 py-2.5 text-right text-ink">{formatNaira(k.gross)}</td>
+                        <td className="px-4 py-2.5 text-right font-semibold text-ink">{k.tomora > 0 ? formatNaira(k.tomora) : "—"}</td>
                       </tr>
-                    ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           )}
+          <p className="mt-3 text-xs text-ink/50">VAT collected to date: {formatNaira(vatCollected)}. VAT is held separately and excluded from the withdrawable balance.</p>
         </section>
       </div>
     </div>
   );
 }
 
-function Stat({ icon: Icon, label, value, sub, accent = false }: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string; value: string; sub?: string; accent?: boolean;
-}) {
+function Stat({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className={`rounded-xl border p-5 ${accent ? "border-ink/15 bg-ink text-cream" : "border-ink/10 bg-white text-ink"}`}>
-      <div className="flex items-center gap-2">
-        <Icon className={`h-4 w-4 ${accent ? "text-cream/70" : "text-ink/50"}`} />
-        <span className={`text-xs font-semibold uppercase tracking-wide ${accent ? "text-cream/70" : "text-ink/50"}`}>{label}</span>
-      </div>
+      <span className={`text-xs font-semibold uppercase tracking-wide ${accent ? "text-cream/70" : "text-ink/50"}`}>{label}</span>
       <p className="mt-2 text-2xl font-bold">{value}</p>
-      {sub && <p className={`mt-0.5 text-xs ${accent ? "text-cream/60" : "text-ink/50"}`}>{sub}</p>}
     </div>
   );
 }

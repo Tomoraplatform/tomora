@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { BookOpen, GraduationCap, CheckCircle2 } from "lucide-react";
 import { currentStudent } from "@/lib/academy/auth";
+import { academyOpen } from "@/lib/academy/settings";
+import { AcademyClosed } from "@/components/academy/academy-closed";
 import { listPublishedCourses } from "@/lib/academy/db";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { AcademyHeader } from "@/components/academy/academy-header";
@@ -14,6 +16,7 @@ export const metadata = { robots: { index: false, follow: false },  title: "My P
 export const dynamic = "force-dynamic";
 
 export default async function AcademyPortalPage({ searchParams }: { searchParams: { status?: string } }) {
+  if (!(await academyOpen())) return <AcademyClosed />;
   const student = await currentStudent();
   if (!student) redirect("/academy/join");
 

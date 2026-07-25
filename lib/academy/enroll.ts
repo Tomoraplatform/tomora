@@ -2,6 +2,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyTransaction } from "@/lib/paystack";
 import { redeemCoupon } from "@/lib/academy/coupons";
+import { creditPlatform, recordTransaction } from "@/lib/creator/money";
 
 /**
  * Settles a paid academy purchase (`acad_*` reference): verifies the charge
@@ -31,5 +32,17 @@ export async function settleAcademyPayment(reference: string): Promise<{ ok: boo
   if (error && error.code !== "23505") return { ok: false, error: error.message };
   // Count the coupon redemption only on a fresh enrollment (not a duplicate settle).
   if (couponId && !error) await redeemCoupon(couponId);
+
+  // Tomora's own course: the whole amount is platform revenue.
+  if (!error) {
+    const paid = Math.max(0, Math.round(Number(v.amountNaira) || 0));
+    await Promise.all([
+      creditPlatform({ source: "academy_course", amount: paid, reference, description: "Tomora Academy course" }),
+      recordTransaction({
+        kind: "academy_course", reference, grossAmount: paid, platformAmount: paid,
+        studentId, description: "Tomora Academy course",
+      }),
+    ]);
+  }
   return { ok: true, courseId };
 }

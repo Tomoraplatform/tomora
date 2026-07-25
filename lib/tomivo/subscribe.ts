@@ -2,6 +2,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyTransaction } from "@/lib/paystack";
 import { TOMIVO_PLANS, type TomivoPlanId } from "@/lib/tomivo/constants";
+import { creditPlatform, recordTransaction } from "@/lib/creator/money";
 
 /**
  * Settles a Tomora AI Designs subscription payment (`tomdsn_*` reference):
@@ -40,5 +41,15 @@ export async function settleTomivoPayment(reference: string): Promise<{ ok: bool
     ? await admin.from("tomivo_subscriptions").update(payload).eq("id", existing.id)
     : await admin.from("tomivo_subscriptions").insert(payload);
   if (error) return { ok: false, error: error.message };
+
+  // Designs subscription is Tomora revenue.
+  const paid = Math.max(0, Math.round(Number(v.amountNaira) || plan.ngn));
+  await Promise.all([
+    creditPlatform({ source: "designs", amount: paid, reference, description: `AI Designs ${plan.label}` }),
+    recordTransaction({
+      kind: "designs", reference, grossAmount: paid, platformAmount: paid,
+      studentId, description: `AI Designs ${plan.label}`,
+    }),
+  ]);
   return { ok: true };
 }

@@ -30,6 +30,8 @@ export default async function AdminPage() {
 
   const revenueResetAt = (settings as { revenue_reset_at: string | null } | null)?.revenue_reset_at ?? null;
   const novaOn = !!(settings as { nova_enabled?: boolean } | null)?.nova_enabled;
+  const academySetting = (settings as { academy_open?: boolean | null } | null)?.academy_open;
+  const academyIsOpen = academySetting === undefined || academySetting === null ? true : !!academySetting;
   const templateOverrides = await getTemplateOverrides();
 
   const planDiscounts: Record<string, { percent: number; active: boolean }> = {};
@@ -137,6 +139,7 @@ export default async function AdminPage() {
         templateOverrides={templateOverrides}
         revenueResetAt={revenueResetAt}
         novaEnabled={novaOn}
+        academyOpen={academyIsOpen}
         series={{ signups, liveSites: liveSiteDates, subs: subDates, payments }}
         stats={{
           totalUsers: profiles?.length ?? 0,
