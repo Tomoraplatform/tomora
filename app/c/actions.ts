@@ -26,7 +26,7 @@ export async function buyerSignIn(input: { email: string; password: string }): P
 
 /** Price preview for the checkout UI: coupon + VAT. */
 export async function previewCreatorPrice(courseId: string, couponCode?: string): Promise<{
-  ok: boolean; error?: string; price?: number; vat?: number; total?: number; discountLabel?: string;
+  ok: boolean; error?: string; price?: number; vat?: number; processingFee?: number; total?: number; discountLabel?: string;
 }> {
   const admin = createAdminClient();
   const { data: course } = await admin.from("creator_courses").select("price").eq("id", courseId).maybeSingle();
@@ -41,12 +41,13 @@ export async function previewCreatorPrice(courseId: string, couponCode?: string)
     discountLabel = res.discountLabel;
   }
   const split = splitSale(price);
-  return { ok: true, price: split.price, vat: split.vat, total: split.gross, discountLabel };
+  return { ok: true, price: split.price, vat: split.vat, processingFee: split.processingFee, total: split.gross, discountLabel };
 }
 
 /**
- * Starts checkout for a creator course. The student is charged price + 7.5%
- * VAT; the split happens on settlement.
+ * Starts checkout for a creator course. The student is charged
+ * price + 7.5% VAT + Paystack's processing fee; the split happens on
+ * settlement so the creator always nets price minus Tomora's 5%.
  */
 export async function buyCreatorCourse(courseId: string, couponCode?: string): Promise<{
   ok: boolean; error?: string; url?: string; enrolled?: boolean;
@@ -85,7 +86,7 @@ export async function buyCreatorCourse(courseId: string, couponCode?: string): P
   try {
     const data = await initTransaction({
       email: student.email,
-      amountNaira: split.gross,          // price + VAT
+      amountNaira: split.gross,          // price + VAT + processing fee
       reference,
       callbackUrl: `${origin}/api/creator/callback`,
       metadata: {

@@ -59,6 +59,8 @@ export async function settleCreatorPurchase(reference: string): Promise<{ ok: bo
       }),
       recordTransaction({
         kind: "creator_course", reference,
+        // Gross includes VAT and Paystack's fee, both paid by the student.
+        // Only platformAmount is Tomora revenue.
         grossAmount: split.gross, platformAmount: split.platformFee,
         payeeAmount: split.creatorShare, vatAmount: split.vat,
         studentId, creatorId: course.creator_id,

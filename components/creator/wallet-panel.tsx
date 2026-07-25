@@ -21,7 +21,7 @@ export function WalletPanel({ balance, earned, withdrawn, hasBank, transactions 
   const router = useRouter();
   const [amount, setAmount] = useState<number>(Math.min(balance, Math.max(MIN_WITHDRAWAL, balance)));
   const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState<"sent" | "queued" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   async function withdraw() {
@@ -29,7 +29,7 @@ export function WalletPanel({ balance, earned, withdrawn, hasBank, transactions 
     const res = await requestCreatorPayout(amount);
     setBusy(false);
     if (!res.ok) { setError(res.error || "Could not request the withdrawal."); return; }
-    setDone(true);
+    setDone(res.pending ? "queued" : "sent");
     router.refresh();
   }
 
@@ -59,8 +59,11 @@ export function WalletPanel({ balance, earned, withdrawn, hasBank, transactions 
             Add your payout bank account below before you can withdraw.
           </p>
         ) : done ? (
-          <p className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-            <Check className="h-4 w-4" /> Withdrawal requested. We&apos;ll send it to your bank shortly.
+          <p className={`inline-flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium ${done === "sent" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-800"}`}>
+            <Check className="h-4 w-4" />
+            {done === "sent"
+              ? "Sent to your bank. It usually lands within minutes."
+              : "Withdrawal received and queued. It will be paid out shortly."}
           </p>
         ) : (
           <div className="space-y-2">
@@ -75,7 +78,7 @@ export function WalletPanel({ balance, earned, withdrawn, hasBank, transactions 
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUpRight className="h-4 w-4" />} Withdraw
               </Button>
             </div>
-            <p className="text-xs text-ink/50">Minimum withdrawal is {formatNaira(MIN_WITHDRAWAL)}. Paid to your bank account on file.</p>
+            <p className="text-xs text-ink/50">Minimum withdrawal is {formatNaira(MIN_WITHDRAWAL)}. Paid automatically to your bank account on file.</p>
             {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
         )}

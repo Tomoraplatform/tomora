@@ -2,6 +2,10 @@ import { notFound } from "next/navigation";
 import { loadPublishedSite } from "@/lib/published";
 import { PublishedSiteView } from "@/components/published/published-site-view";
 import type { Metadata } from "next";
+import { getCreatorByDomain, listCreatorCourses } from "@/lib/creator/db";
+import { CreatorStorefront } from "@/components/creator/creator-storefront";
+import { academyOpen } from "@/lib/academy/settings";
+import { AcademyClosed } from "@/components/academy/academy-closed";
 
 // Always render fresh so edits appear immediately after publishing.
 export const dynamic = "force-dynamic";
@@ -41,11 +45,29 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function PublishedSitePage({ params }: Params) {
   const type = params.type === "custom" ? "custom" : "subdomain";
-  const data = await loadPublishedSite(type, decodeURIComponent(params.value));
+  const value = decodeURIComponent(params.value);
+  const data = await loadPublishedSite(type, value);
+
+  // A custom domain can also belong to a creator's sales pages.
+  if (!data && type === "custom") {
+    const creatorPage = await renderCreatorDomain(value);
+    if (creatorPage) return creatorPage;
+  }
 
   if (!data) notFound();
 
   return (
     <PublishedSiteView site={data.site} products={data.products} reviews={data.reviews} isLive={data.isLive} />
   );
+}
+
+/** Serves a creator's storefront when the host is their connected domain. */
+async function renderCreatorDomain(host: string) {
+  const creator = await getCreatorByDomain(host);
+  if (!creator) return null;
+  if (!(await academyOpen())) return <AcademyClosed />;
+  const all = await listCreatorCourses(creator.id);
+  const live = all.filter((c) => c.is_published && c.is_active);
+  // On a custom domain the pages live at the root, not under /c/<slug>.
+  return <CreatorStorefront creator={creator} courses={live} hrefFor={(slug) => `/${slug}`} />;
 }

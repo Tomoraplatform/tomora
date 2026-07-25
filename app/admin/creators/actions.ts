@@ -68,6 +68,41 @@ export async function rejectCreatorPayout(payoutId: string): Promise<R> {
   } catch (e: any) { return { ok: false, error: e.message }; }
 }
 
+/**
+ * Fulfils a creator's domain request.
+ *  - registered: bought at the registrar, DNS being pointed.
+ *  - connected: live, also attaches the domain to the creator so it routes.
+ *  - cancelled: refunded / abandoned.
+ */
+export async function updateCreatorDomainRequest(
+  id: string,
+  status: "registered" | "connected" | "cancelled"
+): Promise<R> {
+  try {
+    const admin = await guard();
+    const { data: req } = await admin.from("creator_domain_requests").select("*").eq("id", id).maybeSingle();
+    if (!req) return { ok: false, error: "Request not found." };
+
+    const { error } = await admin.from("creator_domain_requests").update({ status }).eq("id", id);
+    if (error) return { ok: false, error: error.message };
+
+    if (status === "connected") {
+      // Attach it so middleware serves the creator's pages on this host.
+      // (Add the domain in Vercel and point DNS first.)
+      await admin.from("academy_creators")
+        .update({ custom_domain: req.domain, domain_status: "active" })
+        .eq("id", req.creator_id);
+    }
+    if (status === "cancelled") {
+      await admin.from("academy_creators")
+        .update({ custom_domain: null, domain_status: "none" })
+        .eq("id", req.creator_id).eq("custom_domain", req.domain);
+    }
+    revalidatePath("/admin/creators");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
 /** Records a withdrawal from Tomora's own wallet. */
 export async function withdrawPlatform(amount: number, note?: string): Promise<R> {
   try {

@@ -5,15 +5,17 @@ import { currentStudent } from "@/lib/academy/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCreatorByStudent } from "@/lib/creator/db";
 import { creatorBalance, MIN_WITHDRAWAL } from "@/lib/creator/money";
+import { createTransferRecipient, initiateTransfer } from "@/lib/paystack";
 
 type R = { ok: boolean; error?: string };
 
 /**
- * Requests a withdrawal from the creator's wallet. Records a pending
- * withdrawal (which holds the funds) plus a payout request an admin marks
- * paid after sending the transfer.
+ * Withdraws from the creator's wallet straight to their bank via Paystack
+ * Transfers. The wallet row is written first (holding the funds), then the
+ * transfer is initiated. If Paystack can't process it right now the row stays
+ * pending and appears in the admin queue, so money is never lost either way.
  */
-export async function requestCreatorPayout(amount: number): Promise<R> {
+export async function requestCreatorPayout(amount: number): Promise<{ ok: boolean; error?: string; pending?: boolean }> {
   const student = await currentStudent();
   if (!student) return { ok: false, error: "Please sign in first." };
   const creator = await getCreatorByStudent(student.id);
@@ -30,6 +32,9 @@ export async function requestCreatorPayout(amount: number): Promise<R> {
 
   const admin = createAdminClient();
   const reference = `cpo_${creator.id.slice(0, 8)}_${Date.now()}`;
+
+  // Reserve the funds before calling Paystack. The unique (type, reference)
+  // index makes a retry harmless.
   const { error: txErr } = await admin.from("creator_wallet_transactions").insert({
     creator_id: creator.id, type: "withdrawal", source: "payout",
     amount: value, status: "pending", reference,
@@ -37,13 +42,39 @@ export async function requestCreatorPayout(amount: number): Promise<R> {
   });
   if (txErr) return { ok: false, error: txErr.message };
 
-  const { error } = await admin.from("creator_payouts").insert({
-    creator_id: creator.id, amount: value, status: "pending", note: reference,
+  let status = "pending";
+  let note = reference;
+  try {
+    const recipient = await createTransferRecipient({
+      name: creator.account_name || creator.author_name,
+      accountNumber: creator.account_number,
+      bankCode: creator.bank_code,
+    });
+    const transfer = await initiateTransfer({
+      amountNaira: value, recipient, reference,
+      reason: `Tomora course earnings (${creator.author_name})`,
+    });
+    status = transfer.status === "success" ? "completed" : "pending";
+    if (transfer.transferCode) note = `${reference} · ${transfer.transferCode}`;
+  } catch (e: any) {
+    // Transfers unavailable (e.g. OTP required or insufficient Paystack
+    // balance): leave it pending for an admin to complete.
+    note = `${reference} · ${String(e?.message || "transfer failed").slice(0, 120)}`;
+  }
+
+  if (status === "completed") {
+    await admin.from("creator_wallet_transactions").update({ status: "completed" }).eq("reference", reference);
+  }
+
+  // Always log the request so admins can see and finish anything pending.
+  await admin.from("creator_payouts").insert({
+    creator_id: creator.id, amount: value,
+    status: status === "completed" ? "paid" : "pending",
+    note,
   });
-  if (error) return { ok: false, error: error.message };
 
   revalidatePath("/academy/sell");
-  return { ok: true };
+  return { ok: true, pending: status !== "completed" };
 }
 
 /* ---------------- creator coupons ---------------- */

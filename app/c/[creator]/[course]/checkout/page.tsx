@@ -48,6 +48,7 @@ export default async function CheckoutPage({ params, searchParams }: Params) {
           bannerUrl={course.banner_url}
           price={split.price}
           vat={split.vat}
+          processingFee={split.processingFee}
           total={split.gross}
           signedIn={!!student}
           studentEmail={student?.email || ""}

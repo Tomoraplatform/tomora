@@ -10,6 +10,7 @@ import { AuthorProfileForm } from "@/components/creator/author-profile-form";
 import { CoursesManager } from "@/components/creator/courses-manager";
 import { PayoutForm } from "@/components/creator/payout-form";
 import { WalletPanel } from "@/components/creator/wallet-panel";
+import { DomainPanel } from "@/components/creator/domain-panel";
 import { creatorBalance } from "@/lib/creator/money";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatNaira } from "@/lib/utils";
@@ -56,6 +57,11 @@ export default async function SellPage() {
   const liveCount = summaries.filter((c) => c.is_published).length;
 
   const wallet = await creatorBalance(creator.id);
+  const { data: domainReqs } = await createAdminClient()
+    .from("creator_domain_requests")
+    .select("id, domain, status, created_at")
+    .eq("creator_id", creator.id)
+    .order("created_at", { ascending: false });
   const { data: walletTx } = await createAdminClient()
     .from("creator_wallet_transactions")
     .select("id, type, source, amount, status, description, created_at")
@@ -98,7 +104,7 @@ export default async function SellPage() {
             hasBank={!!creator.account_number}
             transactions={(walletTx as any[]) || []}
           />
-          <p className="mt-2 text-xs text-ink/50">You keep 95% of every sale. Tomora&apos;s fee is 5%. Students pay 7.5% VAT on top of your price.</p>
+          <p className="mt-2 text-xs text-ink/50">You keep 95% of every sale. Tomora&apos;s fee is 5%. Students pay VAT and the card processing fee on top of your price, so your share is never reduced.</p>
         </section>
 
         <section className="mt-8">
@@ -115,6 +121,16 @@ export default async function SellPage() {
             authorPhotoUrl: creator.author_photo_url || "",
             showAuthor: creator.show_author,
           }} />
+        </section>
+
+        <section className="mt-10">
+          <h2 className="mb-3 text-sm font-bold uppercase tracking-wide text-ink/60">Your domain</h2>
+          <DomainPanel
+            creatorSlug={creator.slug}
+            customDomain={creator.custom_domain ?? null}
+            requests={((domainReqs as any[]) || []).map((r) => ({ id: r.id, domain: r.domain, status: r.status, createdAt: r.created_at }))}
+            appDomain={APP_DOMAIN}
+          />
         </section>
 
         <section className="mt-10">

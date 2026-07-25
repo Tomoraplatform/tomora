@@ -5,6 +5,7 @@ import { confirmDonationPaid, confirmOrdersPaid } from "@/lib/confirm-payments";
 import { settleAcademyPayment } from "@/lib/academy/enroll";
 import { settleTomivoPayment } from "@/lib/tomivo/subscribe";
 import { settleCreatorPurchase } from "@/lib/creator/purchase";
+import { settleCreatorDomain } from "@/lib/creator/domain";
 
 /**
  * Paystack webhook. Verifies the x-paystack-signature (HMAC SHA512 of the raw
@@ -56,6 +57,9 @@ export async function POST(request: NextRequest) {
         } else if (ref.startsWith("crs_")) {
           // Creator course sale: enroll + split the money to both wallets.
           await settleCreatorPurchase(ref);
+        } else if (ref.startsWith("crdom_")) {
+          // Creator custom domain: record the request for admin registration.
+          await settleCreatorDomain(ref);
         } else if (purpose === "domain" && userId && data?.metadata?.siteId) {
           await applyDomainPurchase(userId, data.metadata.siteId);
         } else if (purpose === "platform" && userId && ref) {

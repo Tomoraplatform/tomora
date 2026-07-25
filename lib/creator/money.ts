@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { VAT_PERCENT } from "@/lib/constants";
+import { VAT_PERCENT, PAYSTACK_FEE_PERCENT } from "@/lib/constants";
 
 /** Tomora's cut of every creator course sale. */
 export const CREATOR_PLATFORM_FEE_PERCENT = 5;
@@ -12,24 +12,38 @@ export interface SaleSplit {
   price: number;
   /** VAT added on top, charged to the student. */
   vat: number;
-  /** What the student actually pays. */
+  /** Paystack's processing fee, also charged to the student. */
+  processingFee: number;
+  /** What the student actually pays (price + VAT + processing fee). */
   gross: number;
-  /** Tomora's 5% platform fee (from the price, not the VAT). */
+  /** Tomora's 5% platform fee (from the price, not the VAT or the fee). */
   platformFee: number;
   /** What the creator receives into their wallet. */
   creatorShare: number;
 }
 
 /**
- * Splits a creator course sale.
- * Example, ₦10,000 course: student pays ₦10,750 (price + 7.5% VAT),
- * Tomora keeps ₦500 (5%), creator receives ₦9,500.
+ * Splits a creator course sale. The student covers VAT and Paystack's
+ * processing fee, so the creator always nets price minus Tomora's 5%.
+ *
+ * Example, ₦10,000 course: student pays ₦11,019
+ * (₦10,000 + ₦750 VAT + ₦269 processing), Tomora keeps ₦500,
+ * creator receives ₦9,500.
  */
 export function splitSale(price: number): SaleSplit {
   const p = Math.max(0, Math.round(price));
   const vat = Math.round((p * VAT_PERCENT) / 100);
   const platformFee = Math.round((p * CREATOR_PLATFORM_FEE_PERCENT) / 100);
-  return { price: p, vat, gross: p + vat, platformFee, creatorShare: p - platformFee };
+  // Paystack charges its percentage on the full amount it collects, so the fee
+  // is grossed up: charge = (price + vat) / (1 - rate).
+  const beforeFee = p + vat;
+  const rate = PAYSTACK_FEE_PERCENT / 100;
+  const processingFee = Math.max(0, Math.round(beforeFee / (1 - rate)) - beforeFee);
+  return {
+    price: p, vat, processingFee,
+    gross: beforeFee + processingFee,
+    platformFee, creatorShare: p - platformFee,
+  };
 }
 
 /** Creator wallet balance: completed income minus withdrawals. */

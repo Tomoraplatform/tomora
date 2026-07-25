@@ -15,11 +15,11 @@ import { buyerSignUp, buyerSignIn, buyCreatorCourse, previewCreatorPrice } from 
  */
 export function CreatorCheckout({
   courseId, courseTitle, creatorSlug, courseSlug, bannerUrl,
-  price, vat, total, signedIn, studentEmail, enrolled,
+  price, vat, processingFee, total, signedIn, studentEmail, enrolled,
 }: {
   courseId: string; courseTitle: string; creatorSlug: string; courseSlug: string;
   bannerUrl: string | null;
-  price: number; vat: number; total: number;
+  price: number; vat: number; processingFee: number; total: number;
   signedIn: boolean; studentEmail: string; enrolled: boolean;
 }) {
   const router = useRouter();
@@ -27,11 +27,11 @@ export function CreatorCheckout({
   const [form, setForm] = useState({ name: "", email: studentEmail, password: "" });
   const [coupon, setCoupon] = useState("");
   const [showCoupon, setShowCoupon] = useState(false);
-  const [applied, setApplied] = useState<{ price: number; vat: number; total: number; label?: string } | null>(null);
+  const [applied, setApplied] = useState<{ price: number; vat: number; processingFee: number; total: number; label?: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const shown = applied || { price, vat, total, label: undefined as string | undefined };
+  const shown = applied || { price, vat, processingFee, total, label: undefined as string | undefined };
 
   async function applyCoupon() {
     if (!coupon.trim()) return;
@@ -39,7 +39,7 @@ export function CreatorCheckout({
     const res = await previewCreatorPrice(courseId, coupon);
     setBusy(false);
     if (!res.ok) { setApplied(null); setError(res.error || "Invalid coupon."); return; }
-    setApplied({ price: res.price!, vat: res.vat!, total: res.total!, label: res.discountLabel });
+    setApplied({ price: res.price!, vat: res.vat!, processingFee: res.processingFee!, total: res.total!, label: res.discountLabel });
   }
 
   async function pay() {
@@ -96,6 +96,7 @@ export function CreatorCheckout({
         <div className="space-y-1.5 rounded-lg bg-ink/[0.03] p-4 text-sm">
           <div className="flex justify-between"><span className="text-ink/60">Course</span><span className="font-medium text-ink">{formatNaira(shown.price)}</span></div>
           <div className="flex justify-between"><span className="text-ink/60">VAT (7.5%)</span><span className="font-medium text-ink">{formatNaira(shown.vat)}</span></div>
+          <div className="flex justify-between"><span className="text-ink/60">Processing fee</span><span className="font-medium text-ink">{formatNaira(shown.processingFee)}</span></div>
           <div className="flex justify-between border-t border-ink/10 pt-1.5 text-base"><span className="font-semibold text-ink">Total</span><span className="font-bold text-ink">{formatNaira(shown.total)}</span></div>
           {shown.label && <p className="pt-1 text-xs font-medium text-emerald-600">{shown.label} applied</p>}
         </div>

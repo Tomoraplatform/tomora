@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Star, ExternalLink, Check, X, ImageIcon } from "lucide-react";
+import { Loader2, Star, ExternalLink, Check, X, ImageIcon, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatNaira } from "@/lib/utils";
-import { setCourseFeatured, markCreatorPayoutPaid, rejectCreatorPayout } from "@/app/admin/creators/actions";
+import { setCourseFeatured, markCreatorPayoutPaid, rejectCreatorPayout, updateCreatorDomainRequest } from "@/app/admin/creators/actions";
 
 export interface AdminCreatorRow {
   courseId: string; title: string; slug: string; creatorSlug: string; authorName: string;
@@ -20,7 +20,11 @@ export interface AdminPayoutRow {
   id: string; authorName: string; bank: string; amount: number; status: string; createdAt: string;
 }
 
-export function CreatorsManager({ rows, payouts }: { rows: AdminCreatorRow[]; payouts: AdminPayoutRow[] }) {
+export interface AdminDomainReq {
+  id: string; domain: string; status: string; amount: number; authorName: string; createdAt: string;
+}
+
+export function CreatorsManager({ rows, payouts, domains = [] }: { rows: AdminCreatorRow[]; payouts: AdminPayoutRow[]; domains?: AdminDomainReq[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -55,6 +59,41 @@ export function CreatorsManager({ rows, payouts }: { rows: AdminCreatorRow[]; pa
                   <Button size="sm" variant="outline" className="text-destructive" disabled={busy === `rej-${p.id}`}
                     onClick={() => { if (window.confirm(`Reject ${p.authorName}'s withdrawal of ${formatNaira(p.amount)}?`)) run(`rej-${p.id}`, () => rejectCreatorPayout(p.id)); }}>
                     <X className="h-3.5 w-3.5" /> Reject
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* creator domain requests */}
+      {domains.filter((d) => d.status !== "connected" && d.status !== "cancelled").length > 0 && (
+        <Card>
+          <CardContent className="space-y-3 pt-6">
+            <h2 className="text-sm font-bold uppercase tracking-wide text-ink/60">Creator domains to set up</h2>
+            <p className="text-xs text-ink/55">Register the domain, add it in Vercel and point DNS, then mark it connected so their pages start serving on it.</p>
+            <div className="divide-y divide-ink/5 rounded-lg border border-ink/10 bg-white">
+              {domains.filter((d) => d.status !== "connected" && d.status !== "cancelled").map((d) => (
+                <div key={d.id} className="flex flex-wrap items-center gap-3 px-3 py-3">
+                  <Globe className="h-4 w-4 shrink-0 text-ink/40" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-ink">{d.domain}</p>
+                    <p className="text-xs text-ink/50">{d.authorName} · {formatNaira(d.amount)} · {d.status}</p>
+                  </div>
+                  {d.status === "paid" && (
+                    <Button size="sm" variant="outline" disabled={busy === `reg-${d.id}`}
+                      onClick={() => run(`reg-${d.id}`, () => updateCreatorDomainRequest(d.id, "registered"))}>
+                      {busy === `reg-${d.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Mark registered
+                    </Button>
+                  )}
+                  <Button size="sm" disabled={busy === `con-${d.id}`}
+                    onClick={() => run(`con-${d.id}`, () => updateCreatorDomainRequest(d.id, "connected"))}>
+                    {busy === `con-${d.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />} Connected
+                  </Button>
+                  <Button size="sm" variant="outline" className="text-destructive" disabled={busy === `can-${d.id}`}
+                    onClick={() => { if (window.confirm(`Cancel the request for ${d.domain}?`)) run(`can-${d.id}`, () => updateCreatorDomainRequest(d.id, "cancelled")); }}>
+                    <X className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               ))}

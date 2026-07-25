@@ -17,6 +17,8 @@ export interface AcademyCreator {
   bank_code: string | null;
   account_number: string | null;
   account_name: string | null;
+  custom_domain?: string | null;
+  domain_status?: string;
   created_at: string;
 }
 
@@ -65,6 +67,16 @@ export type CreatorCourseWithContent = CreatorCourse & {
 export async function getCreatorByStudent(studentId: string): Promise<AcademyCreator | null> {
   const admin = createAdminClient();
   const { data } = await admin.from("academy_creators").select("*").eq("student_id", studentId).maybeSingle();
+  return (data as AcademyCreator) || null;
+}
+
+/** Creator whose connected custom domain matches this host. */
+export async function getCreatorByDomain(host: string): Promise<AcademyCreator | null> {
+  const clean = (host || "").toLowerCase().replace(/^www\./, "");
+  if (!clean) return null;
+  const admin = createAdminClient();
+  const { data } = await admin.from("academy_creators").select("*")
+    .eq("custom_domain", clean).eq("domain_status", "active").maybeSingle();
   return (data as AcademyCreator) || null;
 }
 

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { CreatorsManager, type AdminCreatorRow, type AdminPayoutRow } from "@/components/admin/creators-manager";
+import { CreatorsManager, type AdminCreatorRow, type AdminPayoutRow, type AdminDomainReq } from "@/components/admin/creators-manager";
 
 export const metadata = { robots: { index: false, follow: false }, title: "Creators | Admin | Tomora" };
 export const dynamic = "force-dynamic";
@@ -11,12 +11,13 @@ export default async function AdminCreatorsPage() {
   await requireAdmin();
   const admin = createAdminClient();
 
-  const [{ data: creators }, { data: courses }, { data: lessons }, { data: payouts }, { data: students }] = await Promise.all([
+  const [{ data: creators }, { data: courses }, { data: lessons }, { data: payouts }, { data: students }, { data: domainReqs }] = await Promise.all([
     admin.from("academy_creators").select("*").order("created_at", { ascending: false }),
     admin.from("creator_courses").select("*").order("created_at", { ascending: false }),
     admin.from("creator_lessons").select("course_id"),
     admin.from("creator_payouts").select("*").order("created_at", { ascending: false }),
     admin.from("academy_students").select("id, name, email"),
+    admin.from("creator_domain_requests").select("*").order("created_at", { ascending: false }),
   ]);
 
   const lessonCounts: Record<string, number> = {};
@@ -58,6 +59,15 @@ export default async function AdminCreatorsPage() {
     };
   });
 
+  const domainRows: AdminDomainReq[] = ((domainReqs as any[]) || []).map((r) => {
+    const creator = creatorById.get(r.creator_id);
+    return {
+      id: r.id, domain: r.domain, status: r.status, amount: r.amount,
+      authorName: creator?.author_name || "Unknown",
+      createdAt: r.created_at,
+    };
+  });
+
   return (
     <div className="min-h-screen bg-cream">
       <div className="mx-auto max-w-5xl px-5 py-8">
@@ -69,7 +79,7 @@ export default async function AdminCreatorsPage() {
           Courses uploaded by academy users. Approve a course to also show it on the main Tomora Academy catalog. {rows.length} course{rows.length === 1 ? "" : "s"} from {creators?.length || 0} creator{(creators?.length || 0) === 1 ? "" : "s"}.
         </p>
         <div className="mt-6">
-          <CreatorsManager rows={rows} payouts={payoutRows} />
+          <CreatorsManager rows={rows} payouts={payoutRows} domains={domainRows} />
         </div>
       </div>
     </div>
