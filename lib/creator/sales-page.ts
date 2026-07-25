@@ -55,6 +55,10 @@ const uid = (p: string) => `${p}-${Math.random().toString(36).slice(2, 8)}`;
 /** The starter template (mirrors the reference design). */
 export function defaultSalesPage(course: { title: string; description: string }): SalesPage {
   return {
+    // Template defaults: deep navy sections with a bright accent for CTAs.
+    // Creators can change both in the page editor.
+    color: "#242B3D",
+    color2: "#F3E969",
     sections: [
       {
         id: uid("hero"), type: "hero",
@@ -84,6 +88,17 @@ export function defaultSalesPage(course: { title: string; description: string })
         heading: "References of what you will be capable to do",
         subheading: "After this course",
         images: [],
+        cta: { label: "Get Access" },
+      },
+      {
+        id: uid("feat"), type: "feature",
+        subheading: "And more",
+        heading: "Real projects and a community to learn with",
+        body: "You follow along with practical work, not theory. When you get stuck, there are people to ask.",
+        items: [
+          { id: uid("f"), title: "Live project", body: "Build a real project you can show off at the end." },
+          { id: uid("f"), body: "Ask questions and learn alongside other students.", title: "Community support" },
+        ],
         cta: { label: "Get Access" },
       },
       {
