@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { loadPublishedSite } from "@/lib/published";
 import { PublishedSiteView } from "@/components/published/published-site-view";
+import { CustomHtmlSite } from "@/components/published/custom-html-site";
 import type { Metadata } from "next";
 import { getCreatorByDomain, listCreatorCourses } from "@/lib/creator/db";
 import { CreatorStorefront } from "@/components/creator/creator-storefront";
@@ -56,6 +57,13 @@ export default async function PublishedSitePage({ params }: Params) {
 
   if (!data) notFound();
 
+  // Sites that uploaded their own HTML render that file exactly, not a template.
+  const customUrl = (data.site as { custom_html_url?: string | null }).custom_html_url;
+  if (customUrl) {
+    const html = await loadCustomHtml(customUrl);
+    if (html) return <CustomHtmlSite html={html} />;
+  }
+
   return (
     <PublishedSiteView site={data.site} products={data.products} reviews={data.reviews} isLive={data.isLive} />
   );
@@ -70,4 +78,15 @@ async function renderCreatorDomain(host: string) {
   const live = all.filter((c) => c.is_published && c.is_active);
   // On a custom domain the pages live at the root, not under /c/<slug>.
   return <CreatorStorefront creator={creator} courses={live} hrefFor={(slug) => `/${slug}`} />;
+}
+
+/** Fetches an uploaded site HTML file, cached at the edge so renders stay fast. */
+async function loadCustomHtml(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, { next: { revalidate: 60 } });
+    if (!res.ok) return null;
+    return await res.text();
+  } catch {
+    return null;
+  }
 }
