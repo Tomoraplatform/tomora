@@ -14,6 +14,12 @@
       "port": 4173
     },
     {
+      "name": "artommy-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4180", "-d", "/private/tmp/claude-501/-Users-tommy-Tomora/db903da8-c9bb-45e0-b71b-bad6a11f7d63/scratchpad/artommy"],
+      "port": 4180
+    },
+    {
       "name": "toran-web",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--dir", "/Users/tommy/toran/apps/web", "dev"],

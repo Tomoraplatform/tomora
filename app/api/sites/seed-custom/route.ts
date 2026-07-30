@@ -40,7 +40,8 @@ export async function POST(request: NextRequest) {
   }
 
   if (action === "sign") {
-    const path = `${subdomain}/index.html`;
+    const rel = String(body?.path || "index.html").replace(/^\/+/, "");
+    const path = `${subdomain}/${rel}`;
     const { data, error } = await admin.storage.from("site-html").createSignedUploadUrl(path, { upsert: true });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const { data: pub } = admin.storage.from("site-html").getPublicUrl(path);
