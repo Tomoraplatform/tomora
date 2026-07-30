@@ -9,10 +9,15 @@ import { CustomHtmlScripts } from "@/components/published/custom-html-scripts";
  * innerHTML never executes its scripts.
  */
 export function CustomHtmlSite({ html }: { html: string }) {
-  const { styles, bodyHtml, inlineScripts, externalScripts, bodyAttrs } = splitDocument(html);
+  const { styles, stylesheets, bodyHtml, inlineScripts, externalScripts, bodyAttrs } = splitDocument(html);
 
   return (
     <>
+      {/* Linked stylesheets (web fonts and the like). Browsers apply these
+          wherever they appear, so rendering them here is enough. */}
+      {stylesheets.map((href) => (
+        <link key={href} rel="stylesheet" href={href} />
+      ))}
       {/* Styles from the original <head>, plus anything found inline. */}
       {styles.map((css, i) => (
         <style key={i} dangerouslySetInnerHTML={{ __html: css }} />
@@ -30,10 +35,15 @@ export function CustomHtmlSite({ html }: { html: string }) {
 
 export interface SplitDocument {
   styles: string[];
+  stylesheets: string[];
   bodyHtml: string;
   inlineScripts: string[];
   externalScripts: string[];
   bodyAttrs: { class?: string; style?: string };
+  /** The page's own <title>, so it isn't replaced by the site name. */
+  title: string | null;
+  /** The page's own favicon href. */
+  icon: string | null;
 }
 
 /**
@@ -60,6 +70,22 @@ export function splitDocument(html: string): SplitDocument {
     else if (m[2].trim()) inlineScripts.push(m[2]);
   }
 
+  // <link> tags from the head: stylesheets get re-rendered, the icon and the
+  // title are handed to generateMetadata so the page keeps its own identity.
+  const stylesheets: string[] = [];
+  let icon: string | null = null;
+  const linkRe = /<link\b([^>]*)>/gi;
+  while ((m = linkRe.exec(html))) {
+    const attrs = m[1] || "";
+    const rel = /\brel\s*=\s*["']([^"']+)["']/i.exec(attrs)?.[1]?.toLowerCase() || "";
+    const href = /\bhref\s*=\s*["']([^"']+)["']/i.exec(attrs)?.[1];
+    if (!href) continue;
+    if (rel === "stylesheet") stylesheets.push(href);
+    else if (rel.includes("icon") && !icon) icon = href;
+  }
+
+  const title = /<title\b[^>]*>([\s\S]*?)<\/title>/i.exec(html)?.[1]?.trim() || null;
+
   // Body content with styles and scripts stripped out (we re-add them).
   const bodyMatch = /<body\b([^>]*)>([\s\S]*?)<\/body>/i.exec(html);
   const rawBody = bodyMatch ? bodyMatch[2] : html;
@@ -74,7 +100,7 @@ export function splitDocument(html: string): SplitDocument {
     style: /\bstyle\s*=\s*["']([^"']*)["']/i.exec(bodyAttrRaw)?.[1],
   };
 
-  return { styles, bodyHtml, inlineScripts, externalScripts, bodyAttrs };
+  return { styles, stylesheets, bodyHtml, inlineScripts, externalScripts, bodyAttrs, title, icon };
 }
 
 /** Turns a style attribute string into a React style object. */

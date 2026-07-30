@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { loadPublishedSite } from "@/lib/published";
 import { PublishedSiteView } from "@/components/published/published-site-view";
-import { CustomHtmlSite } from "@/components/published/custom-html-site";
+import { CustomHtmlSite, splitDocument } from "@/components/published/custom-html-site";
 import type { Metadata } from "next";
 import { getCreatorByDomain, listCreatorCourses } from "@/lib/creator/db";
 import { CreatorStorefront } from "@/components/creator/creator-storefront";
@@ -20,6 +20,23 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const type = params.type === "custom" ? "custom" : "subdomain";
   const data = await loadPublishedSite(type, decodeURIComponent(params.value));
   if (!data) return { title: "Site not found" };
+
+  // A site hosting its own HTML keeps that file's title and favicon exactly,
+  // with no "| Tomora" suffix from the root layout.
+  const customUrl = (data.site as { custom_html_url?: string | null }).custom_html_url;
+  if (customUrl) {
+    const html = await loadCustomHtml(customUrl);
+    if (html) {
+      const { title, icon } = splitDocument(html);
+      const description = data.site.site_data?.tagline || undefined;
+      return {
+        ...(title ? { title: { absolute: title } } : {}),
+        ...(description ? { description } : {}),
+        ...(icon ? { icons: { icon, shortcut: icon, apple: icon } } : {}),
+      };
+    }
+  }
+
   const name = data.site.site_data?.businessName || "Website";
   const description = data.site.site_data?.tagline || `${name}, built with Tomora`;
   const ogImage = data.site.site_data?.heroImage || data.site.site_data?.logoUrl;
