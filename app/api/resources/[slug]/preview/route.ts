@@ -43,7 +43,10 @@ export async function GET(request: NextRequest, { params }: { params: { slug: st
   return new NextResponse(entitled ? html : stripComments(html), {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
-      "X-Frame-Options": "SAMEORIGIN",
+      // Deliberately no X-Frame-Options here: next.config already sets
+      // SAMEORIGIN globally, and a second, separate XFO header makes browsers
+      // refuse to render the frame at all. frame-ancestors covers the same
+      // ground and overrides XFO where both are present.
       "Content-Security-Policy": "frame-ancestors 'self'",
       "Cache-Control": "private, no-store",
       "X-Robots-Tag": "noindex",
