@@ -25,6 +25,18 @@
       "port": 4173
     },
     {
+      "name": "jesusmustbeseen",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "4188",
+        "-d",
+        "/Users/tommy/Downloads/jesusmustbeseen"
+      ],
+      "port": 4188
+    },
+    {
       "name": "toran-web",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [

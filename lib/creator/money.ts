@@ -107,7 +107,7 @@ export async function creditCreator(input: {
 
 /** Writes one row into the unified ledger. Idempotent per (kind, reference). */
 export async function recordTransaction(input: {
-  kind: "subscription" | "domain" | "creator_course" | "academy_course" | "designs" | "store_order" | "donation";
+  kind: "subscription" | "domain" | "creator_course" | "academy_course" | "designs" | "store_order" | "donation" | "resource";
   reference?: string;
   grossAmount: number;
   platformAmount?: number;

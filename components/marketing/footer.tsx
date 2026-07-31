@@ -19,9 +19,10 @@ export function MarketingFooter() {
             Product
           </h4>
           <ul className="space-y-3 text-sm text-cream/80">
-            <li><a href="#features" className="hover:text-cream">Features</a></li>
-            <li><a href="#templates" className="hover:text-cream">Templates</a></li>
-            <li><a href="#pricing" className="hover:text-cream">Pricing</a></li>
+            <li><a href="/#features" className="hover:text-cream">Features</a></li>
+            <li><a href="/#templates" className="hover:text-cream">Templates</a></li>
+            <li><a href="/#pricing" className="hover:text-cream">Pricing</a></li>
+            <li><Link href="/resources" className="hover:text-cream">Resources</Link></li>
           </ul>
         </div>
 
@@ -31,7 +32,7 @@ export function MarketingFooter() {
           </h4>
           <ul className="space-y-3 text-sm text-cream/80">
             <li><Link href="/signup" className="hover:text-cream">About</Link></li>
-            <li><a href="#faq" className="hover:text-cream">FAQ</a></li>
+            <li><a href="/#faq" className="hover:text-cream">FAQ</a></li>
             <li><a href="mailto:tomoraplatform@gmail.com" className="hover:text-cream">Contact</a></li>
             <li><Link href="/privacy" className="hover:text-cream">Privacy Policy</Link></li>
             <li><Link href="/terms" className="hover:text-cream">Terms of Use</Link></li>
