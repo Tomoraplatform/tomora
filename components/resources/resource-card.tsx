@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Lock, Check, Download, Copy } from "lucide-react";
 import { formatNaira } from "@/lib/utils";
-import { DesignPreview } from "@/components/tomivo/design-preview";
+import { ResourcePreview } from "@/components/resources/resource-preview";
 import type { ResourceCard as Card } from "@/lib/resources/db";
 
 /**
@@ -22,9 +22,7 @@ export function ResourceCard({ resource, owned }: { resource: Card; owned: boole
         className="relative aspect-[16/10] overflow-hidden"
         style={{ backgroundColor: resource.thumbnail_color }}
       >
-        {resource.preview_html ? (
-          <DesignPreview html={resource.preview_html} scale={0.32} className="h-full w-full" />
-        ) : null}
+        <ResourcePreview slug={resource.slug} scale={0.32} className="h-full w-full" />
 
         <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-ink shadow-sm">
           {resource.is_paid ? formatNaira(resource.price) : "Free"}

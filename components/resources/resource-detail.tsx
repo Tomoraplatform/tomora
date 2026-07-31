@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Copy, Download, Check, Maximize2, Loader2 } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
-import { DesignPreview } from "@/components/tomivo/design-preview";
+import { ResourcePreview } from "@/components/resources/resource-preview";
 import { UnlockPanel } from "@/components/resources/unlock-panel";
 import { categoryMeta } from "@/lib/resources/constants";
 import { formatNaira } from "@/lib/utils";
@@ -85,13 +85,7 @@ export function ResourceDetail({
               style={{ backgroundColor: resource.thumbnail_color }}
             >
               <div className="aspect-[16/10]">
-                {resource.preview_html ? (
-                  <DesignPreview html={resource.preview_html} scale={0.5} className="h-full w-full" />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-sm text-white/60">
-                    Preview coming soon
-                  </div>
-                )}
+                <ResourcePreview slug={resource.slug} scale={0.5} className="h-full w-full" />
               </div>
               <button
                 onClick={() => setFull(true)}
@@ -192,7 +186,7 @@ export function ResourceDetail({
             className="relative mx-auto h-full max-w-7xl overflow-hidden rounded-xl bg-black"
             onClick={(e) => e.stopPropagation()}
           >
-            <DesignPreview html={resource.preview_html} interactive className="h-full w-full" />
+            <ResourcePreview slug={resource.slug} interactive className="h-full w-full" />
             <button
               onClick={() => setFull(false)}
               className="absolute right-4 top-4 rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-ink shadow-md"

@@ -24,14 +24,15 @@ export interface Resource {
 }
 
 /**
- * What the public pages are allowed to see. The prompt and the HTML are
- * deliberately absent: they are only ever served by the API, and only after
- * the resource is proven free or paid for.
+ * What the public pages are allowed to see. The prompt, the HTML and the
+ * preview markup are all deliberately absent: they are only ever served by the
+ * API, and only after the resource is proven free or paid for. Shipping
+ * preview_html to the browser would put the whole catalogue in the page source.
  */
-export type ResourceCard = Omit<Resource, "prompt_text" | "html_code">;
+export type ResourceCard = Omit<Resource, "prompt_text" | "html_code" | "preview_html">;
 
 const CARD_COLS =
-  "id, slug, title, description, category, tags, preview_html, thumbnail_color, " +
+  "id, slug, title, description, category, tags, thumbnail_color, " +
   "is_paid, price, is_published, is_featured, sort_order, views, copies, downloads, created_at";
 
 /** Published resources for the public library, featured first. */
