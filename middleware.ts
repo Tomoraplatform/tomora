@@ -27,8 +27,12 @@ function getTenant(host: string): { type: "subdomain" | "custom"; value: string 
   if (isAppHost) return null;
 
   if (hostname.endsWith(`.${APP_DOMAIN}`)) {
-    const sub = hostname.slice(0, -(`.${APP_DOMAIN}`.length));
-    return sub && sub !== "www" ? { type: "subdomain", value: sub } : null;
+    const label = hostname.slice(0, -(`.${APP_DOMAIN}`.length));
+    if (!label || label === "www") return null;
+    // Someone typing www.<site>.tomora.com.ng out of habit should land on the
+    // same site as <site>.tomora.com.ng, not a 404.
+    const sub = label.startsWith("www.") ? label.slice(4) : label;
+    return sub ? { type: "subdomain", value: sub } : null;
   }
 
   // Anything else is a connected custom domain. Treat www.<domain> the same as

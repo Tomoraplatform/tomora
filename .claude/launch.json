@@ -37,6 +37,36 @@
       "port": 4188
     },
     {
+      "name": "sonder-house-local",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/tommy/claude-websites/sonder-house",
+        "run",
+        "start",
+        "--",
+        "-H",
+        "0.0.0.0",
+        "-p",
+        "3210"
+      ],
+      "port": 3210
+    },
+    {
+      "name": "sonder-house",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/tommy/claude-websites/sonder-house",
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3210"
+      ],
+      "port": 3210
+    },
+    {
       "name": "toran-web",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [
