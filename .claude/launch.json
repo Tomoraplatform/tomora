@@ -67,6 +67,20 @@
       "port": 3210
     },
     {
+      "name": "ro-fitness",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/tommy/claude-websites/ro-fitness",
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3220"
+      ],
+      "port": 3220
+    },
+    {
       "name": "toran-web",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [

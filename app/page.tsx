@@ -1,23 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  Star,
-  Users,
-  Zap,
-  Palette,
-  Globe,
-  CreditCard,
-  Eye,
-  Check,
-  ArrowRight,
-  UploadCloud,
-} from "lucide-react";
+import { Eye, Check } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 import { TomoraAiTeaser } from "@/components/marketing/tomora-ai-teaser";
-import { BrowserFrame } from "@/components/browser-frame";
+import { HowItWorks } from "@/components/marketing/how-it-works";
+import { FeatureCards } from "@/components/marketing/feature-cards";
 import { TemplatePreview } from "@/components/marketing/template-preview";
-import { DashboardPreview } from "@/components/marketing/dashboard-preview";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -93,8 +82,8 @@ export default async function Home({
       />
       <MarketingNav />
       <Hero />
-      <SocialProof />
-      <Features />
+      <HowItWorks />
+      <FeatureCards />
       <TemplateShowcase templates={showcaseTemplates} />
       <TomoraAiTeaser />
       <Pricing discounts={discounts} />
@@ -108,224 +97,42 @@ export default async function Home({
 /* ----------------------------- Hero ----------------------------- */
 function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div className="container grid grid-cols-1 items-center gap-12 py-16 md:py-24 lg:grid-cols-2">
-        <div className="max-w-xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-ink/15 bg-white px-3 py-1 text-xs font-medium text-ink/70">
-            <Zap className="h-3.5 w-3.5" /> Built for African businesses
-          </span>
-          <h1 className="mt-5 text-balance text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
+    <section className="relative overflow-hidden bg-white">
+      <div className="container pt-14 md:pt-20">
+        <div className="mx-auto max-w-3xl text-center">
+          <h1 className="text-balance text-4xl font-bold leading-[1.12] tracking-tight sm:text-5xl lg:text-[56px]">
             Build Your Business Website in Minutes
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-ink/70">
-            No code. No stress. Pick a template, add your brand, and go live.
-            Built for African businesses.
+          <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-ink/60">
+            Pick a template, add your brand, and go live. Tomora is the no code website builder
+            for stores, schools, churches, NGOs, and growing businesses that need a professional
+            website without a developer.
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg">
-              <Link href="/signup">
-                Start Free for 14 Days <ArrowRight className="h-4 w-4" />
-              </Link>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button asChild size="lg" className="rounded-lg bg-flame text-ink hover:bg-flame-600">
+              <Link href="/signup">Start Free for 14 Days</Link>
             </Button>
-            <Button asChild size="lg" variant="outline">
+            <Button asChild size="lg" variant="outline" className="rounded-lg border-ink/15 bg-white">
               <a href="#templates">Browse Templates</a>
             </Button>
           </div>
-          <p className="mt-4 text-sm text-ink/50">
-            No credit card required. Live in under 5 minutes.
-          </p>
-        </div>
-
-        <div className="relative">
-          <div className="absolute -inset-6 -z-10 rounded-3xl bg-ink/5 blur-2xl" />
-          <BrowserFrame url="ada-styles.tomora.com.ng" bodyClassName="h-[440px]">
-            <TemplatePreview templateId="shop-01" brandColor="#022245" businessName="Ada Styles" autoScroll richCatalog />
-          </BrowserFrame>
         </div>
       </div>
-    </section>
-  );
-}
 
-/* ------------------------- Social proof ------------------------- */
-function SocialProof() {
-  const items = [
-    { icon: Users, text: "Trusted by 500+ businesses across Africa" },
-    { icon: Star, text: "4.9 average rating" },
-    { icon: Zap, text: "Live in under 5 minutes" },
-  ];
-  return (
-    <section className="bg-ink text-cream">
-      <div className="container flex flex-col items-center justify-center gap-4 py-6 text-center text-sm sm:flex-row sm:gap-10">
-        {items.map(({ icon: Icon, text }) => (
-          <div key={text} className="flex items-center gap-2">
-            <Icon className="h-4 w-4 text-cream/80" />
-            <span className="text-cream/90">{text}</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-/* --------------------------- Features --------------------------- */
-function Features() {
-  const features = [
-    {
-      eyebrow: "Templates",
-      title: "Pick a template made for your business",
-      body: "Eight polished templates across business, e-commerce, creator and community categories. Choose one and you're already 90% done.",
-      visual: <TemplatesVisual />,
-    },
-    {
-      eyebrow: "Branding",
-      title: "Brand it yours in minutes",
-      body: "Set your brand color and it flows through the entire site instantly. Upload your logo and watch everything update live.",
-      visual: <BrandVisual />,
-    },
-    {
-      eyebrow: "Publishing",
-      title: "Go live instantly",
-      body: "Publish to your free yourbrand.tomora.com.ng subdomain in one click. Upgrade any time to connect a custom domain.",
-      visual: <PublishVisual />,
-    },
-    {
-      eyebrow: "E-commerce",
-      title: "Sell products and collect payments",
-      body: "Add products, show a beautiful storefront, and collect payments through Paystack straight into your own bank account.",
-      visual: <CommerceVisual />,
-    },
-    {
-      eyebrow: "Dashboard",
-      title: "See your business at a glance",
-      body: "Orders, revenue and website visits update live on your Tomora dashboard, so you always know how your business is doing, right from your phone.",
-      visual: <DashboardPreview />,
-    },
-  ];
-
-  return (
-    <section id="features" className="container space-y-20 py-20 md:space-y-28 md:py-28">
-      {features.map((f, i) => (
-        <div
-          key={f.title}
-          className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2"
-        >
-          <div className={i % 2 === 1 ? "lg:order-2" : ""}>
-            <span className="text-xs font-semibold uppercase tracking-widest text-ink/50">
-              {f.eyebrow}
-            </span>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              {f.title}
-            </h2>
-            <p className="mt-4 max-w-md text-lg leading-relaxed text-ink/70">
-              {f.body}
-            </p>
-          </div>
-          <div className={i % 2 === 1 ? "lg:order-1" : ""}>{f.visual}</div>
-        </div>
-      ))}
-    </section>
-  );
-}
-
-function VisualCard({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-2xl border border-ink/10 bg-white p-6 shadow-lg">
-      {children}
-    </div>
-  );
-}
-
-function TemplatesVisual() {
-  return (
-    <BrowserFrame url="upskill.tomora.com.ng" bodyClassName="h-72 sm:h-[22rem]" className="shadow-xl">
-      <TemplatePreview templateId="education-01" brandColor="#2B6CB0" businessName="Upskill Academy" />
-    </BrowserFrame>
-  );
-}
-
-function BrandVisual() {
-  const swatches = ["#022245", "#c75b39", "#0f9d76", "#d4a23a", "#7c5cff"];
-  return (
-    <VisualCard>
-      <div className="flex items-center gap-2">
-        <Palette className="h-5 w-5 text-ink" />
-        <span className="text-sm font-medium">Brand color</span>
-      </div>
-      <div className="mt-4 flex gap-3">
-        {swatches.map((c, i) => (
-          <div
-            key={c}
-            className={`h-10 w-10 rounded-full ${i === 0 ? "ring-2 ring-ink ring-offset-2" : ""}`}
-            style={{ background: c }}
+      {/* A real Ecommerce One storefront, fully stocked, scrolling itself. */}
+      <div className="container pb-16 pt-12 md:pb-24">
+        <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-ink/10 shadow-[0_30px_90px_rgba(2,34,69,0.16)]">
+          <TemplatePreview
+            templateId="shop-01"
+            brandColor="#1F3A2E"
+            businessName="OTO"
+            autoScroll
+            richCatalog
+            className="h-[420px] md:h-[560px]"
           />
-        ))}
-      </div>
-      <div className="mt-6 flex items-center gap-3 rounded-lg border border-dashed border-ink/20 p-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-md bg-ink text-cream">
-          <UploadCloud className="h-5 w-5" />
-        </div>
-        <div>
-          <p className="text-sm font-medium">Upload your logo</p>
-          <p className="text-xs text-ink/50">PNG or SVG, up to 2MB</p>
         </div>
       </div>
-    </VisualCard>
-  );
-}
-
-function PublishVisual() {
-  return (
-    <VisualCard>
-      <div className="flex items-center gap-2 rounded-lg bg-cream/70 px-4 py-3">
-        <Globe className="h-5 w-5 text-ink" />
-        <span className="font-mono text-sm text-ink/80">yourbrand</span>
-        <span className="font-mono text-sm text-ink/50">.tomora.com.ng</span>
-        <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
-          <Check className="h-3 w-3" /> Live
-        </span>
-      </div>
-      <div className="mt-4 flex items-center justify-between rounded-lg border border-ink/10 px-4 py-3">
-        <div>
-          <p className="text-sm font-medium">Connect a custom domain</p>
-          <p className="text-xs text-ink/50">yourbrand.com</p>
-        </div>
-        <ArrowRight className="h-4 w-4 text-ink/40" />
-      </div>
-    </VisualCard>
-  );
-}
-
-function CommerceVisual() {
-  const items = [
-    { seed: "tomshop-bag", name: "Leather Backpack", price: 18000 },
-    { seed: "tomshop-shoe", name: "Running Sneakers", price: 27000 },
-    { seed: "tomshop-watch", name: "Classic Watch", price: 32000 },
-    { seed: "tomshop-bottle", name: "Steel Bottle", price: 6500 },
-    { seed: "tomshop-bag2", name: "Canvas Tote", price: 9500 },
-    { seed: "tomshop-cam", name: "Mini Camera", price: 41000 },
-  ];
-  return (
-    <VisualCard>
-      <div className="grid grid-cols-3 gap-3">
-        {items.map((p) => (
-          <div key={p.seed} className="overflow-hidden rounded-lg border border-ink/10">
-            <div className="aspect-square overflow-hidden bg-cream">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`https://picsum.photos/seed/${p.seed}/240`} alt={p.name} className="h-full w-full object-cover" />
-            </div>
-            <div className="space-y-0.5 p-2">
-              <p className="truncate text-[11px] font-medium text-ink/80">{p.name}</p>
-              <p className="text-[11px] font-semibold text-ink">{formatNaira(p.price)}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="mt-4 flex items-center justify-center gap-2 rounded-lg bg-ink py-2.5 text-cream">
-        <CreditCard className="h-4 w-4" />
-        <span className="text-sm font-medium">Secure checkout with Paystack</span>
-      </div>
-    </VisualCard>
+    </section>
   );
 }
 

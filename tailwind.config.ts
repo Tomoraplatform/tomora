@@ -20,6 +20,12 @@ const config: Config = {
         ink: "#022245",
         "ink-700": "#0a3263",
         "ink-300": "#5b7799",
+        // Warm accent introduced by the landing redesign: primary CTA, the
+        // "how it works" path and section eyebrows.
+        flame: "#EE8B3D",
+        "flame-600": "#DE7526",
+        // Panel navy used by the landing feature cards (lighter than `ink`).
+        slate: "#2A3B55",
 
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
