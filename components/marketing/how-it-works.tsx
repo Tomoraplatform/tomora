@@ -7,6 +7,13 @@
  * The path is one SVG that scales with the viewport; on small screens it is
  * swapped for a simple vertical rail, since a wide curve is unreadable there.
  */
+/** Node and copy anchors, as percentages of the 1000x420 path box. */
+const STEP_POINTS = [
+  { left: "15%", node: "47.6%", copyLeft: "7%", copy: "54%" },
+  { left: "50%", node: "26.2%", copyLeft: "43%", copy: "32%" },
+  { left: "80%", node: "10.7%", copyLeft: "73%", copy: "17%" },
+];
+
 export function HowItWorks() {
   const steps = [
     {
@@ -35,58 +42,49 @@ export function HowItWorks() {
           website in three steps
         </h2>
 
-        {/* ---- Desktop: the curved path ---------------------------------- */}
-        <div className="relative mt-14 hidden md:block">
+        {/* ---- Desktop: the curved path ----------------------------------
+            The SVG box carries spare height below the curve so the nodes and
+            the copy can both be placed as percentages of the same coordinate
+            space. That keeps every node sitting on the line at any width. */}
+        <div className="relative mt-12 hidden md:block">
           <svg
-            viewBox="0 0 1000 260"
+            viewBox="0 0 1000 420"
             fill="none"
             className="w-full"
             preserveAspectRatio="none"
             aria-hidden="true"
           >
             <path
-              d="M0 214 C 130 214, 150 118, 270 118 C 390 118, 400 40, 520 40 C 640 40, 660 92, 780 92 C 880 92, 930 118, 1000 128"
+              d="M0 210 C 60 210, 90 200, 150 200 C 260 200, 300 110, 500 110 C 650 110, 680 45, 800 45 C 900 45, 950 60, 1000 72"
               stroke="#EE8B3D"
-              strokeWidth="2.5"
+              strokeWidth="2"
               strokeLinecap="round"
+              vectorEffect="non-scaling-stroke"
             />
           </svg>
 
-          {/* Nodes sit at the path's step points, as percentages of the box. */}
-          {[
-            { left: "10.5%", top: "82%" },
-            { left: "38%", top: "45%" },
-            { left: "72%", top: "35%" },
-          ].map((pos, i) => (
+          {/* Node y values are the path's anchor points over the 420 box:
+              200 -> 47.6%, 110 -> 26.2%, 45 -> 10.7%. */}
+          {STEP_POINTS.map((pos, i) => (
             <span
               key={i}
               className="absolute flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-[0_2px_10px_rgba(2,34,69,0.14)]"
-              style={{ left: pos.left, top: pos.top }}
+              style={{ left: pos.left, top: pos.node }}
             >
               <span className="h-2.5 w-2.5 rounded-full bg-[#C9CBD0]" />
             </span>
           ))}
 
-          {/* Copy blocks, each anchored under or over its own node. */}
-          <div className="relative mt-4 grid grid-cols-3 gap-8">
-            {steps.map((s, i) => (
-              <div
-                key={s.title}
-                className={
-                  i === 0
-                    ? "col-start-1"
-                    : i === 1
-                      ? "col-start-2 -mt-24"
-                      : "col-start-3 -mt-44"
-                }
-              >
-                <h3 className="text-base font-bold">{s.title}</h3>
-                <p className="mt-2 max-w-[15rem] text-sm leading-relaxed text-ink/60">
-                  {s.body}
-                </p>
-              </div>
-            ))}
-          </div>
+          {steps.map((s, i) => (
+            <div
+              key={s.title}
+              className="absolute w-[16rem]"
+              style={{ left: STEP_POINTS[i].copyLeft, top: STEP_POINTS[i].copy }}
+            >
+              <h3 className="text-base font-bold">{s.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink/60">{s.body}</p>
+            </div>
+          ))}
         </div>
 
         {/* ---- Mobile: a vertical rail ----------------------------------- */}

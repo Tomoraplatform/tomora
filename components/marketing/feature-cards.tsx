@@ -141,24 +141,29 @@ function DomainVisual() {
   );
 }
 
+/**
+ * Real product photography, not random placeholders: each shot actually shows
+ * the item it is labelled with, so the mock reads as a genuine storefront.
+ */
+const SHOP_ITEMS = [
+  { id: "1553062407-98eeb64c6a62", name: "Leather Backpack", price: 18000 },
+  { id: "1542291026-7eec264c27ff", name: "Running Sneakers", price: 27000 },
+  { id: "1524592094714-0f0654e20314", name: "Classic Watch", price: 32000 },
+  { id: "1602143407151-7111542de6e8", name: "Steel Bottle", price: 6500 },
+  { id: "1544816155-12df9643f363", name: "Canvas Tote", price: 9500 },
+  { id: "1516035069371-29a1b244cc32", name: "Camera & Lenses", price: 41000 },
+];
+
 function CommerceVisual() {
-  const items = [
-    { seed: "tomshop-bag", name: "Leather Backpack", price: 18000 },
-    { seed: "tomshop-shoe", name: "Running Sneakers", price: 27000 },
-    { seed: "tomshop-watch", name: "Classic Watch", price: 32000 },
-    { seed: "tomshop-bottle", name: "Steel Bottle", price: 6500 },
-    { seed: "tomshop-bag2", name: "Canvas Tote", price: 9500 },
-    { seed: "tomshop-cam", name: "Mini Camera", price: 41000 },
-  ];
   return (
     <Surface>
       <div className="grid grid-cols-3 gap-3">
-        {items.map((p) => (
-          <div key={p.seed} className="overflow-hidden rounded-lg border border-ink/10">
+        {SHOP_ITEMS.map((p) => (
+          <div key={p.id} className="overflow-hidden rounded-lg border border-ink/10">
             <div className="aspect-square overflow-hidden bg-cream">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`https://picsum.photos/seed/${p.seed}/300`}
+                src={`https://images.unsplash.com/photo-${p.id}?auto=format&fit=crop&w=300&h=300&q=70`}
                 alt={p.name}
                 loading="lazy"
                 className="h-full w-full object-cover"

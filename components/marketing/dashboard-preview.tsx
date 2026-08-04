@@ -118,7 +118,11 @@ function useCountUp(start: boolean, target: number, duration: number) {
     let raf: number;
     const t0 = performance.now();
     const tick = (t: number) => {
-      const p = Math.min(1, (t - t0) / duration);
+      // rAF reports the frame's start time, which can be marginally earlier
+      // than the t0 captured just before scheduling it. Without the lower
+      // clamp that first frame yields a negative progress, and the tiles
+      // briefly render negative orders and revenue.
+      const p = Math.min(1, Math.max(0, (t - t0) / duration));
       const eased = 1 - Math.pow(1 - p, 3);
       setValue(Math.round(target * eased));
       if (p < 1) raf = requestAnimationFrame(tick);
@@ -138,7 +142,10 @@ const FEED_ITEMS = [
 
 /** Cycles a few fake activity rows in, one at a time, to feel live. */
 function useLiveFeed(active: boolean) {
-  const [items, setItems] = useState<{ id: number; text: string; amount: string }[]>([]);
+  // Seeded with rows so the panel never renders an empty "recent activity".
+  const [items, setItems] = useState<{ id: number; text: string; amount: string }[]>(() =>
+    FEED_ITEMS.slice(0, 3).map((f, i) => ({ id: -1 - i, ...f }))
+  );
   useEffect(() => {
     if (!active) return;
     let i = 0;

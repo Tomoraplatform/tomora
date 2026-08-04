@@ -61,11 +61,13 @@
 
 /* Auto-scrolling website preview (landing hero) */
 @keyframes tomora-autoscroll {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-58%); }
+  /* Hold on the storefront's own hero first, so the preview reads as a real
+     shop before it starts touring the catalogue. */
+  0%, 14% { transform: translateY(0); }
+  86%, 100% { transform: translateY(-58%); }
 }
 .animate-autoscroll {
-  animation: tomora-autoscroll 18s ease-in-out infinite alternate;
+  animation: tomora-autoscroll 26s ease-in-out infinite alternate;
 }
 @media (prefers-reduced-motion: reduce) {
   .animate-autoscroll { animation: none; }
