@@ -147,7 +147,8 @@ function DomainVisual() {
  */
 const SHOP_ITEMS = [
   { id: "1553062407-98eeb64c6a62", name: "Leather Backpack", price: 18000 },
-  { id: "1542291026-7eec264c27ff", name: "Running Sneakers", price: 27000 },
+  // Deliberately an unbranded pair: no third-party logo on the marketing page.
+  { id: "1560769629-975ec94e6a86", name: "Running Sneakers", price: 27000 },
   { id: "1524592094714-0f0654e20314", name: "Classic Watch", price: 32000 },
   { id: "1602143407151-7111542de6e8", name: "Steel Bottle", price: 6500 },
   { id: "1544816155-12df9643f363", name: "Canvas Tote", price: 9500 },
