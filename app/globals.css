@@ -69,7 +69,10 @@
 .stat-value {
   font-size: 1rem;
 }
-@container (max-width: 135px) {
+/* The query sees the tile's CONTENT box, not its border box: ~109px of usable
+   width on a wide screen, ~80px once the panel halves. ₦4,286,500 needs about
+   92px at 1rem, so step down below that. */
+@container (max-width: 95px) {
   .stat-value {
     font-size: 0.75rem;
   }
