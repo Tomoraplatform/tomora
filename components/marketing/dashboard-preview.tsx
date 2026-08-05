@@ -74,15 +74,19 @@ function StatTile({
   points: number[];
 }) {
   return (
-    <div className="rounded-xl border border-ink/10 bg-white p-4">
-      <div className="flex items-center justify-between">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-ink/5 text-ink">{icon}</span>
-        <span className="flex items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+    // min-w-0 lets the tile shrink inside the grid; without it a grid item
+    // keeps its content width and a long figure like ₦4,286,500 spills out
+    // past the card edge.
+    <div className="min-w-0 rounded-xl border border-ink/10 bg-white p-3.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-ink/5 text-ink">{icon}</span>
+        <span className="flex shrink-0 items-center gap-0.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
           <ArrowUpRight className="h-3 w-3" /> {delta}
         </span>
       </div>
-      <p className="mt-3 text-2xl font-bold tabular-nums text-ink" style={{ fontVariantNumeric: "proportional-nums" }}>{value}</p>
-      <p className="text-xs text-ink/45">{label}</p>
+      {/* Tabular figures keep the width steady while the number counts up. */}
+      <p className="mt-3 truncate text-base font-bold tabular-nums leading-tight text-ink">{value}</p>
+      <p className="truncate text-xs text-ink/45">{label}</p>
       <Sparkline points={points} />
     </div>
   );
