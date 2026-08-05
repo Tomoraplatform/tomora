@@ -59,6 +59,22 @@
   }
 }
 
+/* Landing dashboard mock: the stat tiles sit in a half-width panel, so their
+   width does not track the viewport in one direction. Size the figure against
+   the tile itself, otherwise a long total like ₦4,286,500 either spills out of
+   the card or gets truncated at intermediate widths. */
+.stat-tile {
+  container-type: inline-size;
+}
+.stat-value {
+  font-size: 1rem;
+}
+@container (max-width: 135px) {
+  .stat-value {
+    font-size: 0.75rem;
+  }
+}
+
 /* Auto-scrolling website preview (landing hero) */
 @keyframes tomora-autoscroll {
   /* Hold on the storefront's own hero first, so the preview reads as a real
