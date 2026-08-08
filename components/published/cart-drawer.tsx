@@ -5,6 +5,7 @@ import { Plus, Minus, Trash2, Loader2, CheckCircle2, X, Copy } from "lucide-reac
 import type { Product, SiteData } from "@/lib/database.types";
 import { formatNaira, contrastText } from "@/lib/utils";
 import { validateCoupon } from "@/lib/coupons";
+import { orderCode, whatsappOrderLink, etaLabel, normaliseWhatsapp } from "@/lib/restaurant/order";
 import { PAYSTACK_FEE_PERCENT } from "@/lib/constants";
 
 export interface CartLine { product: Product; qty: number; color?: string; }
@@ -61,7 +62,19 @@ export function CartDrawer({
 
   const zones = siteData.shippingZones || [];
   const [shippingZoneId, setShippingZoneId] = useState<string>("");
-  const shippingFee = zones.find((z) => z.id === shippingZoneId)?.fee || 0;
+
+  // Restaurants let the customer collect in person, which drops the zone fee.
+  const rest = siteData.restaurant;
+  const isRestaurant = !!rest;
+  const canPickup = !!rest?.pickupEnabled;
+  const canDeliver = rest ? rest.deliveryEnabled !== false : true;
+  const [fulfilment, setFulfilment] = useState<"delivery" | "pickup">(
+    canDeliver ? "delivery" : "pickup"
+  );
+  const pickingUp = isRestaurant && fulfilment === "pickup";
+  const shippingFee = pickingUp ? 0 : zones.find((z) => z.id === shippingZoneId)?.fee || 0;
+  const [orderRef, setOrderRef] = useState<string>("");
+  const whatsappNumber = normaliseWhatsapp(rest?.whatsappNumber);
 
   // "Buy Now" opens straight into the checkout step instead of the cart review.
   useEffect(() => { if (open) setCheckout(!!startAtCheckout); }, [open, startAtCheckout]);
@@ -99,12 +112,14 @@ export function CartDrawer({
           buyer,
           items: lines.map((l) => ({ productId: l.product.id, qty: l.qty, color: l.color || null })),
           couponCode: appliedCoupon || undefined,
-          shippingZoneId: shippingZoneId || undefined,
+          shippingZoneId: pickingUp ? undefined : shippingZoneId || undefined,
+          fulfilment: isRestaurant ? fulfilment : undefined,
           method: activeMethod,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not place order.");
+      if (data.reference) setOrderRef(data.reference);
 
       if (activeMethod === "paystack" && data.accessCode) {
         await loadPaystack();
@@ -143,9 +158,65 @@ export function CartDrawer({
         {done ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center">
             <CheckCircle2 className="h-14 w-14 text-emerald-500" />
+            {isRestaurant ? (
+              <>
+                <p className="text-lg font-semibold text-ink">
+                  Order {orderCode(orderRef)} received, {buyer.name || "friend"}!
+                </p>
+                <p className="text-sm text-ink/60">
+                  {etaLabel(rest?.prepTimeMins, rest?.deliveryTimeMins, fulfilment) ||
+                    "The kitchen has your order."}
+                </p>
+                {whatsappNumber ? (
+                  <>
+                    {/* The kitchen is notified when the customer sends this. */}
+                    <a
+                      href={whatsappOrderLink(whatsappNumber, {
+                        reference: orderRef,
+                        restaurantName: siteData.businessName || "the kitchen",
+                        lines: lines.map((l) => ({
+                          name: l.product.name,
+                          qty: l.qty,
+                          amount: l.product.price * l.qty,
+                        })),
+                        subtotal,
+                        discount,
+                        couponCode: appliedCoupon,
+                        fulfilment,
+                        place: pickingUp ? rest?.pickupAddress : zones.find((z) => z.id === shippingZoneId)?.name,
+                        deliveryFee: shippingFee,
+                        total,
+                        etaMins: (rest?.prepTimeMins || 0) + (pickingUp ? 0 : rest?.deliveryTimeMins || 0),
+                        customer: {
+                          name: buyer.name, phone: buyer.phone,
+                          address: pickingUp ? "" : buyer.address,
+                        },
+                        paid: payMethod === "paystack",
+                      })}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex items-center justify-center gap-2 rounded-lg bg-[#25D366] px-6 py-3 text-sm font-bold text-white"
+                    >
+                      Send my order on WhatsApp
+                    </a>
+                    <p className="text-xs text-ink/50">
+                      Tap to send so the kitchen starts straight away. Your order is already saved
+                      either way.
+                    </p>
+                  </>
+                ) : (
+                  <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+                    The kitchen has been notified and will confirm shortly.
+                  </p>
+                )}
+              </>
+            ) : (
+            <>
             <p className="text-lg font-semibold text-ink">Order received, {buyer.name || "friend"}!</p>
             <p className="text-sm text-ink/60">Please complete your transfer of <span className="font-semibold text-ink">{formatNaira(total)}</span>{accountNumber ? <> to <span className="font-semibold text-ink">{accountNumber}</span>{accountName ? ` (${accountName})` : ""}</> : ""}. Details sent to {buyer.email}.</p>
             <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">✓ The seller has been notified of your order and will confirm your payment, then process it.</p>
+            </>
+            )}
           </div>
         ) : lines.length === 0 ? (
           <div className="flex flex-1 items-center justify-center p-8 text-center text-ink/50">Your cart is empty.</div>
@@ -187,7 +258,33 @@ export function CartDrawer({
                     />
                   ))}
 
-                  {zones.length > 0 && (
+                  {isRestaurant && canPickup && canDeliver && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {(["delivery", "pickup"] as const).map((f) => (
+                        <button
+                          key={f}
+                          type="button"
+                          onClick={() => setFulfilment(f)}
+                          className={`rounded-md border px-3 py-2.5 text-sm font-semibold transition ${
+                            fulfilment === f
+                              ? "border-ink bg-ink text-cream"
+                              : "border-ink/15 text-ink/70 hover:border-ink/40"
+                          }`}
+                        >
+                          {f === "delivery" ? "Deliver to me" : "I will pick up"}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {pickingUp && rest?.pickupAddress && (
+                    <p className="rounded-md bg-cream px-3 py-2.5 text-sm text-ink/70">
+                      Collect from <span className="font-semibold text-ink">{rest.pickupAddress}</span>
+                      {rest.pickupNote ? ` · ${rest.pickupNote}` : ""}
+                    </p>
+                  )}
+
+                  {zones.length > 0 && !pickingUp && (
                     <select
                       value={shippingZoneId}
                       onChange={(e) => setShippingZoneId(e.target.value)}
