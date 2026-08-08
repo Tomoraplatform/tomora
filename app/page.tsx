@@ -157,7 +157,7 @@ function TemplateShowcase({ templates }: { templates: (typeof CATALOG_TEMPLATES)
               className="group relative overflow-hidden rounded-xl border border-ink/10 bg-white transition-all hover:-translate-y-1 hover:shadow-xl"
             >
               <div className="relative h-52 overflow-hidden border-b border-ink/5">
-                <TemplatePreview templateId={t.id} brandColor={t.accent} businessName={t.name} />
+                <TemplatePreview templateId={t.id} brandColor={t.accent} businessName={t.name} lazy />
                 <div className="absolute inset-0 flex items-center justify-center bg-ink/0 opacity-0 transition-all group-hover:bg-ink/30 group-hover:opacity-100">
                   <Button size="sm" asChild>
                     <Link href="/signup">

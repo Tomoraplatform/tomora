@@ -23,12 +23,17 @@ export function TemplatePreview({
   heroOverride,
   richCatalog = false,
   siteDataOverride,
+  lazy = false,
 }: {
   templateId: string;
   brandColor?: string;
   businessName?: string;
   autoScroll?: boolean;
   className?: string;
+  /** Build the preview only once it is near the viewport. A page showing a
+   *  gallery of these otherwise ships every template's whole storefront in its
+   *  HTML, for previews the visitor may never scroll to. */
+  lazy?: boolean;
   /** Override the hero image for this preview only (keeps the landing neutral). */
   heroOverride?: string;
   /** Marketing use only: swap in a fuller, multi-category catalog so the
@@ -42,6 +47,22 @@ export function TemplatePreview({
   const ref = useRef<HTMLDivElement>(null);
   const [vw, setVw] = useState(DESKTOP_WIDTH);
   const [scale, setScale] = useState(0.3);
+  const [shown, setShown] = useState(!lazy);
+
+  // Start building a little before the preview is scrolled to, so it is ready
+  // by the time it is actually on screen.
+  useEffect(() => {
+    if (!lazy || shown) return;
+    const el = ref.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") { setShown(true); return; }
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && setShown(true)),
+      { rootMargin: "600px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [lazy, shown]);
 
   useEffect(() => {
     const el = ref.current;
@@ -88,13 +109,17 @@ export function TemplatePreview({
 
   return (
     <div ref={ref} className={cn("relative w-full overflow-hidden bg-white", className)}>
-      <div style={{ width: vw, transform: `scale(${scale})`, transformOrigin: "top left" }}>
-        <div className={autoScroll ? "animate-autoscroll" : undefined}>
-          <div className="pointer-events-none select-none" aria-hidden="true">
-            <SiteRenderer templateId={templateId} siteData={data} brandColor={brandColor} />
+      {shown ? (
+        <div style={{ width: vw, transform: `scale(${scale})`, transformOrigin: "top left" }}>
+          <div className={autoScroll ? "animate-autoscroll" : undefined}>
+            <div className="pointer-events-none select-none" aria-hidden="true">
+              <SiteRenderer templateId={templateId} siteData={data} brandColor={brandColor} />
+            </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="h-full w-full animate-pulse bg-ink/[0.04]" aria-hidden="true" />
+      )}
     </div>
   );
 }
