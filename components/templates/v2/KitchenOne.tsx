@@ -5,11 +5,11 @@ import {
   Clock, MapPin, Bike, ShoppingBag, Plus, Star, Tag, Search,
   UtensilsCrossed, Percent, Store,
 } from "lucide-react";
-import type { Product } from "@/lib/database.types";
+import type { CatalogProduct, Product } from "@/lib/database.types";
 import {
   TemplateProps, Brandmark, SocialIcons, testimonialsOf, Img,
   heading, subheading, navItems, CustomSections, OrderedSections,
-  sellingPrice, originalPrice,
+  sellingPrice, originalPrice, toProduct,
 } from "./shared";
 import { useTemplateEdit } from "../editor-context";
 import { useStore } from "../store-context";
@@ -104,7 +104,7 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
       price: sellingPrice(p),
       comparePrice: originalPrice(p) ?? p.comparePrice,
       inside: [] as string[],
-      add: () => store.addToCart(p as unknown as Product),
+      add: () => store.addToCart(toProduct(p, siteData)),
     }));
     const fromSettings = combos.map((c) => ({
       key: c.id,
@@ -356,8 +356,8 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
                   product={p}
                   accent={accent}
                   disabled={!canOrder}
-                  onAdd={() => store.addToCart(p as unknown as Product)}
-                  onOpen={() => store.openProduct?.(p as unknown as Product)}
+                  onAdd={() => store.addToCart(toProduct(p, siteData))}
+                  onOpen={() => store.openProduct?.(toProduct(p, siteData))}
                 />
               ))}
             </div>
@@ -630,27 +630,22 @@ function AddButton({
 function DishCard({
   product, accent, onAdd, onOpen, disabled,
 }: {
-  product: { id: string; name: string; description?: string | null; price: number; compare_price?: number | null; images?: string[]; is_best_seller?: boolean; is_offer?: boolean; offer_percent?: number; rating?: number };
+  /** The template's own content shape, which is what the menu grid passes. */
+  product: CatalogProduct;
   accent: string;
   onAdd: () => void;
   onOpen: () => void;
   disabled?: boolean;
 }) {
-  const off =
-    product.is_offer && product.offer_percent
-      ? product.offer_percent
-      : product.compare_price && product.compare_price > product.price
-        ? Math.round(((product.compare_price - product.price) / product.compare_price) * 100)
-        : 0;
-  const price = product.is_offer && product.offer_percent
-    ? Math.round(product.price * (1 - product.offer_percent / 100))
-    : product.price;
+  const price = sellingPrice(product);
+  const was = originalPrice(product) ?? product.comparePrice;
+  const off = was && was > price ? Math.round(((was - price) / was) * 100) : 0;
 
   return (
     <div className="group flex flex-col overflow-hidden rounded-3xl bg-white shadow-[0_2px_18px_rgba(42,18,7,0.08)]">
       <button onClick={onOpen} className="relative aspect-square overflow-hidden bg-[#f6ece1] text-left">
-        <Img src={product.images?.[0]} alt={product.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-        {product.is_best_seller && (
+        <Img src={product.image} alt={product.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+        {product.bestSeller && (
           <span className="absolute left-3 top-3 rounded-full bg-emerald-600 px-2.5 py-1 text-[10px] font-bold text-white">
             BESTSELLER
           </span>
@@ -678,9 +673,9 @@ function DishCard({
             <span className="block truncate text-lg font-extrabold text-[#2a1207]">
               {formatNaira(price)}
             </span>
-            {off > 0 && product.compare_price && (
+            {off > 0 && was && (
               <span className="block text-xs text-[#2a1207]/40 line-through">
-                {formatNaira(product.compare_price)}
+                {formatNaira(was)}
               </span>
             )}
           </span>

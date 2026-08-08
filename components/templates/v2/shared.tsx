@@ -102,7 +102,7 @@ export function originalPrice(p: CatalogProduct): number | undefined {
 }
 
 /** Maps a catalog product into the cart Product shape and fires store actions. */
-function toProduct(p: CatalogProduct, siteData: SiteData): Product {
+export function toProduct(p: CatalogProduct, siteData: SiteData): Product {
   return {
     id: p.id, user_id: "", site_id: "", name: p.name, description: p.description ?? null,
     price: sellingPrice(p), images: p.image ? [p.image] : [], category: p.category || null,
