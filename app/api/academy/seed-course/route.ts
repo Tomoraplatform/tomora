@@ -61,10 +61,13 @@ export async function POST(request: NextRequest) {
   }
 
   if (action === "status") {
-    const { data: course } = await admin
+    // Surface the error: ignoring it makes a failing select look like "not
+    // found", which hides a missing column behind an empty result.
+    const { data: course, error: cErr } = await admin
       .from("academy_courses").select("id, title, slug, price, compare_price, is_published")
       .eq("slug", String(body.slug || "")).maybeSingle();
-    if (!course) return NextResponse.json({ ok: true, course: null });
+    if (cErr) return NextResponse.json({ error: cErr.message }, { status: 500 });
+    if (!course) return NextResponse.json({ ok: true, course: null, note: "no row with that slug" });
     const { data: lessons } = await admin
       .from("academy_lessons")
       .select("title, video_path, slides_path, sort_order, academy_modules(title)")
