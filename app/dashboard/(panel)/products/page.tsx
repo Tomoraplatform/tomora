@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { getDashboardData } from "@/lib/dashboard";
+import { catalogTemplate } from "@/lib/catalog";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { ProductsManager } from "@/components/dashboard/products-manager";
@@ -28,7 +29,11 @@ export default async function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      <ProductsManager initial={products} />
+      <ProductsManager
+        initial={products}
+        comboIds={site!.site_data?.comboProductIds || []}
+        comboEnabled={catalogTemplate(site!.template_id)?.category === "food"}
+      />
 
       {inSetup && products.length > 0 && (
         <div className="flex flex-col gap-3 rounded-xl border border-ink/15 bg-cream/60 p-4 sm:flex-row sm:items-center sm:justify-between">

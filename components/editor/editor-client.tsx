@@ -18,7 +18,8 @@ import { ProductsManager } from "@/components/dashboard/products-manager";
 import { createClient } from "@/lib/supabase/client";
 import { X } from "lucide-react";
 import { BLOCK_LABELS, supportedBlocks, type BlockType } from "@/lib/site-data";
-import { isCatalogTemplate, templateLists, templateSections, templateReorder, templateNav, createCatalogContent } from "@/lib/catalog";
+import { isCatalogTemplate, templateLists, templateSections, templateReorder, templateNav, createCatalogContent, catalogTemplate } from "@/lib/catalog";
+import { combosOf } from "@/lib/restaurant/types";
 import { uploadImage } from "@/lib/upload";
 import { saveSite } from "@/app/dashboard/editor/actions";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,10 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
       brandColor: site.site_data.brandColor || "#022245",
       businessName: site.site_data.businessName || "",
     };
+    // Combos used to live under `restaurant`. Lift them so the panel's list
+    // editor, which reads top-level keys, shows what the site already sells.
+    const combos = combosOf(site.site_data);
+    if (combos.length) base.combos = combos;
     // Seed editable content lists from template defaults for older sites that
     // were created before these fields existed, so everything is editable.
     if (isCatalogTemplate(site.template_id)) {
@@ -163,6 +168,8 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
   const sections = isCatalog ? templateSections(site.template_id) : [];
   const reorder = isCatalog ? templateReorder(site.template_id) : [];
   const navDefaults = isCatalog ? templateNav(site.template_id) : [];
+  // Restaurants can allocate a product to the Combos section instead of the menu.
+  const isFood = catalogTemplate(site.template_id)?.category === "food";
 
   async function onLogo(file?: File) {
     if (!file) return;
@@ -262,7 +269,7 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
           mobileTab === "edit" ? "block" : "hidden"
         )}>
           {isCatalog ? (
-            <CatalogEditorPanel data={data} patch={patch} lists={lists} sections={sections} reorder={reorder} isEcommerce={isStore} onManageProducts={() => setShowProducts(true)} navDefaults={navDefaults} payoutConnected={!!site.paystack_subaccount} focusKey={focusKey} focusNonce={focusNonce} />
+            <CatalogEditorPanel data={data} patch={patch} lists={lists} sections={sections} reorder={reorder} isEcommerce={isStore} onManageProducts={() => setShowProducts(true)} navDefaults={navDefaults} payoutConnected={!!site.paystack_subaccount} focusKey={focusKey} focusNonce={focusNonce} productNames={dbProducts.map((p) => p.name)} />
           ) : (
           <>
           <Section title="Brand">
@@ -352,7 +359,18 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
               </div>
               <button onClick={() => setShowProducts(false)} className="rounded-md p-1 text-ink/50 hover:bg-ink/5 hover:text-ink" aria-label="Close"><X className="h-5 w-5" /></button>
             </div>
-            <ProductsManager initial={dbProducts} embedded onChanged={reloadProducts} />
+            <ProductsManager
+              initial={dbProducts}
+              embedded
+              comboIds={data.comboProductIds || []}
+              comboEnabled={isFood}
+              onChanged={(comboProductIds) => {
+                // The action wrote the allocation straight to the site row, so
+                // mirror it here or the editor's next save would undo it.
+                if (comboProductIds) patch({ comboProductIds });
+                reloadProducts();
+              }}
+            />
           </div>
         </div>
       )}

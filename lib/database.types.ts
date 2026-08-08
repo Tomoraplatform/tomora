@@ -394,8 +394,16 @@ export interface SiteData {
   paymentMethods?: { paystack?: boolean; transfer?: boolean };
   /** Who covers the Paystack processing fee, added to the customer's total when "customer". */
   feeBearer?: "customer" | "owner";
-  /** Restaurant template: hours, combos, pickup and the WhatsApp order number. */
+  /** Restaurant template: hours, pickup and the WhatsApp order number. */
   restaurant?: import("./restaurant/types").RestaurantSettings;
+  /** Restaurant template: fixed-price meal bundles. Top-level so the site
+   *  editor's list panel can edit them; older sites keep them under
+   *  `restaurant.combos`, so read them with `combosOf`. */
+  combos?: import("./restaurant/types").Combo[];
+  /** Restaurant template: products the owner allocated to the Combos section.
+   *  These show as combos and are left out of the menu, since a combo is not a
+   *  menu item. Set from the "Combo" switch on the product card. */
+  comboProductIds?: string[];
 }
 
 export interface CatalogVideoLink {

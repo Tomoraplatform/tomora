@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { currentSiteId } from "@/lib/dashboard";
 import { resolveAccount, createSubaccount } from "@/lib/paystack";
 import { STORE_COMMISSION_PERCENT } from "@/lib/constants";
-import type { OrderStatus } from "@/lib/database.types";
+import type { OrderStatus, SiteData } from "@/lib/database.types";
 
 async function requireUserAndSite() {
   const supabase = createClient();
@@ -41,9 +41,40 @@ export interface ProductInput {
   colorVariants?: { name: string; image?: string }[];
   isPreOrder?: boolean;
   preorderNote?: string;
+  /** Restaurants: sell this as a combo. It then shows in the Combos section
+   *  and is left out of the menu. Stored on the site, not on the product row. */
+  isCombo?: boolean;
 }
 
-export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; error?: string }> {
+/**
+ * Adds or removes a product from the site's Combos section and returns the
+ * resulting list, so the caller (the editor holds its own copy of site_data)
+ * can stay in step without a refetch.
+ */
+async function syncComboAllocation(
+  supabase: Awaited<ReturnType<typeof requireUserAndSite>>["supabase"],
+  siteId: string,
+  productId: string | undefined,
+  isCombo: boolean
+): Promise<string[] | undefined> {
+  const { data: site } = await supabase
+    .from("sites").select("id, site_data").eq("id", siteId).maybeSingle();
+  if (!site) return undefined;
+  const sd = (site.site_data || {}) as SiteData;
+  const current = sd.comboProductIds || [];
+  const next = !productId
+    ? current
+    : isCombo
+      ? Array.from(new Set([...current, productId]))
+      : current.filter((id) => id !== productId);
+  if (next.length === current.length && next.every((id, i) => id === current[i])) return current;
+  await supabase.from("sites").update({ site_data: { ...sd, comboProductIds: next } }).eq("id", site.id);
+  return next;
+}
+
+export async function saveProduct(
+  input: ProductInput
+): Promise<{ ok: boolean; error?: string; comboProductIds?: string[] }> {
   try {
     const { supabase, ownerId, siteId } = await requireUserAndSite();
     if (!input.name?.trim()) return { ok: false, error: "Name is required." };
@@ -78,27 +109,36 @@ export async function saveProduct(input: ProductInput): Promise<{ ok: boolean; e
     // 0006 migration adds the column.
     if (input.comparePrice) row.compare_price = Math.max(0, Math.round(input.comparePrice));
 
+    let productId = input.id;
     if (input.id) {
       const { error } = await supabase.from("products").update(row).eq("id", input.id).eq("user_id", ownerId);
       if (error) return { ok: false, error: error.message };
     } else {
-      const { error } = await supabase.from("products").insert(row);
+      const { data: created, error } = await supabase.from("products").insert(row).select("id").single();
       if (error) return { ok: false, error: error.message };
+      productId = created?.id as string | undefined;
     }
+    const comboProductIds = await syncComboAllocation(supabase, siteId, productId, !!input.isCombo);
     revalidatePath("/dashboard/products");
-    return { ok: true };
+    revalidatePath("/dashboard/editor");
+    return { ok: true, comboProductIds };
   } catch (e: any) {
     return { ok: false, error: e.message };
   }
 }
 
-export async function deleteProduct(id: string): Promise<{ ok: boolean; error?: string }> {
+export async function deleteProduct(
+  id: string
+): Promise<{ ok: boolean; error?: string; comboProductIds?: string[] }> {
   try {
-    const { supabase, ownerId } = await requireUserAndSite();
+    const { supabase, ownerId, siteId } = await requireUserAndSite();
     const { error } = await supabase.from("products").delete().eq("id", id).eq("user_id", ownerId);
     if (error) return { ok: false, error: error.message };
+    // A deleted product must not linger in the Combos section.
+    const comboProductIds = await syncComboAllocation(supabase, siteId, id, false);
     revalidatePath("/dashboard/products");
-    return { ok: true };
+    revalidatePath("/dashboard/editor");
+    return { ok: true, comboProductIds };
   } catch (e: any) {
     return { ok: false, error: e.message };
   }

@@ -5,6 +5,7 @@ import { formatNaira } from "@/lib/utils";
 import { validateCoupon } from "@/lib/coupons";
 import { initTransaction } from "@/lib/paystack";
 import { PAYSTACK_FEE_PERCENT } from "@/lib/constants";
+import { combosOf } from "@/lib/restaurant/types";
 
 /**
  * Records a storefront order as pending and returns the store owner's bank
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
   // Restaurant combos: a fixed-price bundle. Priced from the saved settings,
   // never from the request, exactly like the custom-section products above.
   const comboPrices = new Map<string, { price: number; name: string }>();
-  for (const c of ((site.site_data as any)?.restaurant?.combos || []) as any[]) {
+  for (const c of combosOf(site.site_data as any) as any[]) {
     if (!c?.id || c.available === false) continue;
     const amt = Math.round(Number(c.price) || 0);
     if (amt > 0) comboPrices.set(`combo:${c.id}`, { price: amt, name: String(c.name || "Combo") });

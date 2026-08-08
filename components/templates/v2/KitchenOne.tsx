@@ -9,13 +9,14 @@ import type { Product } from "@/lib/database.types";
 import {
   TemplateProps, Brandmark, SocialIcons, testimonialsOf, Img,
   heading, subheading, navItems, CustomSections, OrderedSections,
+  sellingPrice, originalPrice,
 } from "./shared";
 import { useTemplateEdit } from "../editor-context";
 import { useStore } from "../store-context";
 import { formatNaira } from "@/lib/utils";
 import { openState } from "@/lib/restaurant/hours";
 import { etaLabel } from "@/lib/restaurant/order";
-import { DAY_NAMES, DEFAULT_TIMEZONE, type Combo } from "@/lib/restaurant/types";
+import { combosOf, DAY_NAMES, DEFAULT_TIMEZONE, type Combo } from "@/lib/restaurant/types";
 
 /**
  * Kitchen One: a restaurant menu storefront. Warm cream surface, one accent
@@ -33,9 +34,21 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
   const accent = brandColor || "#E8590C";
 
   const name = siteData.businessName || "Kitchen One";
-  const products = useMemo(() => siteData.products || [], [siteData.products]);
+  const allProducts = useMemo(() => siteData.products || [], [siteData.products]);
   const r = siteData.restaurant || {};
-  const combos: Combo[] = (r.combos || []).filter((c) => c.available !== false);
+
+  // A combo is not a menu item: products the owner allocated to Combos are
+  // shown there and left out of the menu entirely.
+  const comboIds = useMemo(() => new Set(siteData.comboProductIds || []), [siteData.comboProductIds]);
+  const comboProducts = useMemo(
+    () => allProducts.filter((p) => comboIds.has(p.id)),
+    [allProducts, comboIds]
+  );
+  const products = useMemo(
+    () => allProducts.filter((p) => !comboIds.has(p.id)),
+    [allProducts, comboIds]
+  );
+  const combos: Combo[] = combosOf(siteData).filter((c) => c.available !== false);
 
   const state = openState(r.hours, r.timezone || DEFAULT_TIMEZONE);
   const canOrder = state.open || !r.closeOutsideHours;
@@ -61,12 +74,12 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
     });
   }, [products, active, query]);
 
-  /** Combos are added to the cart as products the API can re-price. */
+  /** Editor-typed combos are added to the cart as products the API can re-price. */
   const addCombo = (c: Combo) => {
     const synthetic = {
       id: `combo:${c.id}`,
       name: c.name,
-      description: c.items.join(", "),
+      description: (c.items || []).join(", "),
       price: c.price,
       compare_price: c.comparePrice || null,
       images: c.image ? [c.image] : [],
@@ -76,6 +89,37 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
     } as unknown as Product;
     store.addToCart(synthetic);
   };
+
+  /**
+   * The Combos section shows two things as one grid: products the owner
+   * allocated to combos (ordinary products, so the cart and checkout price
+   * them from the database) and any combos typed into the site editor.
+   */
+  const comboCards = useMemo(() => {
+    const fromProducts = comboProducts.map((p) => ({
+      key: p.id,
+      name: p.name,
+      description: p.description,
+      image: p.image,
+      price: sellingPrice(p),
+      comparePrice: originalPrice(p) ?? p.comparePrice,
+      inside: [] as string[],
+      add: () => store.addToCart(p as unknown as Product),
+    }));
+    const fromSettings = combos.map((c) => ({
+      key: c.id,
+      name: c.name,
+      description: c.description,
+      image: c.image,
+      price: c.price,
+      comparePrice: c.comparePrice,
+      // A line the owner has not filled in yet should not show as a gap.
+      inside: (c.items || []).map((s) => s.trim()).filter(Boolean),
+      add: () => addCombo(c),
+    }));
+    return [...fromProducts, ...fromSettings];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [comboProducts, combos, store]);
 
   const eta = etaLabel(r.prepTimeMins, r.deliveryTimeMins, "delivery");
 
@@ -197,7 +241,7 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
       </section>
     ),
 
-    combos: combos.length ? (
+    combos: comboCards.length ? (
       <section id="combos" className="px-4 pt-10 sm:px-6 lg:px-10">
         <div className="mx-auto max-w-6xl">
           <SectionHead
@@ -205,14 +249,14 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
             text={subheading(siteData, "combos", "Full meals at one price. Feed yourself or the family.")}
           />
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {combos.map((c) => {
+            {comboCards.map((c) => {
               const saving =
                 c.comparePrice && c.comparePrice > c.price
                   ? Math.round(((c.comparePrice - c.price) / c.comparePrice) * 100)
                   : 0;
               return (
                 <div
-                  key={c.id}
+                  key={c.key}
                   className="group overflow-hidden rounded-3xl bg-white shadow-[0_2px_18px_rgba(42,18,7,0.08)]"
                 >
                   <div className="relative aspect-[16/11] overflow-hidden bg-[#f6ece1]">
@@ -228,9 +272,9 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
                   </div>
                   <div className="p-4">
                     <h3 className="font-bold text-[#2a1207]">{c.name}</h3>
-                    {c.items.length > 0 && (
+                    {c.inside.length > 0 && (
                       <p className="mt-1 line-clamp-1 text-xs text-[#2a1207]/55">
-                        {c.items.join(" + ")}
+                        {c.inside.join(" + ")}
                       </p>
                     )}
                     {c.description && (
@@ -247,7 +291,7 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
                           </span>
                         )}
                       </span>
-                      <AddButton accent={accent} disabled={!canOrder} onClick={() => addCombo(c)} />
+                      <AddButton accent={accent} disabled={!canOrder} onClick={c.add} />
                     </div>
                   </div>
                 </div>

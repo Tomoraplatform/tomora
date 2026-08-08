@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useId } from "react";
 import { Plus, Trash2, UploadCloud, Loader2, X, Package, ChevronUp, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,7 @@ import { SectionsEditor } from "./sections-editor";
 
 const PRESET = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777", "#111111"];
 
-type Field = { key: string; label: string; type?: "text" | "textarea" | "number" | "image" | "video" };
+type Field = { key: string; label: string; type?: "text" | "textarea" | "number" | "image" | "video" | "lines" };
 
 const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fields: Field[]; make: () => any }> = {
   services: {
@@ -52,6 +52,11 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
     key: "causes", title: "Causes / Campaigns",
     fields: [{ key: "image", label: "Image", type: "image" }, { key: "title", label: "Title" }, { key: "description", label: "Description", type: "textarea" }, { key: "raised", label: "Raised (NGN)", type: "number" }, { key: "goal", label: "Goal (NGN)", type: "number" }],
     make: () => ({ id: `ca-${Date.now()}`, title: "New cause", description: "Why it matters.", image: "", raised: 0, goal: 100000 }),
+  },
+  combos: {
+    key: "combos", title: "Combo",
+    fields: [{ key: "image", label: "Image", type: "image" }, { key: "name", label: "Name" }, { key: "description", label: "Description", type: "textarea" }, { key: "items", label: "What is in this combo", type: "lines" }, { key: "price", label: "Price (NGN)", type: "number" }, { key: "comparePrice", label: "Worth (NGN, optional, shows a saving)", type: "number" }],
+    make: () => ({ id: `combo-${Date.now()}`, name: "New combo", description: "What is in it.", image: "", price: 5000, comparePrice: 0, items: [], available: true }),
   },
   events: {
     key: "events", title: "Events",
@@ -204,6 +209,7 @@ export function CatalogEditorPanel({
   payoutConnected = false,
   focusKey = null,
   focusNonce = 0,
+  productNames = [],
 }: {
   data: SiteData;
   patch: (p: Partial<SiteData>) => void;
@@ -216,6 +222,8 @@ export function CatalogEditorPanel({
   payoutConnected?: boolean;
   focusKey?: string | null;
   focusNonce?: number;
+  /** The owner's saved menu items, offered as suggestions inside a combo. */
+  productNames?: string[];
 }) {
   // Click-to-edit: scroll the clicked section's controls into view + briefly highlight.
   const [highlightKey, setHighlightKey] = useState<string | null>(null);
@@ -257,6 +265,11 @@ export function CatalogEditorPanel({
   const [hex, setHex] = useState("");
   const [uploading, setUploading] = useState<string | null>(null);
   const custom = data.brandColors || [];
+  // Menu items offered when filling a combo: the owner's saved products, plus
+  // whatever the template seeded, so the list is never empty on a new site.
+  const menuNames = Array.from(
+    new Set([...productNames, ...(data.products || []).map((p) => p.name)].map((n) => (n || "").trim()).filter(Boolean))
+  );
 
   async function upload(field: "logoUrl" | "heroImage", file?: File) {
     if (!file) return;
@@ -388,6 +401,9 @@ export function CatalogEditorPanel({
             onDown={reorder.length > 1 && i < orderedDefs.length - 1 ? () => moveSection(def.key, 1) : undefined}
             onDelete={reorder.length > 1 ? () => deleteSection(def.key, def.label) : undefined}
           >
+            {def.hint && (
+              <p className="rounded-md bg-cream px-3 py-2 text-xs leading-relaxed text-ink/60">{def.hint}</p>
+            )}
             {def.hero ? (
               <>
                 {def.eyebrow && (
@@ -466,7 +482,7 @@ export function CatalogEditorPanel({
                     </FieldRow>
                   </>
                 )}
-                {[...(def.list ? [def.list] : []), ...(def.lists || [])].map((lk) => <ListBody key={lk} cfg={LIST_CONFIG[lk]} data={data} patch={patch} />)}
+                {[...(def.list ? [def.list] : []), ...(def.lists || [])].map((lk) => <ListBody key={lk} cfg={LIST_CONFIG[lk]} data={data} patch={patch} suggestions={menuNames} />)}
               </>
             ) : def.search ? (
               <>
@@ -595,20 +611,22 @@ export function CatalogEditorPanel({
                     </div>
                   </FieldRow>
                 )}
-                {[...(def.list ? [def.list] : []), ...(def.lists || [])].map((lk) => (
-                  <ListBody key={lk} cfg={LIST_CONFIG[lk]} data={data} patch={patch} />
-                ))}
-                {def.products && isEcommerce && (
-                  onManageProducts ? (
-                    <button type="button" onClick={onManageProducts} className="flex w-full items-center justify-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-cream hover:opacity-90">
-                      <Package className="h-4 w-4" /> Manage products &amp; prices
+                {def.products && isEcommerce && (() => {
+                  const label = def.key === "combos" ? "Add or edit combo products" : "Manage products & prices";
+                  const cls = "flex w-full items-center justify-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-cream hover:opacity-90";
+                  return onManageProducts ? (
+                    <button type="button" onClick={onManageProducts} className={cls}>
+                      <Package className="h-4 w-4" /> {label}
                     </button>
                   ) : (
-                    <a href="/dashboard/products" className="flex items-center justify-center gap-2 rounded-md bg-ink px-4 py-2.5 text-sm font-semibold text-cream hover:opacity-90">
-                      <Package className="h-4 w-4" /> Manage products &amp; prices
+                    <a href="/dashboard/products" className={cls}>
+                      <Package className="h-4 w-4" /> {label}
                     </a>
-                  )
-                )}
+                  );
+                })()}
+                {[...(def.list ? [def.list] : []), ...(def.lists || [])].map((lk) => (
+                  <ListBody key={lk} cfg={LIST_CONFIG[lk]} data={data} patch={patch} suggestions={menuNames} />
+                ))}
                 {!hasControls && (
                   <p className="text-xs text-ink/40">This section&apos;s content is styled by the template. Use the arrows to move it.</p>
                 )}
@@ -698,10 +716,11 @@ function SectionGroup({
 }
 
 /** Renders an editable list's items + add button (no section wrapper). */
-function ListBody({ cfg, data, patch }: {
+function ListBody({ cfg, data, patch, suggestions = [] }: {
   cfg: { key: keyof SiteData; title: string; fields: Field[]; make: () => any };
   data: SiteData;
   patch: (p: Partial<SiteData>) => void;
+  suggestions?: string[];
 }) {
   const items = (data[cfg.key] as any[]) || [];
   const onChange = (next: any[]) => patch({ [cfg.key]: next } as Partial<SiteData>);
@@ -717,7 +736,7 @@ function ListBody({ cfg, data, patch }: {
             <button onClick={() => remove(i)} className="text-ink/40 hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
           </div>
           {cfg.fields.map((f) => (
-            <ItemField key={f.key} field={f} value={item[f.key]} onChange={(v) => set(i, f.key, v)} />
+            <ItemField key={f.key} field={f} value={item[f.key]} onChange={(v) => set(i, f.key, v)} suggestions={suggestions} />
           ))}
         </div>
       ))}
@@ -726,8 +745,53 @@ function ListBody({ cfg, data, patch }: {
   );
 }
 
-function ItemField({ field, value, onChange }: { field: Field; value: any; onChange: (v: any) => void }) {
+function ItemField({ field, value, onChange, suggestions = [] }: {
+  field: Field;
+  value: any;
+  onChange: (v: any) => void;
+  suggestions?: string[];
+}) {
   const [busy, setBusy] = useState(false);
+  const linesId = useId();
+  if (field.type === "lines") {
+    // A list of plain lines, e.g. the products inside a combo. Each row can be
+    // typed freely or picked from the owner's menu.
+    const lines: string[] = Array.isArray(value)
+      ? value
+      : typeof value === "string" && value ? value.split("\n") : [];
+    const setLine = (i: number, v: string) => onChange(lines.map((l, j) => (j === i ? v : l)));
+    return (
+      <div className="space-y-1">
+        <Label className="text-[11px] text-ink/50">{field.label}</Label>
+        {suggestions.length > 0 && (
+          <datalist id={linesId}>{suggestions.map((s) => <option key={s} value={s} />)}</datalist>
+        )}
+        {lines.map((line, i) => (
+          <div key={i} className="flex items-center gap-1.5">
+            <Input
+              className="h-8 text-xs"
+              value={line}
+              list={suggestions.length ? linesId : undefined}
+              placeholder="e.g. 1 Jollof Rice"
+              onChange={(e) => setLine(i, e.target.value)}
+            />
+            <button type="button" aria-label="Remove" className="text-ink/40 hover:text-destructive"
+              onClick={() => onChange(lines.filter((_, j) => j !== i))}>
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ))}
+        <Button type="button" variant="outline" size="sm" className="h-8 w-full text-xs" onClick={() => onChange([...lines, ""])}>
+          <Plus className="h-3.5 w-3.5" /> Add product
+        </Button>
+        <p className="text-[11px] text-ink/40">
+          {suggestions.length > 0
+            ? "Start typing to pick one of your menu items, or write anything."
+            : "One product per row, e.g. 2 Jollof Rice."}
+        </p>
+      </div>
+    );
+  }
   if (field.type === "video") {
     return (
       <div className="space-y-1">

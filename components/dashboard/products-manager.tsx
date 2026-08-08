@@ -18,24 +18,42 @@ import type { Product } from "@/lib/database.types";
 
 const empty: ProductInput = { name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isBestSeller: false, isOffer: false, isNewArrival: false, offerPercent: 0, colors: [], colorVariants: [], isPreOrder: false, preorderNote: "" };
 
-export function ProductsManager({ initial, embedded, onChanged }: { initial: Product[]; embedded?: boolean; onChanged?: () => void }) {
+export function ProductsManager({
+  initial, embedded, onChanged, comboIds, comboEnabled,
+}: {
+  initial: Product[];
+  embedded?: boolean;
+  onChanged?: (comboProductIds?: string[]) => void;
+  /** Products currently allocated to the Combos section. */
+  comboIds?: string[];
+  /** Restaurants only: offer the "Combo" switch on the product card. */
+  comboEnabled?: boolean;
+}) {
   const [products, setProducts] = useState<Product[]>(initial);
   const [editing, setEditing] = useState<ProductInput | null>(null);
   const [open, setOpen] = useState(false);
+  const [combos, setCombos] = useState<string[]>(comboIds || []);
 
   // Keep in sync when the parent refetches (embedded in the editor).
   useEffect(() => { setProducts(initial); }, [initial]);
+  useEffect(() => { setCombos(comboIds || []); }, [comboIds]);
+
+  /** The save/delete actions return the site's new combo list; adopt it. */
+  function settle(ids?: string[]) {
+    if (ids) setCombos(ids);
+    onChanged?.(ids);
+  }
 
   function startAdd() { setEditing({ ...empty }); setOpen(true); }
   function startEdit(p: Product) {
-    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, comparePrice: p.compare_price ?? undefined, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active, isBestSeller: p.is_best_seller, isOffer: p.is_offer, isNewArrival: p.is_new_arrival, offerPercent: p.offer_percent, colors: p.colors || [], colorVariants: p.color_variants || [], isPreOrder: p.is_pre_order, preorderNote: p.preorder_note || "" });
+    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, comparePrice: p.compare_price ?? undefined, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active, isBestSeller: p.is_best_seller, isOffer: p.is_offer, isNewArrival: p.is_new_arrival, offerPercent: p.offer_percent, colors: p.colors || [], colorVariants: p.color_variants || [], isPreOrder: p.is_pre_order, preorderNote: p.preorder_note || "", isCombo: combos.includes(p.id) });
     setOpen(true);
   }
 
   async function onDelete(id: string) {
     if (!confirm("Delete this product?")) return;
     const res = await deleteProduct(id);
-    if (res.ok) { setProducts((ps) => ps.filter((p) => p.id !== id)); onChanged?.(); }
+    if (res.ok) { setProducts((ps) => ps.filter((p) => p.id !== id)); settle(res.comboProductIds); }
   }
 
   return (
@@ -78,6 +96,7 @@ export function ProductsManager({ initial, embedded, onChanged }: { initial: Pro
                         ) : <ImageOff className="h-4 w-4 text-ink/30" />}
                       </div>
                       <span className="font-medium text-ink">{p.name}</span>
+                      {combos.includes(p.id) && <Badge variant="secondary">Combo</Badge>}
                     </div>
                   </td>
                   <td className="p-4 text-ink/80">{formatNaira(p.price)}</td>
@@ -104,11 +123,12 @@ export function ProductsManager({ initial, embedded, onChanged }: { initial: Pro
           {editing && (
             <ProductForm
               value={editing}
+              comboEnabled={comboEnabled}
               onClose={() => setOpen(false)}
-              onSaved={() => {
+              onSaved={(ids) => {
                 setOpen(false);
                 // Embedded in the editor: refetch via callback (keeps the modal/editor).
-                if (onChanged) onChanged();
+                if (onChanged) settle(ids);
                 else window.location.reload();
               }}
             />
@@ -119,7 +139,12 @@ export function ProductsManager({ initial, embedded, onChanged }: { initial: Pro
   );
 }
 
-function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose: () => void; onSaved: () => void }) {
+function ProductForm({ value, onClose, onSaved, comboEnabled }: {
+  value: ProductInput;
+  onClose: () => void;
+  onSaved: (comboProductIds?: string[]) => void;
+  comboEnabled?: boolean;
+}) {
   const [form, setForm] = useState<ProductInput>(value);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -146,7 +171,7 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
     setSaving(true); setError(null);
     const res = await saveProduct(form);
     setSaving(false);
-    if (res.ok) onSaved();
+    if (res.ok) onSaved(res.comboProductIds);
     else setError(res.error || "Could not save.");
   }
 
@@ -179,7 +204,27 @@ function ProductForm({ value, onClose, onSaved }: { value: ProductInput; onClose
         <div className="space-y-2"><Label>Old price</Label><Input type="number" min={0} value={form.comparePrice ?? ""} onChange={(e) => set("comparePrice", e.target.value ? Number(e.target.value) : undefined)} placeholder="optional" /></div>
         <div className="space-y-2"><Label>Stock</Label><Input type="number" min={0} value={form.stock} onChange={(e) => set("stock", Number(e.target.value))} /></div>
       </div>
-      <div className="space-y-2"><Label>Category</Label><Input value={form.category} onChange={(e) => set("category", e.target.value)} placeholder="e.g. Dresses" /></div>
+      {!(comboEnabled && form.isCombo) && (
+        <div className="space-y-2"><Label>Category</Label><Input value={form.category} onChange={(e) => set("category", e.target.value)} placeholder="e.g. Dresses" /></div>
+      )}
+
+      {comboEnabled && (
+        <div className="rounded-lg border border-ink/10 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-sm font-medium">Combo</span>
+              <p className="text-xs text-ink/50">A full meal sold at one price, shown in the Combos section.</p>
+            </div>
+            <Switch checked={!!form.isCombo} onCheckedChange={(v) => set("isCombo", v)} />
+          </div>
+          {form.isCombo && (
+            <p className="mt-3 rounded-md bg-cream px-3 py-2 text-xs text-ink/60">
+              Customers order this from Combos, so it stays off the menu and needs no category. Fill in
+              &ldquo;Old price&rdquo; above to show what the meal is worth and the saving.
+            </p>
+          )}
+        </div>
+      )}
 
       <ColorVariantsField value={form.colorVariants || []} onChange={(v) => set("colorVariants", v)} />
 

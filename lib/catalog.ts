@@ -72,7 +72,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
 ];
 
 /** Which content lists each template renders from site_data (so the editor can expose them). */
-export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints" | "ministries" | "skills" | "experiencePhotos" | "galleryPhotos" | "galleryVideos" | "blogPosts" | "videoLinks" | "beforeAfter" | "donationProjects";
+export type EditableList = "services" | "portfolio" | "courses" | "causes" | "events" | "testimonials" | "resume" | "faqs" | "stats" | "hours" | "shopCategories" | "trustBadges" | "clientLogos" | "eduCategories" | "advantages" | "eduFeatures" | "progress" | "impactImages" | "avatars" | "quickActions" | "aboutImages" | "aboutPoints" | "ministries" | "skills" | "experiencePhotos" | "galleryPhotos" | "galleryVideos" | "blogPosts" | "videoLinks" | "beforeAfter" | "donationProjects" | "combos";
 export const TEMPLATE_LISTS: Record<string, EditableList[]> = {
   "shop-01": ["trustBadges", "testimonials"],
   "shop-02": ["trustBadges"],
@@ -190,6 +190,7 @@ export type SectionDef = {
   heroSearch?: boolean;   // hero: editable single search field (toggle + placeholder)
   extraText?: { key: string; label: string }[]; // extra editable labels (sectionText keys)
   countdown?: boolean;    // top bar: editable countdown label + target date
+  hint?: string;          // short note shown at the top of the section's controls
   donation?: boolean;     // donation section: enable toggle + goal + manual amount
 };
 export const TEMPLATE_SECTIONS: Record<string, SectionDef[]> = {
@@ -404,7 +405,10 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
   "food-01": [
     { key: "hero", label: "Hero", hero: true, image: true, button: true },
     { key: "info", label: "Delivery & pickup strip" },
-    { key: "combos", label: "Combos", heading: "combos", text: true },
+    {
+      key: "combos", label: "Combos", heading: "combos", text: true, list: "combos", products: true,
+      hint: "A combo is a full meal at one price. Add it as a product and switch on “Combo”, it then shows here instead of on the menu.",
+    },
     { key: "menu", label: "Menu", heading: "menu", text: true, products: true },
     { key: "offer", label: "Promo banner", heading: "sale", text: true, button: true, color: true },
     { key: "visit", label: "Find us & hours", heading: "visit", text: true },
@@ -1550,23 +1554,24 @@ export function createCatalogContent(
       ...defaultRestaurant(),
       pickupAddress: "12 Allen Avenue, Ikeja, Lagos",
       pickupNote: "Ring the bell at the side entrance.",
-      combos: [
-        {
-          id: "combo-family", name: "Family Combo", available: true,
-          description: "Enough for three or four people.",
-          price: 12500, comparePrice: 15000,
-          items: ["2 Jollof Rice", "1 Whole Chicken", "2 Plantain", "2 Drinks"],
-          image: img(`${seed}-combo-1`, 800, 600),
-        },
-        {
-          id: "combo-solo", name: "Solo Special", available: true,
-          description: "A full plate and a cold drink.",
-          price: 4200, comparePrice: 5000,
-          items: ["1 Jollof Rice", "1 Chicken", "1 Drink"],
-          image: img(`${seed}-combo-2`, 800, 600),
-        },
-      ],
     };
+    // Combos sit at the top level so the site editor's list panel can edit them.
+    data.combos = [
+      {
+        id: "combo-family", name: "Family Combo", available: true,
+        description: "Enough for three or four people.",
+        price: 12500, comparePrice: 15000,
+        items: ["2 Jollof Rice", "1 Whole Chicken", "2 Plantain", "2 Drinks"],
+        image: img(`${seed}-combo-1`, 800, 600),
+      },
+      {
+        id: "combo-solo", name: "Solo Special", available: true,
+        description: "A full plate and a cold drink.",
+        price: 4200, comparePrice: 5000,
+        items: ["1 Jollof Rice", "1 Chicken", "1 Drink"],
+        image: img(`${seed}-combo-2`, 800, 600),
+      },
+    ];
     if (!data.shippingZones?.length) {
       data.shippingZones = [
         { id: "zone-ikeja", name: "Ikeja", fee: 1000 },

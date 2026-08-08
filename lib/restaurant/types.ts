@@ -49,9 +49,21 @@ export interface RestaurantSettings {
   /** IANA zone the hours are written in. Server time is UTC, so without this
    *  "open now" would be an hour out for a Lagos kitchen. */
   timezone?: string;
+  /** Where combos used to live. Storage is now `siteData.combos` so the site
+   *  editor's list panel can reach them; read them with `combosOf`. Sites saved
+   *  before the move still have their combos here, and the restaurant settings
+   *  form still carries them in this field on its way to the server. */
   combos?: Combo[];
   /** Refuse new orders while outside opening hours. */
   closeOutsideHours?: boolean;
+}
+
+/** The site's combos, from the top-level key, falling back to the old nested
+ *  spot so sites saved before the move keep working. */
+export function combosOf(
+  data: { combos?: Combo[]; restaurant?: { combos?: Combo[] } } | null | undefined
+): Combo[] {
+  return data?.combos ?? data?.restaurant?.combos ?? [];
 }
 
 export const DEFAULT_TIMEZONE = "Africa/Lagos";
@@ -76,7 +88,6 @@ export function defaultRestaurant(): RestaurantSettings {
     minOrder: 0,
     hours: defaultHours(),
     timezone: DEFAULT_TIMEZONE,
-    combos: [],
     closeOutsideHours: true,
   };
 }

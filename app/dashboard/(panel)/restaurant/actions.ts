@@ -74,7 +74,6 @@ export async function saveRestaurant(input: RestaurantSettings): Promise<R> {
       minOrder: Math.max(0, Math.round(Number(input.minOrder) || 0)),
       hours,
       timezone: String(input.timezone || DEFAULT_TIMEZONE).slice(0, 60),
-      combos,
       closeOutsideHours: !!input.closeOutsideHours,
     };
 
@@ -83,10 +82,13 @@ export async function saveRestaurant(input: RestaurantSettings): Promise<R> {
       return { ok: false, error: "Turn on delivery, pickup, or both. Otherwise nobody can order." };
     }
 
+    // Combos are stored at the top level, where the site editor's list panel
+    // also writes them, so both editors always read the same combos. `clean`
+    // is built fresh, so any copy left under `restaurant` is dropped here.
     const sd = (site.site_data || {}) as SiteData;
     const { error } = await supabase
       .from("sites")
-      .update({ site_data: { ...sd, restaurant: clean } })
+      .update({ site_data: { ...sd, combos, restaurant: clean } })
       .eq("id", site.id);
     if (error) return { ok: false, error: error.message };
 
