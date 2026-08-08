@@ -21,7 +21,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const { siteId, buyer, items, couponCode, shippingZoneId } = body || {};
+  const { siteId, buyer, items, couponCode, shippingZoneId, fulfilment } = body || {};
+  // Restaurants let the customer collect in person, which skips the zone fee.
+  const isPickup = fulfilment === "pickup";
   if (!siteId || !buyer?.email || !buyer?.name || !Array.isArray(items) || !items.length) {
     return NextResponse.json({ error: "Missing checkout details." }, { status: 400 });
   }
@@ -61,6 +63,15 @@ export async function POST(request: NextRequest) {
     }
   }
 
+  // Restaurant combos: a fixed-price bundle. Priced from the saved settings,
+  // never from the request, exactly like the custom-section products above.
+  const comboPrices = new Map<string, { price: number; name: string }>();
+  for (const c of ((site.site_data as any)?.restaurant?.combos || []) as any[]) {
+    if (!c?.id || c.available === false) continue;
+    const amt = Math.round(Number(c.price) || 0);
+    if (amt > 0) comboPrices.set(`combo:${c.id}`, { price: amt, name: String(c.name || "Combo") });
+  }
+
   const reference = `tom_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   let total = 0;
   const rows: any[] = [];
@@ -71,7 +82,14 @@ export async function POST(request: NextRequest) {
     let price: number | null = null;
     let productId: string | null = null;
 
-    if (id.startsWith("custom:")) {
+    let label: string | null = null;
+    if (id.startsWith("combo:")) {
+      const combo = comboPrices.get(id);
+      if (combo) {
+        price = combo.price; // product_id stays null for combos
+        label = combo.name; // so the order row is not blank in the dashboard
+      }
+    } else if (id.startsWith("custom:")) {
       const amt = customPrices.get(id);
       if (amt && amt > 0) price = amt; // product_id stays null for custom items
     } else {
@@ -91,9 +109,9 @@ export async function POST(request: NextRequest) {
       buyer_name: buyer.name,
       buyer_email: buyer.email,
       buyer_phone: buyer.phone || null,
-      buyer_address: buyer.address || null,
+      buyer_address: isPickup ? "Pickup in person" : buyer.address || null,
       amount: lineTotal,
-      color: item.color ? String(item.color).slice(0, 60) : null,
+      color: String(item.color || label || "").slice(0, 60) || null,
       paystack_reference: reference,
       status: "pending",
     });
@@ -126,7 +144,7 @@ export async function POST(request: NextRequest) {
   // Shipping fee for the chosen delivery location (validated server-side).
   let shippingFee = 0;
   let shippingName: string | null = null;
-  if (shippingZoneId) {
+  if (shippingZoneId && !isPickup) {
     const zone = ((site.site_data as any)?.shippingZones || []).find((z: any) => z.id === shippingZoneId);
     if (zone) {
       shippingFee = Math.max(0, Math.round(Number(zone.fee) || 0));
@@ -137,7 +155,7 @@ export async function POST(request: NextRequest) {
           site_id: siteId, product_id: null,
           buyer_name: buyer.name, buyer_email: buyer.email,
           buyer_phone: buyer.phone || null, buyer_address: buyer.address || null,
-          amount: shippingFee, color: `Shipping: ${shippingName}`,
+          amount: shippingFee, color: `Delivery: ${shippingName}`,
           paystack_reference: reference, status: "pending",
         });
       }
