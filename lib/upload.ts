@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/client";
 
+// Every upload gets its own UUID path, so a file at a URL never changes and the
+// browser can keep it for good. The old one hour meant repeat visitors to a
+// site re-downloaded its photos several times a day.
+const CACHE_A_YEAR = "31536000";
+
 /**
  * Downscale + compress a photo in the browser before uploading. Phone photos are
  * often 3 to 8MB; this brings them to a few hundred KB, so uploads (and the whole
@@ -51,7 +56,7 @@ export async function uploadImage(
 
   const { error } = await supabase.storage
     .from(bucket)
-    .upload(path, compressed, { cacheControl: "3600", upsert: false });
+    .upload(path, compressed, { cacheControl: CACHE_A_YEAR, upsert: false });
   if (error) return { error: error.message };
 
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
@@ -77,7 +82,7 @@ export async function uploadMedia(
 
   const ext = toUpload.name.split(".").pop() || "bin";
   const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage.from(bucket).upload(path, toUpload, { cacheControl: "3600", upsert: false });
+  const { error } = await supabase.storage.from(bucket).upload(path, toUpload, { cacheControl: CACHE_A_YEAR, upsert: false });
   if (error) return { error: error.message };
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return { url: data.publicUrl };

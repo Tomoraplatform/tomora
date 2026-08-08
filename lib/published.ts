@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { expireCompIfDue } from "@/lib/billing";
 import type { Site, Product, Subscription, Review } from "@/lib/database.types";
@@ -10,11 +11,18 @@ export interface PublishedSite {
   isLive: boolean;
 }
 
-/** Loads a published site by subdomain or custom domain (server-only). */
-export async function loadPublishedSite(
+/**
+ * Loads a published site by subdomain or custom domain (server-only).
+ *
+ * Wrapped in React `cache`, because every page calls this once for its metadata
+ * and again for its body: without it a single visit runs the whole set of
+ * queries twice. Independent queries run together rather than one after the
+ * other, since a visitor waits for the slowest, not the sum.
+ */
+export const loadPublishedSite = cache(async (
   type: "subdomain" | "custom",
   value: string
-): Promise<PublishedSite | null> {
+): Promise<PublishedSite | null> => {
   const admin = createAdminClient();
   const column = type === "custom" ? "custom_domain" : "subdomain";
 
@@ -26,12 +34,23 @@ export async function loadPublishedSite(
 
   if (!site) return null;
 
-  // Determine live status: explicit flag + trial / subscription guard.
-  const { data: sub } = await admin
-    .from("subscriptions")
-    .select("status, comp_expires_at")
-    .eq("user_id", site.user_id)
-    .maybeSingle<Pick<Subscription, "status" | "comp_expires_at">>();
+  const isStore = site.category === "ecommerce";
+  const [{ data: sub }, prod, revs] = await Promise.all([
+    // Live status: explicit flag + trial / subscription guard.
+    admin
+      .from("subscriptions")
+      .select("status, comp_expires_at")
+      .eq("user_id", site.user_id)
+      .maybeSingle<Pick<Subscription, "status" | "comp_expires_at">>(),
+    isStore
+      ? admin.from("products").select("*").eq("site_id", site.id).eq("is_active", true).order("created_at", { ascending: false })
+      : Promise.resolve({ data: [] as Product[] }),
+    // Best-effort: reviews table may not exist yet (pre-0006 migration).
+    isStore
+      ? admin.from("reviews").select("*").eq("site_id", site.id).eq("is_published", true).order("created_at", { ascending: false }).limit(50)
+          .then((r) => r, () => ({ data: [] as Review[] }))
+      : Promise.resolve({ data: [] as Review[] }),
+  ]);
 
   // Expire any comp whose period has ended (takes the site offline).
   const compExpired = await expireCompIfDue(site.user_id, sub);
@@ -45,21 +64,10 @@ export async function loadPublishedSite(
     if (trialOver) isLive = subActive;
   }
 
-  let products: Product[] = [];
-  let reviews: Review[] = [];
-  if (site.category === "ecommerce") {
-    const { data: prod } = await admin
-      .from("products").select("*").eq("site_id", site.id).eq("is_active", true).order("created_at", { ascending: false });
-    products = (prod as Product[]) || [];
-    // Best-effort: reviews table may not exist yet (pre-0006 migration).
-    try {
-      const { data: revs } = await admin
-        .from("reviews").select("*").eq("site_id", site.id).eq("is_published", true).order("created_at", { ascending: false }).limit(50);
-      reviews = (revs as Review[]) || [];
-    } catch {
-      reviews = [];
-    }
-  }
-
-  return { site: site as Site, products, reviews, isLive };
-}
+  return {
+    site: site as Site,
+    products: (prod.data as Product[]) || [],
+    reviews: (revs.data as Review[]) || [],
+    isLive,
+  };
+});
