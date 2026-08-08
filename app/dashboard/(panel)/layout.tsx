@@ -2,6 +2,7 @@ import { getDashboardData } from "@/lib/dashboard";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardShell, type NavItem } from "@/components/dashboard/shell";
 import { siteLiveUrl } from "@/lib/site-url";
+import { catalogTemplate } from "@/lib/catalog";
 
 export const metadata = { robots: { index: false, follow: false } };
 
@@ -12,6 +13,8 @@ export default async function PanelLayout({
 }) {
   const { site, sites, isStaff, staffAreas } = await getDashboardData();
   const isEcommerce = site?.category === "ecommerce";
+  // Restaurants are ecommerce sites on a food template; they get one extra page.
+  const isRestaurant = catalogTemplate(site?.template_id || "")?.category === "food";
 
   const supabase = createClient();
 
@@ -45,9 +48,12 @@ export default async function PanelLayout({
     { href: "/dashboard/templates", label: "Templates", icon: "LayoutTemplate" },
     { href: "/dashboard/milestones", label: "Milestones", icon: "Trophy" },
     { href: "/dashboard/brand", label: "Brand Settings", icon: "Palette" },
+    ...(isRestaurant
+      ? ([{ href: "/dashboard/restaurant", label: "Restaurant", icon: "UtensilsCrossed" }] as NavItem[])
+      : []),
     ...(isEcommerce
       ? ([
-          { href: "/dashboard/products", label: "Products", icon: "Package" },
+          { href: "/dashboard/products", label: isRestaurant ? "Menu items" : "Products", icon: "Package" },
           { href: "/dashboard/orders", label: "Orders", icon: "ShoppingBag", badge: newOrders },
           { href: "/dashboard/discounts", label: "Discounts", icon: "Ticket" },
           { href: "/dashboard/shipping", label: "Shipping", icon: "Truck" },
