@@ -45,6 +45,8 @@ export function EditorClient({ site, liveUrl }: { site: Site; liveUrl: string })
       const defaults = createCatalogContent(site.template_id, {
         businessName: base.businessName || "Your Brand",
         brandColor: base.brandColor,
+        // Never hand an existing site sample combos it never created.
+        demoCombos: false,
       });
       (["services", "portfolioItems", "courses", "causes", "events", "testimonials", "resume", "faqs", "stats", "hours", "shopCategories", "trustBadges"] as const).forEach((k) => {
         if (!(base as any)[k]?.length && (defaults as any)[k]?.length) (base as any)[k] = (defaults as any)[k];

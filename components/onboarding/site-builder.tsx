@@ -84,7 +84,7 @@ export function SiteBuilderWizard({
   const social = { instagram, facebook, website: whatsapp };
 
   const previewData = useMemo(() => {
-    const d = createCatalogContent(templateId, { businessName: businessName || "Your Brand", brandColor, logoUrl, tagline });
+    const d = createCatalogContent(templateId, { businessName: businessName || "Your Brand", brandColor, logoUrl, tagline, demoCombos: false });
     if (heroImgs[0]) d.heroImage = heroImgs[0];
     if (slots > 1 && heroImgs.length > 1) d.heroImages = heroImgs.slice(1);
     if (headline.trim()) d.heroHeadline = headline.trim();

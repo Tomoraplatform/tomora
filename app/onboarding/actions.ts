@@ -98,6 +98,7 @@ export async function completeOnboarding(
         brandColor: payload.brandColor,
         logoUrl: payload.logoUrl,
         tagline: payload.tagline,
+        demoCombos: false,
       })
     : createDefaultSiteData(payload.templateId, dbCategory, {
         businessName: payload.businessName.trim(),
@@ -191,6 +192,7 @@ export async function createStoreDraft(payload: OnboardingPayload): Promise<Onbo
     brandColor: payload.brandColor,
     logoUrl: payload.logoUrl,
     tagline: payload.tagline,
+    demoCombos: false,
   });
   siteData.email = payload.email || user.email || undefined;
   siteData.social = payload.social;

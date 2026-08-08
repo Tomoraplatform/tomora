@@ -70,6 +70,8 @@ export function OnboardingWizard({
       brandColor,
       logoUrl,
       tagline,
+      // Match the site this is about to create, which starts with no combos.
+      demoCombos: false,
     });
     d.phone = phone; d.email = email; d.address = address;
     d.social = { instagram, twitter, facebook, website };

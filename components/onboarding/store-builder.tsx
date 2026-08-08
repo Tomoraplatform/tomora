@@ -100,7 +100,7 @@ export function StoreBuilderWizard({
   const setF = (k: keyof ProductInput, v: any) => setForm((f) => ({ ...f, [k]: v }));
 
   const previewData = useMemo(() => {
-    const d = createCatalogContent(templateId, { businessName: businessName || "Your Store", brandColor, logoUrl });
+    const d = createCatalogContent(templateId, { businessName: businessName || "Your Store", brandColor, logoUrl, demoCombos: false });
     if (heroImgs[0]) d.heroImage = heroImgs[0];
     if (slots > 1 && heroImgs.length > 1) d.heroImages = heroImgs.slice(1);
     if (headline.trim()) d.heroHeadline = headline.trim();

@@ -984,7 +984,15 @@ const HERO = {
 
 export function createCatalogContent(
   templateId: string,
-  opts: { businessName: string; brandColor: string; tagline?: string; logoUrl?: string }
+  opts: {
+    businessName: string;
+    brandColor: string;
+    tagline?: string;
+    logoUrl?: string;
+    /** Template previews want a filled page. A real new site does not want
+     *  sample combos it never created, since combos come from its products. */
+    demoCombos?: boolean;
+  }
 ): SiteData {
   const tpl = catalogTemplate(templateId);
   const seed = templateId;
@@ -1555,8 +1563,10 @@ export function createCatalogContent(
       pickupAddress: "12 Allen Avenue, Ikeja, Lagos",
       pickupNote: "Ring the bell at the side entrance.",
     };
-    // Combos sit at the top level so the site editor's list panel can edit them.
-    data.combos = [
+    // Sample combos are for previews only: a real kitchen builds its Combos
+    // section by ticking "Combo" on its own products. They sit at the top level
+    // so the site editor's list panel can still edit them.
+    data.combos = opts.demoCombos === false ? [] : [
       {
         id: "combo-family", name: "Family Combo", available: true,
         description: "Enough for three or four people.",

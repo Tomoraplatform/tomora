@@ -235,6 +235,7 @@ export async function createSiteFromNova(spec: NovaSpec): Promise<NovaCreateResu
     brandColor,
     tagline: spec.tagline,
     logoUrl,
+    demoCombos: false,
   });
 
   if (heroImage) sd.heroImage = heroImage;

@@ -90,6 +90,7 @@ export async function createAdditionalSite(templateId: string): Promise<CreateSi
     brandColor: profile?.brand_color || "#022245",
     logoUrl: profile?.logo_url || undefined,
     tagline: profile?.tagline || undefined,
+    demoCombos: false,
   });
   siteData.phone = profile?.phone || undefined;
   siteData.email = profile?.email || user.email || undefined;
