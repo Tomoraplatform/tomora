@@ -22,6 +22,10 @@ export default async function TemplatesPage() {
     accent: catalogTemplate(s.template_id)?.accent || "#022245",
     isLive: s.is_live,
     isCurrent: s.id === site?.id,
+    // The card should look like the site the owner has been editing, not the
+    // template's demo content.
+    siteData: s.site_data || undefined,
+    customHtmlUrl: (s as { custom_html_url?: string | null }).custom_html_url || undefined,
   }));
 
   // Templates the user already has a site on stay visible even if archived,

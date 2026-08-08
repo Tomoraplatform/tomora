@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SiteRenderer } from "@/components/templates";
 import { createCatalogContent, richStoreCatalog } from "@/lib/catalog";
+import type { SiteData } from "@/lib/database.types";
 import { cn } from "@/lib/utils";
 
 const DESKTOP_WIDTH = 1280;
@@ -21,6 +22,7 @@ export function TemplatePreview({
   className,
   heroOverride,
   richCatalog = false,
+  siteDataOverride,
 }: {
   templateId: string;
   brandColor?: string;
@@ -33,6 +35,9 @@ export function TemplatePreview({
    *  store looks fully set up (many products per category) rather than the
    *  sparse starter content real onboarding seeds. */
   richCatalog?: boolean;
+  /** Render a real site's saved content instead of the demo catalog, so a
+   *  dashboard thumbnail shows the owner's own edits. */
+  siteDataOverride?: SiteData;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [vw, setVw] = useState(DESKTOP_WIDTH);
@@ -63,6 +68,7 @@ export function TemplatePreview({
 
   const data = useMemo(
     () => {
+      if (siteDataOverride) return siteDataOverride;
       const d = createCatalogContent(templateId, { businessName, brandColor });
       if (heroOverride) d.heroImage = heroOverride;
       if (richCatalog && d.products?.length) {
@@ -77,7 +83,7 @@ export function TemplatePreview({
       }
       return d;
     },
-    [templateId, businessName, brandColor, heroOverride, richCatalog]
+    [templateId, businessName, brandColor, heroOverride, richCatalog, siteDataOverride]
   );
 
   return (

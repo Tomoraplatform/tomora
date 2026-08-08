@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { TemplatePreview } from "@/components/marketing/template-preview";
+import type { SiteData } from "@/lib/database.types";
 import { SiteRenderer } from "@/components/templates";
 import {
   CATALOG_CATEGORIES, catalogTemplatesByCategory, createCatalogContent, type CatalogTemplate,
@@ -20,6 +21,10 @@ export interface MySite {
   accent: string;
   isLive: boolean;
   isCurrent: boolean;
+  /** The site's own saved content, so the card shows the owner's edits. */
+  siteData?: SiteData;
+  /** Set for sites hosting their own uploaded HTML. */
+  customHtmlUrl?: string;
 }
 
 export function TemplatesBrowser({
@@ -91,7 +96,29 @@ export function TemplatesBrowser({
             {mySites.map((s) => (
               <div key={s.id} className="overflow-hidden rounded-2xl border-2 border-ink/10 bg-white">
                 <div className="relative h-48 overflow-hidden border-b border-ink/5">
-                  <TemplatePreview templateId={s.templateId} brandColor={s.accent} businessName={s.name} />
+                  {s.customHtmlUrl ? (
+                    // A site hosting its own HTML has no template to render, so
+                    // frame the uploaded page itself.
+                    <iframe
+                      title={s.name}
+                      src={s.customHtmlUrl}
+                      sandbox="allow-scripts"
+                      loading="lazy"
+                      scrolling="no"
+                      style={{
+                        width: "320%", height: "320%", border: 0,
+                        transform: "scale(0.3125)", transformOrigin: "top left",
+                        pointerEvents: "none",
+                      }}
+                    />
+                  ) : (
+                    <TemplatePreview
+                      templateId={s.templateId}
+                      brandColor={s.siteData?.brandColor || s.accent}
+                      businessName={s.name}
+                      siteDataOverride={s.siteData}
+                    />
+                  )}
                   {s.isCurrent && (
                     <span className="absolute left-2 top-2 z-10 flex items-center gap-1 rounded-full bg-ink px-2 py-0.5 text-xs font-medium text-cream">
                       <CheckCircle2 className="h-3 w-3" /> Editing
