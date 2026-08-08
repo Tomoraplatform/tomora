@@ -394,6 +394,8 @@ export interface SiteData {
   paymentMethods?: { paystack?: boolean; transfer?: boolean };
   /** Who covers the Paystack processing fee, added to the customer's total when "customer". */
   feeBearer?: "customer" | "owner";
+  /** Restaurant template: hours, combos, pickup and the WhatsApp order number. */
+  restaurant?: import("./restaurant/types").RestaurantSettings;
 }
 
 export interface CatalogVideoLink {

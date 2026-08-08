@@ -62,6 +62,7 @@ function toDbCategory(cat: string): SiteCategory {
     organization: "organization",
     events: "organization",
     artisan: "creator",
+    food: "ecommerce",
   };
   return map[cat as CatalogCategoryId] ?? "business";
 }

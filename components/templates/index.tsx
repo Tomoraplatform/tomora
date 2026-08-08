@@ -25,6 +25,7 @@ import { FashionHouse } from "./v2/FashionHouse";
 import { Guza } from "./v2/Guza";
 import { Bakehouse } from "./v2/Bakehouse";
 import { Chronova } from "./v2/Chronova";
+import { KitchenOne } from "./v2/KitchenOne";
 import { Inbio } from "./v2/Inbio";
 import { RizwanAli } from "./v2/RizwanAli";
 import { Spotlight } from "./v2/Spotlight";
@@ -63,6 +64,7 @@ type V2Component = ComponentType<{ siteData: SiteData; brandColor: string }>;
 
 /** v2 catalog templates, keyed by catalog template id. */
 export const V2_REGISTRY: Record<string, V2Component> = {
+  "food-01": KitchenOne,
   "shop-01": ShopMate,
   "shop-02": LunoraFashion,
   "shop-03": MensClothes,

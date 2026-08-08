@@ -36,6 +36,8 @@ function toDbCategory(cat: string): SiteCategory {
     organization: "organization",
     events: "organization",
     artisan: "creator",
+    // A restaurant is a store: it needs products, checkout and payouts.
+    food: "ecommerce",
   };
   return map[cat as CatalogCategoryId] ?? "business";
 }

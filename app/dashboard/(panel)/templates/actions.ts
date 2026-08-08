@@ -14,6 +14,7 @@ function toDbCategory(cat: string): SiteCategory {
   const map: Record<CatalogCategoryId, SiteCategory> = {
     shop: "ecommerce", portfolio: "creator", education: "business",
     organization: "organization", events: "organization", artisan: "creator",
+    food: "ecommerce",
   };
   return map[cat as CatalogCategoryId] ?? "business";
 }

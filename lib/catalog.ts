@@ -5,13 +5,13 @@ import type {
 
 /* ============================ Categories ============================ */
 export type CatalogCategoryId =
-  | "shop" | "portfolio" | "education" | "organization" | "events" | "artisan";
+  | "shop" | "portfolio" | "education" | "organization" | "events" | "artisan" | "food";
 
 export interface CatalogCategory {
   id: CatalogCategoryId;
   name: string;
   description: string;
-  icon: "ShoppingBag" | "User" | "GraduationCap" | "Heart" | "CalendarDays" | "Palette";
+  icon: "ShoppingBag" | "User" | "GraduationCap" | "Heart" | "CalendarDays" | "Palette" | "UtensilsCrossed";
 }
 
 export const CATALOG_CATEGORIES: CatalogCategory[] = [
@@ -21,6 +21,7 @@ export const CATALOG_CATEGORIES: CatalogCategory[] = [
   { id: "organization", name: "Organization & NGO", description: "Charities, nonprofits and professional firms.", icon: "Heart" },
   { id: "events", name: "Events & Community", description: "Churches, conferences and community organizations.", icon: "CalendarDays" },
   { id: "artisan", name: "Artisan & Other Businesses", description: "Makers, studios and services that showcase work and take bookings or enquiries.", icon: "Palette" },
+  { id: "food", name: "Food & Restaurant", description: "Restaurants, kitchens and food vendors taking orders for delivery or pickup.", icon: "UtensilsCrossed" },
 ];
 
 /* ============================ Templates ============================ */
@@ -43,6 +44,7 @@ export const CATALOG_TEMPLATES: CatalogTemplate[] = [
   { id: "shop-04", name: "Fashion House", category: "shop", component: "FashionHouse", accent: "#2563EB", blurb: "Bold fashion store: big sale hero, deals & featured tabs, reviews and blog." },
   { id: "shop-05", name: "Guza", category: "shop", component: "Guza", accent: "#111111", blurb: "Minimal shop grid with filters, colour swatches and a dark footer." },
   { id: "shop-06", name: "Bakehouse", category: "shop", component: "Bakehouse", accent: "#8B5E3C", blurb: "Bakery/food shop with real category & product pages, pre-orders and per-product reviews." },
+  { id: "food-01", name: "Kitchen One", category: "food", component: "KitchenOne", accent: "#E8590C", blurb: "Restaurant menu with combos, delivery zones or pickup, opening hours and WhatsApp orders." },
   { id: "shop-07", name: "Chronova", category: "shop", component: "Chronova", accent: "#2E7DF6", blurb: "Premium watch / product store: pill nav, floating hero, real shop, product, about & contact pages." },
   { id: "portfolio-01", name: "Inbio", category: "portfolio", component: "Inbio", accent: "#E74C6B", blurb: "Personal portfolio with services, resume and projects." },
   { id: "portfolio-02", name: "Rizwan Ali", category: "portfolio", component: "RizwanAli", accent: "#2563EB", blurb: "Designer portfolio with stats and project filters." },
@@ -397,6 +399,15 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "offer", label: "Special offer", heading: "sale", text: true, products: true },
     { key: "testimonials", label: "Testimonials", heading: "testimonials", list: "testimonials" },
     { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
+  ],
+  "food-01": [
+    { key: "hero", label: "Hero", hero: true, image: true, button: true },
+    { key: "info", label: "Delivery & pickup strip" },
+    { key: "combos", label: "Combos", heading: "combos", text: true },
+    { key: "menu", label: "Menu", heading: "menu", text: true, products: true },
+    { key: "offer", label: "Promo banner", heading: "sale", text: true, button: true, color: true },
+    { key: "visit", label: "Find us & hours", heading: "visit", text: true },
+    { key: "testimonials", label: "Reviews", heading: "testimonials", list: "testimonials" },
   ],
   "shop-02": [
     { key: "hero", label: "Hero", hero: true, video: true, list: "trustBadges" },

@@ -4,8 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ShoppingBag, User, GraduationCap, Heart, CalendarDays, Palette, Check, ArrowLeft, ArrowRight,
-  UploadCloud, Loader2, PartyPopper, ExternalLink, Pencil, Eye, X,
-} from "lucide-react";
+  UploadCloud, Loader2, PartyPopper, ExternalLink, Pencil, Eye, X, UtensilsCrossed } from "lucide-react";
 import { TemplatePreview } from "@/components/marketing/template-preview";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
@@ -24,7 +23,7 @@ import { completeOnboarding } from "@/app/onboarding/actions";
 import { StoreBuilderWizard } from "./store-builder";
 import { SiteBuilderWizard } from "./site-builder";
 
-const ICONS = { ShoppingBag, User, GraduationCap, Heart, CalendarDays, Palette } as const;
+const ICONS = { ShoppingBag, User, GraduationCap, Heart, CalendarDays, Palette, UtensilsCrossed } as const;
 const PRESET_COLORS = ["#022245", "#0f9d76", "#c75b39", "#7c5cff", "#d4a23a", "#2563eb", "#db2777"];
 
 export function OnboardingWizard({

@@ -71,7 +71,7 @@ export function PublishedStore({
   }, [realBuy, openProduct, isTenantHost]);
 
   const storeApi: StoreApi = useMemo(
-    () => ({ live: true, addToCart, buyNow, openProduct, tenantHost: isTenantHost }),
+    () => ({ live: true, addToCart, buyNow, openProduct, openCart: () => setOpen(true), tenantHost: isTenantHost }),
     [addToCart, buyNow, openProduct, isTenantHost]
   );
 
