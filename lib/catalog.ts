@@ -2,6 +2,7 @@ import type {
   SiteData, CatalogProduct, CatalogCourse, CatalogCause, CatalogEvent, CatalogPortfolioItem,
   CatalogTestimonial, CatalogServiceItem,
 } from "./database.types";
+import { defaultRestaurant } from "./restaurant/types";
 
 /* ============================ Categories ============================ */
 export type CatalogCategoryId =
@@ -1540,6 +1541,39 @@ export function createCatalogContent(
     data.donationManual = 0;
     data.sectionTitles = { ...(data.sectionTitles || {}), donation: "Support Our Cause" };
     data.sectionText = { ...(data.sectionText || {}), donation: "Your gift helps us reach more people. Every contribution counts." };
+  }
+
+  // Restaurants start with working hours, pickup on, and two sample combos so
+  // the template reads correctly before the owner has configured anything.
+  if (tpl?.category === "food") {
+    data.restaurant = {
+      ...defaultRestaurant(),
+      pickupAddress: "12 Allen Avenue, Ikeja, Lagos",
+      pickupNote: "Ring the bell at the side entrance.",
+      combos: [
+        {
+          id: "combo-family", name: "Family Combo", available: true,
+          description: "Enough for three or four people.",
+          price: 12500, comparePrice: 15000,
+          items: ["2 Jollof Rice", "1 Whole Chicken", "2 Plantain", "2 Drinks"],
+          image: img(`${seed}-combo-1`, 800, 600),
+        },
+        {
+          id: "combo-solo", name: "Solo Special", available: true,
+          description: "A full plate and a cold drink.",
+          price: 4200, comparePrice: 5000,
+          items: ["1 Jollof Rice", "1 Chicken", "1 Drink"],
+          image: img(`${seed}-combo-2`, 800, 600),
+        },
+      ],
+    };
+    if (!data.shippingZones?.length) {
+      data.shippingZones = [
+        { id: "zone-ikeja", name: "Ikeja", fee: 1000 },
+        { id: "zone-yaba", name: "Yaba", fee: 1500 },
+        { id: "zone-lekki", name: "Lekki", fee: 2500 },
+      ];
+    }
   }
 
   return data;
