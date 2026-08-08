@@ -153,7 +153,8 @@ function CourseCard({
 }) {
   const [form, setForm] = useState({
     title: course.title, slug: course.slug, short_description: course.short_description || "",
-    price: course.price, thumbnail_url: course.thumbnail_url || "",
+    price: course.price, compare_price: course.compare_price || 0,
+    thumbnail_url: course.thumbnail_url || "",
   });
   const [thumbBusy, setThumbBusy] = useState(false);
   const thumbRef = useRef<HTMLInputElement>(null);
@@ -204,6 +205,7 @@ function CourseCard({
             <Field label="Title"><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} onBlur={() => updateCourse(course.id, { title: form.title })} /></Field>
             <Field label="URL slug (/academy/…)"><Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} onBlur={() => updateCourse(course.id, { slug: form.slug })} /></Field>
             <Field label="Price (₦, 0 = free)"><Input type="number" min={0} value={form.price} onChange={(e) => setForm({ ...form, price: Math.max(0, Math.round(Number(e.target.value) || 0)) })} onBlur={() => updateCourse(course.id, { price: form.price })} /></Field>
+            <Field label="Slash price (₦, optional)"><Input type="number" min={0} value={form.compare_price ?? ""} onChange={(e) => setForm({ ...form, compare_price: Math.max(0, Math.round(Number(e.target.value) || 0)) })} onBlur={() => updateCourse(course.id, { compare_price: form.compare_price || 0 })} /></Field>
             <Field label="Thumbnail">
               <div className="flex items-center gap-2">
                 <input ref={thumbRef} type="file" accept="image/*" className="hidden" onChange={(e) => uploadThumb(e.target.files?.[0])} />

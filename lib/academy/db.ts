@@ -8,6 +8,8 @@ export interface AcademyCourse {
   short_description: string | null;
   thumbnail_url: string | null;
   price: number;
+  /** Optional slashed price shown beside the real one. */
+  compare_price?: number | null;
   is_published: boolean;
   sort_order: number;
   created_at: string;

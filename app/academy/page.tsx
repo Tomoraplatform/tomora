@@ -151,7 +151,12 @@ export default async function AcademyPage() {
                   {c.description && <p className="mt-1.5 line-clamp-2 text-sm text-ink/60">{c.description}</p>}
                   <div className="mt-3 flex items-center justify-between text-sm">
                     <span className="inline-flex items-center gap-1 text-ink/50"><BookOpen className="h-4 w-4" /> {c.lessonCount} lessons</span>
-                    <span className="font-bold text-ink">{c.price > 0 ? formatNaira(c.price) : "Free"}</span>
+                    <span className="flex items-baseline gap-2">
+                      <span className="font-bold text-ink">{c.price > 0 ? formatNaira(c.price) : "Free"}</span>
+                      {c.price > 0 && !!c.compare_price && c.compare_price > c.price && (
+                        <span className="text-sm text-ink/40 line-through">{formatNaira(c.compare_price)}</span>
+                      )}
+                    </span>
                   </div>
                 </div>
               </a>
