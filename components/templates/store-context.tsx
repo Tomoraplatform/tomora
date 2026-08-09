@@ -6,7 +6,9 @@ import type { Product } from "@/lib/database.types";
 export interface StoreApi {
   /** Whether storefront actions are wired (published site) vs preview. */
   live: boolean;
-  addToCart: (product: Product) => void;
+  /** `qty` lets a template offer a quantity stepper on the card itself, so a
+   *  customer can order three of something without opening the cart. */
+  addToCart: (product: Product, qty?: number) => void;
   buyNow: (product: Product) => void;
   /** Open the product detail view (description + colour variants that swap the image). */
   openProduct?: (product: Product) => void;

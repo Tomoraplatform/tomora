@@ -37,8 +37,8 @@ export function PublishedStore({
 
   const onBrand = contrastText(brandColor);
 
-  const realAdd = useCallback((product: Product, color?: string) => {
-    cartAdd(product, color);
+  const realAdd = useCallback((product: Product, color?: string, qty = 1) => {
+    cartAdd(product, color, qty);
     setBuyNowIntent(false);
     setOpen(true);
   }, [cartAdd]);
@@ -58,11 +58,13 @@ export function PublishedStore({
     setDetailColor(productColorNames(product)[0] ?? null);
   }, [isTenantHost, router]);
 
-  const addToCart = useCallback((product: Product) => {
+  const addToCart = useCallback((product: Product, qty = 1) => {
     // On the real site, colour/description detail lives on the product's own
     // page, a card's "Add to Cart" just adds the default variant directly.
-    if (!isTenantHost && (productColorNames(product).length || product.description)) { openProduct(product); return; }
-    realAdd(product, isTenantHost ? productColorNames(product)[0] : undefined);
+    // A card that already asked for a quantity has made the choice, so it adds
+    // straight away rather than sending the customer to the detail view.
+    if (qty === 1 && !isTenantHost && (productColorNames(product).length || product.description)) { openProduct(product); return; }
+    realAdd(product, isTenantHost ? productColorNames(product)[0] : undefined, qty);
   }, [realAdd, openProduct, isTenantHost]);
 
   const buyNow = useCallback((product: Product) => {

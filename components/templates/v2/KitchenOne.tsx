@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
-  Clock, MapPin, Bike, ShoppingBag, Plus, Star, Tag, Search,
+  Clock, MapPin, Bike, ShoppingBag, Plus, Minus, Star, Tag, Search, X,
   UtensilsCrossed, Percent, Store,
 } from "lucide-react";
 import type { CatalogProduct, Product } from "@/lib/database.types";
@@ -64,6 +64,16 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
 
   const [active, setActive] = useState<string>("all");
   const [query, setQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  /** The tab bar's Search jumps to the menu and opens the keyboard on it. The
+   *  focus has to happen in the tap itself, or a phone will not raise it. */
+  const focusSearch = () => {
+    const el = searchRef.current;
+    if (!el) return;
+    el.focus({ preventScroll: true });
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -75,7 +85,7 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
   }, [products, active, query]);
 
   /** Editor-typed combos are added to the cart as products the API can re-price. */
-  const addCombo = (c: Combo) => {
+  const addCombo = (c: Combo, qty = 1) => {
     const synthetic = {
       id: `combo:${c.id}`,
       name: c.name,
@@ -87,7 +97,7 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
       stock: 999,
       is_active: true,
     } as unknown as Product;
-    store.addToCart(synthetic);
+    store.addToCart(synthetic, qty);
   };
 
   /**
@@ -104,7 +114,7 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
       price: sellingPrice(p),
       comparePrice: originalPrice(p) ?? p.comparePrice,
       inside: [] as string[],
-      add: () => store.addToCart(toProduct(p, siteData)),
+      add: (qty: number) => store.addToCart(toProduct(p, siteData), qty),
     }));
     const fromSettings = combos.map((c) => ({
       key: c.id,
@@ -115,7 +125,7 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
       comparePrice: c.comparePrice,
       // A line the owner has not filled in yet should not show as a gap.
       inside: (c.items || []).map((s) => s.trim()).filter(Boolean),
-      add: () => addCombo(c),
+      add: (qty: number) => addCombo(c, qty),
     }));
     return [...fromProducts, ...fromSettings];
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -249,54 +259,9 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
             text={subheading(siteData, "combos", "Full meals at one price. Feed yourself or the family.")}
           />
           <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {comboCards.map((c) => {
-              const saving =
-                c.comparePrice && c.comparePrice > c.price
-                  ? Math.round(((c.comparePrice - c.price) / c.comparePrice) * 100)
-                  : 0;
-              return (
-                <div
-                  key={c.key}
-                  className="group overflow-hidden rounded-3xl bg-white shadow-[0_2px_18px_rgba(42,18,7,0.08)]"
-                >
-                  <div className="relative aspect-[16/11] overflow-hidden bg-[#f6ece1]">
-                    <Img src={c.image} alt={c.name} className="h-full w-full object-cover" />
-                    {saving > 0 && (
-                      <span
-                        className="absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold text-white"
-                        style={{ background: accent }}
-                      >
-                        SAVE {saving}%
-                      </span>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold text-[#2a1207]">{c.name}</h3>
-                    {c.inside.length > 0 && (
-                      <p className="mt-1 line-clamp-1 text-xs text-[#2a1207]/55">
-                        {c.inside.join(" + ")}
-                      </p>
-                    )}
-                    {c.description && (
-                      <p className="mt-1.5 line-clamp-2 text-xs text-[#2a1207]/55">{c.description}</p>
-                    )}
-                    <div className="mt-3 flex items-center justify-between gap-3">
-                      <span className="min-w-0">
-                        <span className="block truncate text-lg font-extrabold text-[#2a1207]">
-                          {formatNaira(c.price)}
-                        </span>
-                        {saving > 0 && (
-                          <span className="block text-xs text-[#2a1207]/40 line-through">
-                            {formatNaira(c.comparePrice!)}
-                          </span>
-                        )}
-                      </span>
-                      <AddButton accent={accent} disabled={!canOrder} onClick={c.add} />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+            {comboCards.map((c) => (
+              <ComboCard key={c.key} combo={c} accent={accent} disabled={!canOrder} />
+            ))}
           </div>
         </div>
       </section>
@@ -315,11 +280,21 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
             <label className="flex items-center gap-2 rounded-full bg-white px-4 py-3 shadow-[0_2px_14px_rgba(42,18,7,0.07)]">
               <Search className="h-4 w-4 shrink-0 text-[#2a1207]/40" />
               <input
+                ref={searchRef}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search the menu"
+                aria-label="Search the menu"
                 className="w-full bg-transparent text-sm text-[#2a1207] outline-none placeholder:text-[#2a1207]/40"
               />
+              {query && (
+                <button
+                  type="button" onClick={() => setQuery("")} aria-label="Clear search"
+                  className="shrink-0 text-[#2a1207]/40 hover:text-[#2a1207]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
             </label>
 
             {categories.length > 0 && (
@@ -356,7 +331,7 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
                   product={p}
                   accent={accent}
                   disabled={!canOrder}
-                  onAdd={() => store.addToCart(toProduct(p, siteData))}
+                  onAdd={(qty) => store.addToCart(toProduct(p, siteData), qty)}
                   onOpen={() => store.openProduct?.(toProduct(p, siteData))}
                 />
               ))}
@@ -574,19 +549,25 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
       {/* --------------------- mobile app style tab bar --------------------- */}
       {!editing && (
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[#2a1207]/5 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
-          <div className="mx-auto flex max-w-md items-end justify-around px-3 py-2">
+          {/* Five equal columns: every tab gets the same width whatever its
+              label, so nothing squeezes an icon out of shape on a small phone. */}
+          <div className="mx-auto grid max-w-md grid-cols-5 items-end px-2 py-2">
             <TabLink href="#menu" icon={UtensilsCrossed} label="Menu" />
-            <TabLink href="#combos" icon={ShoppingBag} label="Combos" />
-            <button
-              onClick={() => store.openCart?.()}
-              className="-mt-5 flex h-14 w-14 flex-col items-center justify-center rounded-full text-white shadow-lg"
-              style={{ background: accent }}
-              aria-label="Open cart"
-            >
-              <ShoppingBag className="h-5 w-5" />
-            </button>
+            <TabLink onClick={focusSearch} icon={Search} label="Search" />
+            <div className="flex justify-center">
+              <button
+                onClick={() => store.openCart?.()}
+                className="-mt-6 flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-white shadow-lg transition active:scale-95"
+                style={{ background: accent }}
+                aria-label="Open cart"
+              >
+                <ShoppingBag className="h-5 w-5 shrink-0" />
+              </button>
+            </div>
+            {comboCards.length > 0
+              ? <TabLink href="#combos" icon={Tag} label="Combos" />
+              : <TabLink href="#offer" icon={Percent} label="Offers" />}
             <TabLink href="#visit" icon={MapPin} label="Find us" />
-            <TabLink href="#menu" icon={Percent} label="Offers" />
           </div>
         </nav>
       )}
@@ -607,23 +588,109 @@ function SectionHead({ title, text }: { title: string; text?: string }) {
   );
 }
 
-function AddButton({
-  accent, onClick, disabled,
+interface ComboCardData {
+  key: string;
+  name: string;
+  description?: string;
+  image?: string;
+  price: number;
+  comparePrice?: number;
+  inside: string[];
+  add: (qty: number) => void;
+}
+
+function ComboCard({
+  combo: c, accent, disabled,
 }: {
+  combo: ComboCardData;
   accent: string;
-  onClick: () => void;
+  disabled?: boolean;
+}) {
+  const [qty, step] = useQty();
+  const saving =
+    c.comparePrice && c.comparePrice > c.price
+      ? Math.round(((c.comparePrice - c.price) / c.comparePrice) * 100)
+      : 0;
+  return (
+    <div className="group overflow-hidden rounded-3xl bg-white shadow-[0_2px_18px_rgba(42,18,7,0.08)]">
+      <div className="relative aspect-[16/11] overflow-hidden bg-[#f6ece1]">
+        <Img src={c.image} alt={c.name} className="h-full w-full object-cover" />
+        {saving > 0 && (
+          <span
+            className="absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold text-white"
+            style={{ background: accent }}
+          >
+            SAVE {saving}%
+          </span>
+        )}
+      </div>
+      <div className="p-4">
+        <h3 className="font-bold text-[#2a1207]">{c.name}</h3>
+        {c.inside.length > 0 && (
+          <p className="mt-1 line-clamp-1 text-xs text-[#2a1207]/55">{c.inside.join(" + ")}</p>
+        )}
+        {c.description && (
+          <p className="mt-1.5 line-clamp-2 text-xs text-[#2a1207]/55">{c.description}</p>
+        )}
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <span className="min-w-0">
+            <span className="block truncate text-lg font-extrabold text-[#2a1207]">
+              {formatNaira(c.price)}
+            </span>
+            {saving > 0 && (
+              <span className="block text-xs text-[#2a1207]/40 line-through">
+                {formatNaira(c.comparePrice!)}
+              </span>
+            )}
+          </span>
+          <QtyStepper qty={qty} step={step} disabled={disabled} />
+        </div>
+        <OrderButton accent={accent} disabled={disabled} qty={qty} total={c.price * qty} onClick={() => c.add(qty)} />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Quantity for one card. Steps by a delta through the updater form, so two taps
+ * in quick succession count twice rather than both reading the same start value.
+ */
+function useQty(): [number, (delta: number) => void] {
+  const [qty, setQty] = useState(1);
+  const step = (delta: number) => setQty((q) => Math.max(1, Math.min(99, q + delta)));
+  return [qty, step];
+}
+
+/**
+ * Choose how many before ordering. A customer buying three of the same dish
+ * should not have to add it, open the cart and count up in there.
+ */
+function QtyStepper({
+  qty, step, disabled,
+}: {
+  qty: number;
+  /** Takes a delta, not a value: two quick taps must count as two. */
+  step: (delta: number) => void;
   disabled?: boolean;
 }) {
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      aria-label="Add to cart"
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white shadow transition active:scale-95 disabled:opacity-40"
-      style={{ background: accent }}
-    >
-      <Plus className="h-4 w-4" />
-    </button>
+    <div className="flex shrink-0 items-center gap-1 rounded-full bg-[#f6ece1] p-1">
+      <button
+        type="button" onClick={() => step(-1)} disabled={disabled || qty <= 1} aria-label="Reduce quantity"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#2a1207] shadow-sm transition active:scale-95 disabled:opacity-40"
+      >
+        <Minus className="h-3.5 w-3.5" />
+      </button>
+      <span className="min-w-[1.5rem] text-center text-sm font-bold tabular-nums text-[#2a1207]" aria-live="polite">
+        {qty}
+      </span>
+      <button
+        type="button" onClick={() => step(1)} disabled={disabled || qty >= 99} aria-label="Increase quantity"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#2a1207] shadow-sm transition active:scale-95 disabled:opacity-40"
+      >
+        <Plus className="h-3.5 w-3.5" />
+      </button>
+    </div>
   );
 }
 
@@ -633,10 +700,11 @@ function DishCard({
   /** The template's own content shape, which is what the menu grid passes. */
   product: CatalogProduct;
   accent: string;
-  onAdd: () => void;
+  onAdd: (qty: number) => void;
   onOpen: () => void;
   disabled?: boolean;
 }) {
+  const [qty, step] = useQty();
   const price = sellingPrice(product);
   const was = originalPrice(product) ?? product.comparePrice;
   const off = was && was > price ? Math.round(((was - price) / was) * 100) : 0;
@@ -668,7 +736,7 @@ function DishCard({
             {product.description}
           </p>
         )}
-        <div className="mt-auto flex items-center justify-between gap-3 pt-3">
+        <div className="mt-auto flex items-center justify-between gap-2 pt-3">
           <span className="min-w-0">
             <span className="block truncate text-lg font-extrabold text-[#2a1207]">
               {formatNaira(price)}
@@ -679,24 +747,61 @@ function DishCard({
               </span>
             )}
           </span>
-          <AddButton accent={accent} onClick={onAdd} disabled={disabled} />
+          <QtyStepper qty={qty} step={step} disabled={disabled} />
         </div>
+        <OrderButton accent={accent} disabled={disabled} qty={qty} total={price * qty} onClick={() => onAdd(qty)} />
       </div>
     </div>
   );
 }
 
-function TabLink({
-  href, icon: Icon, label,
+/** Adds the chosen quantity, and says what that will cost before it is tapped. */
+function OrderButton({
+  accent, onClick, disabled, qty, total,
 }: {
-  href: string;
+  accent: string;
+  onClick: () => void;
+  disabled?: boolean;
+  qty: number;
+  total: number;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="mt-3 flex w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold text-white shadow transition active:scale-[0.98] disabled:opacity-40"
+      style={{ background: accent }}
+    >
+      <Plus className="h-4 w-4 shrink-0" />
+      {disabled ? "Closed" : qty > 1 ? `Add ${qty} · ${formatNaira(total)}` : "Add to order"}
+    </button>
+  );
+}
+
+/**
+ * One slot of the bottom bar. It fills its grid column rather than claiming a
+ * fixed width, and the icon is held at its size, so a longer label can never
+ * shrink or stretch an icon against its neighbours.
+ */
+function TabLink({
+  href, onClick, icon: Icon, label,
+}: {
+  href?: string;
+  onClick?: () => void;
   icon: typeof MapPin;
   label: string;
 }) {
-  return (
-    <a href={href} className="flex w-14 flex-col items-center gap-1 py-1 text-[#2a1207]/55">
-      <Icon className="h-5 w-5" />
-      <span className="text-[10px] font-semibold">{label}</span>
-    </a>
+  const className =
+    "flex w-full flex-col items-center justify-end gap-1 px-1 py-1 text-[#2a1207]/55 transition active:text-[#2a1207]";
+  const inner = (
+    <>
+      <Icon className="h-5 w-5 shrink-0" strokeWidth={2} />
+      <span className="w-full truncate text-center text-[10px] font-semibold leading-none">{label}</span>
+    </>
   );
+  if (onClick) {
+    return <button type="button" onClick={onClick} className={className}>{inner}</button>;
+  }
+  return <a href={href} className={className}>{inner}</a>;
 }
