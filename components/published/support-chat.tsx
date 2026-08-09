@@ -110,9 +110,22 @@ export function SupportChat({
 
       {open && (
         <div className={`fixed left-6 z-40 flex h-[28rem] max-h-[70vh] w-[20rem] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-2xl ${inBottomBar ? "bottom-24 lg:bottom-24" : "bottom-24"}`}>
-          <div className="px-4 py-3" style={{ background: brandColor, color: onBrand }}>
-            <p className="text-sm font-semibold">Chat with us</p>
-            <p className="text-xs opacity-80">We typically reply within a few hours.</p>
+          {/* The panel closes from its own header. The launcher doubles as a
+              close button, but it is hidden on a phone where the bottom bar
+              opens this instead, so without it there was no way back out. */}
+          <div className="flex items-start gap-2 px-4 py-3" style={{ background: brandColor, color: onBrand }}>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold">Chat with us</p>
+              <p className="text-xs opacity-80">We typically reply within a few hours.</p>
+            </div>
+            <button
+              onClick={() => setOpen(false)}
+              aria-label="Close chat"
+              className="-mr-1 -mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition hover:bg-black/10 active:scale-95"
+              style={{ color: onBrand }}
+            >
+              <X className="h-5 w-5" />
+            </button>
           </div>
 
           {!identified ? (
