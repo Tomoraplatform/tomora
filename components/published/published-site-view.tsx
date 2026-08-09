@@ -5,6 +5,7 @@ import { SupportChat } from "./support-chat";
 import { VisitBeacon } from "./visit-beacon";
 import { BakehouseHome } from "./bakehouse-home";
 import { ChronovaHome } from "./chronova/chronova-home";
+import { ownsMobileBar } from "@/lib/templates/mobile-bar";
 import type { Product, Review, Site } from "@/lib/database.types";
 
 /**
@@ -32,7 +33,9 @@ export function PublishedSiteView({
   const brandColor = site.site_data?.brandColor || "#022245";
   // Live sites get the support chat widget; visitor messages land in the
   // owner's dashboard inbox.
-  const chat = isLive ? <SupportChat siteId={site.id} brandColor={brandColor} /> : null;
+  const chat = isLive ? (
+    <SupportChat siteId={site.id} brandColor={brandColor} inBottomBar={ownsMobileBar(site.template_id)} />
+  ) : null;
   const beacon = isLive ? <VisitBeacon siteId={site.id} /> : null;
 
   if (site.category === "ecommerce") {

@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import {
   Clock, MapPin, Bike, ShoppingBag, Plus, Minus, Star, Tag, Search, X,
-  UtensilsCrossed, Percent, Store,
+  UtensilsCrossed, Percent, Store, MessageCircle,
 } from "lucide-react";
 import type { CatalogProduct, Product } from "@/lib/database.types";
 import {
@@ -17,6 +17,7 @@ import { formatNaira } from "@/lib/utils";
 import { openState } from "@/lib/restaurant/hours";
 import { etaLabel } from "@/lib/restaurant/order";
 import { combosOf, DAY_NAMES, DEFAULT_TIMEZONE, type Combo } from "@/lib/restaurant/types";
+import { openSupport } from "@/lib/support-bus";
 
 /**
  * Kitchen One: a restaurant menu storefront. Warm cream surface, one accent
@@ -566,8 +567,12 @@ export function KitchenOne({ siteData, brandColor }: TemplateProps) {
             </div>
             {comboCards.length > 0
               ? <TabLink href="#combos" icon={Tag} label="Combos" />
-              : <TabLink href="#offer" icon={Percent} label="Offers" />}
-            <TabLink href="#visit" icon={MapPin} label="Find us" />
+              : <TabLink href="#visit" icon={MapPin} label="Find us" />}
+            {/* Support belongs in the bar: as a floating bubble it sat on top
+                of a tab. The site hides that bubble on phones for this template. */}
+            {store.live
+              ? <TabLink onClick={openSupport} icon={MessageCircle} label="Support" />
+              : <TabLink href="#visit" icon={MapPin} label="Find us" />}
           </div>
         </nav>
       )}

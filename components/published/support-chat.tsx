@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { contrastText } from "@/lib/utils";
+import { onOpenSupport } from "@/lib/support-bus";
 
 interface Msg { id?: string; sender: "visitor" | "owner"; body: string; created_at?: string; }
 
@@ -14,9 +15,20 @@ function uuid(): string {
   });
 }
 
-export function SupportChat({ siteId, brandColor }: { siteId: string; brandColor: string }) {
+export function SupportChat({
+  siteId, brandColor, inBottomBar = false,
+}: {
+  siteId: string;
+  brandColor: string;
+  /** The template shows a Support tab on phones, so the floating launcher is
+   *  desktop-only here and the tab opens the chat through the event bus. */
+  inBottomBar?: boolean;
+}) {
   const onBrand = contrastText(brandColor);
   const [open, setOpen] = useState(false);
+
+  // A template's bottom bar asks for the chat through the shared event.
+  useEffect(() => onOpenSupport(() => setOpen(true)), []);
   const [convId, setConvId] = useState<string | null>(null);
   const [identified, setIdentified] = useState(false);
   const [name, setName] = useState("");
@@ -89,7 +101,7 @@ export function SupportChat({ siteId, brandColor }: { siteId: string; brandColor
       {/* Launcher */}
       <button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-6 left-6 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-xl transition-transform hover:scale-105"
+        className={`fixed bottom-6 left-6 z-40 h-14 w-14 items-center justify-center rounded-full shadow-xl transition-transform hover:scale-105 ${inBottomBar ? "hidden lg:flex" : "flex"}`}
         style={{ background: brandColor, color: onBrand }}
         aria-label="Chat with us"
       >
@@ -97,7 +109,7 @@ export function SupportChat({ siteId, brandColor }: { siteId: string; brandColor
       </button>
 
       {open && (
-        <div className="fixed bottom-24 left-6 z-40 flex h-[28rem] w-[20rem] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-2xl">
+        <div className={`fixed left-6 z-40 flex h-[28rem] max-h-[70vh] w-[20rem] max-w-[calc(100vw-3rem)] flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-2xl ${inBottomBar ? "bottom-24 lg:bottom-24" : "bottom-24"}`}>
           <div className="px-4 py-3" style={{ background: brandColor, color: onBrand }}>
             <p className="text-sm font-semibold">Chat with us</p>
             <p className="text-xs opacity-80">We typically reply within a few hours.</p>
