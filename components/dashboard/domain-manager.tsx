@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { removeDomain, activateIncludedDomain } from "@/app/dashboard/(panel)/domain/actions";
-import { formatNaira } from "@/lib/utils";
+import { removeDomain, activateIncludedDomain, changeSubdomain } from "@/app/dashboard/(panel)/domain/actions";
+import { formatNaira, slugifySubdomain } from "@/lib/utils";
 import type { DomainStatus, DomainRequest } from "@/lib/database.types";
 
 export function DomainManager({
@@ -90,16 +90,7 @@ export function DomainManager({
         <p className="mt-1 text-ink/60">Get your own domain to use instead of your Tomora subdomain.</p>
       </div>
 
-      <Card>
-        <CardContent className="flex items-center gap-3 p-5">
-          <Globe className="h-5 w-5 shrink-0 text-ink/50" />
-          <div className="min-w-0">
-            <p className="text-sm text-ink/60">Your free subdomain</p>
-            <p className="truncate font-medium text-ink">{subdomain}.{appDomain}</p>
-          </div>
-          <Badge variant="success" className="ml-auto shrink-0">Active</Badge>
-        </CardContent>
-      </Card>
+      <SubdomainCard initial={subdomain} appDomain={appDomain} />
 
       {/* Connected custom domain */}
       {connected && (
@@ -199,5 +190,91 @@ export function DomainManager({
         </Card>
       )}
     </div>
+  );
+}
+
+/**
+ * The free Tomora address, editable at any time. Owners outgrow the name they
+ * signed up with, or want to drop the digits added to make it unique, and it
+ * should not take a support request to change it after going live.
+ */
+function SubdomainCard({ initial, appDomain }: { initial: string; appDomain: string }) {
+  const [saved, setSaved] = useState(initial);
+  const [value, setValue] = useState(initial);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
+
+  // The same tidy-up the server applies, so the address previewed here is
+  // exactly the one that gets saved.
+  const clean = slugifySubdomain(value);
+  const changed = clean !== saved;
+  const tooShort = clean.length < 3;
+
+  async function save() {
+    setBusy(true); setError(null); setDone(false);
+    const res = await changeSubdomain(clean);
+    setBusy(false);
+    if (!res.ok) { setError(res.error || "Could not save."); return; }
+    setSaved(res.subdomain || clean);
+    setValue(res.subdomain || clean);
+    setDone(true);
+  }
+
+  return (
+    <Card>
+      <CardContent className="space-y-3 p-5">
+        <div className="flex items-center gap-3">
+          <Globe className="h-5 w-5 shrink-0 text-ink/50" />
+          <p className="text-sm text-ink/60">Your free web address</p>
+          <Badge variant="success" className="ml-auto shrink-0">Active</Badge>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-1 sm:flex-none">
+            <Input
+              value={value}
+              onChange={(e) => { setValue(e.target.value); setError(null); setDone(false); }}
+              onKeyDown={(e) => { if (e.key === "Enter" && changed && !busy) save(); }}
+              aria-label="Your web address"
+              className="w-full min-w-0 sm:w-48"
+              placeholder="your-brand"
+            />
+            <span className="shrink-0 text-sm text-ink/60">.{appDomain}</span>
+          </div>
+          <Button onClick={save} disabled={busy || !changed || tooShort} className="shrink-0">
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Save address
+          </Button>
+        </div>
+
+        {changed && tooShort ? (
+          <p className="text-xs text-ink/60">
+            Use at least 3 characters: letters, numbers and dashes.
+          </p>
+        ) : changed ? (
+          <p className="text-xs text-ink/60">
+            Your site will answer at{" "}
+            <span className="font-semibold text-ink">{clean}.{appDomain}</span>. The old address
+            stops working, so update it anywhere you have shared it.
+          </p>
+        ) : (
+          <a
+            href={`https://${saved}.${appDomain}`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-block truncate text-sm font-medium text-ink underline"
+          >
+            {saved}.{appDomain}
+          </a>
+        )}
+
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        {done && (
+          <p className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-700">
+            <CheckCircle2 className="h-4 w-4" /> Saved. Your site is now at {saved}.{appDomain}
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }

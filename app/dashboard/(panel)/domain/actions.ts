@@ -6,6 +6,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { currentSiteId } from "@/lib/dashboard";
 import { domainAccess } from "@/lib/domain-access";
 import { NEW_DOMAIN_TLDS } from "@/lib/constants";
+import { slugifySubdomain } from "@/lib/utils";
+import { handleAvailable } from "@/lib/creator/handles";
 
 const DOMAIN_RE = /^(?!-)([a-z0-9-]{1,63}\.)+[a-z]{2,}$/i;
 
@@ -124,4 +126,45 @@ export async function removeDomain(): Promise<{ ok: boolean; error?: string }> {
   await supabase.from("domains").delete().eq("site_id", siteId);
   revalidatePath("/dashboard/domain");
   return { ok: true };
+}
+
+/**
+ * Changes the site's free Tomora web address, before or after publishing.
+ *
+ * The name is checked against the same shared namespace a new site is: system
+ * words, other sites and creator handles, so one address can never point at two
+ * places. The old address stops working the moment this succeeds, which is why
+ * the page says so before the owner saves.
+ */
+export async function changeSubdomain(
+  raw: string
+): Promise<{ ok: boolean; error?: string; subdomain?: string }> {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: "Not authenticated." };
+  const siteId = await currentSiteId(user.id);
+  if (!siteId) return { ok: false, error: "No site found." };
+
+  const next = slugifySubdomain(raw);
+  if (next.length < 3) {
+    return { ok: false, error: "Use at least 3 characters: letters, numbers and dashes." };
+  }
+
+  const { data: site } = await supabase.from("sites").select("subdomain").eq("id", siteId).maybeSingle();
+  if (site?.subdomain === next) return { ok: true, subdomain: next };
+
+  const available = await handleAvailable(next);
+  if (!available.ok) return { ok: false, error: available.error };
+
+  const { error } = await supabase.from("sites").update({ subdomain: next }).eq("id", siteId);
+  if (error) {
+    return {
+      ok: false,
+      error: error.code === "23505" ? "That address is taken. Please choose another." : error.message,
+    };
+  }
+
+  revalidatePath("/dashboard/domain");
+  revalidatePath("/dashboard");
+  return { ok: true, subdomain: next };
 }
