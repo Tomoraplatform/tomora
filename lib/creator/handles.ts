@@ -1,11 +1,17 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-/** Route names and system words that can never be claimed as a handle. */
+/**
+ * Route names and system words that can never be claimed as a handle.
+ * Also covers subdomains already pointed at other Vercel projects, since
+ * those resolve outside this app and a customer claiming the name would
+ * get a site they can never reach.
+ */
 const BLOCKED = new Set([
   "www", "api", "admin", "app", "dashboard", "academy", "login", "signup", "onboarding",
   "tomora", "tomora-ai", "designs", "c", "s", "sites", "preview", "editor", "terms",
   "privacy", "help", "support", "billing", "wallet", "static", "assets", "public", "blog",
+  "pocketlyst",
 ]);
 
 export function slugifyHandle(raw: string): string {
