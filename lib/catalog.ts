@@ -188,7 +188,7 @@ export type SectionDef = {
   color?: boolean;        // editable section background color, keyed by section
   stat?: boolean;         // hero: editable highlighted stat (label + value)
   heroSearch?: boolean;   // hero: editable single search field (toggle + placeholder)
-  extraText?: { key: string; label: string }[]; // extra editable labels (sectionText keys)
+  extraText?: { key: string; label: string; placeholder?: string }[]; // extra editable labels (sectionText keys)
   countdown?: boolean;    // top bar: editable countdown label + target date
   hint?: string;          // short note shown at the top of the section's controls
   donation?: boolean;     // donation section: enable toggle + goal + manual amount
@@ -392,7 +392,11 @@ export function templateSections(id: string): SectionDef[] {
 /** Reorderable built-in sections per template: [key, label] in natural order. */
 export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
   "shop-01": [
-    { key: "hero", label: "Hero", hero: true },
+    { key: "hero", label: "Hero", hero: true, extraText: [
+      { key: "heroBadge", label: "Badge above the headline", placeholder: "NEW ARRIVALS" },
+      { key: "heroTrust", label: "Trust line under the buttons", placeholder: "Trusted by 10,000+ Happy Customers" },
+      { key: "heroSecondBtn", label: "Second button", placeholder: "Explore Deals" },
+    ] },
     { key: "trust", label: "Trust badges", list: "trustBadges" },
     { key: "categories", label: "Categories", heading: "categories" },
     { key: "allproducts", label: "All products", heading: "allproducts", products: true },
@@ -420,13 +424,20 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "categories", label: "Shop by category", heading: "categories" },
     { key: "allproducts", label: "All products", heading: "allproducts", products: true },
     { key: "banner", label: "Promo banner", image: true },
-    { key: "promo", label: "Offer & New arrival", products: true },
+    { key: "promo", label: "Offer & New arrival", products: true, extraText: [
+      { key: "promoNewLabel", label: "\"New arrivals\" label", placeholder: "New Arrivals" },
+    ] },
     { key: "bestsellers", label: "Best sellers", heading: "bestsellers", products: true },
     { key: "newsletter", label: "Newsletter", heading: "newsletter", text: true, image: true, formToggle: true },
     { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "shop-03": [
-    { key: "hero", label: "Hero banner", hero: true },
+    { key: "hero", label: "Hero banner", hero: true, extraText: [
+      { key: "tile1Title", label: "First tile title", placeholder: "New Arrivals" },
+      { key: "tile1Text", label: "First tile subtitle", placeholder: "Fresh drops for the season" },
+      { key: "tile2Title", label: "Second tile title", placeholder: "Big Clearance" },
+      { key: "tile2Text", label: "Second tile subtitle", placeholder: "Up to 60% off select styles" },
+    ] },
     { key: "new", label: "New products", heading: "new", products: true },
     { key: "special", label: "Special products", heading: "special", products: true },
     { key: "catbanners", label: "Category banners" },

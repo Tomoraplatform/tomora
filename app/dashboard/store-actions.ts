@@ -39,6 +39,8 @@ export interface ProductInput {
   offerPercent?: number;
   colors?: string[];
   colorVariants?: { name: string; image?: string }[];
+  /** Sizes sold, each with its own size guide image. */
+  sizes?: { name: string; guide?: string }[];
   isPreOrder?: boolean;
   preorderNote?: string;
   /** Restaurants: sell this as a combo. It then shows in the Combos section
@@ -108,15 +110,31 @@ export async function saveProduct(
     // Only include compare_price when set, so saving still works before the
     // 0006 migration adds the column.
     if (input.comparePrice) row.compare_price = Math.max(0, Math.round(input.comparePrice));
+    // Sizes are always written, including an empty list, so clearing the last
+    // size actually removes it.
+    row.sizes = (input.sizes || [])
+      .map((v) => ({ name: String(v.name || "").trim().slice(0, 24), guide: v.guide || undefined }))
+      .filter((v) => v.name)
+      .slice(0, 20);
+
+    /** True when the database has not had the sizes migration applied yet. */
+    const missingSizesColumn = (err: { message?: string; code?: string } | null) =>
+      !!err && /sizes/i.test(err.message || "") &&
+      (err.code === "42703" || err.code === "PGRST204" || /column|schema cache/i.test(err.message || ""));
 
     let productId = input.id;
-    if (input.id) {
-      const { error } = await supabase.from("products").update(row).eq("id", input.id).eq("user_id", ownerId);
-      if (error) return { ok: false, error: error.message };
-    } else {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (input.id) {
+        const { error } = await supabase.from("products").update(row).eq("id", input.id).eq("user_id", ownerId);
+        if (!error) break;
+        // Retry once without sizes so a store still saves before 0039 is run.
+        if (attempt === 0 && missingSizesColumn(error)) { delete row.sizes; continue; }
+        return { ok: false, error: error.message };
+      }
       const { data: created, error } = await supabase.from("products").insert(row).select("id").single();
-      if (error) return { ok: false, error: error.message };
-      productId = created?.id as string | undefined;
+      if (!error) { productId = created?.id as string | undefined; break; }
+      if (attempt === 0 && missingSizesColumn(error)) { delete row.sizes; continue; }
+      return { ok: false, error: error.message };
     }
     const comboProductIds = await syncComboAllocation(supabase, siteId, productId, !!input.isCombo);
     revalidatePath("/dashboard/products");

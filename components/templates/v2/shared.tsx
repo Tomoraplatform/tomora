@@ -433,6 +433,19 @@ export function subheading(siteData: SiteData, key: string, fallback: string): s
 }
 
 /**
+ * A small editable label, e.g. a hero badge or a trust line.
+ *
+ * Unlike `heading`, an empty saved value means the owner deleted it: this
+ * returns null and the template leaves the element out. Never touched (no saved
+ * value at all) keeps the template's own wording.
+ */
+export function label(siteData: SiteData, key: string, fallback: string): string | null {
+  const v = siteData.sectionText?.[key];
+  if (v === undefined) return fallback;
+  return v.trim() ? v : null;
+}
+
+/**
  * Returns the template's section keys in the user's saved order, with any
  * sections not present in the saved order appended in their natural order.
  */

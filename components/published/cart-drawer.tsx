@@ -235,7 +235,7 @@ export function CartDrawer({
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-ink">{l.product.name}</p>
-                        {l.color && <p className="text-xs text-ink/50">Colour: {l.color}</p>}
+                        {l.color && <p className="text-xs text-ink/50">{l.color}</p>}
                         <p className="text-sm text-ink/50">{formatNaira(l.product.price)}</p>
                       </div>
                       <div className="flex items-center gap-2">

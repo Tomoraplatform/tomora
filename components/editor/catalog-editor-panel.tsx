@@ -566,10 +566,13 @@ export function CatalogEditorPanel({
                 )}
                 {def.extraText?.map((ex) => (
                   <FieldRow key={ex.key} label={ex.label}>
-                    <Input value={data.sectionText?.[ex.key] ?? ""}
+                    <Input value={data.sectionText?.[ex.key] ?? ""} placeholder={ex.placeholder}
                       onChange={(e) => patch({ sectionText: { ...(data.sectionText || {}), [ex.key]: e.target.value } })} />
                   </FieldRow>
                 ))}
+                {def.extraText?.length ? (
+                  <p className="-mt-1 text-xs text-ink/45">Clear a box to remove that text from your site.</p>
+                ) : null}
                 {def.image && (
                   <FieldRow label="Section image">
                     <ItemField field={{ key: "img", label: "", type: "image" }} value={data.sectionImages?.[def.key]}

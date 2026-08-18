@@ -2,7 +2,7 @@
 
 import { Search, ShoppingCart, ArrowRight } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira, heading, navItems, productCategories, sellingPrice, originalPrice, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, Img, formatNaira, heading, label, navItems, productCategories, sellingPrice, originalPrice, CustomSections, OrderedSections } from "./shared";
 import { DonationSection } from "./DonationSection";
 import { useStore } from "../store-context";
 import type { CatalogProduct, Product, SiteData } from "@/lib/database.types";
@@ -57,11 +57,14 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
             <a href="#allproducts" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold">Shop now <ArrowRight className="h-4 w-4" /></a>
           </div>
         </div>
-        {[["New Arrivals", "Fresh drops for the season"], ["Big Clearance", "Up to 60% off select styles"]].map(([t, s], i) => (
+        {([
+          [label(siteData, "tile1Title", "New Arrivals"), label(siteData, "tile1Text", "Fresh drops for the season")],
+          [label(siteData, "tile2Title", "Big Clearance"), label(siteData, "tile2Text", "Up to 60% off select styles")],
+        ] as [string | null, string | null][]).filter(([t]) => t).map(([t, s], i) => (
           <div key={i} className="relative overflow-hidden rounded-lg">
             <Img src={siteData.heroImages?.[i] || `https://picsum.photos/seed/men-banner${i}/600/300`} className="h-40 w-full object-cover" />
             <div className="absolute inset-0 bg-black/40" />
-            <div className="absolute bottom-4 left-4 text-white"><p className="text-lg font-bold uppercase">{t}</p><p className="text-xs text-white/80">{s}</p></div>
+            <div className="absolute bottom-4 left-4 text-white"><p className="text-lg font-bold uppercase">{t}</p>{s && <p className="text-xs text-white/80">{s}</p>}</div>
           </div>
         ))}
       </section>

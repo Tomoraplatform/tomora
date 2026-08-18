@@ -2,7 +2,7 @@
 
 import { ArrowRight, PlayCircle, Truck, RotateCcw, ShieldCheck } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading, subheading, navItems, headerCta, productCategories, sellingPrice, originalPrice, CustomSections, OrderedSections, NewsletterInput } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, BrandButton, Img, ProductCardV2, heading, subheading, navItems, headerCta, productCategories, label, sellingPrice, originalPrice, CustomSections, OrderedSections, NewsletterInput } from "./shared";
 import { DonationSection } from "./DonationSection";
 import { useStore } from "../store-context";
 import { formatNaira } from "@/lib/utils";
@@ -133,7 +133,9 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
         {/* New arrival */}
         <div className="flex items-center gap-4 overflow-hidden rounded-2xl bg-[#F3EFE9] p-6">
           <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-black/40">New Arrivals</span>
+            {label(siteData, "promoNewLabel", "New Arrivals") && (
+              <span className="text-xs font-semibold uppercase tracking-wide text-black/40">{label(siteData, "promoNewLabel", "New Arrivals")}</span>
+            )}
             {newArrival ? (
               <>
                 <h3 className="mt-2 font-serif text-2xl font-bold">{newArrival.name}</h3>

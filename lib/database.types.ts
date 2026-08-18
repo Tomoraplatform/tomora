@@ -125,6 +125,9 @@ export interface Product {
   offer_percent: number;
   colors: string[];
   color_variants: ColorVariant[];
+  /** Sizes this product is sold in, each with its own size guide image.
+   *  Empty for products that are not sold by size. */
+  sizes?: SizeVariant[];
   is_pre_order: boolean;
   preorder_note: string | null;
   created_at: string;
@@ -133,6 +136,12 @@ export interface Product {
 export interface ColorVariant {
   name: string;
   image?: string;
+}
+
+export interface SizeVariant {
+  name: string;
+  /** Chart shown when a shopper checks the guide for this size. */
+  guide?: string;
 }
 
 export interface Order {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Loader2, X, UploadCloud, ImageOff } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, X, UploadCloud, ImageOff, Ruler } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +16,7 @@ import { uploadImage } from "@/lib/upload";
 import { saveProduct, deleteProduct, type ProductInput } from "@/app/dashboard/store-actions";
 import type { Product } from "@/lib/database.types";
 
-const empty: ProductInput = { name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isBestSeller: false, isOffer: false, isNewArrival: false, offerPercent: 0, colors: [], colorVariants: [], isPreOrder: false, preorderNote: "" };
+const empty: ProductInput = { name: "", description: "", price: 0, images: [], category: "", stock: 0, is_active: true, isBestSeller: false, isOffer: false, isNewArrival: false, offerPercent: 0, colors: [], colorVariants: [], sizes: [], isPreOrder: false, preorderNote: "" };
 
 export function ProductsManager({
   initial, embedded, onChanged, comboIds, comboEnabled,
@@ -46,7 +46,7 @@ export function ProductsManager({
 
   function startAdd() { setEditing({ ...empty }); setOpen(true); }
   function startEdit(p: Product) {
-    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, comparePrice: p.compare_price ?? undefined, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active, isBestSeller: p.is_best_seller, isOffer: p.is_offer, isNewArrival: p.is_new_arrival, offerPercent: p.offer_percent, colors: p.colors || [], colorVariants: p.color_variants || [], isPreOrder: p.is_pre_order, preorderNote: p.preorder_note || "", isCombo: combos.includes(p.id) });
+    setEditing({ id: p.id, name: p.name, description: p.description || "", price: p.price, comparePrice: p.compare_price ?? undefined, images: p.images || [], category: p.category || "", stock: p.stock, is_active: p.is_active, isBestSeller: p.is_best_seller, isOffer: p.is_offer, isNewArrival: p.is_new_arrival, offerPercent: p.offer_percent, colors: p.colors || [], colorVariants: p.color_variants || [], sizes: p.sizes || [], isPreOrder: p.is_pre_order, preorderNote: p.preorder_note || "", isCombo: combos.includes(p.id) });
     setOpen(true);
   }
 
@@ -228,6 +228,8 @@ function ProductForm({ value, onClose, onSaved, comboEnabled }: {
 
       <ColorVariantsField value={form.colorVariants || []} onChange={(v) => set("colorVariants", v)} />
 
+      <SizesField value={form.sizes || []} onChange={(v) => set("sizes", v)} />
+
       <div className="flex items-center justify-between rounded-lg border border-ink/10 px-4 py-3">
         <span className="text-sm font-medium">Active (visible in store)</span>
         <Switch checked={form.is_active} onCheckedChange={(v) => set("is_active", v)} />
@@ -302,6 +304,61 @@ function ColorVariantsField({ value, onChange }: { value: { name: string; image?
       </div>
       <Button type="button" variant="outline" size="sm" onClick={() => onChange([...value, { name: "", image: "" }])}><Plus className="h-4 w-4" /> Add colour</Button>
       <p className="text-xs text-ink/50">If set, customers can pick a colour on the product page and the photo updates to match.</p>
+    </div>
+  );
+}
+
+/**
+ * Sizes a product is sold in, each carrying its own size guide.
+ *
+ * One chart for a whole product is rarely right: a shopper looking at "M"
+ * wants the measurements for M. Each row here takes the size name and the
+ * image shown when that size's guide is opened on the storefront.
+ */
+function SizesField({
+  value, onChange,
+}: {
+  value: { name: string; guide?: string }[];
+  onChange: (v: { name: string; guide?: string }[]) => void;
+}) {
+  const [busy, setBusy] = useState<number | null>(null);
+  const setRow = (i: number, patch: Partial<{ name: string; guide?: string }>) =>
+    onChange(value.map((v, j) => (j === i ? { ...v, ...patch } : v)));
+
+  return (
+    <div className="space-y-2">
+      <Label>Sizes <span className="font-normal text-ink/40">(optional, each size can have its own size guide)</span></Label>
+      <div className="space-y-2">
+        {value.map((v, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <label className="relative flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-dashed border-ink/25 bg-cream"
+              title="Size guide image for this size">
+              {busy === i ? <Loader2 className="h-4 w-4 animate-spin" /> : v.guide ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={v.guide} alt="" className="h-full w-full object-cover" />
+              ) : <Ruler className="h-4 w-4 text-ink/40" />}
+              <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                const f = e.target.files?.[0]; if (!f) return;
+                setBusy(i);
+                const { url } = await uploadImage(f, "products");
+                setBusy(null);
+                if (url) setRow(i, { guide: url });
+              }} />
+            </label>
+            <Input value={v.name} placeholder="Size (e.g. M, 42, XL)" onChange={(e) => setRow(i, { name: e.target.value })} />
+            <button type="button" onClick={() => onChange(value.filter((_, j) => j !== i))}
+              className="text-ink/40 hover:text-destructive" aria-label="Remove size">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <Button type="button" variant="outline" size="sm" onClick={() => onChange([...value, { name: "", guide: "" }])}>
+        <Plus className="h-4 w-4" /> Add size
+      </Button>
+      <p className="text-xs text-ink/50">
+        Customers pick a size before adding to cart, and the guide they open is the one for the size they picked.
+      </p>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Quote, ShoppingCart } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, subheading, navItems, productCategories, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, subheading, label, navItems, productCategories, CustomSections, OrderedSections } from "./shared";
 import { DonationSection } from "./DonationSection";
 import { useTemplateEdit } from "../editor-context";
 import { useStore } from "../store-context";
@@ -50,19 +50,25 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
       <section className="bg-[#FBFAF7]">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2">
           <div>
-            <span className="inline-block rounded-full px-3 py-1 text-xs font-semibold" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary-dark)" }}>NEW ARRIVALS</span>
+            {label(siteData, "heroBadge", "NEW ARRIVALS") && (
+              <span className="inline-block rounded-full px-3 py-1 text-xs font-semibold" style={{ background: "var(--brand-primary-light)", color: "var(--brand-primary-dark)" }}>{label(siteData, "heroBadge", "NEW ARRIVALS")}</span>
+            )}
             <h1 className="mt-4 font-serif text-4xl font-bold leading-tight sm:text-5xl">{siteData.heroHeadline}</h1>
             <p className="mt-4 max-w-md text-black/60">{siteData.heroSubtext}</p>
             <div className="mt-7 flex flex-wrap gap-3">
               <BrandButton as="a" href={siteData.ctaHref || "#allproducts"}>{siteData.ctaText || "Shop Now"} <ArrowRight className="h-4 w-4" /></BrandButton>
-              <OutlineButton href="#offer">Explore Deals</OutlineButton>
+              {label(siteData, "heroSecondBtn", "Explore Deals") && (
+                <OutlineButton href="#offer">{label(siteData, "heroSecondBtn", "Explore Deals")}</OutlineButton>
+              )}
             </div>
-            <div className="mt-7 flex items-center gap-3">
-              <div className="flex -space-x-2">
-                {[0,1,2,3].map((i) => <Img key={i} src={`https://picsum.photos/seed/face${i}/64`} className="h-9 w-9 rounded-full border-2 border-white object-cover" />)}
+            {label(siteData, "heroTrust", "Trusted by 10,000+ Happy Customers") && (
+              <div className="mt-7 flex items-center gap-3">
+                <div className="flex -space-x-2">
+                  {[0,1,2,3].map((i) => <Img key={i} src={`https://picsum.photos/seed/face${i}/64`} className="h-9 w-9 rounded-full border-2 border-white object-cover" />)}
+                </div>
+                <span className="text-sm text-black/50">{label(siteData, "heroTrust", "Trusted by 10,000+ Happy Customers")}</span>
               </div>
-              <span className="text-sm text-black/50">Trusted by 10,000+ Happy Customers</span>
-            </div>
+            )}
           </div>
           <div className="relative">
             <div className="aspect-square overflow-hidden rounded-3xl bg-white shadow-xl">

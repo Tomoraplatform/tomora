@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Facebook, Twitter, Link2, Minus, Plus, Loader2, CheckCircle2, Star, ShieldCheck } from "lucide-react";
+import { Facebook, Twitter, Link2, Minus, Plus, Loader2, CheckCircle2, Star, ShieldCheck, Ruler, X } from "lucide-react";
 import type { Product, Review, Site } from "@/lib/database.types";
 import { formatNaira } from "@/lib/utils";
 import { StoreChrome, useStoreCartApi } from "./store-chrome";
@@ -35,7 +35,14 @@ function ProductDetail({ product, brandColor }: { product: Product; brandColor: 
   const cart = useStoreCartApi();
   const colorNames = (product.color_variants?.length ? product.color_variants.map((v) => v.name) : (product.colors || [])).filter(Boolean);
   const [color, setColor] = useState<string | undefined>(colorNames[0]);
+  const sizes = (product.sizes || []).filter((v) => v.name);
+  const [size, setSize] = useState<string | undefined>(sizes[0]?.name);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [qty, setQty] = useState(1);
+  // The guide belongs to the chosen size, so switching size switches the chart.
+  const activeGuide = sizes.find((v) => v.name === size)?.guide;
+  /** What the order shows: colour and size together, e.g. "Black · M". */
+  const variantLabel = [color, size].filter(Boolean).join(" · ") || undefined;
   const [thumb, setThumb] = useState(0);
   const [shared, setShared] = useState(false);
 
@@ -110,6 +117,48 @@ function ProductDetail({ product, brandColor }: { product: Product; brandColor: 
             </div>
           )}
 
+          {sizes.length > 0 && (
+            <div className="mt-5">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-medium">Size: <span className="text-black/60">{size}</span></p>
+                {activeGuide && (
+                  <button onClick={() => setGuideOpen(true)}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold underline underline-offset-4"
+                    style={{ color: brandColor }}>
+                    <Ruler className="h-4 w-4" /> Size guide
+                  </button>
+                )}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {sizes.map((v) => (
+                  <button key={v.name} onClick={() => setSize(v.name)}
+                    className="rounded-full border px-4 py-2 text-sm font-medium"
+                    style={size === v.name ? { borderColor: brandColor, background: `${brandColor}12` } : { borderColor: "rgba(0,0,0,0.15)" }}>
+                    {v.name}
+                  </button>
+                ))}
+              </div>
+              {!activeGuide && (
+                <p className="mt-2 text-xs text-black/45">No size guide for {size} yet.</p>
+              )}
+            </div>
+          )}
+
+          {guideOpen && activeGuide && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={() => setGuideOpen(false)}>
+              <div className="max-h-[90vh] w-full max-w-lg overflow-hidden rounded-2xl bg-white" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between border-b border-black/10 px-4 py-3">
+                  <p className="font-semibold">Size guide, {size}</p>
+                  <button onClick={() => setGuideOpen(false)} aria-label="Close size guide" className="text-black/40 hover:text-black">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={activeGuide} alt={`Size guide for ${size}`} className="max-h-[75vh] w-full object-contain" />
+              </div>
+            </div>
+          )}
+
           <div className="mt-5 flex items-center gap-3">
             <div className="flex items-center gap-3 rounded-md border border-black/15 px-3 py-2">
               <button onClick={() => setQty((q) => Math.max(1, q - 1))} aria-label="Decrease"><Minus className="h-4 w-4" /></button>
@@ -117,14 +166,14 @@ function ProductDetail({ product, brandColor }: { product: Product; brandColor: 
               <button onClick={() => setQty((q) => q + 1)} aria-label="Increase"><Plus className="h-4 w-4" /></button>
             </div>
             <button
-              onClick={() => cart.buyNow(product, color, qty)}
+              onClick={() => cart.buyNow(product, variantLabel, qty)}
               className="flex-1 rounded-md px-6 py-3 text-sm font-bold uppercase tracking-wide text-white"
               style={{ background: brandColor }}
             >
               {product.is_pre_order ? "Pre-order Now" : "Buy Now"}
             </button>
           </div>
-          <button onClick={() => cart.add(product, color, qty)} className="mt-2 text-sm font-semibold underline underline-offset-4">
+          <button onClick={() => cart.add(product, variantLabel, qty)} className="mt-2 text-sm font-semibold underline underline-offset-4">
             Add to cart &amp; keep shopping
           </button>
 
