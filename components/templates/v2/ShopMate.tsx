@@ -2,7 +2,7 @@
 
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, Headphones, Quote, ShoppingCart } from "lucide-react";
 import { BrandStyle } from "../brand-style";
-import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, subheading, label, navItems, productCategories, CustomSections, OrderedSections } from "./shared";
+import { TemplateProps, Brandmark, SocialIcons, testimonialsOf, BrandButton, OutlineButton, ProductCardV2, Img, heading, subheading, label, avatarsOf, navItems, productCategories, CustomSections, OrderedSections } from "./shared";
 import { DonationSection } from "./DonationSection";
 import { useTemplateEdit } from "../editor-context";
 import { useStore } from "../store-context";
@@ -11,6 +11,8 @@ const TINTS = ["#dbeafe", "#fce7f3", "#fef9c3", "#ede9fe", "#ccfbf1", "#ffedd5"]
 
 const TRUST_ICONS = [Truck, ShieldCheck, RotateCcw, Headphones];
 const slug = (s: string) => (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+const STOCK_FACES = [0, 1, 2, 3].map((i) => `https://picsum.photos/seed/face${i}/64`);
 
 export function ShopMate({ siteData, brandColor }: TemplateProps) {
   const { editing } = useTemplateEdit();
@@ -58,14 +60,18 @@ export function ShopMate({ siteData, brandColor }: TemplateProps) {
             <div className="mt-7 flex flex-wrap gap-3">
               <BrandButton as="a" href={siteData.ctaHref || "#allproducts"}>{siteData.ctaText || "Shop Now"} <ArrowRight className="h-4 w-4" /></BrandButton>
               {label(siteData, "heroSecondBtn", "Explore Deals") && (
-                <OutlineButton href="#offer">{label(siteData, "heroSecondBtn", "Explore Deals")}</OutlineButton>
+                <OutlineButton href="#bestsellers">{label(siteData, "heroSecondBtn", "Explore Deals")}</OutlineButton>
               )}
             </div>
             {label(siteData, "heroTrust", "Trusted by 10,000+ Happy Customers") && (
               <div className="mt-7 flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  {[0,1,2,3].map((i) => <Img key={i} src={`https://picsum.photos/seed/face${i}/64`} className="h-9 w-9 rounded-full border-2 border-white object-cover" />)}
-                </div>
+                {avatarsOf(siteData, STOCK_FACES).length > 0 && (
+                  <div className="flex -space-x-2">
+                    {avatarsOf(siteData, STOCK_FACES).map((src, i) => (
+                      <Img key={i} src={src} className="h-9 w-9 rounded-full border-2 border-white object-cover" />
+                    ))}
+                  </div>
+                )}
                 <span className="text-sm text-black/50">{label(siteData, "heroTrust", "Trusted by 10,000+ Happy Customers")}</span>
               </div>
             )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShoppingCart, Loader2, CheckCircle2, X, Star } from "lucide-react";
 import { SiteRenderer } from "@/components/templates";
@@ -52,6 +52,16 @@ export function PublishedStore({
 
   const productColorNames = (p: Product): string[] =>
     (p.color_variants?.length ? p.color_variants.map((v) => v.name) : (p.colors || [])).filter(Boolean);
+
+  // Warm the product routes the customer can see. Tapping a card then lands on
+  // an already-fetched page instead of waiting on a fresh server render.
+  useEffect(() => {
+    if (!isTenantHost) return;
+    const id = window.setTimeout(() => {
+      products.slice(0, 12).forEach((p) => router.prefetch(`/product/${p.id}`));
+    }, 1200);
+    return () => window.clearTimeout(id);
+  }, [isTenantHost, products, router]);
 
   const openProduct = useCallback((product: Product) => {
     if (isTenantHost) { router.push(`/product/${product.id}`); return; }

@@ -392,7 +392,7 @@ export function templateSections(id: string): SectionDef[] {
 /** Reorderable built-in sections per template: [key, label] in natural order. */
 export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
   "shop-01": [
-    { key: "hero", label: "Hero", hero: true, extraText: [
+    { key: "hero", label: "Hero", hero: true, list: "avatars", extraText: [
       { key: "heroBadge", label: "Badge above the headline", placeholder: "NEW ARRIVALS" },
       { key: "heroTrust", label: "Trust line under the buttons", placeholder: "Trusted by 10,000+ Happy Customers" },
       { key: "heroSecondBtn", label: "Second button", placeholder: "Explore Deals" },
@@ -419,16 +419,22 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
     { key: "testimonials", label: "Reviews", heading: "testimonials", list: "testimonials" },
   ],
   "shop-02": [
-    { key: "hero", label: "Hero", hero: true, video: true, list: "trustBadges" },
+    { key: "hero", label: "Hero", hero: true, video: true, list: "trustBadges", extraText: [
+      { key: "heroEyebrow", label: "Label above the headline", placeholder: "New Collection" },
+    ] },
     { key: "catcircles", label: "Category circles" },
     { key: "categories", label: "Shop by category", heading: "categories" },
     { key: "allproducts", label: "All products", heading: "allproducts", products: true },
     { key: "banner", label: "Promo banner", image: true },
     { key: "promo", label: "Offer & New arrival", products: true, extraText: [
       { key: "promoNewLabel", label: "\"New arrivals\" label", placeholder: "New Arrivals" },
+      { key: "promoEyebrow", label: "Label above the offer", placeholder: "Limited Time Offer" },
+      { key: "promoBtn", label: "Offer button", placeholder: "Shop the Sale" },
     ] },
     { key: "bestsellers", label: "Best sellers", heading: "bestsellers", products: true },
-    { key: "newsletter", label: "Newsletter", heading: "newsletter", text: true, image: true, formToggle: true },
+    { key: "newsletter", label: "Newsletter", heading: "newsletter", text: true, image: true, formToggle: true, extraText: [
+      { key: "newsletterEyebrow", label: "Label above the heading", placeholder: "Get 10% off your first order" },
+    ] },
     { key: "donation", label: "Donations", heading: "donation", text: true, donation: true, list: "donationProjects" },
   ],
   "shop-03": [
@@ -437,6 +443,8 @@ export const TEMPLATE_REORDER: Record<string, SectionDef[]> = {
       { key: "tile1Text", label: "First tile subtitle", placeholder: "Fresh drops for the season" },
       { key: "tile2Title", label: "Second tile title", placeholder: "Big Clearance" },
       { key: "tile2Text", label: "Second tile subtitle", placeholder: "Up to 60% off select styles" },
+      { key: "categoryHint", label: "Text under a category name", placeholder: "Explore the collection" },
+      { key: "footerTagline", label: "Line under the footer logo", placeholder: "The biggest choice on the web" },
     ] },
     { key: "new", label: "New products", heading: "new", products: true },
     { key: "special", label: "Special products", heading: "special", products: true },
@@ -1030,6 +1038,11 @@ export function createCatalogContent(
   switch (tpl?.category) {
     case "shop":
       data.products = demoProducts(seed); data.trustBadges = demoTrustBadges(seed);
+      // Faces beside the trust line, seeded so an owner can swap or delete them
+      // in the editor instead of being stuck with stock photos.
+      if (templateId === "shop-01") {
+        data.heroAvatars = [0, 1, 2, 3].map((i) => ({ id: `${seed}-face${i}`, name: "", image: `https://picsum.photos/seed/face${i}/64` }));
+      }
       if (templateId === "shop-04") {
         data.heroStatLabel = "Save up to";
         data.heroStatValue = "50%";

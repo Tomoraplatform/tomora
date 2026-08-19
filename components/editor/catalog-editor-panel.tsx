@@ -482,6 +482,18 @@ export function CatalogEditorPanel({
                     </FieldRow>
                   </>
                 )}
+                {/* Hero sections carry small labels too, the badge above a
+                    headline or the line under the buttons. These were defined
+                    but never drawn here, so they could not be reached at all. */}
+                {def.extraText?.map((ex) => (
+                  <FieldRow key={ex.key} label={ex.label}>
+                    <Input value={data.sectionText?.[ex.key] ?? ex.placeholder ?? ""} placeholder="Type here, or clear to remove"
+                      onChange={(e) => patch({ sectionText: { ...(data.sectionText || {}), [ex.key]: e.target.value } })} />
+                  </FieldRow>
+                ))}
+                {def.extraText?.length ? (
+                  <p className="-mt-1 text-xs text-ink/45">Empty a box to take that text off your site.</p>
+                ) : null}
                 {[...(def.list ? [def.list] : []), ...(def.lists || [])].map((lk) => <ListBody key={lk} cfg={LIST_CONFIG[lk]} data={data} patch={patch} suggestions={menuNames} />)}
               </>
             ) : def.search ? (
@@ -566,12 +578,16 @@ export function CatalogEditorPanel({
                 )}
                 {def.extraText?.map((ex) => (
                   <FieldRow key={ex.key} label={ex.label}>
-                    <Input value={data.sectionText?.[ex.key] ?? ""} placeholder={ex.placeholder}
+                    {/* Shows the words actually on the site, including the
+                        template's own default, so emptying the box is what
+                        removes them. An empty box used to mean "untouched",
+                        which left no way to take the text off the page. */}
+                    <Input value={data.sectionText?.[ex.key] ?? ex.placeholder ?? ""} placeholder="Type here, or clear to remove"
                       onChange={(e) => patch({ sectionText: { ...(data.sectionText || {}), [ex.key]: e.target.value } })} />
                   </FieldRow>
                 ))}
                 {def.extraText?.length ? (
-                  <p className="-mt-1 text-xs text-ink/45">Clear a box to remove that text from your site.</p>
+                  <p className="-mt-1 text-xs text-ink/45">Empty a box to take that text off your site.</p>
                 ) : null}
                 {def.image && (
                   <FieldRow label="Section image">

@@ -46,11 +46,24 @@ function ProductDetail({ product, brandColor }: { product: Product; brandColor: 
   const [thumb, setThumb] = useState(0);
   const [shared, setShared] = useState(false);
 
-  const images = product.images?.length ? product.images : [];
-  const activeImage = (() => {
-    const v = product.color_variants?.find((x) => x.name === color);
-    return v?.image || images[thumb] || images[0] || "";
+  /**
+   * Every picture the product has: its own photos plus any colour's photo, with
+   * duplicates dropped. All of them are tappable, and whichever the customer
+   * picks fills the big frame.
+   */
+  const images = (() => {
+    const all = [...(product.images || []), ...(product.color_variants || []).map((v) => v.image)];
+    return all.filter((src, i): src is string => !!src && all.indexOf(src) === i);
   })();
+  // Choosing a colour swaps to that colour's photo; tapping a thumbnail after
+  // that means the customer wants the picture they tapped, so it wins.
+  const pickColor = (name: string) => {
+    setColor(name);
+    const img = product.color_variants?.find((x) => x.name === name)?.image;
+    const i = img ? images.indexOf(img) : -1;
+    if (i >= 0) setThumb(i);
+  };
+  const activeImage = images[thumb] || images[0] || "";
   const hasSale = product.compare_price && product.compare_price > product.price;
 
   function share(kind: "facebook" | "twitter" | "copy") {
@@ -69,15 +82,17 @@ function ProductDetail({ product, brandColor }: { product: Product; brandColor: 
           <div className="aspect-square w-full overflow-hidden rounded-lg bg-neutral-100">
             {activeImage && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={activeImage} alt={product.name} className="h-full w-full object-cover" />
+              <img src={activeImage} alt={product.name} fetchPriority="high" className="h-full w-full object-cover" />
             )}
           </div>
           {images.length > 1 && (
             <div className="mt-3 flex gap-2">
               {images.map((src, i) => (
-                <button key={i} onClick={() => setThumb(i)} className="h-16 w-16 shrink-0 overflow-hidden rounded-md border" style={{ borderColor: thumb === i ? brandColor : "rgba(0,0,0,0.1)" }}>
+                <button key={i} onClick={() => setThumb(i)} aria-label={`Show picture ${i + 1}`}
+                  className="h-16 w-16 shrink-0 overflow-hidden rounded-md border transition"
+                  style={{ borderColor: thumb === i ? brandColor : "rgba(0,0,0,0.1)", borderWidth: thumb === i ? 2 : 1 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={src} alt="" className="h-full w-full object-cover" />
+                  <img src={src} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>
@@ -107,7 +122,7 @@ function ProductDetail({ product, brandColor }: { product: Product; brandColor: 
               <p className="text-sm font-medium">Colour: <span className="text-black/60">{color}</span></p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {colorNames.map((c) => (
-                  <button key={c} onClick={() => setColor(c)}
+                  <button key={c} onClick={() => pickColor(c)}
                     className="rounded-full border px-4 py-2 text-sm font-medium"
                     style={color === c ? { borderColor: brandColor, background: `${brandColor}12` } : { borderColor: "rgba(0,0,0,0.15)" }}>
                     {c}

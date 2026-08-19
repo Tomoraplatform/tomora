@@ -93,7 +93,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
           <a key={c.name} href={store.tenantHost ? `/category/${slug(c.name)}` : `#cat-${slug(c.name)}`} className="relative overflow-hidden rounded-lg">
             <Img src={c.image || `https://picsum.photos/seed/men-cat${i}/600/400`} className="h-56 w-full object-cover" />
             <div className="absolute inset-0 bg-black/40" />
-            <div className="absolute bottom-5 left-5 text-white"><p className="text-lg font-bold uppercase">{c.name}</p><p className="text-xs text-white/80">Explore the collection</p></div>
+            <div className="absolute bottom-5 left-5 text-white"><p className="text-lg font-bold uppercase">{c.name}</p>{label(siteData, "categoryHint", "Explore the collection") && (<p className="text-xs text-white/80">{label(siteData, "categoryHint", "Explore the collection")}</p>)}</div>
           </a>
         ))}
       </section>
@@ -121,7 +121,7 @@ export function MensClothes({ siteData, brandColor }: TemplateProps) {
         <div className="mx-auto flex max-w-6xl items-center gap-6 px-5 py-4">
           <div>
             <Brandmark siteData={siteData} name={name} className="text-lg font-bold leading-none" />
-            <p className="text-[10px] text-neutral-400">The biggest choice on the web</p>
+            {label(siteData, "footerTagline", "The biggest choice on the web") && (<p className="text-[10px] text-neutral-400">{label(siteData, "footerTagline", "The biggest choice on the web")}</p>)}
           </div>
           <div className="relative ml-auto hidden flex-1 max-w-md md:block">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />

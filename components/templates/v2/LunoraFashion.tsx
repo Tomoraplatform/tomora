@@ -43,7 +43,9 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
       <section className="relative">
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-14 lg:grid-cols-[55%_45%]">
           <div>
-            <span className="text-xs uppercase tracking-[0.3em] text-black/40">New Collection</span>
+            {label(siteData, "heroEyebrow", "New Collection") && (
+              <span className="text-xs uppercase tracking-[0.3em] text-black/40">{label(siteData, "heroEyebrow", "New Collection")}</span>
+            )}
             <h1 className="mt-4 font-serif text-5xl font-bold leading-[1.05] sm:text-6xl">{siteData.heroHeadline}</h1>
             <p className="mt-5 max-w-md text-lg italic text-black/60">{siteData.heroSubtext}</p>
             <div className="mt-7 flex flex-wrap items-center gap-4">
@@ -117,12 +119,14 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
         {/* Limited time offer */}
         <div className="flex items-center gap-4 overflow-hidden rounded-2xl bg-[#F3EFE9] p-6">
           <div className="flex-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-black/40">Limited Time Offer</span>
+            {label(siteData, "promoEyebrow", "Limited Time Offer") && (
+              <span className="text-xs font-semibold uppercase tracking-wide text-black/40">{label(siteData, "promoEyebrow", "Limited Time Offer")}</span>
+            )}
             {offer ? (
               <>
                 <h3 className="mt-2 font-serif text-2xl font-bold">{offer.name}</h3>
                 <p className="mt-1 text-sm"><span className="font-semibold">{formatNaira(sellingPrice(offer))}</span>{originalPrice(offer) ? <span className="ml-2 text-black/40 line-through">{formatNaira(originalPrice(offer)!)}</span> : null}{offer.offerPercent ? <span className="ml-2 font-semibold" style={{ color: "var(--brand-primary)" }}>-{offer.offerPercent}%</span> : null}</p>
-                <button onClick={() => addToCart(offer)} className="mt-3 inline-block rounded-md px-4 py-2 text-sm font-semibold" style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>Shop the Sale</button>
+                <button onClick={() => addToCart(offer)} className="mt-3 inline-block rounded-md px-4 py-2 text-sm font-semibold" style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>{label(siteData, "promoBtn", "Shop the Sale") || "Shop the Sale"}</button>
               </>
             ) : (
               <p className="mt-2 text-sm text-black/50">Mark a product as “On offer” to feature it here.</p>
@@ -168,7 +172,9 @@ export function LunoraFashion({ siteData, brandColor }: TemplateProps) {
         <div className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-14 md:grid-cols-2">
           <div className="aspect-[16/10] overflow-hidden rounded-2xl"><Img src={siteData.sectionImages?.newsletter || "https://picsum.photos/seed/lun-news/900/560"} className="h-full w-full object-cover" /></div>
           <div>
-            <span className="text-xs uppercase tracking-[0.3em] text-black/40">Get 10% off your first order</span>
+            {label(siteData, "newsletterEyebrow", "Get 10% off your first order") && (
+              <span className="text-xs uppercase tracking-[0.3em] text-black/40">{label(siteData, "newsletterEyebrow", "Get 10% off your first order")}</span>
+            )}
             <h2 className="mt-2 font-serif text-3xl font-bold">{heading(siteData, "newsletter", "Join Our Style List")}</h2>
             <p className="mt-3 text-black/60">{subheading(siteData, "newsletter", "Be first to know about new arrivals, sales and style tips.")}</p>
             {siteData.showNewsletter !== false && <div className="mt-5"><NewsletterInput buttonText="Subscribe" /></div>}

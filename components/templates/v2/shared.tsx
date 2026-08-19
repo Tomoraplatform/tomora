@@ -446,6 +446,17 @@ export function label(siteData: SiteData, key: string, fallback: string): string
 }
 
 /**
+ * Faces shown beside a trust line. An owner who has never touched them sees the
+ * template's stock set; once they edit the list it is theirs, and deleting every
+ * one removes the row rather than quietly restoring the stock faces.
+ */
+export function avatarsOf(siteData: SiteData, fallback: string[]): string[] {
+  const list = siteData.heroAvatars;
+  if (!list) return fallback;
+  return list.map((a) => a.image || "").filter(Boolean);
+}
+
+/**
  * Returns the template's section keys in the user's saved order, with any
  * sections not present in the saved order appended in their natural order.
  */
