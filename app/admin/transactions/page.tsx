@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, ShoppingBag, HeartHandshake, CreditCard, Globe, TrendingUp, Layers, GraduationCap, Store, Sparkles } from "lucide-react";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { realOnly } from "@/lib/orders/query";
 import { platformBalance } from "@/lib/creator/money";
 import { PlatformWallet } from "@/components/admin/platform-wallet";
 import { formatNaira } from "@/lib/utils";
@@ -36,7 +37,7 @@ export default async function AdminTransactionsPage() {
   const admin = createAdminClient();
 
   const [{ data: ledger }, wallet, { data: walletTx }] = await Promise.all([
-    admin.from("transactions").select("kind, gross_amount, platform_amount, payee_amount, vat_amount, created_at, description").order("created_at", { ascending: false }).limit(5000),
+    realOnly(admin.from("transactions").select("kind, gross_amount, platform_amount, payee_amount, vat_amount, created_at, description")).order("created_at", { ascending: false }).limit(5000),
     platformBalance(),
     admin.from("platform_wallet_transactions").select("id, type, source, amount, status, description, created_at, is_vat").order("created_at", { ascending: false }).limit(12),
   ]);

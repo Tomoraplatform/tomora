@@ -88,7 +88,13 @@ function GoalBar({ label, current, goal, format }: { label: string; current: num
   );
 }
 
-export function MilestonesGoals({ isEcommerce, metrics, goals }: { isEcommerce: boolean; metrics: Metrics; goals: { orders?: number; revenue?: number; visits?: number } }) {
+export function MilestonesGoals({ isEcommerce, metrics, goals, isTest = false }: {
+  isEcommerce: boolean;
+  metrics: Metrics;
+  goals: { orders?: number; revenue?: number; visits?: number };
+  /** Sandbox mode: say so on the page, not only in the banner. */
+  isTest?: boolean;
+}) {
   const [orders, setOrders] = useState(goals.orders || 0);
   const [revenue, setRevenue] = useState(goals.revenue || 0);
   const [visits, setVisits] = useState(goals.visits || 0);
@@ -128,7 +134,7 @@ export function MilestonesGoals({ isEcommerce, metrics, goals }: { isEcommerce: 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink">Milestones &amp; Goals</h1>
+        <h1 className="text-2xl font-bold text-ink">{isTest ? "Sandbox milestones" : "Milestones & Goals"}</h1>
         <p className="mt-1 text-ink/60">Track your progress and unlock badges as your business grows. Locked badges turn colourful once you earn them.</p>
       </div>
 

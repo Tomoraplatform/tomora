@@ -12,12 +12,18 @@ import {
 } from "@/lib/constants";
 import { formatNaira } from "@/lib/utils";
 
-/** Sums a site's wallet: income (completed) minus withdrawals (completed + pending). */
+/**
+ * Sums a site's wallet: income (completed) minus withdrawals (completed + pending).
+ *
+ * Real rows only, always. This is the figure a payout is paid against, so a
+ * sandbox sale must never be able to add a naira to it.
+ */
 async function walletBalance(admin: ReturnType<typeof createAdminClient>, siteId: string) {
   const { data } = await admin
     .from("wallet_transactions")
     .select("type, amount, status, created_at")
-    .eq("site_id", siteId);
+    .eq("site_id", siteId)
+    .eq("is_test", false);
   const rows = (data as { type: string; amount: number; status: string; created_at: string }[]) || [];
   const income = rows.filter((r) => r.type === "income" && r.status === "completed").reduce((s, r) => s + r.amount, 0);
   const out = rows.filter((r) => r.type === "withdrawal" && r.status !== "failed").reduce((s, r) => s + r.amount, 0);

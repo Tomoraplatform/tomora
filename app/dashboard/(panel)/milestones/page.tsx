@@ -1,6 +1,8 @@
 import { getDashboardData } from "@/lib/dashboard";
 import { createClient } from "@/lib/supabase/server";
 import { MilestonesGoals } from "@/components/dashboard/milestones";
+import { scopeToMode } from "@/lib/orders/query";
+import { currentMode } from "@/lib/sandbox";
 
 export const metadata = { title: "Milestones & Goals | Tomora" };
 
@@ -20,10 +22,11 @@ export default async function MilestonesPage() {
 
   // Completed orders (anything the owner has confirmed as paid or beyond).
   const supabase = createClient();
-  const { data: orderRows } = await supabase
-    .from("orders")
-    .select("amount, status, created_at")
-    .eq("site_id", site!.id);
+  const mode = await currentMode();
+  const { data: orderRows } = await scopeToMode(
+    supabase.from("orders").select("amount, status, created_at").eq("site_id", site!.id),
+    mode
+  );
   const orders = ((orderRows as { amount: number; status: string; created_at: string }[]) || [])
     .filter((o) => o.status !== "pending");
 
@@ -59,7 +62,7 @@ export default async function MilestonesPage() {
   }
 
   return (
-    <MilestonesGoals
+    <MilestonesGoals isTest={mode === "test"}
       isEcommerce={isEcommerce}
       metrics={{ totalOrders, totalRevenue, visits, peakDay, peakWeek, peakMonth, longestStreak, maxMonthRevenue }}
       goals={site!.site_data?.goals || {}}

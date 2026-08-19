@@ -3,6 +3,7 @@ import { getDashboardData } from "@/lib/dashboard";
 import { createClient } from "@/lib/supabase/server";
 import { WALLET_UNLIMITED_PLANS } from "@/lib/constants";
 import { WalletManager, type WalletTx } from "@/components/dashboard/wallet-manager";
+import { currentMode } from "@/lib/sandbox";
 
 export const metadata = { title: "Tomora Wallet | Tomora" };
 
@@ -12,10 +13,14 @@ export default async function WalletPage() {
   if (!eligible) redirect("/dashboard");
 
   const supabase = createClient();
+  // The balance a withdrawal is paid from: sandbox credits are never part of
+  // it, and in test mode only sandbox credits are shown.
+  const mode = await currentMode();
   const { data } = await supabase
     .from("wallet_transactions")
     .select("id, type, source, amount, status, description, created_at")
     .eq("site_id", site!.id)
+    .eq("is_test", mode === "test")
     .order("created_at", { ascending: false })
     .limit(200);
   const txs = (data as WalletTx[]) || [];

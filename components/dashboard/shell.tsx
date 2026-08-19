@@ -5,15 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote,
-  Globe, CreditCard, Settings, Menu, X, LogOut, ExternalLink, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket, Truck, MoreHorizontal, LifeBuoy, Wallet, UsersRound, UtensilsCrossed,
-} from "lucide-react";
+  Globe, CreditCard, Settings, Menu, X, LogOut, ExternalLink, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket, Truck, MoreHorizontal, LifeBuoy, Wallet, UsersRound, UtensilsCrossed, FlaskConical } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/app/(auth)/actions";
 import { SiteSwitcher, type SwitcherSite } from "./site-switcher";
 
 const ICONS = {
-  LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote, Globe, CreditCard, Settings, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket, Truck, LifeBuoy, Wallet, UsersRound, UtensilsCrossed,
+  LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote, Globe, CreditCard, Settings, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket, Truck, LifeBuoy, Wallet, UsersRound, UtensilsCrossed, FlaskConical,
 } as const;
 
 export interface NavItem {
@@ -28,12 +27,15 @@ export function DashboardShell({
   liveUrl,
   sites,
   currentSiteId,
+  modeSwitch,
   children,
 }: {
   items: NavItem[];
   liveUrl?: string | null;
   sites?: SwitcherSite[];
   currentSiteId?: string;
+  /** Real / Test switch. Rendered for admins only, so it is a slot, not a flag. */
+  modeSwitch?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -88,7 +90,10 @@ export function DashboardShell({
       {/* Mobile top bar */}
       <div className="flex items-center justify-between border-b border-ink/10 bg-white px-4 py-3 lg:hidden">
         <Logo />
-        <button onClick={() => setOpen(true)} aria-label="Open menu"><Menu className="h-6 w-6 text-ink" /></button>
+        <div className="flex items-center gap-3">
+          {modeSwitch}
+          <button onClick={() => setOpen(true)} aria-label="Open menu"><Menu className="h-6 w-6 text-ink" /></button>
+        </div>
       </div>
 
       {/* Mobile drawer */}
@@ -106,7 +111,14 @@ export function DashboardShell({
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-r border-ink/10 bg-white lg:block">
           {SidebarContent}
         </aside>
-        <main className="min-w-0 flex-1 px-5 pb-28 pt-8 lg:px-10 lg:pb-8">{children}</main>
+        <main className="min-w-0 flex-1 pb-28 lg:pb-8">
+          {modeSwitch && (
+            <div className="hidden justify-end border-b border-ink/10 bg-white px-10 py-2.5 lg:flex">
+              {modeSwitch}
+            </div>
+          )}
+          <div className="px-5 pt-8 lg:px-10">{children}</div>
+        </main>
       </div>
 
       <MobileBottomNav items={items} pathname={pathname} onMore={() => setOpen(true)} />

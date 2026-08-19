@@ -16,12 +16,14 @@ import { catalogTemplate } from "@/lib/catalog";
 import { formatNaira } from "@/lib/utils";
 import { GettingStarted } from "@/components/dashboard/getting-started";
 import { MySites, type MySite } from "@/components/dashboard/my-sites";
+import { currentMode } from "@/lib/sandbox";
 
 export const metadata = { title: "Dashboard | Tomora" };
 
 export default async function DashboardHome() {
   const { site, sites, subscription, profile } = await getDashboardData();
   const supabase = createClient();
+  const mode = await currentMode();
 
   // Per-site product/order counts for the e-commerce website cards.
   const ecomIds = sites.filter((s) => s.category === "ecommerce").map((s) => s.id);
@@ -30,7 +32,7 @@ export default async function DashboardHome() {
   if (ecomIds.length) {
     const [{ data: prodRows }, { data: orderRows }] = await Promise.all([
       supabase.from("products").select("site_id").in("site_id", ecomIds),
-      supabase.from("orders").select("site_id").in("site_id", ecomIds),
+      supabase.from("orders").select("site_id").in("site_id", ecomIds).eq("is_test", mode === "test"),
     ]);
     for (const r of (prodRows as { site_id: string }[]) || []) prodCounts[r.site_id] = (prodCounts[r.site_id] || 0) + 1;
     for (const r of (orderRows as { site_id: string }[]) || []) orderCounts[r.site_id] = (orderCounts[r.site_id] || 0) + 1;
@@ -60,7 +62,7 @@ export default async function DashboardHome() {
   if (isEcommerce && site) {
     const [{ count: pc }, { count: oc }] = await Promise.all([
       supabase.from("products").select("*", { count: "exact", head: true }).eq("site_id", site.id),
-      supabase.from("orders").select("*", { count: "exact", head: true }).eq("site_id", site.id),
+      supabase.from("orders").select("*", { count: "exact", head: true }).eq("site_id", site.id).eq("is_test", mode === "test"),
     ]);
     productCount = pc ?? 0;
     orderCount = oc ?? 0;

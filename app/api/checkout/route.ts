@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
   // Real DB products.
   const realIds = items.map((i: any) => i.productId).filter((id: string) => id && !String(id).startsWith("custom:"));
   const { data: products } = realIds.length
-    ? await admin.from("products").select("id, price, stock, is_active, name, is_offer, offer_percent").in("id", realIds).eq("site_id", siteId)
+    ? await admin.from("products").select("id, price, stock, is_active, name, is_offer, offer_percent").in("id", realIds).eq("site_id", siteId).eq("is_test_only", false)
     : { data: [] as any[] };
 
   // Custom-section products: price is trusted from the site's saved data, never the client.

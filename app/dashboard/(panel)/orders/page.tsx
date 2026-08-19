@@ -3,6 +3,8 @@ import { getDashboardData } from "@/lib/dashboard";
 import { createClient } from "@/lib/supabase/server";
 import { OrdersManager } from "@/components/dashboard/orders-manager";
 import type { Order, Product } from "@/lib/database.types";
+import { scopeToMode } from "@/lib/orders/query";
+import { currentMode } from "@/lib/sandbox";
 
 export const metadata = { title: "Orders | Tomora" };
 
@@ -11,8 +13,9 @@ export default async function OrdersPage() {
   if (site!.category !== "ecommerce") redirect("/dashboard");
 
   const supabase = createClient();
+  const mode = await currentMode();
   const [{ data: orders }, { data: products }] = await Promise.all([
-    supabase.from("orders").select("*").eq("site_id", site!.id).order("created_at", { ascending: false }),
+    scopeToMode(supabase.from("orders").select("*").eq("site_id", site!.id), mode).order("created_at", { ascending: false }),
     supabase.from("products").select("id, name").eq("site_id", site!.id),
   ]);
 
@@ -23,5 +26,5 @@ export default async function OrdersPage() {
   await supabase.from("orders").update({ seen: true })
     .eq("site_id", site!.id).eq("status", "paid").eq("seen", false);
 
-  return <OrdersManager initial={(orders as Order[]) || []} productNames={names} />;
+  return <OrdersManager isTest={mode === "test"} initial={(orders as Order[]) || []} productNames={names} />;
 }

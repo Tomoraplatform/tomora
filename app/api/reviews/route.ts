@@ -28,11 +28,13 @@ export async function POST(request: NextRequest) {
   // order for this exact product on this site.
   let verified = false;
   if (productId && email) {
+    // Real purchases only: a sandbox order must never verify a reviewer.
     const { count } = await admin
       .from("orders")
       .select("id", { count: "exact", head: true })
       .eq("site_id", siteId)
       .eq("product_id", productId)
+      .eq("is_test", false)
       .ilike("buyer_email", String(email).trim())
       .in("status", ["paid", "shipped", "delivered"]);
     verified = !!count && count > 0;

@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { excludeTestProducts } from "@/lib/orders/query";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { expireCompIfDue } from "@/lib/billing";
 import type { Site, Product, Subscription, Review } from "@/lib/database.types";
@@ -43,7 +44,7 @@ export const loadPublishedSite = cache(async (
       .eq("user_id", site.user_id)
       .maybeSingle<Pick<Subscription, "status" | "comp_expires_at">>(),
     isStore
-      ? admin.from("products").select("*").eq("site_id", site.id).eq("is_active", true).order("created_at", { ascending: false })
+      ? excludeTestProducts(admin.from("products").select("*").eq("site_id", site.id).eq("is_active", true)).order("created_at", { ascending: false })
       : Promise.resolve({ data: [] as Product[] }),
     // Best-effort: reviews table may not exist yet (pre-0006 migration).
     isStore

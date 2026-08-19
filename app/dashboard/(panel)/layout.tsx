@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { DashboardShell, type NavItem } from "@/components/dashboard/shell";
 import { siteLiveUrl } from "@/lib/site-url";
 import { catalogTemplate } from "@/lib/catalog";
+import { currentMode, sandboxAllowed } from "@/lib/sandbox";
+import { ModeSwitch, TestModeFrame } from "@/components/dashboard/mode-switch";
 
 export const metadata = { robots: { index: false, follow: false } };
 
@@ -17,6 +19,8 @@ export default async function PanelLayout({
   const isRestaurant = catalogTemplate(site?.template_id || "")?.category === "food";
 
   const supabase = createClient();
+  const mode = await currentMode();
+  const canSandbox = await sandboxAllowed();
 
   // Badge counts (new paid orders + unread chats), fetched in parallel.
   let newOrders = 0;
@@ -30,6 +34,7 @@ export default async function PanelLayout({
             .eq("site_id", site.id)
             .eq("status", "paid")
             .eq("seen", false)
+            .eq("is_test", mode === "test")
         : Promise.resolve({ count: 0 }),
       supabase
         .from("support_messages")
@@ -77,6 +82,8 @@ export default async function PanelLayout({
     { href: "/dashboard/billing", label: "Billing", icon: "CreditCard" },
     { href: "/dashboard/account", label: "Account", icon: "Settings" },
     { href: "/dashboard/help", label: "Help & Support", icon: "LifeBuoy" },
+    // Admin-only: a place to rehearse a whole sale without touching real money.
+    ...(canSandbox ? ([{ href: "/dashboard/sandbox", label: "Sandbox", icon: "FlaskConical" }] as NavItem[]) : []),
   ];
 
   // Staff logins only see the areas they've been granted (plus basics).
@@ -101,7 +108,11 @@ export default async function PanelLayout({
   }));
 
   return (
-    <DashboardShell items={items} liveUrl={liveUrl} sites={switcherSites} currentSiteId={site?.id}>
+    <DashboardShell
+      items={items} liveUrl={liveUrl} sites={switcherSites} currentSiteId={site?.id}
+      modeSwitch={canSandbox ? <ModeSwitch mode={mode} /> : null}
+    >
+      {mode === "test" && <TestModeFrame />}
       {children}
     </DashboardShell>
   );

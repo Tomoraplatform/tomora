@@ -69,7 +69,12 @@ function groupOrders(orders: Order[]): Grouped[] {
   }).sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
 }
 
-export function OrdersManager({ initial, productNames }: { initial: Order[]; productNames: Record<string, string> }) {
+export function OrdersManager({ initial, productNames, isTest = false }: {
+  initial: Order[];
+  productNames: Record<string, string>;
+  /** Sandbox mode: say so on the page, not only in the banner. */
+  isTest?: boolean;
+}) {
   const [orders, setOrders] = useState<Order[]>(initial);
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
@@ -113,7 +118,7 @@ export function OrdersManager({ initial, productNames }: { initial: Order[]; pro
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink">Orders</h1>
+        <h1 className="text-2xl font-bold text-ink">{isTest ? "Test orders" : "Orders"}</h1>
         <p className="mt-1 text-ink/60">Customers pay by bank transfer, mark an order <span className="font-medium">Paid</span> once the money lands in your account.</p>
       </div>
 
