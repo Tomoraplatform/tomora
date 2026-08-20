@@ -17,6 +17,8 @@ import { formatNaira } from "@/lib/utils";
 import { GettingStarted } from "@/components/dashboard/getting-started";
 import { MySites, type MySite } from "@/components/dashboard/my-sites";
 import { currentMode } from "@/lib/sandbox";
+import { loadRevenue } from "@/lib/analytics/revenue";
+import { RevenueAnalytics } from "@/components/dashboard/revenue-analytics";
 
 export const metadata = { title: "Dashboard | Tomora" };
 
@@ -68,6 +70,12 @@ export default async function DashboardHome() {
     orderCount = oc ?? 0;
   }
 
+  // The money first: this is the screen an owner opens every morning, so the
+  // revenue cards belong here and not only on their own page.
+  const analytics = isEcommerce && site
+    ? await loadRevenue(supabase, site.id, mode, Number((site as any).visit_count || 0))
+    : null;
+
   // ---- Status + trial ----
   const now = Date.now();
   const trialEnd = site?.trial_ends_at ? new Date(site.trial_ends_at).getTime() : 0;
@@ -111,6 +119,8 @@ export default async function DashboardHome() {
       </div>
 
       {setupSteps.length > 0 && <GettingStarted steps={setupSteps} siteId={site!.id} />}
+
+      {analytics && <RevenueAnalytics data={analytics} isTest={mode === "test"} />}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Site status */}

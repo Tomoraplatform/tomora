@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { MilestonesGoals } from "@/components/dashboard/milestones";
 import { scopeToMode } from "@/lib/orders/query";
 import { currentMode } from "@/lib/sandbox";
+import { loadRevenue } from "@/lib/analytics/revenue";
 
 export const metadata = { title: "Milestones & Goals | Tomora" };
 
@@ -64,50 +65,7 @@ export default async function MilestonesPage() {
     longestStreak = Math.max(longestStreak, run);
   }
 
-  // ---- Revenue analytics ----
-  // Rows are one per item, so an "order" is a reference: counting rows would
-  // treat a three-item basket as three sales.
-  const byRef = new Map<string, { total: number; day: string; who: string }>();
-  for (const o of orders) {
-    const key = o.paystack_reference || `row:${o.created_at}`;
-    const who = (o.buyer_email || o.buyer_phone || "").trim().toLowerCase();
-    const found = byRef.get(key);
-    if (found) found.total += o.amount || 0;
-    else byRef.set(key, { total: o.amount || 0, day: dayKey(o.created_at), who });
-  }
-  const sales = Array.from(byRef.values());
-  const orderCount = sales.length;
-  const revenueTotal = sales.reduce((s, x) => s + x.total, 0);
-
-  // A continuous daily series, so a quiet day is a dip rather than a gap.
-  const revByDay = new Map<string, number>();
-  const cntByDay = new Map<string, number>();
-  for (const s2 of sales) {
-    revByDay.set(s2.day, (revByDay.get(s2.day) || 0) + s2.total);
-    cntByDay.set(s2.day, (cntByDay.get(s2.day) || 0) + 1);
-  }
-  const series: { label: string; revenue: number; orders: number }[] = [];
-  for (let i = 119; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86_400_000);
-    const key = d.toISOString().slice(0, 10);
-    series.push({ label: key, revenue: revByDay.get(key) || 0, orders: cntByDay.get(key) || 0 });
-  }
-
-  const buyers = new Map<string, number>();
-  for (const s3 of sales) if (s3.who) buyers.set(s3.who, (buyers.get(s3.who) || 0) + 1);
-  const repeat = Array.from(buyers.values()).filter((n) => n > 1).length;
-
-  const analytics = {
-    totalRevenue: revenueTotal,
-    totalOrders: orderCount,
-    averageOrder: orderCount ? Math.round(revenueTotal / orderCount) : 0,
-    visits,
-    conversionRate: visits > 0 ? (orderCount / visits) * 100 : 0,
-    returningRate: buyers.size > 0 ? (repeat / buyers.size) * 100 : 0,
-    revenueSeries: series.map((p) => ({ label: p.label, value: p.revenue })),
-    ordersSeries: series.map((p) => ({ label: p.label, value: p.orders })),
-    visitsKnown: visits > 0,
-  };
+  const analytics = await loadRevenue(supabase, site!.id, mode, visits);
 
   return (
     <MilestonesGoals isTest={mode === "test"}

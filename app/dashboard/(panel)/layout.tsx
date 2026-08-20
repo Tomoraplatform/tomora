@@ -51,7 +51,7 @@ export default async function PanelLayout({
     { href: "/dashboard", label: "Dashboard", icon: "LayoutDashboard" },
     { href: "/dashboard/editor", label: "Edit Site", icon: "Pencil" },
     { href: "/dashboard/templates", label: "Templates", icon: "LayoutTemplate" },
-    { href: "/dashboard/milestones", label: "Milestones", icon: "Trophy" },
+    { href: "/dashboard/milestones", label: "Revenue & Stats", icon: "TrendingUp" },
     { href: "/dashboard/brand", label: "Brand Settings", icon: "Palette" },
     ...(isRestaurant
       ? ([{ href: "/dashboard/restaurant", label: "Restaurant", icon: "UtensilsCrossed" }] as NavItem[])

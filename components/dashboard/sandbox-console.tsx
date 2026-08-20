@@ -14,6 +14,7 @@ import {
 } from "@/app/dashboard/(panel)/sandbox/actions";
 import type { DataMode } from "@/lib/sandbox";
 import type { Product } from "@/lib/database.types";
+import { RevenueAnalytics, type AnalyticsData } from "./revenue-analytics";
 
 export interface SandboxOrder {
   reference: string;
@@ -37,7 +38,7 @@ const fmtDate = (iso: string) =>
  * sandbox's rather than the real business's.
  */
 export function SandboxConsole({
-  mode, sites, activeId, products, orders, templates,
+  mode, sites, activeId, products, orders, templates, analytics,
 }: {
   mode: DataMode;
   sites: { id: string; name: string; templateId: string; isLive: boolean; url: string }[];
@@ -45,6 +46,7 @@ export function SandboxConsole({
   products: Product[];
   orders: SandboxOrder[];
   templates: { id: string; name: string; category: string }[];
+  analytics: AnalyticsData | null;
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -316,9 +318,11 @@ export function SandboxConsole({
             </CardContent>
           </Card>
 
+          {analytics && <RevenueAnalytics data={analytics} isTest />}
+
           {/* ----------------------------- stats ---------------------------- */}
           <Card>
-            <CardHeader><CardTitle>Sandbox stats</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Sandbox orders</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-4">
                 {[

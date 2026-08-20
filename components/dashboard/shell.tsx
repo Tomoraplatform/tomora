@@ -5,14 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote,
-  Globe, CreditCard, Settings, Menu, X, LogOut, ExternalLink, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket, Truck, MoreHorizontal, LifeBuoy, Wallet, UsersRound, UtensilsCrossed, FlaskConical } from "lucide-react";
+  Globe, CreditCard, Settings, Menu, X, LogOut, ExternalLink, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket, Truck, MoreHorizontal, LifeBuoy, Wallet, UsersRound, UtensilsCrossed, FlaskConical, TrendingUp } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/app/(auth)/actions";
 import { SiteSwitcher, type SwitcherSite } from "./site-switcher";
 
 const ICONS = {
-  LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote, Globe, CreditCard, Settings, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket, Truck, LifeBuoy, Wallet, UsersRound, UtensilsCrossed, FlaskConical,
+  LayoutDashboard, Pencil, Palette, Package, ShoppingBag, Banknote, Globe, CreditCard, Settings, LayoutTemplate, Star, Inbox, MessagesSquare, Heart, Trophy, Ticket, Truck, LifeBuoy, Wallet, UsersRound, UtensilsCrossed, FlaskConical, TrendingUp,
 } as const;
 
 export interface NavItem {
