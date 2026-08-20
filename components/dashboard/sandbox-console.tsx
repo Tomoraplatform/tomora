@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatNaira, cn } from "@/lib/utils";
 import {
-  createDemoSite, createTestProduct, createTestOrder, clearTestData, selectDemoSite, deleteDemoSite, setDemoLive,
+  createDemoSite, createTestProduct, createTestOrder, clearTestData, selectDemoSite, deleteDemoSite, setDemoLive, setTestOrderDate,
 } from "@/app/dashboard/(panel)/sandbox/actions";
 import type { DataMode } from "@/lib/sandbox";
 import type { Product } from "@/lib/database.types";
@@ -360,7 +360,7 @@ export function SandboxConsole({
                   <table className="w-full text-sm">
                     <thead className="border-b border-ink/10 bg-cream/60 text-left text-ink/60">
                       <tr>
-                        <th className="p-3 font-medium">Date</th>
+                        <th className="p-3 font-medium">Date <span className="font-normal text-ink/40">(editable)</span></th>
                         <th className="p-3 font-medium">Items</th>
                         <th className="p-3 font-medium">Qty</th>
                         <th className="p-3 font-medium">Status</th>
@@ -370,7 +370,23 @@ export function SandboxConsole({
                     <tbody className="divide-y divide-ink/5">
                       {orders.map((o) => (
                         <tr key={o.reference}>
-                          <td className="whitespace-nowrap p-3 text-ink/70">{fmtDate(o.createdAt)}</td>
+                          <td className="whitespace-nowrap p-3">
+                            {/* Editable in place: orders bought from the demo
+                                storefront arrive stamped now, and a demo wants
+                                them spread out. */}
+                            <input
+                              type="date"
+                              aria-label={`Date of order ${o.reference}`}
+                              defaultValue={o.createdAt.slice(0, 10)}
+                              max={today}
+                              disabled={pending}
+                              onChange={(e) => {
+                                if (!e.target.value) return;
+                                run(() => setTestOrderDate(o.reference, e.target.value), "Order moved.");
+                              }}
+                              className="rounded-md border border-ink/15 bg-white px-2 py-1 text-xs text-ink outline-none focus:border-ink/40"
+                            />
+                          </td>
                           <td className="p-3 text-ink/80">{o.items.map((i) => i.name).join(", ")}</td>
                           <td className="p-3 tabular-nums text-ink/80">{o.items.reduce((n, i) => n + i.qty, 0)}</td>
                           <td className="p-3">

@@ -269,6 +269,48 @@ export async function createTestOrder(input: TestOrderInput): Promise<R & { refe
   }
 }
 
+/**
+ * Moves an existing test order to another day.
+ *
+ * Orders bought by shopping the demo storefront are stamped when they happen,
+ * so this is the only way to spread those across a week for a demo. It moves
+ * the wallet and ledger rows with it, or the money and the graph disagree.
+ */
+export async function setTestOrderDate(reference: string, day: string): Promise<R> {
+  try {
+    const { supabase, userId } = await requireSandbox();
+    const at = orderTimestamp(day);
+    if (!at) return { ok: false, error: "Pick a day from the last two years, today or earlier." };
+
+    // Only this admin's own demo stores, and only test rows.
+    const { data: sites } = await supabase
+      .from("sites").select("id").eq("user_id", userId).eq("is_demo", true);
+    const siteIds = (sites || []).map((s) => s.id);
+    if (!siteIds.length) return { ok: false, error: "No demo store." };
+
+    const admin = createAdminClient();
+    const { data: moved, error } = await admin
+      .from("orders").update({ created_at: at })
+      .eq("paystack_reference", reference).eq("is_test", true).in("site_id", siteIds)
+      .select("id");
+    if (error) return { ok: false, error: error.message };
+    if (!moved?.length) return { ok: false, error: "That order is not one of yours." };
+
+    await admin.from("wallet_transactions").update({ created_at: at })
+      .eq("reference", reference).eq("is_test", true);
+    await admin.from("transactions").update({ created_at: at })
+      .eq("reference", reference).eq("is_test", true);
+
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/sandbox");
+    revalidatePath("/dashboard/milestones");
+    revalidatePath("/dashboard/orders");
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, error: e.message };
+  }
+}
+
 /** Removes every test row belonging to this admin, in one go. */
 export async function clearTestData(siteId?: string): Promise<R & { orders?: number }> {
   try {
