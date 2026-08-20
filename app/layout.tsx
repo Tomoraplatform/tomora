@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Suspense } from "react";
 import "./globals.css";
+import { TikTokPixel } from "@/components/analytics/tiktok-pixel";
 
 const sans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -55,6 +57,12 @@ export default function RootLayout({
       </head>
       <body className={`${sans.variable} font-sans antialiased`}>
         {children}
+        {/* Tomora's own measurement. It checks the host before loading, so it
+            never runs on a customer's published shop. Suspense because it reads
+            the search params to notice a page change. */}
+        <Suspense fallback={null}>
+          <TikTokPixel />
+        </Suspense>
       </body>
     </html>
   );

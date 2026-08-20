@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { sendTikTokEvent } from "@/lib/tiktok/events-api";
+import { TIKTOK_EVENTS } from "@/lib/tiktok/config";
 
 export interface AuthState {
   error?: string;
@@ -58,10 +60,23 @@ export async function signUp(
 
   if (error) return { error: authError(error) };
 
+  // A registration is worth measuring from the server: browser pixels are lost
+  // often enough here that signups would be undercounted. The browser sends its
+  // own copy on the page this lands on, under the same id, so TikTok counts one.
+  const eventId = data.user?.id ? `signup_${data.user.id}` : `signup_${Date.now()}`;
+  await sendTikTokEvent({
+    event: TIKTOK_EVENTS.registration,
+    eventId,
+    email,
+    url: `${origin}/signup`,
+    ip: headers().get("x-forwarded-for")?.split(",")[0]?.trim(),
+    userAgent: headers().get("user-agent") || undefined,
+  });
+
   // If email confirmation is disabled, a session is returned immediately.
   if (data.session) {
     revalidatePath("/", "layout");
-    redirect("/onboarding");
+    redirect(`/onboarding?ttq=${encodeURIComponent(eventId)}`);
   }
   return {
     message:

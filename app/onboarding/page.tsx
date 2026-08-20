@@ -4,10 +4,16 @@ import { createClient } from "@/lib/supabase/server";
 import { novaEnabled } from "@/lib/nova-flag";
 import { OnboardingWizard } from "@/components/onboarding/wizard";
 import { getTemplateOverrides } from "@/lib/template-overrides";
+import { TikTokEvent } from "@/components/analytics/tiktok-pixel";
+import { TIKTOK_EVENTS } from "@/lib/tiktok/config";
 
 export const metadata = { robots: { index: false, follow: false },  title: "Set Up Your Site | Tomora" };
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams?: { ttq?: string };
+}) {
   const supabase = createClient();
   const {
     data: { user },
@@ -29,6 +35,10 @@ export default async function OnboardingPage() {
 
   return (
     <>
+      {/* Only when this load is the one straight after signing up. */}
+      {searchParams?.ttq && (
+        <TikTokEvent event={TIKTOK_EVENTS.registration} eventId={searchParams.ttq} />
+      )}
       {nova && (
         <a
           href="/onboarding/nova"

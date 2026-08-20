@@ -5,6 +5,8 @@ import {
   getPlan, NEW_DOMAIN_AMOUNT, VAT_PERCENT,
 } from "@/lib/constants";
 import { creditPlatform, recordTransaction } from "@/lib/creator/money";
+import { sendTikTokEvent } from "@/lib/tiktok/events-api";
+import { TIKTOK_EVENTS } from "@/lib/tiktok/config";
 
 function addMonths(date: Date, months: number) {
   const d = new Date(date);
@@ -80,6 +82,23 @@ export async function applyPlatformPayment(userId: string, reference: string, pl
       description: `${plan?.name || "Plan"} subscription`,
     }),
   ]);
+
+  // Measured here rather than on a thank-you page: this runs when Paystack
+  // confirms the money, which happens whether or not the browser came back.
+  // The early return above on a repeated reference keeps it to one send.
+  try {
+    const { data: profile } = await admin
+      .from("profiles").select("email, phone").eq("user_id", userId).maybeSingle();
+    await sendTikTokEvent({
+      event: TIKTOK_EVENTS.subscribe,
+      eventId: `sub_${reference}`,
+      email: profile?.email,
+      phone: profile?.phone,
+      value: charged,
+      currency: "NGN",
+      contents: [{ content_id: plan?.id || "plan", content_name: plan?.name || "Plan", price: charged, quantity: 1 }],
+    });
+  } catch { /* never let measurement break a payment */ }
 
   return { already: false };
 }
