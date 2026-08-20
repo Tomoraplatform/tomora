@@ -75,7 +75,14 @@ const RANGES = [
  * The revenue dashboard: the numbers an owner actually checks, each with its
  * own shape over time, in a grid that reflows from three columns to one.
  */
-export function RevenueAnalytics({ data, isTest = false }: { data: AnalyticsData; isTest?: boolean }) {
+export function RevenueAnalytics({
+  data, isTest = false, manageHref,
+}: {
+  data: AnalyticsData;
+  isTest?: boolean;
+  /** Shown beside the heading, for getting from the figures to the controls. */
+  manageHref?: string;
+}) {
   const [range, setRange] = useState<(typeof RANGES)[number]["id"]>("30");
   const days = RANGES.find((r) => r.id === range)!.days;
   const cut = (s: AnalyticsPoint[]) => (days ? s.slice(-days) : s);
@@ -89,9 +96,14 @@ export function RevenueAnalytics({ data, isTest = false }: { data: AnalyticsData
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-bold text-ink">
-          {isTest ? "Sandbox revenue" : "Revenue"}
-        </h2>
+        <div className="flex flex-wrap items-baseline gap-3">
+          <h2 className="text-lg font-bold text-ink">{isTest ? "Sandbox revenue" : "Revenue"}</h2>
+          {manageHref && (
+            <a href={manageHref} className="text-sm font-semibold text-ink/60 underline hover:text-ink">
+              Add or re-date test orders
+            </a>
+          )}
+        </div>
         <div className="flex flex-wrap gap-1 rounded-full border border-ink/15 bg-white p-0.5">
           {RANGES.map((r) => (
             <button
@@ -140,7 +152,7 @@ export function RevenueAnalytics({ data, isTest = false }: { data: AnalyticsData
         <Card
           title="Conversion rate"
           value={data.visitsKnown && data.visits > 0 ? `${data.conversionRate.toFixed(2)}%` : "-"}
-          sub="Visits that became an order"
+          sub={isTest ? "Test orders are not visits, so treat this loosely" : "Visits that became an order"}
         />
 
         <Card

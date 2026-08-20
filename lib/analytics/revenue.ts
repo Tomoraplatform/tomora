@@ -68,7 +68,10 @@ export async function loadRevenue(
     totalOrders,
     averageOrder: totalOrders ? Math.round(totalRevenue / totalOrders) : 0,
     visits,
-    conversionRate: visits > 0 ? (totalOrders / visits) * 100 : 0,
+    // Capped at 100: sandbox orders are written straight to the database
+    // without anyone visiting the site, so the raw ratio can exceed every
+    // visit and read as nonsense like 170%.
+    conversionRate: visits > 0 ? Math.min(100, (totalOrders / visits) * 100) : 0,
     returningRate: buyers.size > 0 ? (repeat / buyers.size) * 100 : 0,
     revenueSeries,
     ordersSeries,

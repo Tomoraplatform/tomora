@@ -144,7 +144,10 @@ export function MilestonesGoals({ isEcommerce, metrics, goals, isTest = false, a
         </p>
       </div>
 
-      {isEcommerce && <RevenueAnalytics data={analytics} isTest={isTest} />}
+      {isEcommerce && (
+        <RevenueAnalytics data={analytics} isTest={isTest}
+          manageHref={isTest ? "/dashboard/sandbox" : undefined} />
+      )}
 
       {/* Manual goals */}
       <Card>

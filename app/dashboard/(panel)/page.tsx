@@ -120,7 +120,10 @@ export default async function DashboardHome() {
 
       {setupSteps.length > 0 && <GettingStarted steps={setupSteps} siteId={site!.id} />}
 
-      {analytics && <RevenueAnalytics data={analytics} isTest={mode === "test"} />}
+      {analytics && (
+        <RevenueAnalytics data={analytics} isTest={mode === "test"}
+          manageHref={mode === "test" ? "/dashboard/sandbox" : undefined} />
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Site status */}

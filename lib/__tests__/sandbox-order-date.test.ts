@@ -53,3 +53,26 @@ describe("backdating a sandbox order", () => {
     expect(todayNoon).toBe("2026-08-20T12:00:00.000Z");
   });
 });
+
+/**
+ * Conversion rate. Sandbox orders are written straight to the database without
+ * anyone visiting, so the raw ratio can exceed every visit; a dashboard that
+ * says 170% of visits converted is telling an obvious untruth.
+ */
+function conversionRate(orders: number, visits: number): number {
+  return visits > 0 ? Math.min(100, (orders / visits) * 100) : 0;
+}
+
+describe("conversion rate", () => {
+  it("never exceeds 100, even with more orders than visits", () => {
+    expect(conversionRate(17, 10)).toBe(100);
+  });
+
+  it("reports the real figure when visits outnumber orders", () => {
+    expect(conversionRate(5, 200)).toBe(2.5);
+  });
+
+  it("is zero rather than infinite when nothing has been visited", () => {
+    expect(conversionRate(3, 0)).toBe(0);
+  });
+});
