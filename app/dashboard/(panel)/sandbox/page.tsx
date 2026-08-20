@@ -5,6 +5,7 @@ import { DEMO_SITE_COOKIE } from "@/lib/dashboard";
 import { cookies } from "next/headers";
 import { SandboxConsole, type SandboxOrder } from "@/components/dashboard/sandbox-console";
 import { CATALOG_TEMPLATES } from "@/lib/catalog";
+import { siteLiveUrl } from "@/lib/site-url";
 import type { Order, Product, Site } from "@/lib/database.types";
 
 export const metadata = { robots: { index: false, follow: false }, title: "Sandbox | Tomora" };
@@ -66,6 +67,7 @@ export default async function SandboxPage() {
       mode={await currentMode()}
       sites={demoSites.map((s) => ({
         id: s.id, name: s.site_data?.businessName || s.subdomain, templateId: s.template_id,
+        isLive: s.is_live, url: siteLiveUrl(s),
       }))}
       activeId={active?.id || null}
       products={products}

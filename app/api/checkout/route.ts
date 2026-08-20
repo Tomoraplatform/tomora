@@ -33,23 +33,28 @@ export async function POST(request: NextRequest) {
 
   const { data: site } = await admin
     .from("sites")
-    .select("id, is_live, category, site_data, user_id, bank_name, account_number, account_name, paystack_subaccount")
+    .select("id, is_live, category, site_data, user_id, bank_name, account_number, account_name, paystack_subaccount, is_demo")
     .eq("id", siteId)
     .maybeSingle();
   if (!site || !site.is_live || site.category !== "ecommerce") {
     return NextResponse.json({ error: "Store unavailable." }, { status: 400 });
   }
-  if (method === "paystack" && !site.paystack_subaccount) {
+  const isDemo = !!site.is_demo;
+  if (!isDemo && method === "paystack" && !site.paystack_subaccount) {
     return NextResponse.json({ error: "Card payment isn't available on this store yet." }, { status: 400 });
   }
-  if (method === "transfer" && !site.account_number) {
+  if (!isDemo && method === "transfer" && !site.account_number) {
     return NextResponse.json({ error: "This store hasn't added a payment account yet." }, { status: 400 });
   }
 
   // Real DB products.
   const realIds = items.map((i: any) => i.productId).filter((id: string) => id && !String(id).startsWith("custom:"));
+  // Demo stock is buyable on its own demo storefront and nowhere else.
+  const productQuery = admin
+    .from("products").select("id, price, stock, is_active, name, is_offer, offer_percent")
+    .in("id", realIds).eq("site_id", siteId);
   const { data: products } = realIds.length
-    ? await admin.from("products").select("id, price, stock, is_active, name, is_offer, offer_percent").in("id", realIds).eq("site_id", siteId).eq("is_test_only", false)
+    ? await (isDemo ? productQuery : productQuery.eq("is_test_only", false))
     : { data: [] as any[] };
 
   // Custom-section products: price is trusted from the site's saved data, never the client.
@@ -73,7 +78,7 @@ export async function POST(request: NextRequest) {
     if (amt > 0) comboPrices.set(`combo:${c.id}`, { price: amt, name: String(c.name || "Combo") });
   }
 
-  const reference = `tom_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const reference = `${isDemo ? "sbx" : "tom"}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   let total = 0;
   const rows: any[] = [];
 
@@ -114,7 +119,8 @@ export async function POST(request: NextRequest) {
       amount: lineTotal,
       color: String(item.color || label || "").slice(0, 60) || null,
       paystack_reference: reference,
-      status: "pending",
+      status: isDemo ? "paid" : "pending",
+      is_test: isDemo,
     });
   }
 
@@ -157,7 +163,8 @@ export async function POST(request: NextRequest) {
           buyer_name: buyer.name, buyer_email: buyer.email,
           buyer_phone: buyer.phone || null, buyer_address: buyer.address || null,
           amount: shippingFee, color: `Delivery: ${shippingName}`,
-          paystack_reference: reference, status: "pending",
+          paystack_reference: reference,
+          status: isDemo ? "paid" : "pending", is_test: isDemo,
         });
       }
     }
@@ -165,6 +172,29 @@ export async function POST(request: NextRequest) {
 
   const { error } = await admin.from("orders").insert(rows);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // ---- Demo store: settle it here and stop ----
+  // No processor is called and no one is emailed. The money is recorded against
+  // the sandbox so it shows in test mode's orders, revenue and stats.
+  if (isDemo) {
+    await Promise.all([
+      admin.from("wallet_transactions").insert({
+        user_id: site.user_id, site_id: siteId, type: "income", source: "order",
+        amount: total, status: "completed", reference,
+        description: `Sandbox order from ${buyer.name}`, is_test: true,
+      }),
+      admin.from("transactions").insert({
+        kind: "store_order", reference, gross_amount: total, platform_amount: 0,
+        payee_amount: total, vat_amount: 0, user_id: site.user_id, site_id: siteId,
+        description: `Sandbox order from ${buyer.name}`, is_test: true,
+      }),
+    ]);
+    return NextResponse.json({
+      ok: true, method: "transfer", sandbox: true, reference, amount: total,
+      discount, couponCode: appliedCode,
+      bank: { name: "Sandbox", account: "0000000000", holder: "Test payment, no money moved" },
+    });
+  }
 
   // ---- Pay with Paystack (card / bank / USSD), settles to the owner's subaccount ----
   if (method === "paystack") {

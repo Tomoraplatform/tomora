@@ -50,6 +50,14 @@ export async function createDemoSite(templateId: string): Promise<R & { siteId?:
     if (!isCatalogTemplate(templateId)) return { ok: false, error: "Unknown template." };
     const tpl = catalogTemplate(templateId)!;
 
+    // One demo store at a time, so the sandbox stays a single clear picture.
+    // Trying another template means deleting this one first.
+    const { data: existing } = await supabase
+      .from("sites").select("id").eq("user_id", userId).eq("is_demo", true).maybeSingle();
+    if (existing) {
+      return { ok: false, error: "You already have a demo store. Delete it to try another template." };
+    }
+
     const siteData = createCatalogContent(templateId, {
       businessName: `Demo: ${tpl.name}`, brandColor: "#022245", demoCombos: false,
     });
@@ -130,6 +138,22 @@ export async function deleteDemoSite(siteId: string): Promise<R> {
     if (error) return { ok: false, error: error.message };
     if (cookies().get(DEMO_SITE_COOKIE)?.value === siteId) cookies().delete(DEMO_SITE_COOKIE);
     revalidatePath("/dashboard", "layout");
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, error: e.message };
+  }
+}
+
+/** Takes the demo store live (or offline) so its storefront can be shopped. */
+export async function setDemoLive(siteId: string, live: boolean): Promise<R> {
+  try {
+    const { supabase, userId } = await requireSandbox();
+    const { data: site } = await supabase
+      .from("sites").select("id, is_demo").eq("id", siteId).eq("user_id", userId).maybeSingle();
+    if (!site?.is_demo) return { ok: false, error: "That is not one of your demo stores." };
+    const { error } = await supabase.from("sites").update({ is_live: live }).eq("id", siteId);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/dashboard/sandbox");
     return { ok: true };
   } catch (e: any) {
     return { ok: false, error: e.message };

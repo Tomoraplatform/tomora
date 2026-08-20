@@ -72,10 +72,12 @@ export function PublishedSiteView({
           products={products}
           reviews={reviews}
           siteId={site.id}
-          bankName={site.bank_name}
-          accountNumber={site.account_number}
-          accountName={site.account_name}
-          paystackEnabled={!!site.paystack_subaccount}
+          {...(site.is_demo
+            // A demo store takes no money, so it needs no payment account. It is
+            // given a sandbox one purely so checkout is reachable to demo.
+            ? { bankName: "Sandbox", accountNumber: "0000000000", accountName: "Test payment, no money moved" }
+            : { bankName: site.bank_name, accountNumber: site.account_number, accountName: site.account_name })}
+          paystackEnabled={!site.is_demo && !!site.paystack_subaccount}
           isTenantHost={tenantHost}
         />
         {chat}

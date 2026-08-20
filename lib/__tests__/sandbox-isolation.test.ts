@@ -86,8 +86,24 @@ describe("sandbox isolation", () => {
     expect(body).toMatch(/excludeTestProducts|is_test_only/);
   });
 
-  it("checkout cannot create a test order", () => {
+  it("checkout only ever writes a test order for a demo store", () => {
     const body = readFileSync(join(ROOT, "app/api/checkout/route.ts"), "utf8");
-    expect(body).not.toMatch(/is_test:\s*true/);
+    // A demo storefront settles as a test order. Every other store must write
+    // is_test from that same flag, never a bare true.
+    expect(body).toContain("const isDemo = !!site.is_demo;");
+    expect(body).toMatch(/is_test:\s*isDemo/);
+    // Before the demo branch, nothing may hardcode a test row: the order rows
+    // themselves must take the flag from isDemo.
+    const beforeDemoBranch = body.slice(0, body.indexOf("if (isDemo) {"));
+    expect(beforeDemoBranch).not.toMatch(/is_test:\s*true/);
+  });
+
+  it("a demo checkout never reaches the payment processor or email", () => {
+    const body = readFileSync(join(ROOT, "app/api/checkout/route.ts"), "utf8");
+    const demoBranch = body.slice(body.indexOf("if (isDemo) {"));
+    const returnsBeforePaystack = demoBranch.indexOf("return NextResponse.json") < demoBranch.indexOf("initTransaction");
+    expect(returnsBeforePaystack).toBe(true);
+    // notify() is what sends the owner and buyer their emails.
+    expect(demoBranch.slice(0, demoBranch.indexOf("return NextResponse.json"))).not.toContain("notify(");
   });
 });

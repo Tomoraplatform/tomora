@@ -4,7 +4,7 @@ import { DashboardShell, type NavItem } from "@/components/dashboard/shell";
 import { siteLiveUrl } from "@/lib/site-url";
 import { catalogTemplate } from "@/lib/catalog";
 import { currentMode, sandboxAllowed } from "@/lib/sandbox";
-import { ModeSwitch, TestModeFrame } from "@/components/dashboard/mode-switch";
+import { ModeSwitch } from "@/components/dashboard/mode-switch";
 
 export const metadata = { robots: { index: false, follow: false } };
 
@@ -112,7 +112,6 @@ export default async function PanelLayout({
       items={items} liveUrl={liveUrl} sites={switcherSites} currentSiteId={site?.id}
       modeSwitch={canSandbox ? <ModeSwitch mode={mode} /> : null}
     >
-      {mode === "test" && <TestModeFrame />}
       {children}
     </DashboardShell>
   );

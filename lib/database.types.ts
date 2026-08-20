@@ -75,6 +75,9 @@ export interface Site {
   account_name: string | null;
   paystack_subaccount: string | null;
   domain_purchased: boolean;
+  /** A sandbox demo store: shows demo stock, takes no real money, never counts
+   *  towards a plan's site limit. See lib/sandbox.ts. */
+  is_demo?: boolean;
   created_at: string;
 }
 

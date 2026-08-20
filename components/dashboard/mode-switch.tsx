@@ -54,19 +54,3 @@ export function ModeSwitch({ mode }: { mode: DataMode }) {
     </div>
   );
 }
-
-/**
- * The persistent reminder that nothing on screen is real. Deliberately loud,
- * and deliberately on every admin screen rather than only the sandbox page.
- */
-export function TestModeFrame() {
-  return (
-    <>
-      <div className="pointer-events-none fixed inset-0 z-[60] border-[6px] border-amber-500/90" aria-hidden="true" />
-      <div className="sticky top-0 z-[61] flex items-center justify-center gap-2 bg-amber-500 px-4 py-2 text-center text-sm font-bold text-white">
-        <FlaskConical className="h-4 w-4 shrink-0" />
-        Test mode: everything here is sandbox data. No real orders, payments or customers.
-      </div>
-    </>
-  );
-}

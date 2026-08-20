@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatNaira, cn } from "@/lib/utils";
 import {
-  createDemoSite, createTestProduct, createTestOrder, clearTestData, selectDemoSite, deleteDemoSite,
+  createDemoSite, createTestProduct, createTestOrder, clearTestData, selectDemoSite, deleteDemoSite, setDemoLive,
 } from "@/app/dashboard/(panel)/sandbox/actions";
 import type { DataMode } from "@/lib/sandbox";
 import type { Product } from "@/lib/database.types";
@@ -40,7 +40,7 @@ export function SandboxConsole({
   mode, sites, activeId, products, orders, templates,
 }: {
   mode: DataMode;
-  sites: { id: string; name: string; templateId: string }[];
+  sites: { id: string; name: string; templateId: string; isLive: boolean; url: string }[];
   activeId: string | null;
   products: Product[];
   orders: SandboxOrder[];
@@ -71,6 +71,8 @@ export function SandboxConsole({
   const cartTotal = inCart.reduce((sum, [id, q]) => sum + (products.find((p) => p.id === id)?.price || 0) * q, 0);
   const step = (id: string, d: number) =>
     setCart((c) => ({ ...c, [id]: Math.max(0, Math.min(99, (c[id] || 0) + d)) }));
+
+  const active = sites.find((s) => s.id === activeId) || null;
 
   const stats = useMemo(() => {
     const paid = orders.filter((o) => o.status !== "pending");
@@ -164,17 +166,39 @@ export function SandboxConsole({
             </Button>
           </div>
 
-          {activeId && mode === "test" && (
-            <div className="flex flex-wrap gap-2 border-t border-ink/10 pt-4">
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard/editor"><Pencil className="h-4 w-4" /> Edit this template</Link>
-              </Button>
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard/preview"><Eye className="h-4 w-4" /> Preview it</Link>
-              </Button>
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard/products">Manage its products</Link>
-              </Button>
+          {active && mode === "test" && (
+            <div className="space-y-3 border-t border-ink/10 pt-4">
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/dashboard/editor"><Pencil className="h-4 w-4" /> Edit this template</Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/dashboard/products">Manage its products</Link>
+                </Button>
+                <Button
+                  size="sm"
+                  variant={active.isLive ? "outline" : "default"}
+                  disabled={pending}
+                  onClick={() => run(
+                    () => setDemoLive(active.id, !active.isLive),
+                    active.isLive ? "Demo store taken offline." : "Demo store published."
+                  )}
+                >
+                  {active.isLive ? "Take offline" : "Publish demo store"}
+                </Button>
+              </div>
+              {active.isLive && (
+                <div className="rounded-lg bg-cream px-4 py-3 text-sm">
+                  <p className="text-ink/60">
+                    Shop it like a customer. Anything bought there is a paid test order: no card is
+                    taken, nobody is emailed, and it lands in Orders and the stats below.
+                  </p>
+                  <a href={active.url} target="_blank" rel="noreferrer"
+                    className="mt-1 inline-flex items-center gap-1 font-medium text-ink underline">
+                    <Eye className="h-3.5 w-3.5" /> {active.url.replace(/^https?:\/\//, "")}
+                  </a>
+                </div>
+              )}
             </div>
           )}
         </CardContent>

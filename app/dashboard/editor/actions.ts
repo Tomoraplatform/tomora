@@ -27,12 +27,15 @@ export async function saveSite(
   let effectiveLive = isLive;
   let gated = false;
   if (isLive) {
-    const [{ data: sites }, { data: sub }] = await Promise.all([
+    const [{ data: sites }, { data: sub }, { data: target }] = await Promise.all([
       supabase.from("sites").select("id").eq("user_id", user.id).order("created_at", { ascending: true }),
       supabase.from("subscriptions").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase.from("sites").select("is_demo").eq("id", siteId).maybeSingle(),
     ]);
     const isPrimary = sites?.[0]?.id === siteId;
-    if (!isPrimary) {
+    // A demo store is for showing the product; it costs nothing and takes no
+    // real money, so a plan's site limit has no business gating it.
+    if (!isPrimary && !target?.is_demo) {
       const plan = sub?.status === "active" ? getPlan(sub?.plan || "") : undefined;
       const canPublishExtra = (plan?.siteLimit ?? 1) > 1;
       if (!canPublishExtra) {

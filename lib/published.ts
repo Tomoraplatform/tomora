@@ -43,8 +43,13 @@ export const loadPublishedSite = cache(async (
       .select("status, comp_expires_at")
       .eq("user_id", site.user_id)
       .maybeSingle<Pick<Subscription, "status" | "comp_expires_at">>(),
+    // A demo store shows its demo stock, since that is the whole point of it.
+    // Every other storefront never sees a demo product.
     isStore
-      ? excludeTestProducts(admin.from("products").select("*").eq("site_id", site.id).eq("is_active", true)).order("created_at", { ascending: false })
+      ? (site.is_demo
+          ? admin.from("products").select("*").eq("site_id", site.id).eq("is_active", true)
+          : excludeTestProducts(admin.from("products").select("*").eq("site_id", site.id).eq("is_active", true))
+        ).order("created_at", { ascending: false })
       : Promise.resolve({ data: [] as Product[] }),
     // Best-effort: reviews table may not exist yet (pre-0006 migration).
     isStore
