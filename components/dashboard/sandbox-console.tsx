@@ -1,36 +1,50 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { FlaskConical, Loader2, Plus, Minus, Trash2, Check, ArrowRight, Store } from "lucide-react";
+import { FlaskConical, Loader2, Plus, Minus, Trash2, Check, Store, Pencil, Eye, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatNaira, cn } from "@/lib/utils";
-import { createDemoSite, createTestProduct, createTestOrder, clearTestData } from "@/app/dashboard/(panel)/sandbox/actions";
+import {
+  createDemoSite, createTestProduct, createTestOrder, clearTestData, selectDemoSite, deleteDemoSite,
+} from "@/app/dashboard/(panel)/sandbox/actions";
 import type { DataMode } from "@/lib/sandbox";
-import type { Product, Site } from "@/lib/database.types";
+import type { Product } from "@/lib/database.types";
+
+export interface SandboxOrder {
+  reference: string;
+  createdAt: string;
+  status: string;
+  buyer: string;
+  total: number;
+  items: { name: string; qty: number; amount: number }[];
+}
 
 const TEST_BUYER = { name: "Test Customer", email: "test@tomora.local", phone: "0800 000 0000", address: "1 Demo Street, Lagos" };
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleString("en-NG", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 
 /**
- * The sandbox console: build a demo store, stock it, then walk a purchase all
- * the way through as a customer would, choosing how the payment ends.
+ * The sandbox: as many demo stores as the team wants, one per template, each
+ * with its own products and its own test orders.
  *
- * Nothing here reaches Paystack or emails anyone. Orders it writes carry the
- * test flag, so they show up in the ordinary Orders screen and revenue charts
- * whenever the admin is in test mode, and are invisible everywhere else.
+ * Switching to Test mode points the whole dashboard at the demo store chosen
+ * here, so the editor, Products, Orders and Milestones screens are the
+ * sandbox's rather than the real business's.
  */
 export function SandboxConsole({
-  mode, demo, products, templates, stats,
+  mode, sites, activeId, products, orders, templates,
 }: {
   mode: DataMode;
-  demo: Site | null;
+  sites: { id: string; name: string; templateId: string }[];
+  activeId: string | null;
   products: Product[];
+  orders: SandboxOrder[];
   templates: { id: string; name: string; category: string }[];
-  stats: { orders: number; revenue: number };
 }) {
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -58,6 +72,16 @@ export function SandboxConsole({
   const step = (id: string, d: number) =>
     setCart((c) => ({ ...c, [id]: Math.max(0, Math.min(99, (c[id] || 0) + d)) }));
 
+  const stats = useMemo(() => {
+    const paid = orders.filter((o) => o.status !== "pending");
+    return {
+      orders: orders.length,
+      paidOrders: paid.length,
+      revenue: paid.reduce((s, o) => s + o.total, 0),
+      units: paid.reduce((s, o) => s + o.items.reduce((n, i) => n + i.qty, 0), 0),
+    };
+  }, [orders]);
+
   return (
     <div className="space-y-6 pb-24">
       <div>
@@ -65,39 +89,68 @@ export function SandboxConsole({
           <FlaskConical className="h-6 w-6 text-amber-500" /> Sandbox
         </h1>
         <p className="mt-1 max-w-2xl text-ink/60">
-          Rehearse a whole sale, from cart to fulfilment to revenue, without a payment processor or a
-          real customer. Switch to <span className="font-semibold">Test</span> mode to see the orders
-          you create here in your Orders and Milestones screens.
+          Build demo stores, stock them, and run orders through them. While Test mode is on, the whole
+          dashboard works on the demo store selected here, so the editor, Products, Orders and
+          Milestones are all the sandbox&apos;s.
         </p>
       </div>
 
-      {mode === "real" && (
+      {mode === "real" && sites.length > 0 && (
         <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          You are in <strong>Real</strong> mode. Test orders will be created, but you will not see them
-          until you switch to Test mode using the toggle above.
+          You are in <strong>Real</strong> mode, looking at your real business. Switch the toggle to{" "}
+          <strong>Test</strong> to work on the demo store.
         </div>
       )}
 
-      {/* ---------------------------- demo store ---------------------------- */}
+      {/* ---------------------------- demo stores --------------------------- */}
       <Card>
-        <CardHeader><CardTitle className="flex items-center gap-2"><Store className="h-4 w-4" /> Demo store</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="flex items-center gap-2"><Store className="h-4 w-4" /> Demo stores</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          {demo ? (
-            <div className="flex flex-wrap items-center gap-3 rounded-lg bg-cream px-4 py-3 text-sm">
-              <Check className="h-4 w-4 text-emerald-600" />
-              <span className="font-medium text-ink">Tomora Demo</span>
-              <span className="text-ink/50">{demo.template_id}</span>
-              <span className="ml-auto text-xs text-ink/50">Never published</span>
-            </div>
-          ) : (
+          {sites.length === 0 ? (
             <p className="text-sm text-ink/60">
-              Create a demo store to hold your test products and orders. It is never published and never
+              No demo store yet. Pick a template below and create one. It is never published and never
               reachable from the web.
             </p>
+          ) : (
+            <div className="space-y-2">
+              {sites.map((s) => (
+                <div key={s.id} className={cn(
+                  "flex flex-wrap items-center gap-3 rounded-lg border px-4 py-3",
+                  s.id === activeId ? "border-amber-400 bg-amber-50" : "border-ink/10"
+                )}>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-ink">{s.name}</p>
+                    <p className="text-xs text-ink/50">{s.templateId}</p>
+                  </div>
+                  {s.id === activeId ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-700">
+                      <Check className="h-3.5 w-3.5" /> In use
+                    </span>
+                  ) : (
+                    <Button size="sm" variant="outline" disabled={pending}
+                      onClick={() => run(() => selectDemoSite(s.id), "Now working on this demo store.")}>
+                      Use this store
+                    </Button>
+                  )}
+                  <button
+                    type="button"
+                    aria-label={`Delete ${s.name}`}
+                    className="text-ink/40 transition hover:text-destructive"
+                    onClick={() => {
+                      if (!confirm(`Delete ${s.name} and everything in it?`)) return;
+                      run(() => deleteDemoSite(s.id), "Demo store deleted.");
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
-          <div className="flex flex-wrap items-end gap-3">
+
+          <div className="flex flex-wrap items-end gap-3 border-t border-ink/10 pt-4">
             <div className="min-w-[240px] flex-1">
-              <Label>Template</Label>
+              <Label>Add another demo store</Label>
               <select
                 value={templateId}
                 onChange={(e) => setTemplateId(e.target.value)}
@@ -106,19 +159,32 @@ export function SandboxConsole({
                 {templates.map((t) => <option key={t.id} value={t.id}>{t.name} ({t.category})</option>)}
               </select>
             </div>
-            <Button onClick={() => run(() => createDemoSite(templateId), demo ? "Demo store switched." : "Demo store created.")} disabled={pending}>
-              {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              {demo ? "Change template" : "Create demo store"}
+            <Button onClick={() => run(() => createDemoSite(templateId), "Demo store created.")} disabled={pending}>
+              {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} Create demo store
             </Button>
           </div>
+
+          {activeId && mode === "test" && (
+            <div className="flex flex-wrap gap-2 border-t border-ink/10 pt-4">
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/dashboard/editor"><Pencil className="h-4 w-4" /> Edit this template</Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/dashboard/preview"><Eye className="h-4 w-4" /> Preview it</Link>
+              </Button>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/dashboard/products">Manage its products</Link>
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {demo && (
+      {activeId && (
         <>
-          {/* -------------------------- test products ------------------------ */}
+          {/* ------------------------- quick products ----------------------- */}
           <Card>
-            <CardHeader><CardTitle>Test products</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Products in this demo store</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-wrap items-end gap-3">
                 <div className="min-w-[200px] flex-1">
@@ -133,16 +199,26 @@ export function SandboxConsole({
                 </div>
                 <Button variant="outline" disabled={pending || !newProduct.name.trim()}
                   onClick={() => run(
-                    () => createTestProduct({ siteId: demo.id, name: newProduct.name, price: newProduct.price }),
-                    "Test product added."
+                    () => createTestProduct({ siteId: activeId, name: newProduct.name, price: newProduct.price }),
+                    "Product added."
                   )}>
-                  <Plus className="h-4 w-4" /> Add product
+                  <Plus className="h-4 w-4" /> Add
                 </Button>
               </div>
+              <p className="text-xs text-ink/50">
+                For photos, sizes and variants, use{" "}
+                <Link href="/dashboard/products" className="underline">Products</Link> while in Test mode.
+              </p>
+            </CardContent>
+          </Card>
 
+          {/* --------------------------- order builder ---------------------- */}
+          <Card>
+            <CardHeader><CardTitle>Create a test order</CardTitle></CardHeader>
+            <CardContent className="space-y-5">
               {products.length === 0 ? (
                 <p className="rounded-lg border border-dashed border-ink/15 px-4 py-8 text-center text-sm text-ink/50">
-                  No products in the demo store yet.
+                  Add a product first.
                 </p>
               ) : (
                 <div className="divide-y divide-ink/5 rounded-lg border border-ink/10">
@@ -150,49 +226,35 @@ export function SandboxConsole({
                     <div key={p.id} className="flex items-center gap-3 px-4 py-3">
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-ink">{p.name}</p>
-                        <p className="text-xs text-ink/50">
-                          {formatNaira(p.price)}
-                          {(p as { is_test_only?: boolean }).is_test_only ? " · demo only" : ""}
-                        </p>
+                        <p className="text-xs text-ink/50">{formatNaira(p.price)}</p>
                       </div>
                       <div className="flex items-center gap-1 rounded-full bg-cream p-1">
-                        <button onClick={() => step(p.id, -1)} aria-label={`Fewer ${p.name}`}
-                          className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-ink disabled:opacity-40"
-                          disabled={!cart[p.id]}><Minus className="h-3.5 w-3.5" /></button>
-                        <span className="w-6 text-center text-sm font-bold tabular-nums">{cart[p.id] || 0}</span>
+                        <button onClick={() => step(p.id, -1)} aria-label={`Fewer ${p.name}`} disabled={!cart[p.id]}
+                          className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-ink disabled:opacity-40">
+                          <Minus className="h-3.5 w-3.5" />
+                        </button>
+                        <span className="w-7 text-center text-sm font-bold tabular-nums">{cart[p.id] || 0}</span>
                         <button onClick={() => step(p.id, 1)} aria-label={`More ${p.name}`}
-                          className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-ink"><Plus className="h-3.5 w-3.5" /></button>
+                          className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-ink">
+                          <Plus className="h-3.5 w-3.5" />
+                        </button>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
 
-          {/* --------------------------- checkout ---------------------------- */}
-          <Card>
-            <CardHeader><CardTitle>Simulate a purchase</CardTitle></CardHeader>
-            <CardContent className="space-y-5">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div><Label>Customer name</Label>
                   <Input className="mt-1" value={buyer.name} onChange={(e) => setBuyer((b) => ({ ...b, name: e.target.value }))} /></div>
                 <div><Label>Email</Label>
                   <Input className="mt-1" value={buyer.email} onChange={(e) => setBuyer((b) => ({ ...b, email: e.target.value }))} /></div>
-                <div><Label>Phone</Label>
-                  <Input className="mt-1" value={buyer.phone} onChange={(e) => setBuyer((b) => ({ ...b, phone: e.target.value }))} /></div>
-                <div><Label>Delivery address</Label>
-                  <Input className="mt-1" value={buyer.address} onChange={(e) => setBuyer((b) => ({ ...b, address: e.target.value }))} /></div>
               </div>
 
               <div>
-                <Label>Payment result to rehearse</Label>
+                <Label>Mark this order as</Label>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {([
-                    ["paid", "Paid"],
-                    ["pending", "Awaiting payment"],
-                    ["failed", "Payment failed"],
-                  ] as const).map(([value, text]) => (
+                  {([["paid", "Paid"], ["pending", "Awaiting payment"], ["failed", "Payment failed"]] as const).map(([value, text]) => (
                     <button key={value} type="button" onClick={() => setOutcome(value)}
                       className={cn(
                         "rounded-full border px-4 py-2 text-sm font-medium transition",
@@ -203,7 +265,7 @@ export function SandboxConsole({
                   ))}
                 </div>
                 <p className="mt-2 text-xs text-ink/50">
-                  No card is taken and no gateway is called. Only a paid result credits the sandbox wallet.
+                  No card is taken and no gateway is called. Only a paid order counts towards sandbox revenue.
                 </p>
               </div>
 
@@ -218,11 +280,11 @@ export function SandboxConsole({
                 disabled={pending || !inCart.length}
                 onClick={() => run(
                   () => createTestOrder({
-                    siteId: demo.id, buyer,
+                    siteId: activeId, buyer,
                     items: inCart.map(([productId, qty]) => ({ productId, qty })),
                     outcome,
                   }),
-                  "Test order created. Switch to Test mode to see it in Orders."
+                  "Test order created."
                 )}
               >
                 {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Create test order
@@ -230,44 +292,71 @@ export function SandboxConsole({
             </CardContent>
           </Card>
 
-          {/* ------------------------- sandbox totals ------------------------ */}
+          {/* ----------------------------- stats ---------------------------- */}
           <Card>
-            <CardHeader><CardTitle>Sandbox totals</CardTitle></CardHeader>
+            <CardHeader><CardTitle>Sandbox stats</CardTitle></CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">Sandbox orders</p>
-                  <p className="mt-1 text-2xl font-bold text-ink">{stats.orders}</p>
-                </div>
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">Sandbox revenue</p>
-                  <p className="mt-1 text-2xl font-bold text-ink">{formatNaira(stats.revenue)}</p>
-                </div>
+              <div className="grid gap-3 sm:grid-cols-4">
+                {[
+                  ["Sandbox revenue", formatNaira(stats.revenue)],
+                  ["Paid orders", String(stats.paidOrders)],
+                  ["All orders", String(stats.orders)],
+                  ["Units sold", String(stats.units)],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">{label}</p>
+                    <p className="mt-1 text-xl font-bold text-ink">{value}</p>
+                  </div>
+                ))}
               </div>
-              <Link href="/dashboard/orders" className="inline-flex items-center gap-1 text-sm font-medium text-ink/70 hover:text-ink">
-                Open Orders <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            </CardContent>
-          </Card>
 
-          {/* ---------------------------- cleanup ---------------------------- */}
-          <Card className="border-destructive/30">
-            <CardHeader><CardTitle>Clear sandbox data</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-ink/60">
-                Deletes every test order, wallet credit and ledger row you have created. Real data is
-                untouched.
-              </p>
-              <Button
-                variant="outline"
-                disabled={pending}
-                onClick={() => {
-                  if (!confirm("Delete all sandbox orders and their wallet rows? Real data is not affected.")) return;
-                  run(() => clearTestData(), "Sandbox data cleared.");
-                }}
-              >
-                <Trash2 className="h-4 w-4" /> Delete all test data
-              </Button>
+              {orders.length > 0 && (
+                <div className="overflow-x-auto rounded-lg border border-ink/10">
+                  <table className="w-full text-sm">
+                    <thead className="border-b border-ink/10 bg-cream/60 text-left text-ink/60">
+                      <tr>
+                        <th className="p-3 font-medium">Date</th>
+                        <th className="p-3 font-medium">Items</th>
+                        <th className="p-3 font-medium">Qty</th>
+                        <th className="p-3 font-medium">Status</th>
+                        <th className="p-3 text-right font-medium">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-ink/5">
+                      {orders.map((o) => (
+                        <tr key={o.reference}>
+                          <td className="whitespace-nowrap p-3 text-ink/70">{fmtDate(o.createdAt)}</td>
+                          <td className="p-3 text-ink/80">{o.items.map((i) => i.name).join(", ")}</td>
+                          <td className="p-3 tabular-nums text-ink/80">{o.items.reduce((n, i) => n + i.qty, 0)}</td>
+                          <td className="p-3">
+                            <span className={cn(
+                              "rounded-full px-2.5 py-0.5 text-xs font-medium",
+                              o.status === "pending" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
+                            )}>
+                              {o.status}
+                            </span>
+                          </td>
+                          <td className="p-3 text-right font-semibold text-ink">{formatNaira(o.total)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div className="flex flex-wrap items-center gap-3 border-t border-ink/10 pt-4">
+                <Button
+                  variant="outline"
+                  disabled={pending || orders.length === 0}
+                  onClick={() => {
+                    if (!confirm("Reset this demo store's orders and revenue? Real data is not affected.")) return;
+                    run(() => clearTestData(activeId), "Sandbox stats reset.");
+                  }}
+                >
+                  <RotateCcw className="h-4 w-4" /> Reset stats
+                </Button>
+                <span className="text-xs text-ink/50">Clears the orders and revenue of this demo store only.</span>
+              </div>
             </CardContent>
           </Card>
         </>

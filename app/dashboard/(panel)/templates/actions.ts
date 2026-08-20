@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { SITE_COOKIE } from "@/lib/dashboard";
+import { SITE_COOKIE, DEMO_SITE_COOKIE } from "@/lib/dashboard";
 import { createCatalogContent, isCatalogTemplate, catalogTemplate, type CatalogCategoryId } from "@/lib/catalog";
 import { getPlan } from "@/lib/constants";
 import { slugifySubdomain } from "@/lib/utils";
@@ -25,8 +25,11 @@ export async function setCurrentSite(siteId: string) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
   const { data: site } = await supabase
-    .from("sites").select("id").eq("id", siteId).eq("user_id", user.id).maybeSingle();
-  if (site) cookies().set(SITE_COOKIE, siteId, { path: "/", maxAge: 60 * 60 * 24 * 365 });
+    .from("sites").select("id, is_demo").eq("id", siteId).eq("user_id", user.id).maybeSingle();
+  if (site) {
+    const cookieName = site.is_demo ? DEMO_SITE_COOKIE : SITE_COOKIE;
+    cookies().set(cookieName, siteId, { path: "/", maxAge: 60 * 60 * 24 * 365 });
+  }
   redirect("/dashboard");
 }
 

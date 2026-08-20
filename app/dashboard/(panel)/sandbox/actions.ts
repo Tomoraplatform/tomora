@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { MODE_COOKIE, sandboxAllowed } from "@/lib/sandbox";
+import { DEMO_SITE_COOKIE } from "@/lib/dashboard";
 import { createCatalogContent, isCatalogTemplate, catalogTemplate, type CatalogCategoryId } from "@/lib/catalog";
 import type { SiteCategory } from "@/lib/database.types";
 
@@ -49,22 +50,9 @@ export async function createDemoSite(templateId: string): Promise<R & { siteId?:
     if (!isCatalogTemplate(templateId)) return { ok: false, error: "Unknown template." };
     const tpl = catalogTemplate(templateId)!;
 
-    const { data: existing } = await supabase
-      .from("sites").select("id").eq("user_id", userId).eq("is_demo", true).maybeSingle();
-
     const siteData = createCatalogContent(templateId, {
-      businessName: "Tomora Demo", brandColor: "#022245", demoCombos: false,
+      businessName: `Demo: ${tpl.name}`, brandColor: "#022245", demoCombos: false,
     });
-
-    if (existing) {
-      const { error } = await supabase
-        .from("sites")
-        .update({ template_id: templateId, category: toDbCategory(tpl.category), site_data: siteData })
-        .eq("id", existing.id);
-      if (error) return { ok: false, error: error.message };
-      revalidatePath("/dashboard/sandbox");
-      return { ok: true, siteId: existing.id };
-    }
 
     let subdomain = `tomora-demo-${Math.floor(Math.random() * 9000 + 1000)}`;
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -77,7 +65,9 @@ export async function createDemoSite(templateId: string): Promise<R & { siteId?:
         .select("id")
         .single();
       if (!error && data) {
-        revalidatePath("/dashboard/sandbox");
+        // Work on the store just created, the way creating a real site does.
+        cookies().set(DEMO_SITE_COOKIE, data.id, { path: "/", maxAge: 60 * 60 * 24 * 365 });
+        revalidatePath("/dashboard", "layout");
         return { ok: true, siteId: data.id };
       }
       if (error?.code === "23505") { subdomain = `tomora-demo-${Math.floor(Math.random() * 90000 + 10000)}`; continue; }
@@ -108,6 +98,38 @@ export async function createTestProduct(input: {
     });
     if (error) return { ok: false, error: error.message };
     revalidatePath("/dashboard/sandbox");
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, error: e.message };
+  }
+}
+
+/** Points the sandbox dashboard at one of the admin's demo stores. */
+export async function selectDemoSite(siteId: string): Promise<R> {
+  try {
+    const { supabase, userId } = await requireSandbox();
+    const { data: site } = await supabase
+      .from("sites").select("id, is_demo").eq("id", siteId).eq("user_id", userId).maybeSingle();
+    if (!site?.is_demo) return { ok: false, error: "That is not one of your demo stores." };
+    cookies().set(DEMO_SITE_COOKIE, siteId, { path: "/", maxAge: 60 * 60 * 24 * 365 });
+    revalidatePath("/dashboard", "layout");
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, error: e.message };
+  }
+}
+
+/** Removes a demo store and everything in it. */
+export async function deleteDemoSite(siteId: string): Promise<R> {
+  try {
+    const { supabase, userId } = await requireSandbox();
+    const { data: site } = await supabase
+      .from("sites").select("id, is_demo").eq("id", siteId).eq("user_id", userId).maybeSingle();
+    if (!site?.is_demo) return { ok: false, error: "That is not one of your demo stores." };
+    const { error } = await supabase.from("sites").delete().eq("id", siteId).eq("user_id", userId);
+    if (error) return { ok: false, error: error.message };
+    if (cookies().get(DEMO_SITE_COOKIE)?.value === siteId) cookies().delete(DEMO_SITE_COOKIE);
+    revalidatePath("/dashboard", "layout");
     return { ok: true };
   } catch (e: any) {
     return { ok: false, error: e.message };
@@ -198,11 +220,12 @@ export async function createTestOrder(input: TestOrderInput): Promise<R & { refe
 }
 
 /** Removes every test row belonging to this admin, in one go. */
-export async function clearTestData(): Promise<R & { orders?: number }> {
+export async function clearTestData(siteId?: string): Promise<R & { orders?: number }> {
   try {
     const { supabase, userId } = await requireSandbox();
-    const { data: sites } = await supabase.from("sites").select("id").eq("user_id", userId);
-    const siteIds = (sites || []).map((s) => s.id);
+    const { data: sites } = await supabase.from("sites").select("id").eq("user_id", userId).eq("is_demo", true);
+    const all = (sites || []).map((s) => s.id);
+    const siteIds = siteId ? all.filter((id) => id === siteId) : all;
     const admin = createAdminClient();
 
     let orders = 0;
@@ -210,9 +233,9 @@ export async function clearTestData(): Promise<R & { orders?: number }> {
       const { data: deleted } = await admin
         .from("orders").delete().eq("is_test", true).in("site_id", siteIds).select("id");
       orders = deleted?.length || 0;
+      await admin.from("wallet_transactions").delete().eq("is_test", true).in("site_id", siteIds);
+      await admin.from("transactions").delete().eq("is_test", true).in("site_id", siteIds);
     }
-    await admin.from("wallet_transactions").delete().eq("is_test", true).eq("user_id", userId);
-    await admin.from("transactions").delete().eq("is_test", true).eq("user_id", userId);
 
     revalidatePath("/dashboard/orders");
     revalidatePath("/dashboard/sandbox");

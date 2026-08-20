@@ -3,9 +3,13 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { expireCompIfDue } from "@/lib/billing";
+import { currentMode } from "@/lib/sandbox";
 import type { Profile, Site, Subscription } from "@/lib/database.types";
 
 export const SITE_COOKIE = "tomora_site";
+/** Which demo store the admin is working on, kept apart from the real one so
+ *  switching modes never disturbs the site they were really editing. */
+export const DEMO_SITE_COOKIE = "tomora_demo_site";
 
 export interface DashboardData {
   userId: string;
@@ -13,8 +17,10 @@ export interface DashboardData {
   profile: Profile | null;
   /** The currently selected site (cookie-selected, defaults to the first). */
   site: Site | null;
-  /** All of the user's sites, oldest first. */
+  /** All of the user's sites in the active mode, oldest first. */
   sites: Site[];
+  /** True when the dashboard is working on a demo store, not a real one. */
+  isDemo: boolean;
   subscription: Subscription | null;
   /** True when this login is a staff member working on someone else's account. */
   isStaff: boolean;
@@ -73,9 +79,21 @@ export const getDashboardData = cache(async (opts?: { requireSite?: boolean }): 
     }
   }
 
-  if ((opts?.requireSite ?? true) && sites.length === 0) redirect("/onboarding");
+  // Test mode swaps the whole dashboard over to the admin's demo stores, so
+  // every screen (editor, products, orders, revenue) is the sandbox's. Real
+  // stores are hidden while it is on, and demo stores hidden while it is off.
+  const testing = (await currentMode()) === "test";
+  const demoSites = sites.filter((s) => (s as { is_demo?: boolean }).is_demo);
+  const realSites = sites.filter((s) => !(s as { is_demo?: boolean }).is_demo);
+  sites = testing ? demoSites : realSites;
 
-  const currentId = cookies().get(SITE_COOKIE)?.value;
+  if ((opts?.requireSite ?? true) && sites.length === 0) {
+    // No demo store yet is not a reason to send an admin through onboarding.
+    redirect(testing ? "/dashboard/sandbox" : "/onboarding");
+  }
+
+  const cookieName = testing ? DEMO_SITE_COOKIE : SITE_COOKIE;
+  const currentId = cookies().get(cookieName)?.value;
   const site = sites.find((s) => s.id === currentId) ?? sites[0] ?? null;
 
   return {
@@ -84,6 +102,7 @@ export const getDashboardData = cache(async (opts?: { requireSite?: boolean }): 
     profile: (profile as Profile) ?? null,
     site,
     sites,
+    isDemo: testing,
     subscription: sub,
     isStaff,
     staffAreas,
@@ -98,10 +117,14 @@ export const currentSiteId = cache(async (userId: string): Promise<string | null
   const supabase = createClient();
   const { data: sites } = await supabase
     .from("sites")
-    .select("id")
+    .select("id, is_demo")
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
-  let list = (sites as { id: string }[]) ?? [];
+  const all = (sites as { id: string; is_demo?: boolean }[]) ?? [];
+  // A product added while in test mode belongs to the demo store, not the real
+  // one, so writes follow the same rule the screens do.
+  const testing = (await currentMode()) === "test";
+  let list = all.filter((s) => !!s.is_demo === testing);
 
   // Staff fallback: no sites of their own → resolve the owner's sites.
   if (!list.length) {

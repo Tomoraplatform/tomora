@@ -18,9 +18,11 @@ async function requireUserAndSite() {
   if (!siteId) throw new Error("No site found.");
   // Rows created from the dashboard belong to the site's owner, for staff
   // members that's the account owner, not the staff user themselves.
-  const { data: site } = await supabase.from("sites").select("user_id").eq("id", siteId).maybeSingle();
+  const { data: site } = await supabase.from("sites").select("user_id, is_demo").eq("id", siteId).maybeSingle();
   const ownerId = (site?.user_id as string) || user.id;
-  return { supabase, userId: user.id, ownerId, siteId };
+  // Anything added while working on a demo store is demo stock: it must never
+  // be offered on a real storefront even if that store were somehow published.
+  return { supabase, userId: user.id, ownerId, siteId, isDemoSite: !!site?.is_demo };
 }
 
 export interface ProductInput {
@@ -78,7 +80,7 @@ export async function saveProduct(
   input: ProductInput
 ): Promise<{ ok: boolean; error?: string; comboProductIds?: string[] }> {
   try {
-    const { supabase, ownerId, siteId } = await requireUserAndSite();
+    const { supabase, ownerId, siteId, isDemoSite } = await requireUserAndSite();
     if (!input.name?.trim()) return { ok: false, error: "Name is required." };
 
     const row: Record<string, unknown> = {
@@ -94,6 +96,7 @@ export async function saveProduct(
       is_best_seller: !!input.isBestSeller,
       is_offer: !!input.isOffer,
       is_new_arrival: !!input.isNewArrival,
+      is_test_only: isDemoSite,
       is_pre_order: !!input.isPreOrder,
       preorder_note: input.isPreOrder ? (String(input.preorderNote || "").trim().slice(0, 160) || null) : null,
       offer_percent: Math.max(0, Math.min(100, Math.round(input.offerPercent || 0))),
