@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Suspense } from "react";
 import "./globals.css";
-import { TikTokPixel } from "@/components/analytics/tiktok-pixel";
+import { TikTokPageViews } from "@/components/analytics/tiktok-pixel";
+import { tiktokBaseCode } from "@/lib/tiktok/base-code";
 
 const sans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -54,14 +55,16 @@ export default function RootLayout({
       <head>
         {supabaseOrigin && <link rel="preconnect" href={supabaseOrigin} crossOrigin="anonymous" />}
         {supabaseOrigin && <link rel="dns-prefetch" href={supabaseOrigin} />}
+        {/* TikTok base code. In the head and in the served HTML, which is where
+            Events Manager looks for it. It disables itself on a customer's
+            storefront, see lib/tiktok/base-code. */}
+        <script dangerouslySetInnerHTML={{ __html: tiktokBaseCode() }} />
       </head>
       <body className={`${sans.variable} font-sans antialiased`}>
         {children}
-        {/* Tomora's own measurement. It checks the host before loading, so it
-            never runs on a customer's published shop. Suspense because it reads
-            the search params to notice a page change. */}
+        {/* Page views for navigations, which do not reload the document. */}
         <Suspense fallback={null}>
-          <TikTokPixel />
+          <TikTokPageViews />
         </Suspense>
       </body>
     </html>
