@@ -28,7 +28,7 @@ function loadPaystack(): Promise<void> {
  */
 export function CartDrawer({
   open, onClose, lines, setQty,
-  siteData, brandColor, siteId, bankName, accountNumber, accountName, paystackEnabled = false, startAtCheckout = false,
+  siteData, brandColor, siteId, bankName, accountNumber, accountName, paystackEnabled = false, startAtCheckout = false, onOrdered,
 }: {
   open: boolean;
   onClose: () => void;
@@ -43,6 +43,8 @@ export function CartDrawer({
   paystackEnabled?: boolean;
   /** "Buy Now" flow: jump straight to the checkout step when the drawer opens. */
   startAtCheckout?: boolean;
+  /** Called once an order is placed, so the cart can empty itself. */
+  onOrdered?: () => void;
 }) {
   const methods = siteData.paymentMethods;
   const transferEnabled = !!accountNumber && (methods?.transfer ?? true);
@@ -100,7 +102,7 @@ export function CartDrawer({
   async function placeOrder() {
     setError(null);
     if (!canCheckout) { setError("This store hasn't added a payment account yet."); return; }
-    if (!buyer.name || !buyer.email) { setError("Please enter your name and email."); return; }
+    if (!buyer.name) { setError("Please enter your name."); return; }
     const activeMethod = canPaystack && transferEnabled ? payMethod : (canPaystack ? "paystack" : "transfer");
     setBusy(true);
     try {
@@ -129,7 +131,7 @@ export function CartDrawer({
             fetch("/api/checkout/confirm", {
               method: "POST", headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ reference: txn.reference || data.reference }),
-            }).finally(() => { setBusy(false); setDone(true); });
+            }).finally(() => { setBusy(false); setDone(true); onOrdered?.(); });
           },
           onCancel: () => setBusy(false),
           onError: (err: { message?: string }) => { setBusy(false); setError(err?.message || "Payment failed."); },
@@ -137,6 +139,7 @@ export function CartDrawer({
         return;
       }
       setDone(true);
+      onOrdered?.();
     } catch (e: any) {
       setError(e.message || "Could not place order. Please try again.");
     } finally {
@@ -213,7 +216,7 @@ export function CartDrawer({
             ) : (
             <>
             <p className="text-lg font-semibold text-ink">Order received, {buyer.name || "friend"}!</p>
-            <p className="text-sm text-ink/60">Please complete your transfer of <span className="font-semibold text-ink">{formatNaira(total)}</span>{accountNumber ? <> to <span className="font-semibold text-ink">{accountNumber}</span>{accountName ? ` (${accountName})` : ""}</> : ""}. Details sent to {buyer.email}.</p>
+            <p className="text-sm text-ink/60">Please complete your transfer of <span className="font-semibold text-ink">{formatNaira(total)}</span>{accountNumber ? <> to <span className="font-semibold text-ink">{accountNumber}</span>{accountName ? ` (${accountName})` : ""}</> : ""}. {buyer.email ? <>Details sent to {buyer.email}.</> : null}</p>
             <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">✓ The seller has been notified of your order and will confirm your payment, then process it.</p>
             </>
             )}
@@ -252,7 +255,7 @@ export function CartDrawer({
                   {(["name", "email", "phone", "address"] as const).map((f) => (
                     <input key={f}
                       className="w-full rounded-md border border-ink/15 px-4 py-3 text-sm text-ink outline-none focus:border-ink"
-                      placeholder={{ name: "Full name", email: "Email", phone: "Phone", address: "Delivery address" }[f]}
+                      placeholder={{ name: "Full name", email: "Email (optional)", phone: "Phone", address: "Delivery address" }[f]}
                       value={buyer[f]}
                       onChange={(e) => setBuyer((b) => ({ ...b, [f]: e.target.value }))}
                     />

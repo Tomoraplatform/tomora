@@ -133,13 +133,26 @@ export function ProductCardV2({
           {originalPrice(product) && <span className="text-sm text-black/40 line-through">{formatNaira(originalPrice(product)!)}</span>}
         </div>
         {showButton && (
-          <button
-            onClick={() => store.addToCart(toProduct(product, siteData))}
-            className="mt-1 flex items-center justify-center gap-2 rounded-md py-2.5 text-sm font-semibold"
-            style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}
-          >
-            <ShoppingCart className="h-4 w-4" /> Add to Cart
-          </button>
+          // Buy takes them straight to checkout; the cart icon is for shoppers
+          // still filling a basket. One tap each, no menu in between.
+          <div className="mt-1 flex items-stretch gap-2">
+            <button
+              onClick={() => store.buyNow(toProduct(product, siteData))}
+              className="flex flex-1 items-center justify-center gap-2 rounded-md py-2.5 text-sm font-semibold"
+              style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}
+            >
+              <Zap className="h-4 w-4" /> Buy
+            </button>
+            <button
+              onClick={() => store.addToCart(toProduct(product, siteData))}
+              aria-label={`Add ${product.name} to cart`}
+              title="Add to cart"
+              className="flex w-11 shrink-0 items-center justify-center rounded-md border transition hover:bg-black/[0.04]"
+              style={{ borderColor: "var(--brand-primary)", color: "var(--brand-primary)" }}
+            >
+              <ShoppingCart className="h-4 w-4" />
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -155,11 +168,21 @@ export function ProductCardSplit({ product, siteData }: { product: CatalogProduc
         <Img src={product.image} className="h-full w-full object-cover" />
       </button>
       <h3 onClick={open} className="mt-3 line-clamp-1 cursor-pointer text-sm text-black/80">{product.name}</h3>
-      <div className="mt-1 flex items-center justify-between">
+      <div className="mt-1 flex items-center justify-between gap-2">
         <span className="font-semibold">{formatNaira(product.price)}</span>
-        <button onClick={() => store.addToCart(toProduct(product, siteData))} className="text-xs font-semibold" style={{ color: "var(--brand-primary)" }}>
-          Add to cart
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button onClick={() => store.buyNow(toProduct(product, siteData))}
+            className="rounded-md px-3 py-1.5 text-xs font-semibold"
+            style={{ background: "var(--brand-primary)", color: "var(--brand-on-primary)" }}>
+            Buy
+          </button>
+          <button onClick={() => store.addToCart(toProduct(product, siteData))}
+            aria-label={`Add ${product.name} to cart`} title="Add to cart"
+            className="flex h-8 w-8 items-center justify-center rounded-md border"
+            style={{ borderColor: "var(--brand-primary)", color: "var(--brand-primary)" }}>
+            <ShoppingCart className="h-3.5 w-3.5" />
+          </button>
+        </div>
       </div>
     </div>
   );

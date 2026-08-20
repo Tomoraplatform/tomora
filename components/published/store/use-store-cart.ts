@@ -67,7 +67,10 @@ export function useStoreCart(siteId: string, catalog: Product[]) {
     });
   }, [persist]);
 
+  /** Emptied once an order is placed, so the next visit starts fresh. */
+  const clear = useCallback(() => { persist([]); }, [persist]);
+
   const count = lines.reduce((n, l) => n + l.qty, 0);
 
-  return { lines, add, setQty, count, hydrated };
+  return { lines, add, setQty, clear, count, hydrated };
 }

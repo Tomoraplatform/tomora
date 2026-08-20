@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { RevenueAnalytics, type AnalyticsData } from "./revenue-analytics";
 import { formatNaira } from "@/lib/utils";
 import { saveGoals } from "@/app/dashboard/(panel)/milestones/actions";
 
@@ -88,12 +89,13 @@ function GoalBar({ label, current, goal, format }: { label: string; current: num
   );
 }
 
-export function MilestonesGoals({ isEcommerce, metrics, goals, isTest = false }: {
+export function MilestonesGoals({ isEcommerce, metrics, goals, isTest = false, analytics }: {
   isEcommerce: boolean;
   metrics: Metrics;
   goals: { orders?: number; revenue?: number; visits?: number };
   /** Sandbox mode: say so on the page, not only in the banner. */
   isTest?: boolean;
+  analytics: AnalyticsData;
 }) {
   const [orders, setOrders] = useState(goals.orders || 0);
   const [revenue, setRevenue] = useState(goals.revenue || 0);
@@ -134,9 +136,15 @@ export function MilestonesGoals({ isEcommerce, metrics, goals, isTest = false }:
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink">{isTest ? "Sandbox milestones" : "Milestones & Goals"}</h1>
-        <p className="mt-1 text-ink/60">Track your progress and unlock badges as your business grows. Locked badges turn colourful once you earn them.</p>
+        <h1 className="text-2xl font-bold text-ink">{isTest ? "Sandbox revenue" : "Revenue & Milestones"}</h1>
+        <p className="mt-1 text-ink/60">
+          {isTest
+            ? "Every figure here comes from sandbox orders only."
+            : "How the shop is doing, and the badges you unlock as it grows."}
+        </p>
       </div>
+
+      {isEcommerce && <RevenueAnalytics data={analytics} isTest={isTest} />}
 
       {/* Manual goals */}
       <Card>

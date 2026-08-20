@@ -25,9 +25,12 @@ export async function POST(request: NextRequest) {
   const { siteId, buyer, items, couponCode, shippingZoneId, fulfilment } = body || {};
   // Restaurants let the customer collect in person, which skips the zone fee.
   const isPickup = fulfilment === "pickup";
-  if (!siteId || !buyer?.email || !buyer?.name || !Array.isArray(items) || !items.length) {
+  // Email is optional: plenty of customers here order with a phone number and
+  // nothing else, and a required address field only loses the sale.
+  if (!siteId || !buyer?.name || !Array.isArray(items) || !items.length) {
     return NextResponse.json({ error: "Missing checkout details." }, { status: 400 });
   }
+  const buyerEmail = String(buyer.email || "").trim();
 
   const method = body?.method === "paystack" ? "paystack" : "transfer";
 
@@ -113,7 +116,7 @@ export async function POST(request: NextRequest) {
       site_id: siteId,
       product_id: productId,
       buyer_name: buyer.name,
-      buyer_email: buyer.email,
+      buyer_email: buyerEmail,
       buyer_phone: buyer.phone || null,
       buyer_address: isPickup ? "Pickup in person" : buyer.address || null,
       amount: lineTotal,
@@ -160,7 +163,7 @@ export async function POST(request: NextRequest) {
         total += shippingFee;
         rows.push({
           site_id: siteId, product_id: null,
-          buyer_name: buyer.name, buyer_email: buyer.email,
+          buyer_name: buyer.name, buyer_email: buyerEmail,
           buyer_phone: buyer.phone || null, buyer_address: buyer.address || null,
           amount: shippingFee, color: `Delivery: ${shippingName}`,
           paystack_reference: reference,
@@ -206,7 +209,8 @@ export async function POST(request: NextRequest) {
       // Funds are collected into the platform balance and credited to the
       // owner's Tomora Wallet on confirmation; they withdraw to their bank.
       const init = await initTransaction({
-        email: String(buyer.email),
+        // Paystack requires one; the order itself keeps whatever the buyer gave.
+        email: buyerEmail || `guest+${reference}@tomora.com.ng`,
         amountNaira: charge,
         reference,
         callbackUrl: `${origin}/?order=1`,

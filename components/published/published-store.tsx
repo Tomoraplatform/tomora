@@ -28,7 +28,7 @@ export function PublishedStore({
   isTenantHost?: boolean;
 }) {
   const router = useRouter();
-  const { lines, add: cartAdd, setQty, count } = useStoreCart(siteId, products);
+  const { lines, add: cartAdd, setQty, clear: cartClear, count } = useStoreCart(siteId, products);
   const [open, setOpen] = useState(false);
   const [buyNowIntent, setBuyNowIntent] = useState(false);
   // Product detail view fallback for non-tenant contexts (editor/dashboard preview),
@@ -179,7 +179,7 @@ export function PublishedStore({
       )}
 
       <CartDrawer
-        open={open} onClose={() => setOpen(false)} lines={lines} setQty={setQty}
+        open={open} onClose={() => setOpen(false)} lines={lines} setQty={setQty} onOrdered={cartClear}
         siteData={siteData} brandColor={brandColor} siteId={siteId}
         bankName={bankName} accountNumber={accountNumber} accountName={accountName} paystackEnabled={paystackEnabled}
         startAtCheckout={buyNowIntent}
