@@ -58,6 +58,9 @@ export function SandboxConsole({
   const [cart, setCart] = useState<Record<string, number>>({});
   const [buyer, setBuyer] = useState(TEST_BUYER);
   const [outcome, setOutcome] = useState<"paid" | "pending" | "failed">("paid");
+  // Today by default; backdating is what gives a demo's revenue line a shape.
+  const today = new Date().toISOString().slice(0, 10);
+  const [orderedAt, setOrderedAt] = useState(today);
 
   const run = (fn: () => Promise<{ ok: boolean; error?: string }>, ok: string) => {
     setError(null); setNote(null);
@@ -275,6 +278,20 @@ export function SandboxConsole({
                   <Input className="mt-1" value={buyer.name} onChange={(e) => setBuyer((b) => ({ ...b, name: e.target.value }))} /></div>
                 <div><Label>Email</Label>
                   <Input className="mt-1" value={buyer.email} onChange={(e) => setBuyer((b) => ({ ...b, email: e.target.value }))} /></div>
+                <div>
+                  <Label htmlFor="sbx-date">Order date</Label>
+                  <Input id="sbx-date" className="mt-1" type="date" value={orderedAt} max={today}
+                    onChange={(e) => setOrderedAt(e.target.value)} />
+                  <p className="mt-1 text-xs text-ink/50">
+                    Backdate orders to give the revenue graph a shape. Today or earlier.
+                  </p>
+                </div>
+                <div className="flex items-end">
+                  <button type="button" onClick={() => setOrderedAt(today)}
+                    className="text-xs font-medium text-ink/60 underline hover:text-ink">
+                    Reset to today
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -306,7 +323,7 @@ export function SandboxConsole({
                 disabled={pending || !inCart.length}
                 onClick={() => run(
                   () => createTestOrder({
-                    siteId: activeId, buyer,
+                    siteId: activeId, buyer, orderedAt,
                     items: inCart.map(([productId, qty]) => ({ productId, qty })),
                     outcome,
                   }),

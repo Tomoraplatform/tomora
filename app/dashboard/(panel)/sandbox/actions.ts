@@ -166,6 +166,27 @@ export interface TestOrderInput {
   items: { productId: string; qty: number }[];
   /** Which ending to rehearse. Only `paid` credits the sandbox wallet. */
   outcome: "paid" | "pending" | "failed";
+  /**
+   * The day to file the order under, as YYYY-MM-DD. Past or today only.
+   * Sandbox only: it exists so a demo can show a revenue line with a shape,
+   * which a pile of orders all stamped today cannot.
+   */
+  orderedAt?: string;
+}
+
+/**
+ * Turns a picked day into a timestamp, or returns undefined to let the database
+ * stamp it now. Midday UTC, so the day cannot slide either side of a timezone,
+ * and never in the future: a sale that has not happened yet is not a sale.
+ */
+function orderTimestamp(day?: string): string | undefined {
+  if (!day || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return undefined;
+  const at = new Date(`${day}T12:00:00.000Z`);
+  if (Number.isNaN(at.getTime())) return undefined;
+  if (at.getTime() > Date.now()) return undefined;
+  // Two years is further back than any demo needs and keeps the series sane.
+  if (at.getTime() < Date.now() - 730 * 86_400_000) return undefined;
+  return at.toISOString();
 }
 
 /**
@@ -195,6 +216,7 @@ export async function createTestOrder(input: TestOrderInput): Promise<R & { refe
     if (!products?.length) return { ok: false, error: "Those products are not in this store." };
 
     const reference = `sbx_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const createdAt = orderTimestamp(input.orderedAt);
     // A failed payment leaves the order behind exactly as a real one does:
     // recorded, unpaid, never credited.
     const status = input.outcome === "paid" ? "paid" : "pending";
@@ -211,6 +233,7 @@ export async function createTestOrder(input: TestOrderInput): Promise<R & { refe
         buyer_phone: input.buyer.phone || null, buyer_address: input.buyer.address || null,
         amount, color: qty > 1 ? `x${qty}` : null,
         paystack_reference: reference, status, seen: false, is_test: true,
+        ...(createdAt ? { created_at: createdAt } : {}),
       }];
     });
     if (!rows.length) return { ok: false, error: "Nothing to order." };
@@ -226,14 +249,17 @@ export async function createTestOrder(input: TestOrderInput): Promise<R & { refe
         user_id: userId, site_id: input.siteId, type: "income", source: "order",
         amount: total, status: "completed", reference,
         description: `Sandbox order from ${input.buyer.name}`, is_test: true,
+        ...(createdAt ? { created_at: createdAt } : {}),
       });
       await admin.from("transactions").insert({
         kind: "store_order", reference, gross_amount: total, platform_amount: 0,
         payee_amount: total, vat_amount: 0, user_id: userId, site_id: input.siteId,
         description: `Sandbox order from ${input.buyer.name}`, is_test: true,
+        ...(createdAt ? { created_at: createdAt } : {}),
       });
     }
 
+    revalidatePath("/dashboard");
     revalidatePath("/dashboard/orders");
     revalidatePath("/dashboard/sandbox");
     revalidatePath("/dashboard/milestones");
