@@ -34,7 +34,9 @@ export function PlatformWallet({ balance, earned, withdrawn, vatHeld, transactio
   return (
     <Card>
       <CardContent className="space-y-5 pt-6">
-        <div className="grid gap-4 sm:grid-cols-4">
+        {/* Two up on a phone or tablet: four columns of naira figures at 640px
+            wraps every amount onto two lines. */}
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-ink/15 bg-ink p-5 text-cream">
             <span className="text-xs font-semibold uppercase tracking-wide text-cream/70">Available</span>
             <p className="mt-2 text-2xl font-bold">{formatNaira(balance)}</p>

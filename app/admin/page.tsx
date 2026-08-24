@@ -55,6 +55,7 @@ export default async function AdminPage() {
     perUserLimit: c.per_user_limit,
     active: c.active,
     expiresAt: c.expires_at,
+    expiresLabel: c.expires_at ? new Date(c.expires_at).toLocaleDateString() : null,
     note: c.note,
   }));
 

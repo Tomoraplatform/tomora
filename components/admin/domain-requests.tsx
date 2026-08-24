@@ -38,7 +38,7 @@ export function DomainRequestsPanel({ requests }: { requests: DomainRequestRow[]
   }
 
   return (
-    <section className="mx-auto max-w-6xl space-y-4 px-5 pb-12">
+    <section className="mx-auto max-w-6xl space-y-4 px-4 pb-12 sm:px-5">
       <div className="flex items-center gap-2">
         <Globe className="h-5 w-5 text-ink/60" />
         <h2 className="text-lg font-semibold text-ink">Domain purchase requests</h2>
@@ -49,7 +49,29 @@ export function DomainRequestsPanel({ requests }: { requests: DomainRequestRow[]
           No domain purchase requests yet.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-ink/10 bg-white">
+        <>
+        {/* A card each on phones and tablets, where six columns would mean
+            scrolling sideways to reach the actions. */}
+        <div className="divide-y divide-ink/10 overflow-hidden rounded-xl border border-ink/10 bg-white lg:hidden">
+          {requests.map((r) => (
+            <div key={r.id} className="space-y-3 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-ink">{r.domain}</p>
+                  <p className="truncate text-xs text-ink/60">{r.business}</p>
+                  <p className="truncate text-xs text-ink/40">{r.email}</p>
+                </div>
+                <Badge variant={STATUS_VARIANT[r.status] || "secondary"}>{r.status}</Badge>
+              </div>
+              <p className="text-xs text-ink/60">
+                {formatNaira(r.amount)} <span className="text-ink/30">·</span> {r.createdAt}
+              </p>
+              <Actions row={r} pending={pending} acting={acting} act={act} />
+            </div>
+          ))}
+        </div>
+
+        <div className="hidden overflow-x-auto rounded-xl border border-ink/10 bg-white lg:block">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-ink/10 text-left text-xs uppercase tracking-wide text-ink/50">
@@ -70,30 +92,45 @@ export function DomainRequestsPanel({ requests }: { requests: DomainRequestRow[]
                   <td className="whitespace-nowrap px-4 py-3 text-ink/60">{r.createdAt}</td>
                   <td className="px-4 py-3"><Badge variant={STATUS_VARIANT[r.status] || "secondary"}>{r.status}</Badge></td>
                   <td className="px-4 py-3">
-                    {r.status === "connected" || r.status === "cancelled" ? (
-                      <span className="text-xs text-ink/40">—</span>
-                    ) : (
-                      <div className="flex flex-wrap gap-2">
-                        {r.status === "paid" && (
-                          <Button size="sm" variant="outline" disabled={pending && acting === r.id} onClick={() => act(r.id, "registered")}>
-                            {pending && acting === r.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Mark registered
-                          </Button>
-                        )}
-                        <Button size="sm" disabled={pending && acting === r.id} onClick={() => act(r.id, "connected")}>
-                          {pending && acting === r.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Mark connected
-                        </Button>
-                        <Button size="sm" variant="ghost" className="text-destructive" disabled={pending && acting === r.id} onClick={() => act(r.id, "cancelled")}>
-                          Cancel
-                        </Button>
-                      </div>
-                    )}
+                    <Actions row={r} pending={pending} acting={acting} act={act} />
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        </>
       )}
     </section>
+  );
+}
+
+/** Shared by the card and the table so the two cannot drift apart. */
+function Actions({
+  row: r, pending, acting, act,
+}: {
+  row: DomainRequestRow;
+  pending: boolean;
+  acting: string | null;
+  act: (id: string, status: "registered" | "connected" | "cancelled") => void;
+}) {
+  if (r.status === "connected" || r.status === "cancelled") {
+    return <span className="text-xs text-ink/40">—</span>;
+  }
+  const busy = pending && acting === r.id;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {r.status === "paid" && (
+        <Button size="sm" variant="outline" disabled={busy} onClick={() => act(r.id, "registered")}>
+          {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Mark registered
+        </Button>
+      )}
+      <Button size="sm" disabled={busy} onClick={() => act(r.id, "connected")}>
+        {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null} Mark connected
+      </Button>
+      <Button size="sm" variant="ghost" className="text-destructive" disabled={busy} onClick={() => act(r.id, "cancelled")}>
+        Cancel
+      </Button>
+    </div>
   );
 }
