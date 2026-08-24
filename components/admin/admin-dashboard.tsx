@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/utils";
-import { extendTrial, setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount, syncStoreCommission, deleteUserAccount, resetRevenue, updateTemplateSettings, setNovaEnabled } from "@/app/admin/actions";
+import { extendTrial, setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount, syncStoreCommission, deleteUserAccount, resetRevenue, updateTemplateSettings, setNovaEnabled, createPlanCoupon, setPlanCouponActive, deletePlanCoupon } from "@/app/admin/actions";
 import { setAcademyOpen } from "@/app/admin/creators/actions";
 import { PLANS } from "@/lib/constants";
 import { CATALOG_TEMPLATES, CATALOG_CATEGORIES } from "@/lib/catalog";
@@ -57,7 +57,7 @@ interface AdminSeries {
 }
 
 export function AdminDashboard({
-  rows, domains, stats, planDiscounts = {}, revenueResetAt = null,
+  rows, domains, stats, planDiscounts = {}, planCoupons = [], revenueResetAt = null,
   series = { signups: [], liveSites: [], subs: [], payments: [] },
   templateOverrides = {},
   novaEnabled = false,
@@ -67,6 +67,7 @@ export function AdminDashboard({
   domains: AdminDomainRow[];
   stats: { totalUsers: number; liveSites: number; activeSubs: number; estAnnualRevenue: number; monthly: Record<string, number> };
   planDiscounts?: Record<string, { percent: number; active: boolean }>;
+  planCoupons?: AdminCouponRow[];
   revenueResetAt?: string | null;
   series?: AdminSeries;
   templateOverrides?: Record<string, TemplateOverride>;
@@ -338,6 +339,9 @@ export function AdminDashboard({
         {/* Plan discounts */}
         <PlanDiscounts discounts={planDiscounts} />
 
+        {/* Subscription coupon codes */}
+        <PlanCoupons coupons={planCoupons} />
+
         {/* Domains */}
         <Card>
           <CardHeader><CardTitle>Domains</CardTitle></CardHeader>
@@ -448,6 +452,193 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
 }
 
 const DISCOUNTABLE = PLANS.filter((p) => p.id !== "trial" && p.id !== "custom");
+
+export interface AdminCouponRow {
+  id: string;
+  code: string;
+  percent: number;
+  planId: string | null;
+  maxUses: number | null;
+  usedCount: number;
+  perUserLimit: number | null;
+  active: boolean;
+  expiresAt: string | null;
+  note: string | null;
+}
+
+const BLANK_COUPON = { code: "", percent: "20", planId: "", maxUses: "", perUserLimit: "1", expiresAt: "", note: "" };
+
+/**
+ * Coupon codes for Tomora's own plans.
+ *
+ * Different from the discounts above: those cut the price for everyone on the
+ * pricing page, these only work for someone who was given the code, and are
+ * entered at checkout.
+ */
+function PlanCoupons({ coupons }: { coupons: AdminCouponRow[] }) {
+  const [form, setForm] = useState(BLANK_COUPON);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function create() {
+    setBusy("new");
+    setError(null);
+    const res = await createPlanCoupon({
+      code: form.code,
+      percent: Number(form.percent) || 0,
+      planId: form.planId,
+      maxUses: form.maxUses,
+      perUserLimit: form.perUserLimit,
+      expiresAt: form.expiresAt,
+      note: form.note,
+    });
+    setBusy(null);
+    if (!res.ok) { setError(res.error || "Could not create that code."); return; }
+    setForm(BLANK_COUPON);
+  }
+
+  async function toggle(c: AdminCouponRow) {
+    setBusy(c.id); await setPlanCouponActive(c.id, !c.active); setBusy(null);
+  }
+
+  async function remove(c: AdminCouponRow) {
+    if (!confirm(`Delete ${c.code}? Its redemption history goes too.`)) return;
+    setBusy(c.id); await deletePlanCoupon(c.id); setBusy(null);
+  }
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>Subscription coupon codes</CardTitle></CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-ink/50">
+          A code takes a percentage off a subscription or renewal. Unlike the discounts above it is not
+          shown anywhere: only someone you give the code to can use it, by typing it at checkout.
+        </p>
+
+        {/* ---- new code ---- */}
+        <div className="grid gap-3 rounded-lg border border-ink/10 p-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Field label="Code">
+            <input
+              className="h-10 w-full rounded-md border border-ink/15 px-3 text-sm uppercase"
+              placeholder="LAUNCH20"
+              value={form.code}
+              onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })}
+            />
+          </Field>
+          <Field label="Percent off">
+            <input
+              type="number" min={1} max={100}
+              className="h-10 w-full rounded-md border border-ink/15 px-3 text-sm"
+              value={form.percent}
+              onChange={(e) => setForm({ ...form, percent: e.target.value })}
+            />
+          </Field>
+          <Field label="Plan">
+            <select
+              className="h-10 w-full rounded-md border border-ink/15 bg-white px-3 text-sm"
+              value={form.planId}
+              onChange={(e) => setForm({ ...form, planId: e.target.value })}
+            >
+              <option value="">Any plan</option>
+              {DISCOUNTABLE.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </Field>
+          <Field label="Total uses" hint="Blank = unlimited">
+            <input
+              type="number" min={1}
+              className="h-10 w-full rounded-md border border-ink/15 px-3 text-sm"
+              placeholder="Unlimited"
+              value={form.maxUses}
+              onChange={(e) => setForm({ ...form, maxUses: e.target.value })}
+            />
+          </Field>
+          <Field label="Uses per person" hint="Blank = unlimited">
+            <input
+              type="number" min={1}
+              className="h-10 w-full rounded-md border border-ink/15 px-3 text-sm"
+              placeholder="Unlimited"
+              value={form.perUserLimit}
+              onChange={(e) => setForm({ ...form, perUserLimit: e.target.value })}
+            />
+          </Field>
+          <Field label="Expires" hint="Blank = never">
+            <input
+              type="date"
+              className="h-10 w-full rounded-md border border-ink/15 px-3 text-sm"
+              value={form.expiresAt}
+              onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
+            />
+          </Field>
+          <div className="sm:col-span-2 lg:col-span-3">
+            <Field label="Note" hint="For your reference only">
+              <input
+                className="h-10 w-full rounded-md border border-ink/15 px-3 text-sm"
+                placeholder="Instagram launch campaign"
+                value={form.note}
+                onChange={(e) => setForm({ ...form, note: e.target.value })}
+              />
+            </Field>
+          </div>
+          <div className="sm:col-span-2 lg:col-span-3 flex flex-wrap items-center gap-3">
+            <Button onClick={create} disabled={busy === "new" || !form.code.trim()}>
+              {busy === "new" ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create code"}
+            </Button>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+          </div>
+        </div>
+
+        {/* ---- existing codes ---- */}
+        {coupons.length === 0 ? (
+          <p className="text-sm text-ink/50">No coupon codes yet.</p>
+        ) : (
+          <div className="space-y-2">
+            {coupons.map((c) => {
+              const expired = !!c.expiresAt && new Date(c.expiresAt).getTime() < Date.now();
+              const spent = c.maxUses != null && c.usedCount >= c.maxUses;
+              const live = c.active && !expired && !spent;
+              return (
+                <div key={c.id} className="flex flex-wrap items-center gap-3 rounded-lg border border-ink/10 p-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono font-bold text-ink">{c.code}</span>
+                      <Badge variant={live ? "success" : "secondary"}>
+                        {live ? "Active" : expired ? "Expired" : spent ? "Fully claimed" : "Paused"}
+                      </Badge>
+                    </p>
+                    <p className="mt-0.5 text-xs text-ink/50">
+                      {c.percent}% off {c.planId ? PLANS.find((p) => p.id === c.planId)?.name || c.planId : "any plan"}
+                      {" · "}used {c.usedCount}{c.maxUses != null ? ` of ${c.maxUses}` : ""}
+                      {c.perUserLimit != null ? ` · ${c.perUserLimit} per person` : ""}
+                      {c.expiresAt ? ` · expires ${new Date(c.expiresAt).toLocaleDateString()}` : ""}
+                      {c.note ? ` · ${c.note}` : ""}
+                    </p>
+                  </div>
+                  <Button size="sm" variant="outline" disabled={busy === c.id} onClick={() => toggle(c)}>
+                    {busy === c.id ? <Loader2 className="h-3 w-3 animate-spin" /> : c.active ? "Pause" : "Resume"}
+                  </Button>
+                  <Button size="sm" variant="ghost" className="text-destructive" disabled={busy === c.id} onClick={() => remove(c)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="mb-1 block text-xs font-medium text-ink/60">
+        {label}{hint && <span className="ml-1 font-normal text-ink/40">{hint}</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
 
 function PlanDiscounts({ discounts }: { discounts: Record<string, { percent: number; active: boolean }> }) {
   const [vals, setVals] = useState<Record<string, string>>(() => {

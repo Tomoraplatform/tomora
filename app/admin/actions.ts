@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { updateSubaccount } from "@/lib/paystack";
 import { TRIAL_DAYS, getPlan, STORE_COMMISSION_PERCENT } from "@/lib/constants";
+import { normaliseCode } from "@/lib/plan-coupons";
 
 async function guard() {
   if (!(await isAdmin())) throw new Error("Forbidden");
@@ -275,6 +276,83 @@ export async function resetRevenue(): Promise<{ ok: boolean; error?: string }> {
     const { error } = await admin
       .from("app_settings")
       .upsert({ id: 1, revenue_reset_at: new Date().toISOString() }, { onConflict: "id" });
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+// ---------------------------------------------------------------------------
+// Subscription coupon codes
+// ---------------------------------------------------------------------------
+
+export interface CouponInput {
+  code: string;
+  percent: number;
+  /** Empty string = valid on any plan. */
+  planId?: string;
+  /** Empty string = unlimited. */
+  maxUses?: string;
+  /** Empty string = unlimited per person. */
+  perUserLimit?: string;
+  /** yyyy-mm-dd, empty = never expires. */
+  expiresAt?: string;
+  note?: string;
+}
+
+/** Creates a coupon code that takes a percentage off a subscription payment. */
+export async function createPlanCoupon(input: CouponInput): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const admin = await guard();
+    const code = normaliseCode(input.code);
+    if (!/^[A-Z0-9_-]{3,32}$/.test(code)) {
+      return { ok: false, error: "Use 3 to 32 letters, numbers, dashes or underscores." };
+    }
+    const percent = Math.round(Number(input.percent) || 0);
+    if (percent < 1 || percent > 100) return { ok: false, error: "Enter a percentage between 1 and 100." };
+    if (input.planId && !getPlan(input.planId)) return { ok: false, error: "Unknown plan." };
+
+    const num = (v?: string) => {
+      const n = Number(v);
+      return v && Number.isFinite(n) && n > 0 ? Math.round(n) : null;
+    };
+
+    const { error } = await admin.from("plan_coupons").insert({
+      code,
+      percent,
+      plan_id: input.planId || null,
+      max_uses: num(input.maxUses),
+      per_user_limit: num(input.perUserLimit),
+      expires_at: input.expiresAt ? new Date(`${input.expiresAt}T23:59:59Z`).toISOString() : null,
+      note: (input.note || "").trim() || null,
+      active: true,
+    });
+    if (error) {
+      // 23505: the unique index on code.
+      if ((error as { code?: string }).code === "23505") return { ok: false, error: "That code already exists." };
+      return { ok: false, error: error.message };
+    }
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/** Turns a coupon on or off without deleting it or losing its history. */
+export async function setPlanCouponActive(id: string, active: boolean): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const admin = await guard();
+    const { error } = await admin.from("plan_coupons").update({ active }).eq("id", id);
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/** Deletes a coupon and its redemption history. */
+export async function deletePlanCoupon(id: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const admin = await guard();
+    const { error } = await admin.from("plan_coupons").delete().eq("id", id);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/admin");
     return { ok: true };

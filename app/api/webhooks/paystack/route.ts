@@ -67,7 +67,10 @@ export async function POST(request: NextRequest) {
         } else if (purpose === "domain" && userId && data?.metadata?.siteId) {
           await applyDomainPurchase(userId, data.metadata.siteId);
         } else if (purpose === "platform" && userId && ref) {
-          await applyPlatformPayment(userId, ref, data?.metadata?.plan);
+          await applyPlatformPayment(userId, ref, data?.metadata?.plan, {
+            grossAmount: typeof data?.amount === "number" ? data.amount / 100 : undefined,
+            coupon: data?.metadata,
+          });
         }
         break;
       }

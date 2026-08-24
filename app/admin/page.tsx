@@ -1,7 +1,8 @@
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getTemplateOverrides } from "@/lib/template-overrides";
-import { AdminDashboard, type AdminUserRow, type AdminDomainRow } from "@/components/admin/admin-dashboard";
+import { AdminDashboard, type AdminUserRow, type AdminDomainRow, type AdminCouponRow } from "@/components/admin/admin-dashboard";
+import type { PlanCoupon } from "@/lib/plan-coupons";
 import { DomainRequestsPanel, type DomainRequestRow } from "@/components/admin/domain-requests";
 import { PayoutRequestsPanel, type PayoutRequestRow } from "@/components/admin/payout-requests";
 import { APP_DOMAIN, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, getPlan } from "@/lib/constants";
@@ -23,6 +24,11 @@ export default async function AdminPage() {
     admin.from("app_settings").select("*").eq("id", 1).maybeSingle(),
   ]);
 
+  // Separate query, and tolerant of failure: the table arrives in 0041, and an
+  // admin dashboard should still load on a database that has not run it yet.
+  const { data: couponRows } = await admin
+    .from("plan_coupons").select("*").order("created_at", { ascending: false });
+
   const { data: payoutReqs } = await admin
     .from("payout_change_requests")
     .select("*")
@@ -38,6 +44,19 @@ export default async function AdminPage() {
   (discountRows as { plan_id: string; percent: number; active: boolean }[] | null)?.forEach((d) => {
     planDiscounts[d.plan_id] = { percent: d.percent, active: d.active };
   });
+
+  const planCoupons: AdminCouponRow[] = (couponRows as PlanCoupon[] | null || []).map((c) => ({
+    id: c.id,
+    code: c.code,
+    percent: c.percent,
+    planId: c.plan_id,
+    maxUses: c.max_uses,
+    usedCount: c.used_count,
+    perUserLimit: c.per_user_limit,
+    active: c.active,
+    expiresAt: c.expires_at,
+    note: c.note,
+  }));
 
   const siteByUser = new Map<string, Site>();
   (sites as Site[] | null)?.forEach((s) => siteByUser.set(s.user_id, s));
@@ -136,6 +155,7 @@ export default async function AdminPage() {
         rows={rows}
         domains={domainRows}
         planDiscounts={planDiscounts}
+        planCoupons={planCoupons}
         templateOverrides={templateOverrides}
         revenueResetAt={revenueResetAt}
         novaEnabled={novaOn}

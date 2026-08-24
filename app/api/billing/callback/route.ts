@@ -20,7 +20,12 @@ export async function GET(request: NextRequest) {
         await applyNewDomainRequest(meta.userId, meta.siteId, meta.domain, reference);
         return NextResponse.redirect(`${origin}/dashboard/domain?status=requested`);
       }
-      await applyPlatformPayment(meta.userId, reference, meta.plan);
+      // Paystack's own figure, not ours: what the customer really paid, after
+      // any coupon, is what the ledger has to record.
+      await applyPlatformPayment(meta.userId, reference, meta.plan, {
+        grossAmount: result.amountNaira,
+        coupon: meta,
+      });
       return NextResponse.redirect(`${dashboard}?status=success`);
     }
   } catch {

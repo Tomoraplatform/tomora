@@ -31,7 +31,9 @@ export default async function BillingPage({
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-ink">Billing</h1>
-        <p className="mt-1 text-ink/60">Choose a plan or manage your subscription.</p>
+        <p className="mt-1 text-ink/60">
+          Choose a plan or manage your subscription. Have a coupon code? Enter it at checkout.
+        </p>
       </div>
 
       {searchParams.status === "success" && (
@@ -56,7 +58,7 @@ export default async function BillingPage({
               <Stat label="Next billing date" value={subscription?.next_billing_date ? new Date(subscription.next_billing_date).toLocaleDateString() : "—"} />
               <Stat label="Last payment" value={subscription?.last_payment_date ? new Date(subscription.last_payment_date).toLocaleDateString() : "—"} />
               <div className="pt-2 sm:col-span-2">
-                <UpgradeButton plan={currentPlan?.id} label={`Pay ${formatNaira(nextAmount)} now`} />
+                <UpgradeButton plan={currentPlan?.id} planName={currentPlan?.name} label="Renew now" />
                 {isPro && (
                   <p className="mt-2 text-xs text-ink/50">Cycle {position} of 3 · renews every {RENEWAL_INTERVAL_MONTHS} months.</p>
                 )}
@@ -110,7 +112,7 @@ export default async function BillingPage({
                 {isCurrent ? (
                   <Button disabled variant="outline" className="w-full">Current plan</Button>
                 ) : (
-                  <UpgradeButton plan={plan.id} label={plan.cta} variant={plan.popular ? "default" : "outline"} className="w-full" />
+                  <UpgradeButton plan={plan.id} planName={plan.name} label={plan.cta} variant={plan.popular ? "default" : "outline"} className="w-full" />
                 )}
               </CardContent>
             </Card>

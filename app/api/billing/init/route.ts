@@ -1,8 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { initTransaction } from "@/lib/paystack";
-import { getPlan, nextCharge, NEW_DOMAIN_AMOUNT, NEW_DOMAIN_TLDS, withVat } from "@/lib/constants";
-import { loadPlanDiscounts, discountedPrice } from "@/lib/discounts";
+import { NEW_DOMAIN_AMOUNT, NEW_DOMAIN_TLDS, withVat } from "@/lib/constants";
+import { planChargeAmount } from "@/lib/plan-pricing";
+import { validatePlanCoupon } from "@/lib/plan-coupons";
+import { applyPlatformPayment } from "@/lib/billing";
 
 /** Starts a Paystack checkout for a platform plan, Pro renewal, or a domain. */
 export async function POST(request: NextRequest) {
@@ -52,30 +54,40 @@ export async function POST(request: NextRequest) {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  // Determine plan + amount.
+  // Determine plan + amount. Shared with the coupon check so a quote and a
+  // charge can never disagree.
   const planId: string = body?.plan || sub?.plan || "pro";
-  const plan = getPlan(planId);
-  if (!plan || plan.price == null) {
+  const priced = await planChargeAmount(user.id, planId);
+  if (priced == null) {
     return NextResponse.json({ error: "Invalid plan." }, { status: 400 });
   }
+  let amount = priced;
 
-  let amount = plan.price;
-  // Pro uses the 3-month cycle; a renewal (already on Pro) uses nextCharge.
-  if (planId === "pro" && sub?.plan === "pro") {
-    amount = nextCharge(sub.billing_cycle_position ?? 0).amount;
-  }
-  // One-time plan: ₦84,500 for the first year, then the yearly renewal price.
-  if (planId === "onetime" && sub?.plan === "onetime") {
-    amount = plan.renewal ?? plan.price;
+  // A coupon stacks on top of the public discount. Re-checked here rather than
+  // trusted from the browser: this is the number the customer is charged.
+  let coupon: { id: string; code: string; percent: number; discount: number } | undefined;
+  if (body?.coupon) {
+    const check = await validatePlanCoupon(String(body.coupon), planId, amount, user.id);
+    if (!check.ok) return NextResponse.json({ error: check.error }, { status: 400 });
+    coupon = { id: check.couponId!, code: check.code!, percent: check.percent!, discount: check.discount! };
+    amount = check.finalAmount!;
   }
 
-  // Apply any active admin discount for this plan.
-  const discounts = await loadPlanDiscounts();
-  amount = discountedPrice(amount, discounts[planId]);
   // Add 7.5% VAT on top of the (possibly discounted) plan price.
   amount = withVat(amount);
 
   const reference = `tomplat_${user.id.slice(0, 8)}_${Date.now()}`;
+  const couponMeta = coupon
+    ? { couponId: coupon.id, couponCode: coupon.code, couponPercent: coupon.percent, couponDiscount: coupon.discount }
+    : {};
+
+  // A coupon can take the price to nothing. Paystack has no ₦0 charge, so the
+  // subscription is activated here instead of through a checkout the customer
+  // could never complete.
+  if (amount <= 0) {
+    await applyPlatformPayment(user.id, reference, planId, { grossAmount: 0, coupon: couponMeta });
+    return NextResponse.json({ settled: true, redirect: "/dashboard/billing?status=success" });
+  }
 
   try {
     const data = await initTransaction({
@@ -83,7 +95,7 @@ export async function POST(request: NextRequest) {
       amountNaira: amount,
       reference,
       callbackUrl: `${request.nextUrl.origin}/api/billing/callback`,
-      metadata: { userId: user.id, purpose: "platform", plan: planId },
+      metadata: { userId: user.id, purpose: "platform", plan: planId, ...couponMeta },
     });
     return NextResponse.json({ authorization_url: data.authorization_url });
   } catch (e: any) {

@@ -5,6 +5,7 @@ import {
   getPlan, NEW_DOMAIN_AMOUNT, VAT_PERCENT,
 } from "@/lib/constants";
 import { creditPlatform, recordTransaction } from "@/lib/creator/money";
+import { redeemPlanCoupon } from "@/lib/plan-coupons";
 import { sendTikTokEvent } from "@/lib/tiktok/events-api";
 import { TIKTOK_EVENTS } from "@/lib/tiktok/config";
 
@@ -19,7 +20,16 @@ function addMonths(date: Date, months: number) {
  * the 3-month billing cycle. Monthly plans renew every month. Idempotent on
  * `reference`. Activates the user's site.
  */
-export async function applyPlatformPayment(userId: string, reference: string, planId?: string) {
+export async function applyPlatformPayment(
+  userId: string,
+  reference: string,
+  planId?: string,
+  opts?: {
+    /** What the customer was actually charged, VAT included. */
+    grossAmount?: number;
+    coupon?: { couponId?: string; couponCode?: string; couponPercent?: number; couponDiscount?: number };
+  }
+) {
   const admin = createAdminClient();
 
   const { data: sub } = await admin
@@ -70,18 +80,40 @@ export async function applyPlatformPayment(userId: string, reference: string, pl
 
   // Subscription revenue is Tomora's: credit the platform wallet and record it
   // in the unified ledger. The charge included 7.5% VAT, split back out here.
-  const charged = payload.first_payment_amount || 0;
+  //
+  // The ledger must follow the money that actually arrived, not the plan's list
+  // price: a discount or a coupon means those two differ, and crediting the
+  // list price would invent revenue that was never collected.
+  const charged = opts?.grossAmount ?? payload.first_payment_amount ?? 0;
   const base = Math.round(charged / (1 + VAT_PERCENT / 100));
   const vat = charged - base;
-  await Promise.all([
-    creditPlatform({ source: "subscription", amount: base, reference, description: `${plan?.name || "Plan"} subscription` }),
-    creditPlatform({ source: "vat", amount: vat, reference, isVat: true, description: "VAT on subscription" }),
-    recordTransaction({
-      kind: "subscription", reference, grossAmount: charged,
-      platformAmount: base, vatAmount: vat, userId,
-      description: `${plan?.name || "Plan"} subscription`,
-    }),
-  ]);
+  const couponNote = opts?.coupon?.couponCode ? ` (coupon ${opts.coupon.couponCode})` : "";
+  // A 100%-off coupon collects nothing, so there is nothing to credit. The
+  // redemption row below is what records that it happened.
+  if (charged > 0) {
+    await Promise.all([
+      creditPlatform({ source: "subscription", amount: base, reference, description: `${plan?.name || "Plan"} subscription${couponNote}` }),
+      creditPlatform({ source: "vat", amount: vat, reference, isVat: true, description: "VAT on subscription" }),
+      recordTransaction({
+        kind: "subscription", reference, grossAmount: charged,
+        platformAmount: base, vatAmount: vat, userId,
+        description: `${plan?.name || "Plan"} subscription${couponNote}`,
+      }),
+    ]);
+  }
+
+  // Counted only now that the payment is real, which is why an abandoned
+  // checkout never uses up a code.
+  if (opts?.coupon?.couponId) {
+    await redeemPlanCoupon({
+      couponId: opts.coupon.couponId,
+      userId,
+      reference,
+      planId: plan?.id,
+      percent: opts.coupon.couponPercent || 0,
+      discountAmount: opts.coupon.couponDiscount || 0,
+    });
+  }
 
   // Measured here rather than on a thank-you page: this runs when Paystack
   // confirms the money, which happens whether or not the browser came back.
