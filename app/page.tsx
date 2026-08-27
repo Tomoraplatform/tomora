@@ -4,6 +4,7 @@ import { Eye, Check } from "lucide-react";
 import { MarketingNav } from "@/components/marketing/nav";
 import { MarketingFooter } from "@/components/marketing/footer";
 import { TomoraAiTeaser } from "@/components/marketing/tomora-ai-teaser";
+import { LiveSection } from "@/components/marketing/live-section";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { FeatureCards } from "@/components/marketing/feature-cards";
 import { TemplatePreview } from "@/components/marketing/template-preview";
@@ -85,6 +86,7 @@ export default async function Home({
       <HowItWorks />
       <FeatureCards />
       <TemplateShowcase templates={showcaseTemplates} />
+      <LiveSection />
       <TomoraAiTeaser />
       <Pricing discounts={discounts} />
       <Testimonials />

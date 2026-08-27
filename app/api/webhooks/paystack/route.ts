@@ -47,7 +47,10 @@ export async function POST(request: NextRequest) {
         if (ref.startsWith("don_")) {
           // Donor paid, settle even if they never returned to the site.
           await confirmDonationPaid(ref);
-        } else if (ref.startsWith("tom_")) {
+        } else if (ref.startsWith("tom_") || ref.startsWith("tomwa_")) {
+          // Same settlement for both: confirmOrdersPaid reads the order's
+          // channel and applies Tomora Live's commission when it was a
+          // WhatsApp sale.
           await confirmOrdersPaid(ref);
         } else if (ref.startsWith("acad_")) {
           // Course purchase, enroll even if the buyer never returned.

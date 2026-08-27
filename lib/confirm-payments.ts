@@ -1,6 +1,9 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { recordTransaction } from "@/lib/creator/money";
+import { recordTransaction, creditPlatform } from "@/lib/creator/money";
+import { LIVE_COMMISSION_PERCENT } from "@/lib/live/config";
+import { enqueue, clearCartAfterPayment } from "@/lib/live/conversations";
+import { text } from "@/lib/live/messages";
 import { verifyTransaction } from "@/lib/paystack";
 import { sendEmail } from "@/lib/email";
 import { formatNaira } from "@/lib/utils";
@@ -56,9 +59,14 @@ export async function confirmDonationPaid(reference: string): Promise<{ updated:
 export async function confirmOrdersPaid(reference: string): Promise<{ updated: number }> {
   const admin = createAdminClient();
 
+  // `*` rather than a column list on purpose: `channel` arrives in migration
+  // 0042, and naming a column that does not exist yet would fail the query
+  // outright, which would stop every store order settling on a database that
+  // has not run it. With `*` the column is simply absent and this behaves
+  // exactly as it did before Live existed.
   const { data: pending } = await admin
     .from("orders")
-    .select("id, site_id, product_id, buyer_name, buyer_email, buyer_phone, buyer_address, amount, color")
+    .select("*")
     .eq("paystack_reference", reference)
     .eq("status", "pending");
   if (!pending || !pending.length) return { updated: 0 };
@@ -70,8 +78,15 @@ export async function confirmOrdersPaid(reference: string): Promise<{ updated: n
     .eq("status", "pending");
   if (error) throw new Error(error.message);
 
+  // Tomora Live is paid for by a commission on the sales it brings in, and by
+  // nothing else. It applies only to orders that came through WhatsApp, so a
+  // seller's website sales are untouched.
+  const isLive = (pending[0] as { channel?: string }).channel === "whatsapp";
+
   try {
     const total = pending.reduce((s: number, r: any) => s + (r.amount || 0), 0);
+    const commission = isLive ? Math.round((total * LIVE_COMMISSION_PERCENT) / 100) : 0;
+    const payee = total - commission;
     const { data: site } = await admin
       .from("sites").select("user_id").eq("id", pending[0].site_id).maybeSingle();
     if (site?.user_id && total > 0) {
@@ -80,23 +95,53 @@ export async function confirmOrdersPaid(reference: string): Promise<{ updated: n
         site_id: pending[0].site_id,
         type: "income",
         source: "order",
-        amount: total,
+        amount: payee,
         status: "completed",
         reference,
-        description: `Order from ${pending[0].buyer_name || "customer"}`,
+        description: `${isLive ? "WhatsApp order" : "Order"} from ${pending[0].buyer_name || "customer"}`,
       });
-      // Store sales belong to the owner; recorded for platform-wide stats.
+      if (commission > 0) {
+        await creditPlatform({
+          source: "live_fee",
+          amount: commission,
+          reference,
+          description: `Tomora Live ${LIVE_COMMISSION_PERCENT}% on ${reference}`,
+        });
+      }
+      // Store sales belong to the owner, less Live's cut when there is one.
       await recordTransaction({
         kind: "store_order", reference, grossAmount: total,
-        payeeAmount: total, userId: site.user_id, siteId: pending[0].site_id,
-        description: `Order from ${pending[0].buyer_name || "customer"}`,
+        payeeAmount: payee, platformAmount: commission || undefined,
+        userId: site.user_id, siteId: pending[0].site_id,
+        description: `${isLive ? "WhatsApp order" : "Order"} from ${pending[0].buyer_name || "customer"}`,
       });
     }
   } catch { /* non-fatal, wallet table may not exist yet */ }
 
   try { await notifyOrder(admin, pending, reference); } catch { /* non-fatal */ }
+  if (isLive) {
+    try { await notifyLiveBuyer(pending, reference); } catch { /* non-fatal */ }
+  }
 
   return { updated: pending.length };
+}
+
+/**
+ * Tells the WhatsApp customer their payment landed, and empties the cart the
+ * order was made from so they do not buy the same thing twice.
+ */
+async function notifyLiveBuyer(rows: any[], reference: string) {
+  const waId = rows[0]?.buyer_phone;
+  if (!waId) return;
+  const total = rows.reduce((s: number, r: any) => s + (r.amount || 0), 0);
+  await clearCartAfterPayment(waId, reference);
+  // Same dedupe key the status notifier uses for `paid`, so a seller who also
+  // marks the order paid by hand cannot make the customer hear it twice.
+  await enqueue(waId, text(
+    `✅ Payment received, thank you!\n\n` +
+    `Your order *${reference}* for ${formatNaira(total)} is confirmed and the seller has been notified.\n\n` +
+    `Send *track* any time to check on it.`
+  ), { dedupeKey: `${reference}:paid` });
 }
 
 /**

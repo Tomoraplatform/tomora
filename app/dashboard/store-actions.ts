@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { currentSiteId } from "@/lib/dashboard";
 import { resolveAccount, createSubaccount } from "@/lib/paystack";
 import { STORE_COMMISSION_PERCENT } from "@/lib/constants";
+import { notifyOrderStatus } from "@/lib/live/notify";
 import type { OrderStatus, SiteData } from "@/lib/database.types";
 
 async function requireUserAndSite() {
@@ -170,6 +171,8 @@ export async function updateOrderStatus(orderId: string, status: OrderStatus): P
     const { supabase } = await requireUserAndSite();
     const { error } = await supabase.from("orders").update({ status }).eq("id", orderId);
     if (error) return { ok: false, error: error.message };
+    // A WhatsApp order tells its customer itself. Does nothing for web orders.
+    await notifyOrderStatus(orderId, status);
     revalidatePath("/dashboard/orders");
     return { ok: true };
   } catch (e: any) {

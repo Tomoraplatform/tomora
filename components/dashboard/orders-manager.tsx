@@ -11,18 +11,20 @@ import { updateOrderStatus } from "@/app/dashboard/store-actions";
 import type { Order, OrderStatus } from "@/lib/database.types";
 import { orderCode } from "@/lib/restaurant/order";
 
-const STATUSES: OrderStatus[] = ["pending", "paid", "shipped", "delivered"];
+const STATUSES: OrderStatus[] = ["pending", "paid", "packed", "shipped", "delivered"];
 type Filter = "all" | OrderStatus;
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
   pending: "Awaiting transfer",
   paid: "Paid",
+  packed: "Packed",
   shipped: "Sent out",
   delivered: "Fulfilled",
 };
 const STATUS_PILL: Record<OrderStatus, string> = {
   pending: "bg-amber-100 text-amber-800",
   paid: "bg-emerald-100 text-emerald-700",
+  packed: "bg-violet-100 text-violet-700",
   shipped: "bg-sky-100 text-sky-700",
   delivered: "bg-ink/10 text-ink/70",
 };

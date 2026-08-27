@@ -40,7 +40,7 @@ export type DomainStatus =
 
 export type SubscriptionStatus = "active" | "past_due" | "cancelled" | "none";
 
-export type OrderStatus = "pending" | "paid" | "shipped" | "delivered";
+export type OrderStatus = "pending" | "paid" | "packed" | "shipped" | "delivered";
 
 export interface Profile {
   id: string;
