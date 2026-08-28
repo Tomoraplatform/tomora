@@ -7,6 +7,11 @@ import { drainOutbox } from "@/lib/live/conversations";
  * Vercel has no long-running worker, so this stands in for one: Vercel Cron
  * calls it on a schedule, and it is also safe to call by hand. Protected by a
  * shared secret because anything reachable can be called by anyone.
+ *
+ * The schedule in vercel.json is daily, because a Hobby plan rejects anything
+ * more frequent and the whole deployment fails with it. Live therefore does not
+ * depend on this to be timely: `enqueueAndSend` writes the row and sends it
+ * straight away, and this run only sweeps up sends that failed at the time.
  */
 export const dynamic = "force-dynamic";
 

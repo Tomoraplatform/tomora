@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { enqueue } from "./conversations";
+import { enqueueAndSend } from "./conversations";
 import { text } from "./messages";
 
 /**
@@ -41,7 +41,7 @@ export async function notifyOrderStatus(orderId: string, status: string): Promis
     const waId = order.buyer_phone;
     if (!reference || !waId) return;
 
-    await enqueue(waId, text(build(reference)), { dedupeKey: `${reference}:${status}` });
+    await enqueueAndSend(waId, text(build(reference)), { dedupeKey: `${reference}:${status}` });
   } catch {
     // A customer notification must never be able to fail the seller's own
     // status change.

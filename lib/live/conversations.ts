@@ -142,6 +142,29 @@ export async function clearCartAfterPayment(waId: string, reference: string): Pr
   }).eq("id", data.id);
 }
 
+/**
+ * Queues a message and tries to send it straight away.
+ *
+ * The cron that drains the outbox runs once a day, which is the most the
+ * hosting plan allows, and a customer should not wait that long to hear their
+ * order shipped. So the queue is the durable record and the retry path, while
+ * the send itself happens now. Never throws.
+ */
+export async function enqueueAndSend(
+  to: string,
+  message: OutboundMessage,
+  opts?: { dedupeKey?: string }
+): Promise<void> {
+  try {
+    const queued = await enqueue(to, message, opts);
+    // Already queued under this key: another caller is handling it.
+    if (!queued) return;
+    await drainOutbox(5);
+  } catch {
+    // The row is written; the cron will pick it up.
+  }
+}
+
 /** How many times a queued message is retried before it is left alone. */
 export const MAX_OUTBOX_ATTEMPTS = 5;
 

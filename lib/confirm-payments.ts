@@ -2,7 +2,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { recordTransaction, creditPlatform } from "@/lib/creator/money";
 import { LIVE_COMMISSION_PERCENT } from "@/lib/live/config";
-import { enqueue, clearCartAfterPayment } from "@/lib/live/conversations";
+import { enqueueAndSend, clearCartAfterPayment } from "@/lib/live/conversations";
 import { text } from "@/lib/live/messages";
 import { verifyTransaction } from "@/lib/paystack";
 import { sendEmail } from "@/lib/email";
@@ -137,7 +137,7 @@ async function notifyLiveBuyer(rows: any[], reference: string) {
   await clearCartAfterPayment(waId, reference);
   // Same dedupe key the status notifier uses for `paid`, so a seller who also
   // marks the order paid by hand cannot make the customer hear it twice.
-  await enqueue(waId, text(
+  await enqueueAndSend(waId, text(
     `✅ Payment received, thank you!\n\n` +
     `Your order *${reference}* for ${formatNaira(total)} is confirmed and the seller has been notified.\n\n` +
     `Send *track* any time to check on it.`
