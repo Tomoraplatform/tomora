@@ -61,6 +61,11 @@ export async function applyPlatformPayment(
     next_billing_date: nextBilling.toISOString(),
     last_payment_date: now.toISOString(),
     last_reference: reference,
+    // Money clears any comp. Without this the expiry date from an earlier
+    // admin grant survives the payment, and the next visitor to the site trips
+    // expireCompIfDue, which cancels the subscription and takes the site back
+    // offline moments after it was paid for.
+    comp_expires_at: null,
   };
 
   if (sub) {
