@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Facebook, Twitter, Link2, Minus, Plus, Loader2, CheckCircle2, Star, ShieldCheck, Ruler, X } from "lucide-react";
 import type { Product, Review, Site } from "@/lib/database.types";
+import { optimisedFallback, optimisedSrc, optimisedSrcSet } from "@/lib/image";
 import { formatNaira } from "@/lib/utils";
 import { StoreChrome, useStoreCartApi } from "./store-chrome";
 
@@ -82,7 +83,13 @@ function ProductDetail({ product, brandColor }: { product: Product; brandColor: 
           <div className="aspect-square w-full overflow-hidden rounded-lg bg-neutral-100">
             {activeImage && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={activeImage} alt={product.name} fetchPriority="high" className="h-full w-full object-cover" />
+              <img
+                src={optimisedFallback(activeImage)}
+                {...(optimisedSrcSet(activeImage)
+                  ? { srcSet: optimisedSrcSet(activeImage), sizes: "(max-width: 768px) 100vw, 600px" }
+                  : {})}
+                alt={product.name} fetchPriority="high" decoding="async"
+                className="h-full w-full object-cover" />
             )}
           </div>
           {images.length > 1 && (
@@ -92,7 +99,8 @@ function ProductDetail({ product, brandColor }: { product: Product; brandColor: 
                   className="h-16 w-16 shrink-0 overflow-hidden rounded-md border transition"
                   style={{ borderColor: thumb === i ? brandColor : "rgba(0,0,0,0.1)", borderWidth: thumb === i ? 2 : 1 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={src} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                  <img src={optimisedSrcSet(src) ? optimisedSrc(src, 384) : src}
+                    alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>

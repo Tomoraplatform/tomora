@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Product, Site } from "@/lib/database.types";
 import { StoreChrome } from "./store-chrome";
 import { StoreProductCard } from "./store-product-card";
+import { optimisedFallback, optimisedSrcSet } from "@/lib/image";
 
 export function StoreCategoryPage({
   site, products, categoryName, paystackEnabled,
@@ -26,7 +27,9 @@ export function StoreCategoryPage({
       <section className="relative">
         {tile?.image && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={tile.image} alt="" className="h-52 w-full object-cover sm:h-64" />
+          <img src={optimisedFallback(tile.image)}
+            {...(optimisedSrcSet(tile.image) ? { srcSet: optimisedSrcSet(tile.image), sizes: "100vw" } : {})}
+            alt="" loading="lazy" decoding="async" className="h-52 w-full object-cover sm:h-64" />
         )}
         <div className="absolute inset-0 bg-black/35" />
         <div className="absolute inset-0 flex items-end">

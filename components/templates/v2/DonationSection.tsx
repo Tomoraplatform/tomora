@@ -7,6 +7,7 @@ import { formatNaira, contrastText } from "@/lib/utils";
 import { useStore } from "../store-context";
 import { useDonation } from "../donation-context";
 import { heading, subheading } from "./shared";
+import { optimisedFallback, optimisedSrcSet } from "@/lib/image";
 
 declare global {
   interface Window { PaystackPop?: any; }
@@ -137,7 +138,9 @@ function ProjectCard({
     <div className="flex flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
       {project.image && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={project.image} alt={project.name} className="h-44 w-full object-cover" />
+        <img src={optimisedFallback(project.image)}
+          {...(optimisedSrcSet(project.image) ? { srcSet: optimisedSrcSet(project.image), sizes: "(max-width: 640px) 100vw, 380px" } : {})}
+          alt={project.name} loading="lazy" decoding="async" className="h-44 w-full object-cover" />
       )}
       <div className="p-6 pb-0">
         <h3 className="text-lg font-bold text-ink">{project.name}</h3>

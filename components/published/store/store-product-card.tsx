@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ShoppingCart, Zap } from "lucide-react";
 import type { Product } from "@/lib/database.types";
 import { formatNaira } from "@/lib/utils";
+import { optimisedFallback, optimisedSrcSet } from "@/lib/image";
 import { useStore } from "@/components/templates/store-context";
 
 /**
@@ -21,7 +22,12 @@ export function StoreProductCard({ product }: { product: Product }) {
         <div className="relative aspect-square overflow-hidden rounded-lg bg-neutral-100">
           {product.images?.[0] && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={product.images[0]} alt={product.name} loading="lazy"
+            <img
+              src={optimisedFallback(product.images[0])}
+              {...(optimisedSrcSet(product.images[0])
+                ? { srcSet: optimisedSrcSet(product.images[0]), sizes: "(max-width: 640px) 50vw, 300px" }
+                : {})}
+              alt={product.name} loading="lazy" decoding="async"
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
           )}
           {product.is_pre_order && (

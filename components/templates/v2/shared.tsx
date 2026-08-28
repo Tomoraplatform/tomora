@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Star, ShoppingCart, Zap, Instagram, Twitter, Facebook, Globe, CheckCircle2, Linkedin, Github, Phone, Mail, MapPin, CalendarClock } from "lucide-react";
 import type { SiteData, CatalogProduct, CatalogTestimonial, Product, SocialLinks, CustomSection } from "@/lib/database.types";
 import { formatNaira, parseNaira, cn } from "@/lib/utils";
+import { optimisedFallback, optimisedSrc, optimisedSrcSet } from "@/lib/image";
 import { useStore } from "../store-context";
 import { useTemplateEdit } from "../editor-context";
 
@@ -46,7 +47,8 @@ export function Brandmark({
 }) {
   if (siteData.logoUrl) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={siteData.logoUrl} alt={name} className="h-9 w-auto max-w-[170px] object-contain" />;
+    return <img src={optimisedSrcSet(siteData.logoUrl) ? optimisedSrc(siteData.logoUrl, 384) : siteData.logoUrl}
+        alt={name} decoding="async" className="h-9 w-auto max-w-[170px] object-contain" />;
   }
   return <span className={className}>{name}</span>;
 }
@@ -82,10 +84,31 @@ export function StarRow({ rating = 5, count }: { rating?: number; count?: number
   );
 }
 
-export function Img({ src, alt = "", className = "" }: { src?: string; alt?: string; className?: string }) {
+export function Img({
+  src, alt = "", className = "", sizes = "100vw", eager = false,
+}: {
+  src?: string;
+  alt?: string;
+  className?: string;
+  /** How much width the image occupies, so the browser can pick a size.
+   *  Defaults to full width; pass something tighter for cards and avatars. */
+  sizes?: string;
+  /** Set on the one image above the fold, which should not be lazy. */
+  eager?: boolean;
+}) {
   if (!src) return <div className={`bg-black/10 ${className}`} />;
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt={alt} loading="lazy" className={className} />;
+  const srcSet = optimisedSrcSet(src);
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={optimisedFallback(src)}
+      {...(srcSet ? { srcSet, sizes } : {})}
+      alt={alt}
+      loading={eager ? "eager" : "lazy"}
+      decoding="async"
+      className={className}
+    />
+  );
 }
 
 /** The price the customer actually pays, applies an active offer discount. */
@@ -120,7 +143,7 @@ export function ProductCardV2({
   return (
     <div className="group flex flex-col overflow-hidden rounded-xl border border-black/10 bg-white">
       <button type="button" onClick={open} className="relative block aspect-square overflow-hidden bg-black/5 text-left">
-        <Img src={product.image} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+        <Img src={product.image} sizes="(max-width: 640px) 50vw, 300px" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
         {product.offer && product.offerPercent ? (
           <span className="absolute left-2 top-2 rounded-full px-2 py-0.5 text-[11px] font-bold text-white" style={{ background: "var(--brand-primary)" }}>-{product.offerPercent}%</span>
         ) : null}
@@ -165,7 +188,7 @@ export function ProductCardSplit({ product, siteData }: { product: CatalogProduc
   return (
     <div className="overflow-hidden rounded-lg border border-black/10 bg-white p-3">
       <button type="button" onClick={open} className="block aspect-square w-full overflow-hidden rounded-md bg-black/5">
-        <Img src={product.image} className="h-full w-full object-cover" />
+        <Img src={product.image} sizes="(max-width: 640px) 50vw, 300px" className="h-full w-full object-cover" />
       </button>
       <h3 onClick={open} className="mt-3 line-clamp-1 cursor-pointer text-sm text-black/80">{product.name}</h3>
       <div className="mt-1 flex items-center justify-between gap-2">

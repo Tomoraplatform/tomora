@@ -6,6 +6,7 @@ import { slugify } from "@/lib/utils";
 import { productCategories } from "@/components/templates/v2/shared";
 import { StoreChrome } from "./store/store-chrome";
 import { StoreProductCard } from "./store/store-product-card";
+import { optimisedFallback, optimisedSrcSet } from "@/lib/image";
 
 export function BakehouseHome({
   site, products, paystackEnabled,
@@ -31,7 +32,9 @@ export function BakehouseHome({
       <section className="relative">
         {siteData?.heroImage && (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={siteData.heroImage} alt="" className="h-[420px] w-full object-cover sm:h-[520px]" />
+          <img src={optimisedFallback(siteData.heroImage)}
+            {...(optimisedSrcSet(siteData.heroImage) ? { srcSet: optimisedSrcSet(siteData.heroImage), sizes: "100vw" } : {})}
+            alt="" decoding="async" className="h-[420px] w-full object-cover sm:h-[520px]" />
         )}
         <div className="absolute inset-0 bg-black/25" />
         <div className="absolute inset-x-0 bottom-10 flex flex-col items-center gap-4 px-5 text-center text-white">

@@ -5,6 +5,7 @@ import { slugify, formatNaira } from "@/lib/utils";
 import { productCategories } from "@/components/templates/v2/shared";
 import { StoreProductCard } from "../store/store-product-card";
 import { ChronovaShell } from "./chronova-shell";
+import { optimisedFallback, optimisedSrcSet } from "@/lib/image";
 
 /** Chronova live home page, watch-store hero + product grid + categories + featured. */
 export function ChronovaHome({
@@ -63,7 +64,9 @@ export function ChronovaHome({
               <Link href={`/product/${featured.id}`} className="relative aspect-square w-[72%] max-w-xs overflow-hidden rounded-3xl bg-white shadow-2xl">
                 {featured.images?.[0] && (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={featured.images[0]} alt={featured.name} className="h-full w-full object-cover" />
+                  <img src={optimisedFallback(featured.images[0])}
+                    {...(optimisedSrcSet(featured.images[0]) ? { srcSet: optimisedSrcSet(featured.images[0]), sizes: "(max-width: 768px) 100vw, 600px" } : {})}
+                    alt={featured.name} decoding="async" className="h-full w-full object-cover" />
                 )}
                 <div className="absolute bottom-4 right-4 rounded-2xl bg-white px-4 py-3 shadow-lg">
                   <p className="text-[11px] text-neutral-500">{featured.name}</p>

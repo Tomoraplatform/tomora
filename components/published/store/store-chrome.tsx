@@ -8,6 +8,7 @@ import { contrastText, slugify } from "@/lib/utils";
 import { CartDrawer } from "../cart-drawer";
 import { SocialIcons } from "@/components/templates/v2/shared";
 import { useStoreCart } from "./use-store-cart";
+import { optimisedSrc, optimisedSrcSet } from "@/lib/image";
 
 interface StoreCartApi {
   add: (product: Product, color?: string, qty?: number) => void;
@@ -65,7 +66,8 @@ export function StoreChrome({
               <Link href="/" className="text-lg font-bold">
                 {siteData.logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={siteData.logoUrl} alt={name} className="h-9 w-auto object-contain" />
+                  <img src={optimisedSrcSet(siteData.logoUrl) ? optimisedSrc(siteData.logoUrl, 384) : siteData.logoUrl}
+                    alt={name} decoding="async" className="h-9 w-auto object-contain" />
                 ) : name}
               </Link>
             </div>

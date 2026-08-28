@@ -7,6 +7,7 @@ import { formatNaira, contrastText } from "@/lib/utils";
 import { validateCoupon } from "@/lib/coupons";
 import { orderCode, whatsappOrderLink, etaLabel, normaliseWhatsapp } from "@/lib/restaurant/order";
 import { PAYSTACK_FEE_PERCENT } from "@/lib/constants";
+import { optimisedSrc, optimisedSrcSet } from "@/lib/image";
 
 export interface CartLine { product: Product; qty: number; color?: string; }
 
@@ -233,7 +234,8 @@ export function CartDrawer({
                       <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-neutral-100">
                         {l.product.images?.[0] && (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={l.product.images[0]} alt="" className="h-full w-full object-cover" />
+                          <img src={optimisedSrcSet(l.product.images[0]) ? optimisedSrc(l.product.images[0], 384) : l.product.images[0]}
+                            alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                         )}
                       </div>
                       <div className="flex-1">
