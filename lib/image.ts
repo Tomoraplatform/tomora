@@ -32,6 +32,12 @@ export function canOptimise(src: string): boolean {
 
   try {
     const url = new URL(src);
+
+    // Placeholder photography, used by template previews and by the demo
+    // content every new site is seeded with. Served at 800x800 whatever the
+    // box, so it is worth resizing for exactly the same reason uploads are.
+    if (url.hostname === "picsum.photos") return true;
+
     if (!url.pathname.startsWith("/storage/v1/object/public/")) return false;
 
     const configured = process.env.NEXT_PUBLIC_SUPABASE_URL;

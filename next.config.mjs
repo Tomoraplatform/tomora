@@ -29,12 +29,17 @@ const nextConfig = {
   poweredByHeader: false,
   images: {
     formats: ["image/avif", "image/webp"],
-    // A day of caching: uploads are immutable, their URL changes when replaced.
-    minimumCacheTTL: 86400,
+    // Thirty days. These URLs are effectively immutable: a replaced upload gets
+    // a new name, and the placeholder photography is addressed by seed. The
+    // long life matters because generating one costs a fetch from the origin,
+    // and picsum in particular is slow enough that a cold miss is felt.
+    minimumCacheTTL: 60 * 60 * 24 * 30,
     remotePatterns: [
       ...(supabaseHost
         ? [{ protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/public/**" }]
         : [{ protocol: "https", hostname: "**.supabase.co", pathname: "/storage/v1/object/public/**" }]),
+      // Demo photography for template previews and freshly seeded sites.
+      { protocol: "https", hostname: "picsum.photos" },
     ],
   },
   async headers() {

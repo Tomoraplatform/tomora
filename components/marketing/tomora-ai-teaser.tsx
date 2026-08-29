@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Sparkles, ArrowRight, Copy, Wand2, Eye, LayoutTemplate } from "lucide-react";
+import { LazyVideo } from "./lazy-video";
 
 /**
  * Tomora AI section. The visual is the shipping hero from Tomora Resources:
@@ -56,20 +57,11 @@ export function TomoraAiTeaser() {
           {/* ---- The shipping hero, as shipped in Resources -------------- */}
           <div className="relative overflow-hidden rounded-[26px] border border-cream/10 shadow-2xl">
             <div className="relative aspect-[4/5] w-full sm:aspect-[4/3] lg:aspect-[3/4]">
-              <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
+              <LazyVideo
+                src="https://res.cloudinary.com/dpr3gsicr/video/upload/v1784939366/0724_h5fwhf.mp4"
                 poster="https://res.cloudinary.com/dpr3gsicr/video/upload/so_2/v1784939366/0724_h5fwhf.jpg"
                 className="absolute inset-0 h-full w-full object-cover"
-              >
-                <source
-                  src="https://res.cloudinary.com/dpr3gsicr/video/upload/v1784939366/0724_h5fwhf.mp4"
-                  type="video/mp4"
-                />
-              </video>
+              />
               {/* Flat wash plus a bottom gradient, matching the original hero:
                   the copy sits low in the frame and needs the extra contrast. */}
               <span className="absolute inset-0 bg-black/30" />
