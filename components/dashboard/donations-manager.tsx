@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Loader2, Check, Heart, Landmark, HandCoins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatNaira } from "@/lib/utils";
-import { updateDonationTotals } from "@/app/dashboard/(panel)/donations/actions";
+import { updateDonationTotals, recordOfflineGift } from "@/app/dashboard/(panel)/donations/actions";
 
 export interface ProjectSummary {
   id: string;
@@ -27,12 +28,14 @@ export interface DonationRecord {
 }
 
 export function DonationsManager({
-  online, onlineCount, manual: initialManual, goal: initialGoal, projects = [], records = [],
+  online, onlineCount, manual: initialManual, manualCount: initialManualCount = 0,
+  goal: initialGoal, projects = [], records = [],
   unassignedCount = 0, unassignedRaised = 0,
 }: {
   online: number;
   onlineCount: number;
   manual: number;
+  manualCount?: number;
   goal: number;
   projects?: ProjectSummary[];
   records?: DonationRecord[];
@@ -40,8 +43,15 @@ export function DonationsManager({
   unassignedCount?: number;
   unassignedRaised?: number;
 }) {
+  const router = useRouter();
   const [manual, setManual] = useState(initialManual);
+  const [manualCount, setManualCount] = useState(initialManualCount);
   const [goal, setGoal] = useState(initialGoal);
+  // Recording a gift, as opposed to correcting the running totals below it.
+  const [giftAmount, setGiftAmount] = useState<number | "">("");
+  const [giftProject, setGiftProject] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,10 +59,35 @@ export function DonationsManager({
   const total = online + Math.max(0, Math.round(manual || 0));
   const pct = goal > 0 ? Math.min(100, Math.round((total / goal) * 100)) : 0;
 
+  async function addGift() {
+    if (!giftAmount) return;
+    setAdding(true); setAdded(false); setError(null);
+    try {
+      const res = await recordOfflineGift({ amount: Number(giftAmount), projectId: giftProject || undefined });
+      if (!res.ok) { setError(res.error || "Could not add that gift."); return; }
+      // Reflect it locally too, so the figures above move without a reload.
+      if (!giftProject) {
+        setManual((m) => m + Number(giftAmount));
+        setManualCount((c) => c + 1);
+      }
+      setGiftAmount("");
+      setAdded(true); setTimeout(() => setAdded(false), 2500);
+      router.refresh();
+    } catch (e: any) {
+      setError(e?.message || "Could not add that gift.");
+    } finally {
+      setAdding(false);
+    }
+  }
+
   async function save() {
     setSaving(true); setSaved(false); setError(null);
     try {
-      const res = await updateDonationTotals({ manual: Math.max(0, Math.round(manual || 0)), goal: Math.max(0, Math.round(goal || 0)) });
+      const res = await updateDonationTotals({
+        manual: Math.max(0, Math.round(manual || 0)),
+        manualCount: Math.max(0, Math.round(manualCount || 0)),
+        goal: Math.max(0, Math.round(goal || 0)),
+      });
       if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 2500); }
       else setError(res.error || "Could not save. Please try again.");
     } catch (e: any) {
@@ -162,15 +197,61 @@ export function DonationsManager({
         </Card>
       )}
 
+      {/* Record one gift: money and count move together. */}
+      <Card>
+        <CardHeader><CardTitle>Record an offline gift</CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-ink/60">
+            Cash, a bank transfer, an envelope handed to you. Adding it here moves the amount and adds one
+            to the gift count, so your progress bar and the “gifts” line under it stay in step.
+          </p>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="min-w-[180px] flex-1 space-y-2">
+              <Label htmlFor="gift-amount">How much was it? (₦)</Label>
+              <Input
+                id="gift-amount" type="number" min={1} value={giftAmount}
+                placeholder="10000"
+                onChange={(e) => setGiftAmount(e.target.value === "" ? "" : Math.max(0, Math.round(Number(e.target.value) || 0)))}
+              />
+            </div>
+            {projects.length > 0 && (
+              <div className="min-w-[190px] flex-1 space-y-2">
+                <Label htmlFor="gift-project">Which project?</Label>
+                <select
+                  id="gift-project"
+                  value={giftProject}
+                  onChange={(e) => setGiftProject(e.target.value)}
+                  className="h-10 w-full rounded-md border border-ink/15 bg-white px-3 text-sm outline-none focus:border-ink/40"
+                >
+                  <option value="">General fund</option>
+                  {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </div>
+            )}
+            <Button onClick={addGift} disabled={adding || !giftAmount}>
+              {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : added ? <Check className="h-4 w-4" /> : <HandCoins className="h-4 w-4" />}
+              {adding ? "Adding…" : added ? "Added" : "Add gift"}
+            </Button>
+          </div>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+        </CardContent>
+      </Card>
+
       {/* Editable */}
       <Card>
-        <CardHeader><CardTitle>Update figures</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Correct the totals</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label>Offline / manually-received total (₦)</Label>
             <Input type="number" min={0} value={manual}
               onChange={(e) => setManual(Math.max(0, Math.round(Number(e.target.value) || 0)))} />
-            <p className="text-xs text-ink/50">Enter the running total of gifts received off the platform. Online donations are added automatically on top.</p>
+            <p className="text-xs text-ink/50">The running total of gifts received off the platform. Online donations are added automatically on top.</p>
+          </div>
+          <div className="space-y-2">
+            <Label>Number of offline gifts</Label>
+            <Input type="number" min={0} value={manualCount}
+              onChange={(e) => setManualCount(Math.max(0, Math.round(Number(e.target.value) || 0)))} />
+            <p className="text-xs text-ink/50">How many gifts that total represents. “Add gift” above keeps this in step for you; edit it here only to correct a mistake.</p>
           </div>
           <div className="space-y-2">
             <Label>Fundraising goal (₦)</Label>

@@ -81,6 +81,7 @@ export default async function DonationsPage() {
         unassignedCount={unassigned.count}
         unassignedRaised={unassigned.raised}
         manual={Math.max(0, Math.round(sd.donationManual || 0))}
+        manualCount={Math.max(0, Math.round(sd.donationManualCount || 0))}
         goal={Math.max(0, Math.round(sd.donationGoal || 0))}
         projects={projects}
         records={records}
