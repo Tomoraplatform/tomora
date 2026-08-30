@@ -181,8 +181,9 @@ const LIST_CONFIG: Record<EditableList, { key: keyof SiteData; title: string; fi
       { key: "description", label: "Project description", type: "textarea" },
       { key: "goal", label: "Project target (₦)", type: "number" },
       { key: "manualRaised", label: "Funds received off-platform (₦)", type: "number" },
+      { key: "manualCount", label: "Number of offline gifts", type: "number" },
     ],
-    make: () => ({ id: `dp-${Date.now()}`, name: "New project", description: "What this project funds.", goal: 500000, manualRaised: 0 }),
+    make: () => ({ id: `dp-${Date.now()}`, name: "New project", description: "What this project funds.", goal: 500000, manualRaised: 0, manualCount: 0 }),
   },
   beforeAfter: {
     key: "beforeAfterResults", title: "Before & After Results",
@@ -545,6 +546,7 @@ export function CatalogEditorPanel({
                     <div className="grid grid-cols-2 gap-3">
                       <FieldRow label="Goal amount (₦)"><Input type="number" min={0} value={data.donationGoal ?? 0} onChange={(e) => patch({ donationGoal: Math.max(0, Math.round(Number(e.target.value) || 0)) })} /></FieldRow>
                       <FieldRow label="Manually added (₦)"><Input type="number" min={0} value={data.donationManual ?? 0} onChange={(e) => patch({ donationManual: Math.max(0, Math.round(Number(e.target.value) || 0)) })} /></FieldRow>
+                      <FieldRow label="Number of offline gifts"><Input type="number" min={0} value={data.donationManualCount ?? 0} onChange={(e) => patch({ donationManualCount: Math.max(0, Math.round(Number(e.target.value) || 0)) })} /></FieldRow>
                     </div>
                     {payoutConnected ? (
                       <p className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">✓ Payout bank connected, online donations will settle to your account.</p>
@@ -555,7 +557,7 @@ export function CatalogEditorPanel({
                         <a href="/dashboard/payouts" className="mt-1.5 inline-block text-xs font-semibold text-amber-900 underline">Set up payouts →</a>
                       </div>
                     )}
-                    <p className="text-xs text-ink/50">Online gifts add to the bar automatically. Use “Manually added” for offline/cash gifts.</p>
+                    <p className="text-xs text-ink/50">Online gifts add to the bar and the gift count automatically. Use “Manually added” for offline or cash gifts, and set how many gifts that amount represents so the count keeps up with it.</p>
                     {(data.donationProjects?.length || 0) > 0 && (
                       <p className="rounded-md bg-cream px-3 py-2 text-xs text-ink/70">You&apos;ve added fundraising projects below, your site shows a card per project with its own target, and the general goal above is ignored. All gifts still settle to the same payout account.</p>
                     )}

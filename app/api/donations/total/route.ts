@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { summariseDonations, type PaidGift, type ProjectDef } from "@/lib/donations/totals";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
   {
     const res = await admin
       .from("donations")
-      .select("amount, project_id")
+      .select("amount, project_id, project_name")
       .eq("site_id", siteId)
       .eq("status", "paid");
     rows = res.data;
@@ -42,28 +43,26 @@ export async function GET(request: NextRequest) {
   // Each project starts at its owner-entered offline amount (manualRaised),
   // then online gifts tagged to that project are added on top. The offline
   // amount is display-only, it never credits the wallet.
-  const projectDefs = (sd.donationProjects || []) as { id: string; manualRaised?: number }[];
-  const projects: Record<string, { raised: number; count: number; manual: number }> = {};
-  for (const p of projectDefs) {
-    if (!p?.id) continue;
-    const m = Math.max(0, Math.round(p.manualRaised || 0));
-    projects[p.id] = { raised: m, count: 0, manual: m };
-  }
-  for (const r of rows || []) {
-    if (!r.project_id) continue;
-    const p = (projects[r.project_id] ||= { raised: 0, count: 0, manual: 0 });
-    p.raised += r.amount || 0;
-    p.count += 1;
-  }
+  const { projects, unassigned } = summariseDonations(
+    (rows || []) as PaidGift[],
+    (sd.donationProjects || []) as ProjectDef[]
+  );
+
+  // Offline gifts recorded against the site as a whole, for the single-cause
+  // layout, counted the same way the per-project ones are.
+  const manualCount = Math.max(0, Math.round(sd.donationManualCount || 0));
 
   return NextResponse.json({
     online,
     manual,
     raised: manual + online,
-    count: (rows || []).length,
+    count: (rows || []).length + manualCount,
+    onlineCount: (rows || []).length,
+    manualCount,
     goal: Math.max(0, Math.round(sd.donationGoal || 0)),
     enabled: !!sd.donationEnabled,
     canDonate: !!site?.paystack_subaccount,
     projects,
+    unassigned,
   });
 }

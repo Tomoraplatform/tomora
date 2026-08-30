@@ -68,7 +68,7 @@ function ProjectsDonation({
 }: {
   siteData: SiteData; brandColor: string; projects: CatalogDonationProject[];
 }) {
-  const { canDonate } = useDonation();
+  const { canDonate, unassigned } = useDonation();
 
   return (
     <section id="donate" className="mx-auto max-w-6xl px-5 py-16">
@@ -80,6 +80,16 @@ function ProjectsDonation({
       <div className={`mt-10 grid gap-6 md:grid-cols-2 ${projects.length >= 3 ? "xl:grid-cols-3" : ""}`}>
         {projects.map((p) => <ProjectCard key={p.id} project={p} brandColor={brandColor} feeBearer={siteData.feeBearer} />)}
       </div>
+
+      {unassigned.count > 0 && (
+        // Given before these projects existed, or to one since removed. The
+        // money is real and already in the wallet, so it is shown rather than
+        // dropped, just not credited to a project that did not receive it.
+        <p className="mt-6 text-center text-sm text-ink/60">
+          Plus {formatNaira(unassigned.raised)} from {unassigned.count}{" "}
+          {unassigned.count === 1 ? "gift" : "gifts"} to our general fund.
+        </p>
+      )}
 
       {!canDonate && (
         <p className="mt-6 text-center text-xs text-ink/50">Online giving activates once the organisation adds their payout bank.</p>
@@ -110,7 +120,12 @@ function ProjectCard({
   const t = totals[project.id];
   const online = t ? Math.max(0, t.raised - Math.max(0, Math.round(t.manual || 0))) : 0;
   const raised = online + Math.max(0, Math.round(project.manualRaised || 0));
-  const count = t?.count || 0;
+  // Gifts are counted the same way the money is: the server's online tally,
+  // plus the offline gifts the owner recorded, taken from the live props so
+  // editing the number moves the line straight away. Counting only online
+  // gifts is what made this sit still while the amount above it climbed.
+  const onlineCount = t ? Math.max(0, t.count - Math.max(0, Math.round(t.manualCount || 0))) : 0;
+  const count = onlineCount + Math.max(0, Math.round(project.manualCount || 0));
   const goal = Math.max(0, Math.round(project.goal || 0));
   const pct = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
 

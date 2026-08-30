@@ -10,12 +10,15 @@ export type DonationState = {
   count: number;
   canDonate: boolean;
   /** Totals per fundraising project, keyed by project id (raised = online + offline manual). */
-  projects: Record<string, { raised: number; count: number; manual?: number }>;
+  projects: Record<string, { raised: number; count: number; manual?: number; manualCount?: number }>;
+  /** Paid gifts belonging to no current project, so nothing is ever hidden. */
+  unassigned: { raised: number; count: number };
   refresh: () => void;
 };
 
 const DonationContext = createContext<DonationState>({
-  enabled: false, raised: 0, goal: 0, count: 0, canDonate: false, projects: {}, refresh: () => {},
+  enabled: false, raised: 0, goal: 0, count: 0, canDonate: false,
+  projects: {}, unassigned: { raised: 0, count: 0 }, refresh: () => {},
 });
 
 export function useDonation() {
@@ -43,7 +46,8 @@ export function DonationProvider({
   const [online, setOnline] = useState(0);
   const [count, setCount] = useState(0);
   const [canDonate, setCanDonate] = useState(false);
-  const [projects, setProjects] = useState<Record<string, { raised: number; count: number; manual?: number }>>({});
+  const [projects, setProjects] = useState<Record<string, { raised: number; count: number; manual?: number; manualCount?: number }>>({});
+  const [unassigned, setUnassigned] = useState({ raised: 0, count: 0 });
 
   const refresh = useCallback(async () => {
     if (!siteId || !enabled) return;
@@ -55,6 +59,7 @@ export function DonationProvider({
       setCount(d.count || 0);
       setCanDonate(!!d.canDonate);
       setProjects(d.projects || {});
+      setUnassigned(d.unassigned || { raised: 0, count: 0 });
     } catch { /* ignore */ }
     // manual intentionally excluded, it's applied live from props below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -65,7 +70,7 @@ export function DonationProvider({
   const raised = Math.max(0, Math.round(manual || 0)) + online;
 
   return (
-    <DonationContext.Provider value={{ enabled, raised, goal: Math.max(0, Math.round(goal || 0)), count, canDonate, projects, refresh }}>
+    <DonationContext.Provider value={{ enabled, raised, goal: Math.max(0, Math.round(goal || 0)), count, canDonate, projects, unassigned, refresh }}>
       {children}
     </DonationContext.Provider>
   );

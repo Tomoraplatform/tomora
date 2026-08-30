@@ -28,6 +28,7 @@ export interface DonationRecord {
 
 export function DonationsManager({
   online, onlineCount, manual: initialManual, goal: initialGoal, projects = [], records = [],
+  unassignedCount = 0, unassignedRaised = 0,
 }: {
   online: number;
   onlineCount: number;
@@ -35,6 +36,9 @@ export function DonationsManager({
   goal: number;
   projects?: ProjectSummary[];
   records?: DonationRecord[];
+  /** Paid gifts belonging to no current project, shown so the page adds up. */
+  unassignedCount?: number;
+  unassignedRaised?: number;
 }) {
   const [manual, setManual] = useState(initialManual);
   const [goal, setGoal] = useState(initialGoal);
@@ -117,7 +121,20 @@ export function DonationsManager({
                 </div>
               );
             })}
-            <p className="text-xs text-ink/50">Edit project names, descriptions and targets in the editor&apos;s Donations section. Gifts made before projects were introduced appear only in the overall total.</p>
+            {unassignedCount > 0 && (
+              <div className="rounded-lg border border-dashed border-ink/20 p-4">
+                <p className="font-semibold text-ink">General fund</p>
+                <p className="mt-1 text-sm text-ink/60">
+                  <span className="font-semibold text-ink">{formatNaira(unassignedRaised)}</span> from{" "}
+                  {unassignedCount} {unassignedCount === 1 ? "gift" : "gifts"}
+                </p>
+                <p className="mt-1.5 text-xs text-ink/50">
+                  Given before these projects existed, or to one since removed. The money is already in your
+                  wallet; it just is not credited to a project.
+                </p>
+              </div>
+            )}
+            <p className="text-xs text-ink/50">Edit project names, descriptions and targets in the editor&apos;s Donations section. Each project&apos;s figure is its online gifts plus the offline amount and gift count you recorded there.</p>
           </CardContent>
         </Card>
       )}

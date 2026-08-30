@@ -255,6 +255,12 @@ export interface CatalogDonationProject {
    * never touches the Tomora wallet.
    */
   manualRaised?: number;
+  /**
+   * How many gifts that offline amount represents. Without it, recording cash
+   * moves the money and the progress bar while the "N gifts" line underneath
+   * stays put, which reads as a counter that has stopped working.
+   */
+  manualCount?: number;
 }
 export interface CatalogResultItem {
   id: string;
@@ -343,6 +349,9 @@ export interface SiteData {
   donationEnabled?: boolean;
   donationGoal?: number;   // target amount in naira
   donationManual?: number; // offline / manually-added amount in naira
+  /** How many gifts the offline amount represents, so the "N gifts" line
+   *  moves whenever the amount above it does. */
+  donationManualCount?: number;
   /** Section keys the owner deleted from their page (restorable in the editor). */
   hiddenSections?: string[];
   /** Named fundraising projects, each with its own target + progress bar. When set,

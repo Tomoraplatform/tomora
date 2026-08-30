@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getDashboardData } from "@/lib/dashboard";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { reconcilePendingDonations } from "@/lib/confirm-payments";
+import { summariseDonations, type PaidGift, type ProjectDef } from "@/lib/donations/totals";
 import { DonationsManager, type DonationRecord, type ProjectSummary } from "@/components/dashboard/donations-manager";
 
 export const metadata = { title: "Donations | Tomora" };
@@ -44,18 +45,18 @@ export default async function DonationsPage() {
   const online = rows.reduce((s, r) => s + (r.amount || 0), 0);
 
   // Per-project summaries from the owner's configured projects + paid gifts.
-  const projects: ProjectSummary[] = (sd.donationProjects || [])
-    .filter((p) => p.name?.trim())
-    .map((p) => {
-      const mine = rows.filter((r) => r.project_id === p.id);
-      return {
-        id: p.id,
-        name: p.name,
-        goal: Math.max(0, Math.round(p.goal || 0)),
-        raised: mine.reduce((s, r) => s + (r.amount || 0), 0),
-        count: mine.length,
-      };
-    });
+  // Same attribution the public progress bars use, so the owner and their
+  // donors never see two different numbers for one project.
+  const defs = (sd.donationProjects || []).filter((p) => p.name?.trim());
+  const { projects: totals, unassigned } = summariseDonations(rows as PaidGift[], defs as ProjectDef[]);
+
+  const projects: ProjectSummary[] = defs.map((p) => ({
+    id: p.id,
+    name: p.name,
+    goal: Math.max(0, Math.round(p.goal || 0)),
+    raised: totals[p.id]?.raised ?? 0,
+    count: totals[p.id]?.count ?? 0,
+  }));
 
   const records: DonationRecord[] = rows.slice(0, 50).map((r) => ({
     id: r.id,
@@ -77,6 +78,8 @@ export default async function DonationsPage() {
       <DonationsManager
         online={online}
         onlineCount={rows.length}
+        unassignedCount={unassigned.count}
+        unassignedRaised={unassigned.raised}
         manual={Math.max(0, Math.round(sd.donationManual || 0))}
         goal={Math.max(0, Math.round(sd.donationGoal || 0))}
         projects={projects}
