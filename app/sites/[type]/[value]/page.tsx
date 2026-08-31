@@ -10,9 +10,10 @@ import { AcademyClosed } from "@/components/academy/academy-closed";
 
 // Always render fresh so edits appear immediately after publishing.
 // Cached and served from the edge, then dropped the moment the owner changes
-// anything (see lib/site-cache.ts). The hour is only a backstop for a write
-// path that forgets to invalidate.
-export const revalidate = 3600;
+// anything (see lib/site-cache.ts). The five minutes is only a backstop for a
+// write path that forgets to invalidate, kept short while the invalidation
+// paths earn trust in production.
+export const revalidate = 300;
 
 interface Params {
   params: { type: string; value: string };
