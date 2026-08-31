@@ -11,6 +11,16 @@ import { StoreProductPage } from "@/components/published/store/store-product-pag
 // paths earn trust in production.
 export const revalidate = 300;
 
+// Nothing is prerendered at build: sites are created and renamed constantly, so
+// the addresses are not known then. Declaring the list as empty is what marks
+// the route cacheable at all; without it Next treats a dynamic segment as
+// always-dynamic and Vercel answers every request with no-store, which is why
+// the first attempt at this changed nothing. Unknown addresses are rendered on
+// first request and cached from then on.
+export async function generateStaticParams() {
+  return [];
+}
+
 interface Params { params: { type: string; value: string; id: string } }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
