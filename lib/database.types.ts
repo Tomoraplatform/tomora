@@ -348,6 +348,8 @@ export interface SiteData {
   /** Donations (organisation/community sites): live fundraising section. */
   donationEnabled?: boolean;
   donationGoal?: number;   // target amount in naira
+  /** When the owner last restarted their "received so far" total. */
+  walletResetAt?: string;
   donationManual?: number; // offline / manually-added amount in naira
   /** How many gifts the offline amount represents, so the "N gifts" line
    *  moves whenever the amount above it does. */

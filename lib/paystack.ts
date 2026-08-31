@@ -23,6 +23,10 @@ export async function initTransaction(params: {
   subaccount?: string;
   /** Who bears Paystack's fees when a subaccount is used. */
   bearer?: "account" | "subaccount";
+  /** A flat cut, in naira, for the main account when splitting to a subaccount.
+   *  Used by Tomora Live to take its commission at the point of payment rather
+   *  than by holding the seller's money first. */
+  transactionCharge?: number;
 }): Promise<InitResult> {
   const res = await fetch(`${PAYSTACK_BASE}/transaction/initialize`, {
     method: "POST",
@@ -37,6 +41,9 @@ export async function initTransaction(params: {
       callback_url: params.callbackUrl,
       metadata: params.metadata,
       ...(params.subaccount ? { subaccount: params.subaccount, bearer: params.bearer || "subaccount" } : {}),
+      ...(params.subaccount && params.transactionCharge
+        ? { transaction_charge: Math.round(params.transactionCharge * 100) }
+        : {}),
     }),
   });
   const json = await res.json();

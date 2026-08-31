@@ -73,12 +73,19 @@ describe("sandbox isolation", () => {
     expect(offenders, `these read the wallet without saying which world:\n${offenders.join("\n")}`).toEqual([]);
   });
 
-  it("the payout balance is real money only", () => {
+  it("Tomora never offers to pay out money it does not hold", () => {
+    // Customers pay straight into the owner's own bank through Paystack, so
+    // there is no balance here to withdraw. This used to check that the payout
+    // sum was pinned to real rows; the safer property now is that the payout
+    // path is gone rather than sitting behind a disabled button.
     const body = readFileSync(join(ROOT, "app/dashboard/(panel)/wallet/actions.ts"), "utf8");
-    // A withdrawal is paid against this sum, so it must be pinned to real rows
-    // rather than following whatever mode the admin happens to be in.
-    expect(body).toContain('.eq("is_test", false)');
-    expect(body).not.toContain('mode === "test"');
+    expect(body).not.toMatch(/initiateTransfer|createTransferRecipient/);
+    expect(body).not.toMatch(/export async function withdraw/);
+  });
+
+  it("the received total still separates sandbox money from real", () => {
+    const body = readFileSync(join(ROOT, "app/dashboard/(panel)/wallet/page.tsx"), "utf8");
+    expect(body).toMatch(/is_test/);
   });
 
   it("the public storefront never serves demo products", () => {

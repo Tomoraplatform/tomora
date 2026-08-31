@@ -2,6 +2,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { initTransaction } from "@/lib/paystack";
 import { APP_DOMAIN } from "@/lib/constants";
+import { LIVE_COMMISSION_PERCENT } from "./config";
 import type { LiveData, LiveProduct, LiveStore, TrackedOrder } from "./router";
 
 /**
@@ -106,6 +107,8 @@ export const liveData: LiveData = {
     // Prices come from the product rows, never from the cart the conversation
     // was carrying: the cart is only ever a display of what was quoted.
     const ids = cart.map((c) => c.productId);
+    const { data: site } = await admin
+      .from("sites").select("paystack_subaccount").eq("id", siteId).maybeSingle();
     const { data: products } = await admin
       .from("products").select(PRODUCT_COLUMNS).eq("site_id", siteId).in("id", ids);
     const byId = new Map(((products as any[]) || []).map((p) => [p.id, p]));
@@ -139,6 +142,8 @@ export const liveData: LiveData = {
         channel: "whatsapp",
         // A WhatsApp order is always a real sale: the sandbox has no customers.
         is_test: false,
+        // Split to the seller's own bank, like every other Tomora payment.
+        settled_direct: !!site?.paystack_subaccount,
       });
     }
 
@@ -146,7 +151,13 @@ export const liveData: LiveData = {
       return { ok: false, error: "Nothing in your cart is available to order any more." };
     }
 
-    const { error } = await admin.from("orders").insert(rows);
+    let { error } = await admin.from("orders").insert(rows);
+    if (error) {
+      // Database without migration 0044: drop the flag rather than lose a sale.
+      ({ error } = await admin.from("orders").insert(
+        rows.map(({ settled_direct: _drop, ...rest }) => rest)
+      ));
+    }
     if (error) return { ok: false, error: "We couldn't create your order. Please try again." };
 
     try {
@@ -156,6 +167,16 @@ export const liveData: LiveData = {
         reference,
         callbackUrl: `https://${APP_DOMAIN}/live/paid`,
         metadata: { purpose: "live_order", siteId, waId },
+        // The seller's money goes to the seller's bank. Live's commission is
+        // taken by Paystack at the same moment, as a flat cut of this
+        // transaction, rather than by holding their takings first.
+        ...(site?.paystack_subaccount
+          ? {
+              subaccount: site.paystack_subaccount as string,
+              bearer: "subaccount" as const,
+              transactionCharge: Math.round((total * LIVE_COMMISSION_PERCENT) / 100),
+            }
+          : {}),
       });
       return { ok: true, reference, payUrl: init.authorization_url, total };
     } catch {

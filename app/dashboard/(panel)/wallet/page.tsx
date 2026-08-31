@@ -5,7 +5,7 @@ import { WALLET_UNLIMITED_PLANS } from "@/lib/constants";
 import { WalletManager, type WalletTx } from "@/components/dashboard/wallet-manager";
 import { currentMode } from "@/lib/sandbox";
 
-export const metadata = { title: "Tomora Wallet | Tomora" };
+export const metadata = { title: "Payments received | Tomora" };
 
 export default async function WalletPage() {
   const { site, subscription } = await getDashboardData();
@@ -13,8 +13,8 @@ export default async function WalletPage() {
   if (!eligible) redirect("/dashboard");
 
   const supabase = createClient();
-  // The balance a withdrawal is paid from: sandbox credits are never part of
-  // it, and in test mode only sandbox credits are shown.
+  // Money reaches the owner's bank straight from Paystack, so nothing here is
+  // a balance Tomora can pay out. These rows are the record of what came in.
   const mode = await currentMode();
   const { data } = await supabase
     .from("wallet_transactions")
@@ -25,18 +25,18 @@ export default async function WalletPage() {
     .limit(200);
   const txs = (data as WalletTx[]) || [];
 
-  const income = txs.filter((t) => t.type === "income" && t.status === "completed").reduce((s, t) => s + t.amount, 0);
-  const out = txs.filter((t) => t.type === "withdrawal" && t.status !== "failed").reduce((s, t) => s + t.amount, 0);
-
-  const planId = subscription?.status === "active" ? subscription.plan || "" : "";
+  // The owner can restart the running total; the history is never removed.
+  const resetAt = site!.site_data?.walletResetAt || null;
+  const since = resetAt ? new Date(resetAt).getTime() : 0;
+  const received = txs
+    .filter((t) => t.type === "income" && new Date(t.created_at).getTime() >= since)
+    .reduce((s, t) => s + t.amount, 0);
 
   return (
     <WalletManager
-      balance={income - out}
-      totalIncome={income}
-      totalWithdrawn={out}
+      received={received}
       transactions={txs}
-      unlimited={WALLET_UNLIMITED_PLANS.includes(planId)}
+      resetAt={resetAt}
       bank={{
         accountNumber: site!.account_number,
         accountName: site!.account_name,
