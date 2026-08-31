@@ -82,6 +82,11 @@ export async function POST(request: NextRequest) {
   }
 
   const reference = `${isDemo ? "sbx" : "tom"}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  // A card payment splits at Paystack straight to the owner's payout account,
+  // so Tomora never holds it and the wallet must not offer it for withdrawal.
+  // A bank transfer goes to them directly too, but Tomora is not in that path
+  // at all. Only the sandbox keeps the old wallet behaviour, against fake money.
+  const settlesDirect = !isDemo && method === "paystack";
   let total = 0;
   const rows: any[] = [];
 
@@ -124,6 +129,7 @@ export async function POST(request: NextRequest) {
       paystack_reference: reference,
       status: isDemo ? "paid" : "pending",
       is_test: isDemo,
+      settled_direct: settlesDirect,
     });
   }
 
@@ -168,12 +174,19 @@ export async function POST(request: NextRequest) {
           amount: shippingFee, color: `Delivery: ${shippingName}`,
           paystack_reference: reference,
           status: isDemo ? "paid" : "pending", is_test: isDemo,
+          settled_direct: settlesDirect,
         });
       }
     }
   }
 
-  const { error } = await admin.from("orders").insert(rows);
+  let { error } = await admin.from("orders").insert(rows);
+  if (error) {
+    // Database without migration 0044: drop the flag rather than lose the sale.
+    ({ error } = await admin.from("orders").insert(
+      rows.map(({ settled_direct: _drop, ...rest }) => rest)
+    ));
+  }
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   // ---- Demo store: settle it here and stop ----
@@ -206,14 +219,17 @@ export async function POST(request: NextRequest) {
     const charge = feeBearer === "customer" ? Math.round(total * (1 + PAYSTACK_FEE_PERCENT / 100)) : total;
     try {
       const origin = request.headers.get("origin") || new URL(request.url).origin;
-      // Funds are collected into the platform balance and credited to the
-      // owner's Tomora Wallet on confirmation; they withdraw to their bank.
+      // Split to the owner's own payout account, so the sale lands in their
+      // bank rather than Tomora's balance. They bear Paystack's fee: Tomora
+      // takes no cut of a store sale.
       const init = await initTransaction({
         // Paystack requires one; the order itself keeps whatever the buyer gave.
         email: buyerEmail || `guest+${reference}@tomora.com.ng`,
         amountNaira: charge,
         reference,
         callbackUrl: `${origin}/?order=1`,
+        subaccount: site.paystack_subaccount as string,
+        bearer: "subaccount",
         metadata: { custom_fields: [{ display_name: "Order", variable_name: "order", value: buyer.name || buyer.email }] },
       });
       return NextResponse.json({ ok: true, method: "paystack", reference, amount: total, charge, feeBearer, discount, couponCode: appliedCode, accessCode: init.access_code });

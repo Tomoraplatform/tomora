@@ -25,12 +25,20 @@ export async function confirmDonationPaid(reference: string): Promise<{ updated:
     .update({ status: "paid" })
     .eq("paystack_reference", reference)
     .eq("status", "pending")
-    .select("site_id, amount, donor_name");
+    // `*` rather than naming settled_direct: the column arrives in migration
+    // 0044, and asking for one that does not exist yet fails the whole query,
+    // which would stop donations settling on a database that has not run it.
+    .select("*");
   if (error) throw new Error(error.message);
   if (!updated || !updated.length) return { updated: false };
 
   try {
-    const row = updated[0] as { site_id: string; amount: number; donor_name: string | null };
+    const row = updated[0] as {
+      site_id: string; amount: number; donor_name: string | null; settled_direct?: boolean;
+    };
+    // Split straight to the organisation's bank: record it so their history is
+    // complete, but not as a balance, because Tomora is not holding it.
+    const direct = !!row.settled_direct;
     const { data: site } = await admin.from("sites").select("user_id").eq("id", row.site_id).maybeSingle();
     if (site?.user_id && row.amount > 0) {
       await admin.from("wallet_transactions").insert({
@@ -39,9 +47,9 @@ export async function confirmDonationPaid(reference: string): Promise<{ updated:
         type: "income",
         source: "donation",
         amount: row.amount,
-        status: "completed",
+        status: direct ? "settled" : "completed",
         reference,
-        description: `Donation${row.donor_name ? ` from ${row.donor_name}` : ""}`,
+        description: `Donation${row.donor_name ? ` from ${row.donor_name}` : ""}${direct ? ", paid to your bank" : ""}`,
       });
       // Donations are the owner's money; recorded for platform-wide stats only.
       await recordTransaction({
@@ -82,6 +90,10 @@ export async function confirmOrdersPaid(reference: string): Promise<{ updated: n
   // nothing else. It applies only to orders that came through WhatsApp, so a
   // seller's website sales are untouched.
   const isLive = (pending[0] as { channel?: string }).channel === "whatsapp";
+  // Card sales split at Paystack to the owner's payout account. The wallet
+  // still shows the income, but crediting it as a balance would let them
+  // withdraw money Tomora never received, and pay for the sale twice.
+  const direct = !!(pending[0] as { settled_direct?: boolean }).settled_direct;
 
   try {
     const total = pending.reduce((s: number, r: any) => s + (r.amount || 0), 0);
@@ -96,9 +108,9 @@ export async function confirmOrdersPaid(reference: string): Promise<{ updated: n
         type: "income",
         source: "order",
         amount: payee,
-        status: "completed",
+        status: direct ? "settled" : "completed",
         reference,
-        description: `${isLive ? "WhatsApp order" : "Order"} from ${pending[0].buyer_name || "customer"}`,
+        description: `${isLive ? "WhatsApp order" : "Order"} from ${pending[0].buyer_name || "customer"}${direct ? ", paid to your bank" : ""}`,
       });
       if (commission > 0) {
         await creditPlatform({

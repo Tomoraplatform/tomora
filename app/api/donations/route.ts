@@ -47,12 +47,23 @@ export async function POST(request: NextRequest) {
     amount,
     paystack_reference: reference,
     status: "pending",
+    // Split at Paystack to the organisation's payout account, so the money
+    // never sits in Tomora's balance and must not be withdrawable from the
+    // wallet. See migration 0044.
+    settled_direct: true,
   };
-  let { error } = await admin.from("donations").insert(
-    project ? { ...row, project_id: project.id, project_name: project.name } : row
-  );
-  // Pre-migration fallback: retry without the project columns so giving never breaks.
-  if (error && project) ({ error } = await admin.from("donations").insert(row));
+  const withProject = project ? { ...row, project_id: project.id, project_name: project.name } : row;
+  let { error } = await admin.from("donations").insert(withProject);
+  // Pre-migration fallbacks, so giving never breaks on a database that has not
+  // caught up: drop the newest column first, then the project columns.
+  if (error) {
+    const { settled_direct: _drop, ...noFlag } = withProject as Record<string, unknown>;
+    ({ error } = await admin.from("donations").insert(noFlag));
+  }
+  if (error && project) {
+    const { settled_direct: _drop2, ...bare } = row as Record<string, unknown>;
+    ({ error } = await admin.from("donations").insert(bare));
+  }
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   try {
@@ -61,12 +72,15 @@ export async function POST(request: NextRequest) {
     // cause still receives the full gift. The recorded donation stays `amount`.
     const feeBearer = (site.site_data as any)?.feeBearer === "customer" ? "customer" : "owner";
     const charge = feeBearer === "customer" ? Math.round(amount * (1 + PAYSTACK_FEE_PERCENT / 100)) : amount;
-    // Collected into the platform balance and credited to the organisation's
-    // Tomora Wallet on confirmation; they withdraw to their connected bank.
+    // Split to the organisation's own payout account: the gift lands in their
+    // bank, not Tomora's. They bear Paystack's fee, since Tomora takes no cut
+    // of a donation.
     const init = await initTransaction({
       email: String(email),
       amountNaira: charge,
       reference,
+      subaccount: site.paystack_subaccount as string,
+      bearer: "subaccount",
       callbackUrl: `${origin}/?donated=1`,
       metadata: { custom_fields: [
         { display_name: "Donation", variable_name: "donation", value: name || email },
