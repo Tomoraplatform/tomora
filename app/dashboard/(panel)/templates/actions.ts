@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { revalidateSite, revalidateSiteHosts } from "@/lib/site-cache";
 import { createClient } from "@/lib/supabase/server";
 import { SITE_COOKIE, DEMO_SITE_COOKIE } from "@/lib/dashboard";
 import { createCatalogContent, isCatalogTemplate, catalogTemplate, type CatalogCategoryId } from "@/lib/catalog";
@@ -50,8 +51,14 @@ export async function deleteSite(siteId: string): Promise<{ ok: boolean; error?:
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Not authenticated." };
 
+  const { data: doomed } = await supabase
+    .from("sites").select("subdomain, custom_domain").eq("id", siteId).eq("user_id", user.id).maybeSingle();
   const { error } = await supabase
     .from("sites").delete().eq("id", siteId).eq("user_id", user.id);
+  if (!error) {
+    revalidateSite(siteId);
+    revalidateSiteHosts({ subdomain: doomed?.subdomain, customDomain: doomed?.custom_domain });
+  }
   if (error) return { ok: false, error: error.message };
 
   // If the deleted site was the active one, clear the selector cookie.

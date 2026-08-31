@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { revalidateSite } from "@/lib/site-cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /** Public endpoint for storefront visitors to leave a review + rating. */
@@ -50,5 +51,7 @@ export async function POST(request: NextRequest) {
     verified_purchase: verified,
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // Reviews publish immediately, so the storefront showing them is now stale.
+  revalidateSite(siteId);
   return NextResponse.json({ ok: true, verified });
 }

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateSite } from "@/lib/site-cache";
 import { createClient } from "@/lib/supabase/server";
 import { currentSiteId } from "@/lib/dashboard";
 import type { SiteData } from "@/lib/database.types";
@@ -32,6 +33,7 @@ export async function saveCoupons(coupons: Coupon[]): Promise<{ ok: boolean; err
     const sd = (site.site_data || {}) as SiteData;
     const { error } = await supabase.from("sites").update({ site_data: { ...sd, coupons: clean } }).eq("id", site.id);
     if (error) return { ok: false, error: error.message };
+    revalidateSite(site.id);
     revalidatePath("/dashboard/discounts");
     return { ok: true };
   } catch (e: any) {

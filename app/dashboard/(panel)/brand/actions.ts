@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateSite } from "@/lib/site-cache";
 import { createClient } from "@/lib/supabase/server";
 import { currentSiteId } from "@/lib/dashboard";
 import type { SocialLinks, SiteData } from "@/lib/database.types";
@@ -73,6 +74,7 @@ export async function updateBrand(input: BrandInput): Promise<{ ok: boolean; err
       faviconUrl: isPaid ? (input.faviconUrl || undefined) : sd.faviconUrl,
     };
     await supabase.from("sites").update({ site_data: updated }).eq("id", site.id);
+    revalidateSite(site.id);
   }
 
   revalidatePath("/dashboard");

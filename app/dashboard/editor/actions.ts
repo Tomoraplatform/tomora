@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateSite } from "@/lib/site-cache";
 import { createClient } from "@/lib/supabase/server";
 import { getPlan } from "@/lib/constants";
 import type { SiteData } from "@/lib/database.types";
@@ -52,6 +53,8 @@ export async function saveSite(
     .eq("user_id", user.id);
 
   if (error) return { ok: false, error: error.message };
+  // The published pages are cached; this is what makes an edit appear at once.
+  revalidateSite(siteId);
   revalidatePath("/dashboard");
   if (gated) {
     return { ok: true, gated: true, error: "Saved. Publishing extra sites needs the Growth plan or higher, upgrade to take this one live." };

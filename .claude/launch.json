@@ -89,6 +89,20 @@
         "dev"
       ],
       "port": 3000
+    },
+    {
+      "name": "tommy-do",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/tommy/tommy-do",
+        "run",
+        "dev",
+        "--",
+        "-p",
+        "3240"
+      ],
+      "port": 3240
     }
   ]
 }

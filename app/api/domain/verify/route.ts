@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateSite } from "@/lib/site-cache";
 import dns from "dns/promises";
 import { createClient } from "@/lib/supabase/server";
 import { APP_DOMAIN } from "@/lib/constants";
@@ -41,6 +42,7 @@ export async function POST() {
 
   const status = verified ? "active" : "verifying";
   await supabase.from("sites").update({ domain_status: status }).eq("id", site.id);
+    revalidateSite(site.id);
   await supabase.from("domains").update({ status }).eq("site_id", site.id);
 
   return NextResponse.json({ status, target });

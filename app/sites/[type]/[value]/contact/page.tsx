@@ -3,8 +3,10 @@ import type { Metadata } from "next";
 import { loadPublishedSite } from "@/lib/published";
 import { ChronovaContact } from "@/components/published/chronova/chronova-contact";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// Cached and served from the edge, then dropped the moment the owner changes
+// anything (see lib/site-cache.ts). The hour is only a backstop for a write
+// path that forgets to invalidate.
+export const revalidate = 3600;
 
 interface Params { params: { type: string; value: string } }
 

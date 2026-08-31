@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateSite, revalidateSiteHosts, revalidateSitesForUser } from "@/lib/site-cache";
 import { isAdmin } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -22,6 +23,7 @@ export async function extendTrial(siteId: string, days = TRIAL_DAYS): Promise<{ 
     base.setDate(base.getDate() + days);
     const { error } = await admin.from("sites").update({ trial_ends_at: base.toISOString(), is_live: true }).eq("id", siteId);
     if (error) return { ok: false, error: error.message };
+    revalidateSite(siteId);
     revalidatePath("/admin");
     return { ok: true };
   } catch (e: any) { return { ok: false, error: e.message }; }
@@ -71,6 +73,7 @@ export async function grantPlan(
 
     // Bring the user's site online.
     await admin.from("sites").update({ is_live: true }).eq("user_id", userId);
+    await revalidateSitesForUser(userId);
     revalidatePath("/admin");
     return { ok: true };
   } catch (e: any) { return { ok: false, error: e.message }; }
@@ -84,6 +87,7 @@ export async function revokePlan(userId: string): Promise<{ ok: boolean; error?:
       .from("subscriptions").update({ status: "cancelled", comp_expires_at: null }).eq("user_id", userId);
     if (error) return { ok: false, error: error.message };
     await admin.from("sites").update({ is_live: false }).eq("user_id", userId);
+    await revalidateSitesForUser(userId);
     revalidatePath("/admin");
     return { ok: true };
   } catch (e: any) { return { ok: false, error: e.message }; }
@@ -137,6 +141,7 @@ export async function setSiteLive(siteId: string, live: boolean): Promise<{ ok: 
     const admin = await guard();
     const { error } = await admin.from("sites").update({ is_live: live }).eq("id", siteId);
     if (error) return { ok: false, error: error.message };
+    revalidateSite(siteId);
     revalidatePath("/admin");
     return { ok: true };
   } catch (e: any) { return { ok: false, error: e.message }; }
@@ -166,6 +171,8 @@ export async function updateDomainRequest(
       await admin.from("sites")
         .update({ custom_domain: req.domain, domain_status: "active" })
         .eq("id", req.site_id);
+      revalidateSite(req.site_id);
+      revalidateSiteHosts({ customDomain: req.domain });
       const { data: existing } = await admin.from("domains").select("id").eq("site_id", req.site_id).maybeSingle();
       if (existing) await admin.from("domains").update({ domain_name: req.domain, status: "active" }).eq("id", existing.id);
       else await admin.from("domains").insert({ user_id: req.user_id, site_id: req.site_id, domain_name: req.domain, status: "active" });

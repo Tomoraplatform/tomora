@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { revalidateSite } from "@/lib/site-cache";
 import { createClient } from "@/lib/supabase/server";
 import { createDefaultSiteData } from "@/lib/site-data";
 import { createCatalogContent, isCatalogTemplate, catalogTemplate, type CatalogCategoryId } from "@/lib/catalog";
@@ -214,6 +215,7 @@ export async function createStoreDraft(payload: OnboardingPayload): Promise<Onbo
       trial_ends_at: trialEnds.toISOString(),
     }).eq("id", existing.id);
     if (error) return { ok: false, error: error.message };
+    revalidateSite(existing.id);
     cookies().set(SITE_COOKIE, existing.id, { path: "/", maxAge: 60 * 60 * 24 * 365 });
     return { ok: true, siteId: existing.id, subdomain: existing.subdomain };
   }
@@ -298,6 +300,7 @@ export async function finalizeStoreBuild(input: FinalizeStoreInput): Promise<{ o
     if ((error as any).code === "23505") return { ok: false, error: "That web address is already taken, try another." };
     return { ok: false, error: error.message };
   }
+  revalidateSite(input.siteId);
   revalidatePath("/dashboard");
   return { ok: true };
 }

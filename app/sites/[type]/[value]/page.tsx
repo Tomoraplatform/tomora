@@ -9,8 +9,10 @@ import { academyOpen } from "@/lib/academy/settings";
 import { AcademyClosed } from "@/components/academy/academy-closed";
 
 // Always render fresh so edits appear immediately after publishing.
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// Cached and served from the edge, then dropped the moment the owner changes
+// anything (see lib/site-cache.ts). The hour is only a backstop for a write
+// path that forgets to invalidate.
+export const revalidate = 3600;
 
 interface Params {
   params: { type: string; value: string };

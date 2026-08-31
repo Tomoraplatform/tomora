@@ -7,6 +7,7 @@ import { currentSiteId } from "@/lib/dashboard";
 import { resolveAccount, createSubaccount } from "@/lib/paystack";
 import { STORE_COMMISSION_PERCENT } from "@/lib/constants";
 import { notifyOrderStatus } from "@/lib/live/notify";
+import { revalidateSite } from "@/lib/site-cache";
 import type { OrderStatus, SiteData } from "@/lib/database.types";
 
 async function requireUserAndSite() {
@@ -141,6 +142,7 @@ export async function saveProduct(
       return { ok: false, error: error.message };
     }
     const comboProductIds = await syncComboAllocation(supabase, siteId, productId, !!input.isCombo);
+    revalidateSite(siteId);
     revalidatePath("/dashboard/products");
     revalidatePath("/dashboard/editor");
     return { ok: true, comboProductIds };
@@ -158,6 +160,7 @@ export async function deleteProduct(
     if (error) return { ok: false, error: error.message };
     // A deleted product must not linger in the Combos section.
     const comboProductIds = await syncComboAllocation(supabase, siteId, id, false);
+    revalidateSite(siteId);
     revalidatePath("/dashboard/products");
     revalidatePath("/dashboard/editor");
     return { ok: true, comboProductIds };
@@ -240,6 +243,7 @@ export async function savePayoutSettings(input: {
         paystack_subaccount: subaccountCode,
       })
       .eq("id", siteId);
+    revalidateSite(siteId);
     if (error) return { ok: false, error: error.message };
 
     // Consume the approved change request so a fresh approval is needed next time.
@@ -312,6 +316,7 @@ export async function savePaymentSettings(input: {
     };
     const { error } = await supabase.from("sites").update({ site_data: updated }).eq("id", site.id);
     if (error) return { ok: false, error: error.message };
+    revalidateSite(site.id);
     revalidatePath("/dashboard/payouts");
     return { ok: true };
   } catch (e: any) {

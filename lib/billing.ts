@@ -1,4 +1,5 @@
 import "server-only";
+import { revalidateSite, revalidateSitesForUser } from "@/lib/site-cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   nextCharge, RENEWAL_INTERVAL_MONTHS, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, GRACE_PERIOD_DAYS,
@@ -76,6 +77,7 @@ export async function applyPlatformPayment(
 
   // Re-activate the site and clear the trial gate.
   await admin.from("sites").update({ is_live: true }).eq("user_id", userId);
+  await revalidateSitesForUser(userId);
 
   // Plans that include a domain extend it for a year on the qualifying payment.
   if (result.includesDomain) {
@@ -162,6 +164,7 @@ export async function applyPaymentFailure(userId: string) {
   const graceMs = GRACE_PERIOD_DAYS * 86400000;
   if (!last || Date.now() - last > graceMs) {
     await admin.from("sites").update({ is_live: false }).eq("user_id", userId);
+    await revalidateSitesForUser(userId);
   }
 }
 
@@ -169,6 +172,7 @@ export async function disableSubscription(userId: string) {
   const admin = createAdminClient();
   await admin.from("subscriptions").update({ status: "cancelled" }).eq("user_id", userId);
   await admin.from("sites").update({ is_live: false }).eq("user_id", userId);
+  await revalidateSitesForUser(userId);
 }
 
 /** True when a comped subscription's expiry date has passed. */
@@ -187,6 +191,7 @@ export async function expireCompIfDue(
   const admin = createAdminClient();
   await admin.from("subscriptions").update({ status: "cancelled" }).eq("user_id", userId);
   await admin.from("sites").update({ is_live: false }).eq("user_id", userId);
+  await revalidateSitesForUser(userId);
   return true;
 }
 
@@ -221,6 +226,7 @@ export async function applyNewDomainRequest(
     status: "paid",
   });
   await admin.from("sites").update({ domain_purchased: true }).eq("id", siteId).eq("user_id", userId);
+  revalidateSite(siteId);
 
   // Domain fee is Tomora revenue; the charge included 7.5% VAT.
   const vat = Math.round((NEW_DOMAIN_AMOUNT * VAT_PERCENT) / 100);

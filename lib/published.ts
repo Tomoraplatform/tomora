@@ -1,8 +1,10 @@
 import "server-only";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { excludeTestProducts } from "@/lib/orders/query";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { expireCompIfDue } from "@/lib/billing";
+import { isCompExpired } from "@/lib/billing";
+import { siteLookupTag, siteTag } from "@/lib/site-cache";
 import type { Site, Product, Subscription, Review } from "@/lib/database.types";
 
 export interface PublishedSite {
@@ -12,55 +14,95 @@ export interface PublishedSite {
   isLive: boolean;
 }
 
+/** How long a cached page survives without anyone invalidating it. */
+const MAX_AGE = 3600;
+
+/**
+ * Resolves a host to a site id.
+ *
+ * Split from the content load so the two can be invalidated separately: a
+ * subdomain rename changes this, editing a page changes that.
+ */
+const siteIdFor = (type: "subdomain" | "custom", value: string) =>
+  unstable_cache(
+    async () => {
+      const admin = createAdminClient();
+      const column = type === "custom" ? "custom_domain" : "subdomain";
+      const { data } = await admin
+        .from("sites").select("id").eq(column, value.toLowerCase()).maybeSingle();
+      return (data?.id as string) || null;
+    },
+    ["site-id", type, value.toLowerCase()],
+    { tags: [siteLookupTag(type, value)], revalidate: MAX_AGE }
+  )();
+
+/** Everything a published page renders from, for one site. */
+const contentFor = (siteId: string) =>
+  unstable_cache(
+    async () => {
+      const admin = createAdminClient();
+      const { data: site } = await admin.from("sites").select("*").eq("id", siteId).maybeSingle();
+      if (!site) return null;
+
+      const isStore = site.category === "ecommerce";
+      const [{ data: sub }, prod, revs] = await Promise.all([
+        admin
+          .from("subscriptions")
+          .select("status, comp_expires_at")
+          .eq("user_id", site.user_id)
+          .maybeSingle<Pick<Subscription, "status" | "comp_expires_at">>(),
+        // A demo store shows its demo stock, since that is the whole point of
+        // it. Every other storefront never sees a demo product.
+        isStore
+          ? (site.is_demo
+              ? admin.from("products").select("*").eq("site_id", site.id).eq("is_active", true)
+              : excludeTestProducts(admin.from("products").select("*").eq("site_id", site.id).eq("is_active", true))
+            ).order("created_at", { ascending: false })
+          : Promise.resolve({ data: [] as Product[] }),
+        // Best-effort: reviews table may not exist yet (pre-0006 migration).
+        isStore
+          ? admin.from("reviews").select("*").eq("site_id", site.id).eq("is_published", true)
+              .order("created_at", { ascending: false }).limit(50)
+              .then((r) => r, () => ({ data: [] as Review[] }))
+          : Promise.resolve({ data: [] as Review[] }),
+      ]);
+
+      return {
+        site: site as Site,
+        products: (prod.data as Product[]) || [],
+        reviews: (revs.data as Review[]) || [],
+        subscription: (sub as Pick<Subscription, "status" | "comp_expires_at">) || null,
+      };
+    },
+    ["site-content", siteId],
+    { tags: [siteTag(siteId)], revalidate: MAX_AGE }
+  )();
+
 /**
  * Loads a published site by subdomain or custom domain (server-only).
  *
- * Wrapped in React `cache`, because every page calls this once for its metadata
- * and again for its body: without it a single visit runs the whole set of
- * queries twice. Independent queries run together rather than one after the
- * other, since a visitor waits for the slowest, not the sum.
+ * Reads only. It used to cancel an expired comped subscription here, which
+ * meant a page view could write to the database; a render that mutates cannot
+ * be cached, and shouldn't anyway. The gate below still treats an expired comp
+ * as offline, and the cancellation happens when the owner next opens their
+ * dashboard.
+ *
+ * Wrapped in React `cache` as well, because every page calls this once for its
+ * metadata and again for its body.
  */
 export const loadPublishedSite = cache(async (
   type: "subdomain" | "custom",
   value: string
 ): Promise<PublishedSite | null> => {
-  const admin = createAdminClient();
-  const column = type === "custom" ? "custom_domain" : "subdomain";
+  const siteId = await siteIdFor(type, value);
+  if (!siteId) return null;
 
-  const { data: site } = await admin
-    .from("sites")
-    .select("*")
-    .eq(column, value.toLowerCase())
-    .maybeSingle();
+  const content = await contentFor(siteId);
+  if (!content) return null;
 
-  if (!site) return null;
-
-  const isStore = site.category === "ecommerce";
-  const [{ data: sub }, prod, revs] = await Promise.all([
-    // Live status: explicit flag + trial / subscription guard.
-    admin
-      .from("subscriptions")
-      .select("status, comp_expires_at")
-      .eq("user_id", site.user_id)
-      .maybeSingle<Pick<Subscription, "status" | "comp_expires_at">>(),
-    // A demo store shows its demo stock, since that is the whole point of it.
-    // Every other storefront never sees a demo product.
-    isStore
-      ? (site.is_demo
-          ? admin.from("products").select("*").eq("site_id", site.id).eq("is_active", true)
-          : excludeTestProducts(admin.from("products").select("*").eq("site_id", site.id).eq("is_active", true))
-        ).order("created_at", { ascending: false })
-      : Promise.resolve({ data: [] as Product[] }),
-    // Best-effort: reviews table may not exist yet (pre-0006 migration).
-    isStore
-      ? admin.from("reviews").select("*").eq("site_id", site.id).eq("is_published", true).order("created_at", { ascending: false }).limit(50)
-          .then((r) => r, () => ({ data: [] as Review[] }))
-      : Promise.resolve({ data: [] as Review[] }),
-  ]);
-
-  // Expire any comp whose period has ended (takes the site offline).
-  const compExpired = await expireCompIfDue(site.user_id, sub);
-  const subActive = !compExpired && sub?.status === "active";
+  const { site, products, reviews, subscription } = content;
+  const compExpired = isCompExpired(subscription);
+  const subActive = !compExpired && subscription?.status === "active";
 
   let isLive = site.is_live as boolean;
   if (compExpired) {
@@ -70,10 +112,5 @@ export const loadPublishedSite = cache(async (
     if (trialOver) isLive = subActive;
   }
 
-  return {
-    site: site as Site,
-    products: (prod.data as Product[]) || [],
-    reviews: (revs.data as Review[]) || [],
-    isLive,
-  };
+  return { site, products, reviews, isLive };
 });

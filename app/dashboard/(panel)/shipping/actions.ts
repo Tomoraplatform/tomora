@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateSite } from "@/lib/site-cache";
 import { createClient } from "@/lib/supabase/server";
 import { currentSiteId } from "@/lib/dashboard";
 import type { SiteData } from "@/lib/database.types";
@@ -26,6 +27,7 @@ export async function saveShipping(zones: { id: string; name: string; fee: numbe
     const sd = (site.site_data || {}) as SiteData;
     const { error } = await supabase.from("sites").update({ site_data: { ...sd, shippingZones: clean } }).eq("id", site.id);
     if (error) return { ok: false, error: error.message };
+    revalidateSite(site.id);
     revalidatePath("/dashboard/shipping");
     return { ok: true };
   } catch (e: any) {

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateSite, revalidateSiteHosts } from "@/lib/site-cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { currentSiteId } from "@/lib/dashboard";
@@ -59,6 +60,7 @@ export async function activateIncludedDomain(domainRaw: string): Promise<{ ok: b
     user_id: user.id, site_id: siteId, domain, amount: 0, reference: "included", status: "paid",
   });
   await admin.from("sites").update({ domain_purchased: true }).eq("id", siteId);
+  revalidateSite(siteId);
   revalidatePath("/dashboard/domain");
   return { ok: true };
 }
@@ -111,6 +113,8 @@ export async function connectDomain(domainRaw: string): Promise<{ ok: boolean; e
     });
   }
 
+  revalidateSite(site.id);
+  revalidateSiteHosts({ customDomain: domain });
   revalidatePath("/dashboard/domain");
   return { ok: true };
 }
@@ -122,8 +126,11 @@ export async function removeDomain(): Promise<{ ok: boolean; error?: string }> {
   const siteId = await currentSiteId(user.id);
   if (!siteId) return { ok: false, error: "No site found." };
 
+  const { data: gone } = await supabase.from("sites").select("custom_domain").eq("id", siteId).maybeSingle();
   await supabase.from("sites").update({ custom_domain: null, domain_status: "none" }).eq("id", siteId);
   await supabase.from("domains").delete().eq("site_id", siteId);
+  revalidateSite(siteId);
+  revalidateSiteHosts({ customDomain: gone?.custom_domain });
   revalidatePath("/dashboard/domain");
   return { ok: true };
 }
@@ -164,6 +171,9 @@ export async function changeSubdomain(
     };
   }
 
+  revalidateSite(siteId);
+  revalidateSiteHosts({ subdomain: site?.subdomain });
+  revalidateSiteHosts({ subdomain: next });
   revalidatePath("/dashboard/domain");
   revalidatePath("/dashboard");
   return { ok: true, subdomain: next };

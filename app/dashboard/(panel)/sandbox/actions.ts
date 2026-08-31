@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateSite, revalidateSiteHosts } from "@/lib/site-cache";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -134,7 +135,13 @@ export async function deleteDemoSite(siteId: string): Promise<R> {
     const { data: site } = await supabase
       .from("sites").select("id, is_demo").eq("id", siteId).eq("user_id", userId).maybeSingle();
     if (!site?.is_demo) return { ok: false, error: "That is not one of your demo stores." };
+    const { data: doomed } = await supabase
+      .from("sites").select("subdomain, custom_domain").eq("id", siteId).maybeSingle();
     const { error } = await supabase.from("sites").delete().eq("id", siteId).eq("user_id", userId);
+    if (!error) {
+      revalidateSite(siteId);
+      revalidateSiteHosts({ subdomain: doomed?.subdomain, customDomain: doomed?.custom_domain });
+    }
     if (error) return { ok: false, error: error.message };
     if (cookies().get(DEMO_SITE_COOKIE)?.value === siteId) cookies().delete(DEMO_SITE_COOKIE);
     revalidatePath("/dashboard", "layout");
@@ -153,6 +160,7 @@ export async function setDemoLive(siteId: string, live: boolean): Promise<R> {
     if (!site?.is_demo) return { ok: false, error: "That is not one of your demo stores." };
     const { error } = await supabase.from("sites").update({ is_live: live }).eq("id", siteId);
     if (error) return { ok: false, error: error.message };
+    revalidateSite(siteId);
     revalidatePath("/dashboard/sandbox");
     return { ok: true };
   } catch (e: any) {

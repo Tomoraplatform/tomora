@@ -1,4 +1,5 @@
 import "server-only";
+import { revalidateSite } from "@/lib/site-cache";
 import type Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -335,6 +336,7 @@ export async function createSiteFromNova(spec: NovaSpec): Promise<NovaCreateResu
       })
       .eq("id", existing.id);
     if (error) return { ok: false, error: error.message };
+    revalidateSite(existing.id);
     siteId = existing.id;
     subdomain = existing.subdomain;
   } else {
