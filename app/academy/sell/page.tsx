@@ -41,7 +41,7 @@ export default async function SellPage() {
           </span>
           <h1 className="mt-4 text-2xl font-bold text-ink sm:text-3xl">Start by telling students who you are</h1>
           <p className="mt-2 text-ink/60">
-            You&apos;ll get your own course page on Tomora, keep 95% of every sale, and your students learn in the same portal they already know.
+            You&apos;ll get your own course page on Tomora, keep the full price of every sale, and your students learn in the same portal they already know.
           </p>
           <div className="mt-6">
             <AuthorProfileForm />

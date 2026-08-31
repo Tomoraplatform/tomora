@@ -36,7 +36,7 @@ export function CreatorCta({ creatorSlug }: { creatorSlug: string | null }) {
           </span>
           <div>
             <p className="text-sm font-semibold">Teach on Tomora</p>
-            <p className="text-xs text-cream/70">Publish your own course, get your own sales page, and keep 95% of every sale.</p>
+            <p className="text-xs text-cream/70">Publish your own course, get your own sales page, and keep the full price of every sale.</p>
           </div>
         </div>
         <Link href="/academy/sell" className="inline-flex items-center gap-2 rounded-lg bg-cream px-4 py-2.5 text-sm font-semibold text-ink hover:opacity-90">

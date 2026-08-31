@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { createSubaccount } from "@/lib/paystack";
 import { currentStudent } from "@/lib/academy/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCreatorByStudent } from "@/lib/creator/db";
@@ -92,16 +93,40 @@ export async function saveCreatorBrand(input: {
   } catch (e: any) { return { ok: false, error: e.message }; }
 }
 
-/** Payout bank details used for wallet withdrawals. */
+/**
+ * The account a creator's sales are paid into.
+ *
+ * Saving it also opens a Paystack subaccount, which is what lets a sale settle
+ * to them directly instead of landing in Tomora's balance and waiting for a
+ * withdrawal. Without one their courses cannot be sold.
+ */
 export async function saveCreatorPayout(input: {
   bankName: string; bankCode: string; accountNumber: string; accountName: string;
 }): Promise<R> {
   try {
     const { admin, creator } = await requireCreator();
     if (!/^\d{10}$/.test((input.accountNumber || "").trim())) return { ok: false, error: "Enter a valid 10 digit account number." };
+
+    let subaccount: string | null = null;
+    try {
+      // Tomora's cut is taken per transaction, not as a standing percentage on
+      // the subaccount, because the 3% is charged on the course price while
+      // Paystack collects that plus VAT and its own fee.
+      const made = await createSubaccount({
+        businessName: creator.brand_name || creator.author_name || "Tomora creator",
+        bankCode: input.bankCode,
+        accountNumber: input.accountNumber.trim(),
+        percentageCharge: 0,
+      });
+      subaccount = made.subaccountCode;
+    } catch (e: any) {
+      return { ok: false, error: e?.message || "Paystack could not verify that account. Check the number and bank." };
+    }
+
     const { error } = await admin.from("academy_creators").update({
       bank_name: input.bankName, bank_code: input.bankCode,
       account_number: input.accountNumber.trim(), account_name: input.accountName.trim(),
+      paystack_subaccount: subaccount,
     }).eq("id", creator.id);
     if (error) return { ok: false, error: error.message };
     revalidatePath("/academy/sell");

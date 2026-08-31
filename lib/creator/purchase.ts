@@ -1,14 +1,16 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyTransaction } from "@/lib/paystack";
-import { splitSale, creditCreator, creditPlatform, recordTransaction } from "@/lib/creator/money";
+import { splitSale, creditCreator, creditPlatform, recordTransaction, CREATOR_PLATFORM_FEE_PERCENT } from "@/lib/creator/money";
 
 /**
  * Settles a creator course purchase (`crs_*` reference): verifies the charge,
- * enrolls the student, then splits the money — creator's 95% into their
- * wallet, Tomora's 5% plus the VAT into the platform wallet — and records one
- * row in the unified ledger. Idempotent, so the callback and webhook can both
- * call it safely.
+ * enrolls the student, and records where the money went.
+ *
+ * Paystack already split it at checkout: the creator's full price into their
+ * own account, Tomora's fee and the VAT into Tomora's. So the creator wallet
+ * row is a record of the sale, not a balance owed. Idempotent, so the callback
+ * and the webhook can both call it safely.
  */
 export async function settleCreatorPurchase(reference: string): Promise<{ ok: boolean; error?: string; courseId?: string; creatorSlug?: string; courseSlug?: string }> {
   if (!reference?.startsWith("crs_")) return { ok: false, error: "Invalid reference." };
@@ -47,11 +49,14 @@ export async function settleCreatorPurchase(reference: string): Promise<{ ok: bo
       creditCreator({
         creatorId: course.creator_id, courseId,
         amount: split.creatorShare, reference,
-        description: `Sale: ${course.title}`,
+        // Paystack split this to their own account at checkout, so it is a
+        // record of the sale rather than a balance Tomora owes them.
+        status: "settled",
+        description: `Sale: ${course.title}, paid to your bank`,
       }),
       creditPlatform({
         source: "course_fee", amount: split.platformFee, reference,
-        description: `5% fee: ${course.title}`,
+        description: `${CREATOR_PLATFORM_FEE_PERCENT}% fee: ${course.title}`,
       }),
       creditPlatform({
         source: "vat", amount: split.vat, reference, isVat: true,

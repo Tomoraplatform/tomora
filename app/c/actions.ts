@@ -26,7 +26,7 @@ export async function buyerSignIn(input: { email: string; password: string }): P
 
 /** Price preview for the checkout UI: coupon + VAT. */
 export async function previewCreatorPrice(courseId: string, couponCode?: string): Promise<{
-  ok: boolean; error?: string; price?: number; vat?: number; processingFee?: number; total?: number; discountLabel?: string;
+  ok: boolean; error?: string; price?: number; platformFee?: number; vat?: number; processingFee?: number; total?: number; discountLabel?: string;
 }> {
   const admin = createAdminClient();
   const { data: course } = await admin.from("creator_courses").select("price").eq("id", courseId).maybeSingle();
@@ -41,7 +41,10 @@ export async function previewCreatorPrice(courseId: string, couponCode?: string)
     discountLabel = res.discountLabel;
   }
   const split = splitSale(price);
-  return { ok: true, price: split.price, vat: split.vat, processingFee: split.processingFee, total: split.gross, discountLabel };
+  return {
+    ok: true, price: split.price, platformFee: split.platformFee, vat: split.vat,
+    processingFee: split.processingFee, total: split.gross, discountLabel,
+  };
 }
 
 /**
@@ -80,14 +83,29 @@ export async function buyCreatorCourse(courseId: string, couponCode?: string): P
     return { ok: true, enrolled: true };
   }
 
+  // Sales pay the creator directly, so their payout account has to exist
+  // before a course can be bought at all.
+  const { data: payee } = await admin.from("academy_creators")
+    .select("paystack_subaccount").eq("id", course.creator_id).maybeSingle();
+  const subaccount = (payee?.paystack_subaccount as string | null) || null;
+  if (!subaccount) {
+    return { ok: false, error: "This creator hasn't finished setting up payouts yet. Please try again later." };
+  }
+
   const split = splitSale(price);
   const origin = headers().get("origin") || `https://${APP_DOMAIN}`;
   const reference = `crs_${course.id.slice(0, 8)}_${Date.now()}`;
   try {
     const data = await initTransaction({
       email: student.email,
-      amountNaira: split.gross,          // price + VAT + processing fee
+      amountNaira: split.gross,          // price + fee + VAT + processing fee
       reference,
+      // The creator is paid straight into their own account; Tomora's 3% comes
+      // off as a flat per-transaction charge, because the percentage is of the
+      // course price while Paystack collects that plus VAT and its own fee.
+      subaccount,
+      bearer: "subaccount",
+      transactionCharge: split.platformFee + split.vat,
       callbackUrl: `${origin}/api/creator/callback`,
       metadata: {
         purpose: "creator_course",

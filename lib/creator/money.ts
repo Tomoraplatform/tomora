@@ -2,8 +2,8 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { VAT_PERCENT, PAYSTACK_FEE_PERCENT } from "@/lib/constants";
 
-/** Tomora's cut of every creator course sale. */
-export const CREATOR_PLATFORM_FEE_PERCENT = 5;
+/** Tomora's cut of every creator course sale, added on top of the price. */
+export const CREATOR_PLATFORM_FEE_PERCENT = 3;
 /** Minimum withdrawal from any Tomora wallet. */
 export const MIN_WITHDRAWAL = 5000;
 
@@ -14,35 +14,39 @@ export interface SaleSplit {
   vat: number;
   /** Paystack's processing fee, also charged to the student. */
   processingFee: number;
-  /** What the student actually pays (price + VAT + processing fee). */
+  /** What the student actually pays (price + fee + VAT + processing fee). */
   gross: number;
-  /** Tomora's 5% platform fee (from the price, not the VAT or the fee). */
+  /** Tomora's 3%, added on top of the price rather than taken out of it. */
   platformFee: number;
   /** What the creator receives into their wallet. */
   creatorShare: number;
 }
 
 /**
- * Splits a creator course sale. The student covers VAT and Paystack's
- * processing fee, so the creator always nets price minus Tomora's 5%.
+ * Splits a creator course sale.
  *
- * Example, ₦10,000 course: student pays ₦11,019
- * (₦10,000 + ₦750 VAT + ₦269 processing), Tomora keeps ₦500,
- * creator receives ₦9,500.
+ * The student covers everything on top of the price: Tomora's 3%, VAT, and
+ * Paystack's processing fee. The creator receives the price they set, whole.
+ * That is the point of adding the fee rather than deducting it, a creator who
+ * lists a course at ₦10,000 is paid ₦10,000.
+ *
+ * Example, ₦10,000 course: student pays ₦11,350
+ * (₦10,000 + ₦300 fee + ₦750 VAT + ₦300 processing),
+ * Tomora keeps ₦300, the creator receives ₦10,000.
  */
 export function splitSale(price: number): SaleSplit {
   const p = Math.max(0, Math.round(price));
-  const vat = Math.round((p * VAT_PERCENT) / 100);
   const platformFee = Math.round((p * CREATOR_PLATFORM_FEE_PERCENT) / 100);
+  const vat = Math.round((p * VAT_PERCENT) / 100);
   // Paystack charges its percentage on the full amount it collects, so the fee
-  // is grossed up: charge = (price + vat) / (1 - rate).
-  const beforeFee = p + vat;
+  // is grossed up: charge = (everything else) / (1 - rate).
+  const beforeFee = p + platformFee + vat;
   const rate = PAYSTACK_FEE_PERCENT / 100;
   const processingFee = Math.max(0, Math.round(beforeFee / (1 - rate)) - beforeFee);
   return {
     price: p, vat, processingFee,
     gross: beforeFee + processingFee,
-    platformFee, creatorShare: p - platformFee,
+    platformFee, creatorShare: p,
   };
 }
 
@@ -94,13 +98,20 @@ export async function creditPlatform(input: {
 /** Credits a creator's wallet. Idempotent per (type, reference). */
 export async function creditCreator(input: {
   creatorId: string; courseId?: string; amount: number; reference?: string; description?: string;
+  /**
+   * `settled` for a sale Paystack paid straight into their bank: it belongs in
+   * their history but not in their balance, because Tomora is not holding it
+   * and paying it out would pay for the sale twice. Only `completed` counts
+   * towards what they can withdraw.
+   */
+  status?: "completed" | "settled";
 }): Promise<void> {
   if (!input.amount || input.amount <= 0) return;
   const admin = createAdminClient();
   await admin.from("creator_wallet_transactions").insert({
     creator_id: input.creatorId, course_id: input.courseId || null,
     type: "income", source: "course_sale", amount: Math.round(input.amount),
-    status: "completed", reference: input.reference || null,
+    status: input.status || "completed", reference: input.reference || null,
     description: input.description || null,
   });
 }
