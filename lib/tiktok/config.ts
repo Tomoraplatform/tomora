@@ -12,9 +12,26 @@
  *    API access token is not, and lives only in a server environment variable.
  */
 
-/** Public pixel id. Overridable per environment, with the live one as default. */
-export const TIKTOK_PIXEL_ID =
-  process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID || "DA3I503C77UAMATN4NG0";
+/**
+ * Public pixel ids. Overridable per environment, with the live one as default.
+ *
+ * Comma-separate the variable to run more than one pixel at once, which is what
+ * a second TikTok ad account needs. TikTok's base code is built for this: each
+ * id gets its own `ttq.load`, and the global `ttq.page()` / `ttq.track()` then
+ * report to every loaded pixel.
+ */
+export const TIKTOK_PIXEL_IDS: string[] = (
+  process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID || "DA3I503C77UAMATN4NG0"
+)
+  .split(",")
+  .map((id) => id.trim())
+  .filter(Boolean);
+
+/**
+ * The primary pixel: the first id listed. Server-side events name one pixel per
+ * request, so this is the one used when only a single access token is set.
+ */
+export const TIKTOK_PIXEL_ID = TIKTOK_PIXEL_IDS[0];
 
 /** TikTok's standard event names, spelled the way their API expects. */
 export const TIKTOK_EVENTS = {
