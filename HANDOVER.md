@@ -77,26 +77,30 @@ looks healthy while quietly settling sales and donations into Tomora's balance
 instead of the owner's bank. Absence of errors is not evidence they are applied.
 Run the query.
 
-## 4. Fix the production alias
+## 4. Production alias
 
-The last deploy went out but its alias step failed, so production may still be
-serving the commit before the creator payout change. Check first:
-
-```bash
-npx vercel ls tomora
-```
-
-If the deployment behind `tomora.vercel.app` is not the newest one:
+Done, and it turned out never to have been broken. The alias command reported a
+tool error but had already taken effect. Verified with:
 
 ```bash
-npx vercel alias set tomora-fiatchykn-tomoraplatforms-projects.vercel.app tomora.vercel.app
+npx vercel inspect tomora.vercel.app
 ```
 
-Deploys on this project go out through the Vercel CLI, not through GitHub:
+`tomora-fiatchykn-...`, built from commit `5aebd94`, is the production
+deployment and holds every alias: `tomora.com.ng`, `www.tomora.com.ng`,
+`*.tomora.com.ng`, `tomora.vercel.app`, and the customer domains
+`giveabiblewithflc.com.ng` and `www.artommy.tomora.com.ng`.
 
-```bash
-npx vercel --prod --yes
-```
+Everything committed after `5aebd94` is documentation and SQL. No runtime code
+has changed, so nothing is waiting to be deployed.
+
+Two things about deploying here, both easy to get wrong:
+
+- Production goes out through the CLI, `npx vercel --prod --yes`, not through
+  GitHub.
+- GitHub is still connected, and a push to this branch does build. It builds a
+  **Preview**, not production. Seeing a fresh deployment appear after a push is
+  not evidence that production moved.
 
 ## 5. Environment variables still to set in Vercel
 
