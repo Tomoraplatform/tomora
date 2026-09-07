@@ -91,13 +91,9 @@ alter table public.orders add column if not exists channel text not null default
 alter table public.orders add column if not exists live_conversation_id uuid;
 
 -- The seller's fulfilment flow needs a step between paid and shipped.
-do $$
-begin
-  if not exists (
-    select 1 from pg_enum e
-    join pg_type t on t.oid = e.enumtypid
-    where t.typname = 'order_status' and e.enumlabel = 'packed'
-  ) then
-    alter type order_status add value 'packed' after 'paid';
-  end if;
-end $$;
+--
+-- Run this on its own, not as part of a larger batch. Postgres restricts
+-- ALTER TYPE ... ADD VALUE inside a transaction block, and a SQL editor that
+-- wraps a whole pasted file in one transaction will reject it and roll back
+-- everything above it. `if not exists` makes re-running it a no-op.
+alter type order_status add value if not exists 'packed' after 'paid';
