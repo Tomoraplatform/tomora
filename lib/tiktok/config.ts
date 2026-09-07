@@ -13,15 +13,20 @@
  */
 
 /**
- * Public pixel ids. Overridable per environment, with the live one as default.
+ * Public pixel ids, with both live pixels as the default.
  *
  * Comma-separate the variable to run more than one pixel at once, which is what
  * a second TikTok ad account needs. TikTok's base code is built for this: each
  * id gets its own `ttq.load`, and the global `ttq.page()` / `ttq.track()` then
  * report to every loaded pixel.
+ *
+ * These sit in the source rather than in an environment variable on purpose: a
+ * pixel id is public, it is read straight out of the page, and keeping the ids
+ * here means the pixel cannot go dark because a deploy missed a variable.
  */
 export const TIKTOK_PIXEL_IDS: string[] = (
-  process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID || "DA3I503C77UAMATN4NG0"
+  process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID ||
+  "DA3I503C77UAMATN4NG0,DAFDTEJC77U250DBNAP0"
 )
   .split(",")
   .map((id) => id.trim())
