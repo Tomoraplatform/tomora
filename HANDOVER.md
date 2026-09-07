@@ -33,8 +33,14 @@ turns on. Nothing in it is a real value.
 
 ## 3. Run the outstanding migrations
 
-Migrations are applied by hand, by pasting the file into the Supabase SQL editor.
-They are idempotent, so re-running one that already landed is safe.
+All four outstanding migrations are combined, in order, into
+`supabase/apply-outstanding.sql`. Paste that one file into the Supabase SQL
+editor and run it once. It is idempotent, so re-running it changes nothing, and
+the editor runs it as a single transaction, so a failure leaves the database
+exactly as it was.
+
+The numbered files below are the source of truth. The combined file is generated
+from them.
 
 - [ ] `supabase/migrations/0041_plan_coupons.sql`, subscription coupon codes
 - [ ] `supabase/migrations/0042_tomora_live.sql`, WhatsApp commerce tables
