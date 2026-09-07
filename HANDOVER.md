@@ -33,42 +33,49 @@ turns on. Nothing in it is a real value.
 
 ## 3. Run the outstanding migrations
 
-All four outstanding migrations are combined, in order, into
-`supabase/apply-outstanding.sql`. Paste that one file into the Supabase SQL
-editor and run it once. It is idempotent, so re-running it changes nothing, and
-the editor runs it as a single transaction, so a failure leaves the database
-exactly as it was.
+Done. All of 0041 to 0045 are applied to production. Nothing here is outstanding
+any more; it is kept as the record of how it was done.
 
-The numbered files below are the source of truth. The combined file is generated
-from them.
+They were applied by pasting two files into the Supabase SQL editor, in this
+order:
 
-- [ ] `supabase/migrations/0041_plan_coupons.sql`, subscription coupon codes
-- [ ] `supabase/migrations/0042_tomora_live.sql`, WhatsApp commerce tables
+1. `supabase/apply-outstanding-step1.sql`, one statement, run alone
+2. `supabase/apply-outstanding.sql`, everything else
+
+The split is not optional. Postgres refuses `ALTER TYPE ... ADD VALUE` inside a
+transaction block and the SQL editor runs a pasted file as one transaction, so
+batching 0042's enum change with the rest fails and silently rolls back every
+migration in the paste.
+
+The numbered files are the source of truth. The two above are generated from
+them, and are idempotent.
+
+- [x] `supabase/migrations/0041_plan_coupons.sql`, applied
+- [x] `supabase/migrations/0042_tomora_live.sql`, applied
 - [x] `supabase/migrations/0043_paid_renewal_clears_comp.sql`, applied
-- [ ] `supabase/migrations/0044_direct_settlement.sql`, `settled_direct` on orders and donations
-- [ ] `supabase/migrations/0045_creator_subaccounts.sql`, `academy_creators.paystack_subaccount`
+- [x] `supabase/migrations/0044_direct_settlement.sql`, applied
+- [x] `supabase/migrations/0045_creator_subaccounts.sql`, applied
 
-To see which ones are already in, run this in the SQL editor:
+To confirm the state of a database, run this in the SQL editor. Four `true`
+values is a fully migrated database.
 
 ```sql
-select table_name, column_name
-from information_schema.columns
-where (table_name = 'orders'            and column_name in ('channel', 'settled_direct'))
-   or (table_name = 'donations'         and column_name = 'settled_direct')
-   or (table_name = 'academy_creators'  and column_name = 'paystack_subaccount')
-   or (table_name = 'plan_coupons')
-order by table_name, column_name;
+select
+  to_regclass('public.plan_coupons')                    is not null as m0041_coupons,
+  to_regclass('public.live_accounts')                   is not null as m0042_live,
+  (select count(*) = 2 from information_schema.columns
+     where column_name = 'settled_direct'
+       and table_name in ('orders','donations'))              as m0044_direct,
+  (select count(*) = 1 from information_schema.columns
+     where table_name = 'academy_creators'
+       and column_name = 'paystack_subaccount')              as m0045_creators;
 ```
 
-`orders.channel` means 0042 is in. `settled_direct` on both tables means 0044 is
-in. `academy_creators.paystack_subaccount` means 0045 is in. Any `plan_coupons`
-row at all means 0041 is in.
-
-The code runs correctly without 0044 and 0045: it falls back to the old
-behaviour rather than failing. That is why nothing is visibly broken yet. But
-until they are applied, sales and donations keep settling into Tomora's Paystack
-balance instead of the owner's bank, and creators have no subaccount to be paid
-into.
+Worth knowing when reading this back: the code runs without 0044 and 0045, and
+falls back to the old behaviour rather than failing. So a database missing them
+looks healthy while quietly settling sales and donations into Tomora's balance
+instead of the owner's bank. Absence of errors is not evidence they are applied.
+Run the query.
 
 ## 4. Fix the production alias
 
