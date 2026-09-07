@@ -1,6 +1,6 @@
 import "server-only";
 import crypto from "crypto";
-import { TIKTOK_PIXEL_ID } from "./config";
+import { TIKTOK_PIXEL_IDS } from "./config";
 
 /**
  * TikTok Events API: the server's copy of an event.
@@ -58,8 +58,16 @@ export interface TikTokEventInput {
  * failing must not fail a signup or a payment.
  */
 export async function sendTikTokEvent(input: TikTokEventInput): Promise<boolean> {
-  const token = process.env.TIKTOK_ACCESS_TOKEN;
-  if (!token) return false; // not configured yet: stay silent rather than error
+  // One request per pixel: a request names a single event_source_id, and each
+  // pixel is authorised by its own token. Tokens are comma-separated in the
+  // same order as the pixel ids, so a pixel without a token is simply skipped
+  // rather than sent with the wrong credentials.
+  const tokens = (process.env.TIKTOK_ACCESS_TOKEN || "")
+    .split(",")
+    .map((t) => t.trim());
+  const targets = TIKTOK_PIXEL_IDS.map((pixelId, i) => ({ pixelId, token: tokens[i] }))
+    .filter((t): t is { pixelId: string; token: string } => Boolean(t.token));
+  if (!targets.length) return false; // not configured yet: stay silent rather than error
 
   const user: Record<string, string> = {};
   const email = hash(input.email);
@@ -74,37 +82,44 @@ export async function sendTikTokEvent(input: TikTokEventInput): Promise<boolean>
   if (input.currency) properties.currency = input.currency;
   if (input.contents?.length) properties.contents = input.contents;
 
-  const body = {
-    event_source: "web",
-    event_source_id: TIKTOK_PIXEL_ID,
-    // Set while verifying the setup in TikTok's Events Manager, unset in normal use.
-    ...(process.env.TIKTOK_TEST_EVENT_CODE ? { test_event_code: process.env.TIKTOK_TEST_EVENT_CODE } : {}),
-    data: [{
-      event: input.event,
-      event_time: Math.floor(Date.now() / 1000),
-      event_id: input.eventId,
-      user,
-      page: input.url ? { url: input.url } : undefined,
-      properties,
-    }],
+  const data = [{
+    event: input.event,
+    event_time: Math.floor(Date.now() / 1000),
+    event_id: input.eventId,
+    user,
+    page: input.url ? { url: input.url } : undefined,
+    properties,
+  }];
+
+  const send = async ({ pixelId, token }: { pixelId: string; token: string }) => {
+    const body = {
+      event_source: "web",
+      event_source_id: pixelId,
+      // Set while verifying the setup in TikTok's Events Manager, unset in normal use.
+      ...(process.env.TIKTOK_TEST_EVENT_CODE ? { test_event_code: process.env.TIKTOK_TEST_EVENT_CODE } : {}),
+      data,
+    };
+    try {
+      // A slow analytics call must not hold up a payment webhook.
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4000);
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Access-Token": token },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      if (!res.ok) return false;
+      const json = await res.json().catch(() => null);
+      // TikTok answers 200 with a non-zero code when it rejects the payload.
+      return !json || json.code === 0;
+    } catch {
+      return false;
+    }
   };
 
-  try {
-    // A slow analytics call must not hold up a payment webhook.
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 4000);
-    const res = await fetch(ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Access-Token": token },
-      body: JSON.stringify(body),
-      signal: controller.signal,
-    });
-    clearTimeout(timer);
-    if (!res.ok) return false;
-    const json = await res.json().catch(() => null);
-    // TikTok answers 200 with a non-zero code when it rejects the payload.
-    return !json || json.code === 0;
-  } catch {
-    return false;
-  }
+  // The pixels are independent: one failing must not hide the other's success.
+  const results = await Promise.all(targets.map(send));
+  return results.some(Boolean);
 }
