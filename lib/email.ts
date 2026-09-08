@@ -13,7 +13,10 @@ export async function sendEmail(params: {
   html: string;
 }): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;
-  if (!key) return false;
+  if (!key) {
+    console.error("[email] RESEND_API_KEY is not set; nothing was sent");
+    return false;
+  }
   const from = process.env.EMAIL_FROM || "Tomora <onboarding@resend.dev>";
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -21,8 +24,20 @@ export async function sendEmail(params: {
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({ from, to: params.to, subject: params.subject, html: params.html }),
     });
-    return res.ok;
-  } catch {
+    if (!res.ok) {
+      // Say why. A silent false here is how a wrong sender address went
+      // unnoticed for weeks: every caller treats sending as best-effort, so
+      // without this the only symptom is mail that never arrives.
+      const detail = await res.text().catch(() => "");
+      console.error(
+        `[email] Resend rejected the send: ${res.status} ${res.statusText}. ` +
+        `from=${JSON.stringify(from)} subject=${JSON.stringify(params.subject)} ${detail.slice(0, 500)}`
+      );
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("[email] could not reach Resend:", err);
     return false;
   }
 }

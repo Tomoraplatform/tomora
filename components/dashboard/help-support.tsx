@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { sendSupportMessage } from "@/app/dashboard/(panel)/help/actions";
 
-export function HelpAndSupport() {
+export function HelpAndSupport({ defaultEmail = "" }: { defaultEmail?: string }) {
+  const [email, setEmail] = useState(defaultEmail);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -19,9 +20,10 @@ export function HelpAndSupport() {
 
   async function send() {
     setError(null);
+    if (!email.trim()) return setError("Please enter the email we should reply to.");
     if (!message.trim()) return setError("Please type your message.");
     setSending(true);
-    const res = await sendSupportMessage({ subject, message });
+    const res = await sendSupportMessage({ subject, message, email });
     setSending(false);
     if (res.ok) { setSent(true); setSubject(""); setMessage(""); }
     else setError(res.error || "Could not send.");
@@ -46,6 +48,15 @@ export function HelpAndSupport() {
           ) : (
             <>
               <div className="space-y-1.5">
+                <Label>Your email</Label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Where should we reply?"
+                />
+              </div>
+              <div className="space-y-1.5">
                 <Label>Subject</Label>
                 <Input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="What do you need help with?" />
               </div>
@@ -57,7 +68,7 @@ export function HelpAndSupport() {
               <Button onClick={send} disabled={sending}>
                 {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Send message
               </Button>
-              <p className="text-xs text-ink/50">We reply by email to the address on your account.</p>
+              <p className="text-xs text-ink/50">Your message reaches the Tomora team, and we reply to the address above.</p>
             </>
           )}
         </CardContent>
