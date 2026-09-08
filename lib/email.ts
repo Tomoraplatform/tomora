@@ -3,6 +3,46 @@ import { SUPPORT_EMAIL } from "@/lib/support";
 import { escapeHtml } from "@/lib/html";
 
 /**
+ * The sender address, repaired if EMAIL_FROM was typed slightly wrong.
+ *
+ * This variable is set by hand in a dashboard and has broken every email the
+ * product sends twice already: once as a misspelt domain, once as
+ * `Tomora <support@tomora.com.ng` with no closing bracket. Resend answers a
+ * malformed sender with a 422 and nothing is delivered, which looks exactly
+ * like everything working until someone notices no mail ever arrives.
+ *
+ * So a recoverable mistake is repaired and reported rather than allowed to
+ * silence the whole system. Anything unrecoverable falls back to a plain
+ * address, which Resend always accepts.
+ */
+export function senderAddress(): string {
+  const raw = (process.env.EMAIL_FROM || "").trim();
+  if (!raw) return "Tomora <onboarding@resend.dev>";
+
+  // Already valid: either "a@b.com" or "Name <a@b.com>".
+  if (/^[^<>@\s]+@[^<>@\s]+\.[^<>@\s]+$/.test(raw)) return raw;
+  if (/^[^<>]*<[^<>@\s]+@[^<>@\s]+\.[^<>@\s]+>$/.test(raw)) return raw;
+
+  // An unclosed angle bracket is the mistake that is safe to repair.
+  const unclosed = raw.match(/^([^<>]*)<\s*([^<>@\s]+@[^<>@\s]+\.[^<>@\s]+)\s*>?$/);
+  if (unclosed) {
+    const fixed = `${unclosed[1].trim()} <${unclosed[2]}>`.trim();
+    console.warn(`[email] EMAIL_FROM was malformed (${JSON.stringify(raw)}); using ${JSON.stringify(fixed)}. Fix the variable.`);
+    return fixed;
+  }
+
+  // Otherwise take the first address that looks like one, and say so.
+  const bare = raw.match(/[^<>@\s]+@[^<>@\s]+\.[^<>@\s]+/);
+  if (bare) {
+    console.warn(`[email] EMAIL_FROM is not a valid sender (${JSON.stringify(raw)}); using ${JSON.stringify(bare[0])}. Fix the variable.`);
+    return bare[0];
+  }
+
+  console.error(`[email] EMAIL_FROM has no usable address (${JSON.stringify(raw)}); falling back to the Resend test sender.`);
+  return "Tomora <onboarding@resend.dev>";
+}
+
+/**
  * Sends a transactional email via Resend. Best-effort: if RESEND_API_KEY is not
  * configured it simply returns false (no crash), so callers can stay resilient.
  * Set EMAIL_FROM to a verified sender (e.g. "Tomora <orders@tomora.com.ng>").
@@ -17,7 +57,7 @@ export async function sendEmail(params: {
     console.error("[email] RESEND_API_KEY is not set; nothing was sent");
     return false;
   }
-  const from = process.env.EMAIL_FROM || "Tomora <onboarding@resend.dev>";
+  const from = senderAddress();
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
