@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { formatNaira } from "@/lib/utils";
 
 export type DonationState = {
@@ -49,23 +49,64 @@ export function DonationProvider({
   const [projects, setProjects] = useState<Record<string, { raised: number; count: number; manual?: number; manualCount?: number }>>({});
   const [unassigned, setUnassigned] = useState({ raised: 0, count: 0 });
 
-  const refresh = useCallback(async () => {
-    if (!siteId || !enabled) return;
+  // The number of gifts last seen, so a poll can tell when a new one lands.
+  const countRef = useRef(0);
+
+  const readTotals = useCallback(async (): Promise<number | null> => {
+    if (!siteId || !enabled) return null;
     try {
-      const res = await fetch(`/api/donations/total?siteId=${siteId}`);
+      // no-store: this is read again seconds after a payment, and a cached copy
+      // would be the total from before the gift.
+      const res = await fetch(`/api/donations/total?siteId=${siteId}`, { cache: "no-store" });
       const d = await res.json();
       if (typeof d.online === "number") setOnline(d.online);
       else if (typeof d.raised === "number") setOnline(Math.max(0, d.raised - Math.max(0, Math.round(manual || 0))));
-      setCount(d.count || 0);
+      const next = d.count || 0;
+      setCount(next);
       setCanDonate(!!d.canDonate);
       setProjects(d.projects || {});
       setUnassigned(d.unassigned || { raised: 0, count: 0 });
-    } catch { /* ignore */ }
+      countRef.current = next;
+      return next;
+    } catch {
+      return null;
+    }
     // manual intentionally excluded, it's applied live from props below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteId, enabled]);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  /**
+   * Reads the total again until the new gift shows up.
+   *
+   * A donation is settled by whichever of three paths arrives first: this
+   * browser's confirm call, Paystack's webhook, or the reconcile pass. The
+   * confirm call can return before the row is paid, because Paystack sometimes
+   * needs a moment to verify the charge and the endpoint answers "not confirmed
+   * yet" rather than waiting. Reading the total once at that point shows the
+   * figure from before the donation, which is what a donor notices: they gave,
+   * and the bar did not move.
+   *
+   * So poll briefly and stop as soon as the count rises.
+   */
+  const refresh = useCallback(async () => {
+    const before = countRef.current;
+    for (const wait of [0, 1500, 3000, 5000, 8000, 12000]) {
+      if (wait) await new Promise((r) => setTimeout(r, wait));
+      const now = await readTotals();
+      if (now !== null && now > before) return;
+    }
+  }, [readTotals]);
+
+  useEffect(() => { readTotals(); }, [readTotals]);
+
+  // A donor who paid on a Paystack redirect comes back to this tab rather than
+  // finishing in a popup, so the gift may have settled while the page was
+  // hidden. Read once on return.
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === "visible") readTotals(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [readTotals]);
 
   const raised = Math.max(0, Math.round(manual || 0)) + online;
 
