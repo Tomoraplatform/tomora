@@ -2,8 +2,11 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
+import { SUPPORT_EMAIL } from "@/lib/support";
 
-const SUPPORT_INBOX = process.env.SUPPORT_EMAIL || "templateroom1@gmail.com";
+// The variable still wins, so support can be pointed elsewhere without a
+// deploy, but the fallback is now the real inbox rather than a personal one.
+const SUPPORT_INBOX = process.env.SUPPORT_EMAIL || SUPPORT_EMAIL;
 
 /** Sends the logged-in user's support message to the Tomora support inbox. */
 export async function sendSupportMessage(input: { subject: string; message: string }): Promise<{ ok: boolean; error?: string }> {

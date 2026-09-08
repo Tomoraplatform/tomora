@@ -17,6 +17,20 @@ import { formatNaira } from "@/lib/utils";
  * longer strand money outside the owner's wallet.
  */
 
+/**
+ * Escapes a value before it goes into an email body.
+ *
+ * Donor and buyer names are typed by strangers and land in the owner's inbox
+ * as HTML, so an unescaped one could put markup in a message the owner trusts.
+ */
+function esc(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 /** Marks a donation paid and credits the site owner's Tomora Wallet. */
 export async function confirmDonationPaid(reference: string): Promise<{ updated: boolean }> {
   const admin = createAdminClient();
@@ -59,6 +73,10 @@ export async function confirmDonationPaid(reference: string): Promise<{ updated:
       });
     }
   } catch { /* non-fatal, wallet table may not exist yet */ }
+
+  // Told once, on the flip from pending to paid, so the browser confirm, the
+  // Paystack webhook and the reconcile pass cannot each send their own copy.
+  try { await notifyDonation(admin, updated[0], reference); } catch { /* non-fatal */ }
 
   return { updated: true };
 }
@@ -206,9 +224,9 @@ async function notifyOrder(admin: ReturnType<typeof createAdminClient>, rows: an
   const storeName = (site?.site_data as any)?.businessName || "your store";
 
   const items = rows
-    .map((r) => `<li>${nameById.get(r.product_id) || "Item"}${r.color ? ` (${r.color})` : ""}, ${formatNaira(r.amount || 0)}</li>`)
+    .map((r) => `<li>${esc(nameById.get(r.product_id) || "Item")}${r.color ? ` (${esc(r.color)})` : ""}, ${formatNaira(r.amount || 0)}</li>`)
     .join("");
-  const buyerLine = [buyer.name, buyer.email, buyer.phone, buyer.address].filter(Boolean).join(" · ");
+  const buyerLine = esc([buyer.name, buyer.email, buyer.phone, buyer.address].filter(Boolean).join(" · "));
 
   let ownerEmail: string | null = null;
   if (site?.user_id) {
@@ -222,11 +240,11 @@ async function notifyOrder(admin: ReturnType<typeof createAdminClient>, rows: an
       subject: `New order on ${storeName}, ${formatNaira(total)}`,
       html: `
         <h2>You've received a new order</h2>
-        <p>A customer just placed an order on <strong>${storeName}</strong>.</p>
+        <p>A customer just placed an order on <strong>${esc(storeName)}</strong>.</p>
         <ul>${items}</ul>
         <p><strong>Total paid: ${formatNaira(total)}</strong></p>
         <p><strong>Customer:</strong> ${buyerLine}</p>
-        <p>Reference: ${reference}</p>
+        <p>Reference: ${esc(reference)}</p>
         <p>Log in to your Tomora dashboard to fulfil it.</p>`,
     });
   }
@@ -236,11 +254,75 @@ async function notifyOrder(admin: ReturnType<typeof createAdminClient>, rows: an
       to: buyer.email,
       subject: `Your order from ${storeName} is confirmed`,
       html: `
-        <h2>Thank you, ${buyer.name || "there"}!</h2>
-        <p>Your order from <strong>${storeName}</strong> has been placed successfully.</p>
+        <h2>Thank you, ${esc(buyer.name || "there")}!</h2>
+        <p>Your order from <strong>${esc(storeName)}</strong> has been placed successfully.</p>
         <ul>${items}</ul>
         <p><strong>Total: ${formatNaira(total)}</strong></p>
-        <p>Reference: ${reference}</p>`,
+        <p>Reference: ${esc(reference)}</p>`,
+    });
+  }
+}
+
+/**
+ * Tells the owner a gift arrived, and thanks the donor.
+ *
+ * Mirrors the order notification deliberately: an organisation watching for
+ * donations should not have to check a dashboard to learn one came in, and a
+ * donor who gave money should get something they can keep.
+ */
+async function notifyDonation(
+  admin: ReturnType<typeof createAdminClient>,
+  row: any,
+  reference: string,
+) {
+  const amount = formatNaira(row?.amount || 0);
+  const { data: site } = await admin
+    .from("sites").select("user_id, site_data").eq("id", row.site_id).maybeSingle();
+  const orgName = (site?.site_data as any)?.businessName || "your site";
+
+  // project_name arrives with migration 0026; older rows simply have none.
+  const projectLine = row?.project_name
+    ? `<p><strong>Project:</strong> ${esc(row.project_name)}</p>`
+    : "";
+  const donorLine = esc([row?.donor_name, row?.donor_email].filter(Boolean).join(" · ")) || "Anonymous";
+  // Split straight to their bank rather than held in the Tomora wallet.
+  const whereItWent = row?.settled_direct
+    ? "It has been paid into your bank account by Paystack."
+    : "It has been added to your Tomora Wallet.";
+
+  let ownerEmail: string | null = null;
+  if (site?.user_id) {
+    const { data: profile } = await admin
+      .from("profiles").select("email").eq("user_id", site.user_id).maybeSingle();
+    ownerEmail = (profile?.email as string) || null;
+  }
+
+  if (ownerEmail) {
+    await sendEmail({
+      to: ownerEmail,
+      subject: `New donation on ${orgName}, ${amount}`,
+      html: `
+        <h2>You've received a new donation</h2>
+        <p>Someone just gave to <strong>${esc(orgName)}</strong>.</p>
+        <p><strong>Amount: ${amount}</strong></p>
+        ${projectLine}
+        <p><strong>From:</strong> ${donorLine}</p>
+        <p>${whereItWent}</p>
+        <p>Reference: ${esc(reference)}</p>`,
+    });
+  }
+
+  if (row?.donor_email) {
+    await sendEmail({
+      to: row.donor_email,
+      subject: `Thank you for your donation to ${orgName}`,
+      html: `
+        <h2>Thank you, ${esc(row.donor_name || "friend")}!</h2>
+        <p>Your donation to <strong>${esc(orgName)}</strong> has been received.</p>
+        <p><strong>Amount: ${amount}</strong></p>
+        ${projectLine}
+        <p>Reference: ${esc(reference)}</p>
+        <p>Keep this email as your receipt.</p>`,
     });
   }
 }
