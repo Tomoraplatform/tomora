@@ -18,6 +18,38 @@ import { formatNaira } from "@/lib/utils";
  * longer strand money outside the owner's wallet.
  */
 
+/**
+ * Where to tell the owner about a sale or a gift.
+ *
+ * The address on the profile is the one to use: an owner can change it, and it
+ * is what they expect to hear on. But a profile row can carry no email at all,
+ * from an account created before the signup trigger existed or one whose
+ * profile was written some other way, and the only symptom of that is silence
+ * on every order they ever take. So fall back to the address the account
+ * itself was registered with, which always exists.
+ */
+async function ownerEmailFor(
+  admin: ReturnType<typeof createAdminClient>,
+  userId: string,
+): Promise<string | null> {
+  const { data: profile } = await admin
+    .from("profiles").select("email").eq("user_id", userId).maybeSingle();
+  const fromProfile = ((profile?.email as string) || "").trim();
+  if (fromProfile) return fromProfile;
+
+  try {
+    const { data } = await admin.auth.admin.getUserById(userId);
+    const fromAuth = (data?.user?.email || "").trim();
+    if (fromAuth) {
+      console.warn(`[notify] profile ${userId} has no email; using the account address instead`);
+      return fromAuth;
+    }
+  } catch (err) {
+    console.error("[notify] could not read the account address:", err);
+  }
+  return null;
+}
+
 /** Marks a donation paid and credits the site owner's Tomora Wallet. */
 export async function confirmDonationPaid(reference: string): Promise<{ updated: boolean }> {
   const admin = createAdminClient();
@@ -215,11 +247,7 @@ async function notifyOrder(admin: ReturnType<typeof createAdminClient>, rows: an
     .join("");
   const buyerLine = esc([buyer.name, buyer.email, buyer.phone, buyer.address].filter(Boolean).join(" · "));
 
-  let ownerEmail: string | null = null;
-  if (site?.user_id) {
-    const { data: profile } = await admin.from("profiles").select("email").eq("user_id", site.user_id).maybeSingle();
-    ownerEmail = (profile?.email as string) || null;
-  }
+  const ownerEmail = site?.user_id ? await ownerEmailFor(admin, site.user_id) : null;
 
   if (ownerEmail) {
     await sendEmail({
@@ -277,12 +305,7 @@ async function notifyDonation(
     ? "It has been paid into your bank account by Paystack."
     : "It has been added to your Tomora Wallet.";
 
-  let ownerEmail: string | null = null;
-  if (site?.user_id) {
-    const { data: profile } = await admin
-      .from("profiles").select("email").eq("user_id", site.user_id).maybeSingle();
-    ownerEmail = (profile?.email as string) || null;
-  }
+  const ownerEmail = site?.user_id ? await ownerEmailFor(admin, site.user_id) : null;
 
   if (ownerEmail) {
     await sendEmail({
