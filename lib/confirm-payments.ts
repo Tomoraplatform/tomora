@@ -6,6 +6,7 @@ import { enqueueAndSend, clearCartAfterPayment } from "@/lib/live/conversations"
 import { text } from "@/lib/live/messages";
 import { verifyTransaction } from "@/lib/paystack";
 import { sendEmail } from "@/lib/email";
+import { escapeHtml as esc } from "@/lib/html";
 import { formatNaira } from "@/lib/utils";
 
 /**
@@ -16,20 +17,6 @@ import { formatNaira } from "@/lib/utils";
  * dashboard reconcile pass, so a donor closing the tab after paying can no
  * longer strand money outside the owner's wallet.
  */
-
-/**
- * Escapes a value before it goes into an email body.
- *
- * Donor and buyer names are typed by strangers and land in the owner's inbox
- * as HTML, so an unescaped one could put markup in a message the owner trusts.
- */
-function esc(value: unknown): string {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 /** Marks a donation paid and credits the site owner's Tomora Wallet. */
 export async function confirmDonationPaid(reference: string): Promise<{ updated: boolean }> {
