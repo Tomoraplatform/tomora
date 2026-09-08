@@ -1,6 +1,6 @@
 import { LifeBuoy, Mail, MessageCircle } from "lucide-react";
+import { SUPPORT_EMAIL } from "@/lib/support";
 
-const SUPPORT_EMAIL = "tommyconcept4@gmail.com";
 const SUPPORT_WHATSAPP = "2348105220236";
 
 /**

@@ -7,6 +7,7 @@ import { UpgradeButton } from "@/components/dashboard/upgrade-button";
 import { PLANS, getPlan, nextCharge, RENEWAL_INTERVAL_MONTHS } from "@/lib/constants";
 import { loadPlanDiscounts, discountedPrice } from "@/lib/discounts";
 import { formatNaira } from "@/lib/utils";
+import { SUPPORT_EMAIL } from "@/lib/support";
 
 export const metadata = { title: "Billing | Tomora" };
 
@@ -126,7 +127,7 @@ export default async function BillingPage({
           <p className="text-sm text-ink/70">
             Custom features built and managed by a Tomora web expert.
           </p>
-          <Button asChild variant="outline"><a href="mailto:tomoraplatform@gmail.com">Talk to us</a></Button>
+          <Button asChild variant="outline"><a href={`mailto:${SUPPORT_EMAIL}`}>Talk to us</a></Button>
         </CardContent>
       </Card>
     </div>

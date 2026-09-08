@@ -9,6 +9,7 @@ import { HowItWorks } from "@/components/marketing/how-it-works";
 import { FeatureCards } from "@/components/marketing/feature-cards";
 import { TemplatePreview } from "@/components/marketing/template-preview";
 import { Button } from "@/components/ui/button";
+import { SUPPORT_EMAIL } from "@/lib/support";
 import {
   Accordion,
   AccordionContent,
@@ -59,7 +60,7 @@ export default async function Home({
               url: "https://www.tomora.com.ng",
               logo: "https://www.tomora.com.ng/icon.png",
               description: "No-code website builder for African businesses, NGOs, churches and creators. Pick a template, add your brand, and go live in minutes.",
-              email: "mailto:tommyconcept4@gmail.com",
+              email: `mailto:${SUPPORT_EMAIL}`,
               areaServed: "NG",
             },
             {
@@ -259,7 +260,7 @@ function Pricing({ discounts }: { discounts: Record<string, number> }) {
                 className={`mt-6 ${popular ? "bg-cream text-ink hover:bg-white" : ""}`}
               >
                 {isCustom ? (
-                  <a href="mailto:tomoraplatform@gmail.com">{plan.cta}</a>
+                  <a href={`mailto:${SUPPORT_EMAIL}`}>{plan.cta}</a>
                 ) : (
                   <Link href="/signup">{plan.cta}</Link>
                 )}
