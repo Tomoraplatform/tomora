@@ -1,6 +1,6 @@
 import "server-only";
 import { SUPPORT_EMAIL } from "@/lib/support";
-import { escapeHtml } from "@/lib/html";
+import { escapeHtml, htmlToText } from "@/lib/html";
 
 /**
  * The sender address, repaired if EMAIL_FROM was typed slightly wrong.
@@ -51,6 +51,10 @@ export async function sendEmail(params: {
   to: string | string[];
   subject: string;
   html: string;
+  /** Plain-text alternative. Derived from the HTML when not given. */
+  text?: string;
+  /** Where a reply should go. Defaults to the support inbox. */
+  replyTo?: string;
 }): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
@@ -62,7 +66,18 @@ export async function sendEmail(params: {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to: params.to, subject: params.subject, html: params.html }),
+      body: JSON.stringify({
+        from,
+        to: params.to,
+        subject: params.subject,
+        html: params.html,
+        // Both parts, and a real address to answer. HTML-only mail from a young
+        // domain is a spam signal, and a message nobody can reply to reads like
+        // one too. This is the cheap half of deliverability; the rest is
+        // reputation, which only sending well earns.
+        text: params.text || htmlToText(params.html),
+        reply_to: params.replyTo || SUPPORT_EMAIL,
+      }),
     });
     if (!res.ok) {
       // Say why. A silent false here is how a wrong sender address went
