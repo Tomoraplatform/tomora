@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { sendTikTokEvent } from "@/lib/tiktok/events-api";
 import { TIKTOK_EVENTS } from "@/lib/tiktok/config";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export interface AuthState {
   error?: string;
@@ -72,6 +73,18 @@ export async function signUp(
     ip: headers().get("x-forwarded-for")?.split(",")[0]?.trim(),
     userAgent: headers().get("user-agent") || undefined,
   });
+
+  // Signing up with an address that already has an account returns a user with
+  // no identities, which is how Supabase avoids confirming to a stranger that
+  // someone is registered. Welcoming them would be wrong, and would leak the
+  // same fact by another route.
+  if ((data.user?.identities?.length ?? 0) > 0) {
+    // Best-effort, and deliberately not awaited into the failure path: a
+    // welcome email must never be the reason an account cannot be created.
+    try {
+      await sendWelcomeEmail({ to: email, name });
+    } catch { /* non-fatal */ }
+  }
 
   // If email confirmation is disabled, a session is returned immediately.
   if (data.session) {
