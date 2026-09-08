@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import { HashScroll } from "@/components/marketing/hash-scroll";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -33,6 +34,8 @@ export function MarketingNav() {
         scrolled ? "border-b border-ink/10 shadow-sm" : "border-b border-transparent"
       )}
     >
+      {/* Lives with the nav because this is where the in-page links are. */}
+      <HashScroll />
       <div className="container flex h-16 items-center justify-between md:h-20">
         <Logo />
 

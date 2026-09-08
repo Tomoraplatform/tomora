@@ -45,11 +45,22 @@
   html {
     scroll-behavior: smooth;
   }
+  /* The marketing header is sticky, so an anchored section landing flush with
+     the top of the viewport has its heading hidden underneath it. */
+  :target,
+  section[id] {
+    scroll-margin-top: 6rem;
+  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    /* Guard against any element forcing horizontal scroll on mobile. */
-    overflow-x: hidden;
+    /* Guard against any element forcing horizontal scroll on mobile.
+       `clip` rather than `hidden`: hidden on one axis makes the browser compute
+       the other as `auto`, which turns body into its own scroll container. That
+       split between html and body is a known way to break anchor jumps and
+       scrollIntoView, which is what "#faq does nothing" looks like. `clip`
+       cuts the overflow without creating a scroll container. */
+    overflow-x: clip;
   }
 }
 
