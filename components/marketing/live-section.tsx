@@ -45,7 +45,7 @@ export function LiveSection() {
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
-              href="/dashboard/live"
+              href="/live"
               className="inline-flex items-center gap-2 rounded-full bg-emerald-500 px-6 py-3 font-semibold text-ink transition hover:bg-emerald-400"
             >
               <MessageCircle className="h-4 w-4" /> Activate Tomora Live
