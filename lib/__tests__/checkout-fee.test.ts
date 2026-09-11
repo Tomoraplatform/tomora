@@ -34,8 +34,11 @@ vi.mock("@/lib/plan-fees", () => ({
 vi.mock("@/lib/payment-charges", () => ({
   recordPaymentCharge: async (c: Record<string, any>) => { chargesRecorded.push(c); },
 }));
+let initError: Error | null = null;
+
 vi.mock("@/lib/paystack", () => ({
   initTransaction: async (p: Record<string, any>) => {
+    if (initError) throw initError;
     inits.push(p);
     return { access_code: "ac_1", reference: p.reference, authorization_url: "https://paystack.test" };
   },
@@ -89,6 +92,7 @@ beforeEach(() => {
   orderInserts.length = 0;
   donationInserts.length = 0;
   policyError = null;
+  initError = null;
   site.site_data = { donationEnabled: true, businessName: "Ada Stores" };
   policy = { planId: "free", rate: { percent: 3, flat: 75 }, allowBankTransfer: false, overridden: false };
 });
@@ -149,6 +153,21 @@ describe("store checkout on the Free plan", () => {
     expect(res.status).toBe(503);
     expect(inits).toHaveLength(0);
     expect(orderInserts).toHaveLength(0);
+  });
+});
+
+describe("a store whose payout account Paystack rejects", () => {
+  it("tells the shopper what they can do instead of repeating Paystack's jargon", async () => {
+    policy = { planId: "growth", rate: { percent: 0, flat: 0 }, allowBankTransfer: true, overridden: false };
+    initError = new Error("Invalid Subaccount.");
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { POST } = await import("@/app/api/checkout/route");
+    const res = await POST(post("/api/checkout", order("paystack")));
+    const body = await res.json();
+    expect(errors).toHaveBeenCalledWith(expect.stringMatching(/site-1/));
+    errors.mockRestore();
+    expect(body.error).toMatch(/bank transfer/);
+    expect(body.error).not.toMatch(/Subaccount/);
   });
 });
 

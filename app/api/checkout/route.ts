@@ -268,6 +268,20 @@ export async function POST(request: NextRequest) {
         discount, couponCode: appliedCode, accessCode: init.access_code,
       });
     } catch (e: any) {
+      // Paystack refusing the store's payout account is the owner's setup, not
+      // something a shopper can act on, and its wording ("Invalid Subaccount")
+      // means nothing to them. Say what they can do, and log it for the admin
+      // Payments health page to explain.
+      if (/subaccount/i.test(String(e?.message))) {
+        console.error(`[checkout] Paystack rejected the payout account of site ${siteId}: ${e.message}`);
+        const canTransfer = !!site.account_number && (policy?.allowBankTransfer ?? true)
+          && ((site.site_data as any)?.paymentMethods?.transfer ?? true);
+        return NextResponse.json({
+          error: canTransfer
+            ? "Card payment isn't available on this store right now. Please choose bank transfer, or contact the store."
+            : "Card payment isn't available on this store right now. Please contact the store.",
+        }, { status: 502 });
+      }
       return NextResponse.json({ error: e.message || "Could not start the payment." }, { status: 502 });
     }
   }

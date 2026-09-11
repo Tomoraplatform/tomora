@@ -113,6 +113,41 @@ export async function updateSubaccount(code: string, percentageCharge: number): 
   return !!json.status;
 }
 
+export interface SubaccountCheck {
+  /** Paystack knows this code under the key the server is using. */
+  found: boolean;
+  /** Paystack's reason when it does not. */
+  message?: string;
+  active?: boolean;
+  accountNumber?: string | null;
+  bankName?: string | null;
+  percentageCharge?: number | null;
+}
+
+/**
+ * Looks a subaccount up without changing it. A code created under a different
+ * Paystack key (test instead of live, or another business) is "not found"
+ * here, and that is exactly the case where checkout fails with
+ * "Invalid Subaccount".
+ */
+export async function fetchSubaccount(code: string): Promise<SubaccountCheck> {
+  const res = await fetch(`${PAYSTACK_BASE}/subaccount/${encodeURIComponent(code)}`, {
+    headers: { Authorization: `Bearer ${secret()}` },
+    signal: AbortSignal.timeout(15000),
+    cache: "no-store",
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!json?.status || !json?.data) return { found: false, message: json?.message || `HTTP ${res.status}` };
+  const d = json.data;
+  return {
+    found: true,
+    active: d.active !== false,
+    accountNumber: d.account_number ?? null,
+    bankName: d.settlement_bank ?? null,
+    percentageCharge: d.percentage_charge == null ? null : Number(d.percentage_charge),
+  };
+}
+
 /** Creates (or reuses) a transfer recipient for a bank account. Returns recipient_code. */
 export async function createTransferRecipient(params: {
   name: string;

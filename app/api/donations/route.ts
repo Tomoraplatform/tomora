@@ -111,6 +111,11 @@ export async function POST(request: NextRequest) {
       amount, platformFee: quote.platformFee, processingFee: charge - amount, charge,
     });
   } catch (e: any) {
+    // The organisation's payout account, not anything the donor can fix.
+    if (/subaccount/i.test(String(e?.message))) {
+      console.error(`[donations] Paystack rejected the payout account of site ${siteId}: ${e.message}`);
+      return NextResponse.json({ error: "Online giving isn't available here right now. Please contact the organisation." }, { status: 502 });
+    }
     return NextResponse.json({ error: e.message || "Could not start this donation." }, { status: 502 });
   }
 }
