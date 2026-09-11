@@ -2,7 +2,7 @@ import "server-only";
 import { revalidateSite, revalidateSitesForUser } from "@/lib/site-cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
-  nextCharge, RENEWAL_INTERVAL_MONTHS, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, GRACE_PERIOD_DAYS,
+  FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, GRACE_PERIOD_DAYS,
   getPlan, NEW_DOMAIN_AMOUNT, VAT_PERCENT,
 } from "@/lib/constants";
 import { creditPlatform, recordTransaction } from "@/lib/creator/money";
@@ -17,9 +17,9 @@ function addMonths(date: Date, months: number) {
 }
 
 /**
- * Records a successful platform payment, sets the plan, and (for Pro) advances
- * the 3-month billing cycle. Monthly plans renew every month. Idempotent on
- * `reference`. Activates the user's site.
+ * Records a successful platform payment and sets the plan. Plans renew every
+ * month, the one-time plan every year. Idempotent on `reference`. Activates
+ * the user's site.
  */
 export async function applyPlatformPayment(
   userId: string,
@@ -42,15 +42,15 @@ export async function applyPlatformPayment(
   if (sub?.last_reference === reference) return { already: true };
 
   const plan = getPlan(planId || sub?.plan || "pro");
-  const isPro = plan?.id === "pro";
   const isYearly = plan?.id === "onetime";
   const now = new Date();
 
-  // Pro keeps the 0-3 cycle; the one-time (yearly) plan and monthly plans stay at position 0.
-  const position = sub?.billing_cycle_position ?? 0;
-  const result = isPro ? nextCharge(position) : { nextPosition: 0, includesDomain: !!plan?.includesDomain };
+  // Every plan is monthly except the one-time (yearly) plan. Pro used to walk
+  // a 3-month, 0-3 cycle; it became monthly on 2026-09-11, so the position is
+  // simply reset to 0 here and no longer read.
+  const result = { nextPosition: 0, includesDomain: !!plan?.includesDomain };
   // The one-time plan bills again in 12 months (₦20,000/yr covers domain + infrastructure).
-  const nextBilling = addMonths(now, isPro ? RENEWAL_INTERVAL_MONTHS : isYearly ? 12 : 1);
+  const nextBilling = addMonths(now, isYearly ? 12 : 1);
 
   const payload = {
     user_id: userId,

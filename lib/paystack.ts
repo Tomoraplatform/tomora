@@ -21,11 +21,14 @@ export async function initTransaction(params: {
   metadata?: Record<string, unknown>;
   /** Settle to a store owner's subaccount (split payment). */
   subaccount?: string;
-  /** Who bears Paystack's fees when a subaccount is used. */
+  /** Who bears Paystack's fees when a subaccount is used. This decides who
+   *  pays Paystack, not who receives `transactionCharge`: that always goes to
+   *  the main account. */
   bearer?: "account" | "subaccount";
   /** A flat cut, in naira, for the main account when splitting to a subaccount.
-   *  Used by Tomora Live to take its commission at the point of payment rather
-   *  than by holding the seller's money first. */
+   *  It overrides the subaccount's own percentage_charge for this payment.
+   *  Used by Tomora Live for its commission and by storefront checkout and
+   *  donations for the plan's transaction fee. */
   transactionCharge?: number;
 }): Promise<InitResult> {
   const res = await fetch(`${PAYSTACK_BASE}/transaction/initialize`, {
@@ -164,15 +167,24 @@ export async function verifyTransaction(reference: string): Promise<{
   success: boolean;
   amountNaira: number;
   metadata?: any;
+  /**
+   * How Paystack divided a split payment, in naira: what reached Tomora's main
+   * account (`integration`), the subaccount, and Paystack itself. Absent for a
+   * payment that did not split.
+   */
+  split?: { integration: number | null; subaccount: number | null; paystack: number | null };
 }> {
   const res = await fetch(`${PAYSTACK_BASE}/transaction/verify/${encodeURIComponent(reference)}`, {
     headers: { Authorization: `Bearer ${secret()}` },
   });
   const json = await res.json();
   const data = json.data;
+  const fs = data?.fees_split;
+  const naira = (kobo: unknown) => (kobo == null || !Number.isFinite(Number(kobo)) ? null : Number(kobo) / 100);
   return {
     success: json.status && data?.status === "success",
     amountNaira: data ? data.amount / 100 : 0,
     metadata: data?.metadata,
+    ...(fs ? { split: { integration: naira(fs.integration), subaccount: naira(fs.subaccount), paystack: naira(fs.paystack ?? data?.fees) } } : {}),
   };
 }

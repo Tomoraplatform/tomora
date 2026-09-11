@@ -6,6 +6,9 @@ import { validateCoupon } from "@/lib/coupons";
 import { initTransaction } from "@/lib/paystack";
 import { PAYSTACK_FEE_PERCENT } from "@/lib/constants";
 import { combosOf } from "@/lib/restaurant/types";
+import { feePolicyForOwner, type FeePolicy } from "@/lib/plan-fees";
+import { quoteCharge } from "@/lib/platform-fee";
+import { recordPaymentCharge } from "@/lib/payment-charges";
 
 /**
  * Records a storefront order as pending and returns the store owner's bank
@@ -48,6 +51,22 @@ export async function POST(request: NextRequest) {
   }
   if (!isDemo && method === "transfer" && !site.account_number) {
     return NextResponse.json({ error: "This store hasn't added a payment account yet." }, { status: 400 });
+  }
+
+  // The owner's plan decides Tomora's transaction fee, and whether the store
+  // may take a bank transfer at all: a transfer never touches Paystack, so a
+  // fee could not be split from it. The sandbox moves no money and pays none.
+  let policy: FeePolicy | null = null;
+  if (!isDemo) {
+    try {
+      policy = await feePolicyForOwner(site.user_id as string);
+    } catch (e) {
+      console.error("[checkout] could not resolve the store's plan:", e);
+      return NextResponse.json({ error: "Checkout is briefly unavailable. Please try again in a moment." }, { status: 503 });
+    }
+    if (method === "transfer" && !policy.allowBankTransfer) {
+      return NextResponse.json({ error: "This store takes online payment only. Please pay with card, bank or USSD." }, { status: 400 });
+    }
   }
 
   // Real DB products.
@@ -215,13 +234,23 @@ export async function POST(request: NextRequest) {
   // ---- Pay with Paystack (card / bank / USSD), settles to the owner's subaccount ----
   if (method === "paystack") {
     const feeBearer = (site.site_data as any)?.feeBearer === "customer" ? "customer" : "owner";
-    // When the customer bears the fee, gross the charge up so the owner nets the order total.
-    const charge = feeBearer === "customer" ? Math.round(total * (1 + PAYSTACK_FEE_PERCENT / 100)) : total;
+    // `total` is what the owner is owed. Tomora's fee goes on top of it, and
+    // when the customer bears Paystack's fee the whole charge is grossed up so
+    // the owner still nets the order total.
+    const quote = quoteCharge(total, policy?.rate, feeBearer === "customer" ? PAYSTACK_FEE_PERCENT : 0);
+    const charge = quote.totalCharged;
     try {
       const origin = request.headers.get("origin") || new URL(request.url).origin;
+      if (policy) {
+        await recordPaymentCharge({
+          reference, kind: "order", siteId, ownerId: site.user_id as string, policy, quote,
+        });
+      }
       // Split to the owner's own payout account, so the sale lands in their
-      // bank rather than Tomora's balance. They bear Paystack's fee: Tomora
-      // takes no cut of a store sale.
+      // bank rather than Tomora's balance. They bear Paystack's fee. Tomora's
+      // fee, when the plan has one, is sent as transaction_charge: Paystack
+      // pays it to Tomora's main account and it overrides the subaccount's
+      // own percentage (0%) for this payment only.
       const init = await initTransaction({
         // Paystack requires one; the order itself keeps whatever the buyer gave.
         email: buyerEmail || `guest+${reference}@tomora.com.ng`,
@@ -230,9 +259,14 @@ export async function POST(request: NextRequest) {
         callbackUrl: `${origin}/?order=1`,
         subaccount: site.paystack_subaccount as string,
         bearer: "subaccount",
+        transactionCharge: quote.platformFee > 0 ? quote.platformFee : undefined,
         metadata: { custom_fields: [{ display_name: "Order", variable_name: "order", value: buyer.name || buyer.email }] },
       });
-      return NextResponse.json({ ok: true, method: "paystack", reference, amount: total, charge, feeBearer, discount, couponCode: appliedCode, accessCode: init.access_code });
+      return NextResponse.json({
+        ok: true, method: "paystack", reference, amount: total, subtotal: total,
+        platformFee: quote.platformFee, processingFee: charge - total, charge, feeBearer,
+        discount, couponCode: appliedCode, accessCode: init.access_code,
+      });
     } catch (e: any) {
       return NextResponse.json({ error: e.message || "Could not start the payment." }, { status: 502 });
     }

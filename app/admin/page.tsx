@@ -5,7 +5,8 @@ import { AdminDashboard, type AdminUserRow, type AdminDomainRow, type AdminCoupo
 import type { PlanCoupon } from "@/lib/plan-coupons";
 import { DomainRequestsPanel, type DomainRequestRow } from "@/components/admin/domain-requests";
 import { PayoutRequestsPanel, type PayoutRequestRow } from "@/components/admin/payout-requests";
-import { APP_DOMAIN, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, getPlan } from "@/lib/constants";
+import { APP_DOMAIN, FIRST_PAYMENT_AMOUNT, getPlan } from "@/lib/constants";
+import { loadPlanFeeRates } from "@/lib/plan-fees";
 import type { Profile, Site, Subscription, Domain, DomainRequest } from "@/lib/database.types";
 
 export const metadata = { robots: { index: false, follow: false },  title: "Admin | Tomora" };
@@ -40,6 +41,8 @@ export default async function AdminPage() {
   const academyIsOpen = academySetting === undefined || academySetting === null ? true : !!academySetting;
   const templateOverrides = await getTemplateOverrides();
 
+  const { rates: planFees, live: feesLive } = await loadPlanFeeRates();
+
   const planDiscounts: Record<string, { percent: number; active: boolean }> = {};
   (discountRows as { plan_id: string; percent: number; active: boolean }[] | null)?.forEach((d) => {
     planDiscounts[d.plan_id] = { percent: d.percent, active: d.active };
@@ -64,25 +67,22 @@ export default async function AdminPage() {
   const subByUser = new Map<string, Subscription>();
   (subs as Subscription[] | null)?.forEach((s) => subByUser.set(s.user_id, s));
 
-  const now = Date.now();
   const rows: AdminUserRow[] = (profiles as Profile[] | null || []).map((p) => {
     const site = siteByUser.get(p.user_id);
     const sub = subByUser.get(p.user_id);
     const activeSub = sub?.status === "active";
     const planName = activeSub ? getPlan(sub!.plan || "")?.name || "Active" : null;
-    const onTrial = !activeSub && site?.is_live && site.trial_ends_at && new Date(site.trial_ends_at).getTime() > now;
     return {
       userId: p.user_id,
       siteId: site?.id || null,
       name: p.business_name || "—",
       email: p.email || "—",
-      plan: planName || (onTrial ? "Trial" : site ? "Offline" : "No site"),
+      plan: planName || (site?.is_live ? "Free" : site ? "Offline" : "No site"),
       domain: site
         ? site.custom_domain && site.domain_status === "active"
           ? site.custom_domain
           : `${site.subdomain}.${APP_DOMAIN}`
         : "—",
-      trialEnd: site?.trial_ends_at ? new Date(site.trial_ends_at).toLocaleDateString() : "—",
       compExpires: activeSub && sub?.comp_expires_at ? new Date(sub.comp_expires_at).toLocaleDateString() : null,
       lastPayment: sub?.last_payment_date ? new Date(sub.last_payment_date).toLocaleDateString() : "—",
       isLive: !!site?.is_live,
@@ -91,7 +91,14 @@ export default async function AdminPage() {
 
   const activeSubs = (subs as Subscription[] | null)?.filter((s) => s.status === "active").length ?? 0;
   const liveSites = (sites as Site[] | null)?.filter((s) => s.is_live).length ?? 0;
-  const estAnnualRevenue = activeSubs * (FIRST_PAYMENT_AMOUNT + 3 * RENEWAL_AMOUNT);
+  // A year of each active subscription at its plan's current price.
+  const estAnnualRevenue = ((subs as Subscription[] | null) || [])
+    .filter((s) => s.status === "active")
+    .reduce((sum, s) => {
+      const plan = getPlan(s.plan || "pro");
+      if (!plan?.price) return sum;
+      return sum + (plan.id === "onetime" ? plan.renewal ?? plan.price : plan.price * 12);
+    }, 0);
 
   // Dated event series so the dashboard can filter stats by period
   // (weekly/monthly/quarterly/yearly) on the client.
@@ -156,6 +163,8 @@ export default async function AdminPage() {
         rows={rows}
         domains={domainRows}
         planDiscounts={planDiscounts}
+        planFees={planFees}
+        feesLive={feesLive}
         planCoupons={planCoupons}
         templateOverrides={templateOverrides}
         revenueResetAt={revenueResetAt}

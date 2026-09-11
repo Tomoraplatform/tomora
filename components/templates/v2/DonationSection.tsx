@@ -8,6 +8,9 @@ import { useStore } from "../store-context";
 import { useDonation } from "../donation-context";
 import { heading, subheading } from "./shared";
 import { optimisedFallback, optimisedSrcSet } from "@/lib/image";
+import { PAYSTACK_FEE_PERCENT } from "@/lib/constants";
+import { quoteCharge } from "@/lib/platform-fee";
+import { useSiteFees, type SiteFees } from "@/components/published/use-site-fees";
 
 declare global {
   interface Window { PaystackPop?: any; }
@@ -53,20 +56,43 @@ async function startDonation(
 }
 
 export function DonationSection({ siteData, brandColor }: { siteData: SiteData; brandColor: string }) {
+  const { siteId } = useStore();
+  // Read once here rather than per project card.
+  const fees = useSiteFees(siteData.donationEnabled ? siteId : null);
   if (!siteData.donationEnabled) return null;
   const projects = (siteData.donationProjects || []).filter((p) => p.name?.trim());
   if (projects.length > 0) {
-    return <ProjectsDonation siteData={siteData} brandColor={brandColor} projects={projects} />;
+    return <ProjectsDonation siteData={siteData} brandColor={brandColor} projects={projects} fees={fees} />;
   }
-  return <GeneralDonation siteData={siteData} brandColor={brandColor} />;
+  return <GeneralDonation siteData={siteData} brandColor={brandColor} fees={fees} />;
+}
+
+/**
+ * What the donor will actually be charged, when that is more than the gift:
+ * Tomora's fee on the organisation's plan, plus Paystack's fee when the
+ * organisation passes it on. The gift itself, and the progress bar, stay the
+ * amount the donor chose.
+ */
+function DonationBreakdown({ amount, fees, feeBearer }: { amount: number; fees: SiteFees | null; feeBearer?: string }) {
+  if (amount < 100) return null;
+  const q = quoteCharge(amount, fees?.rate, feeBearer === "customer" ? PAYSTACK_FEE_PERCENT : 0);
+  const fee = q.totalCharged - amount;
+  if (fee <= 0) return null;
+  return (
+    <div className="mt-3 space-y-1 rounded-lg bg-black/[0.03] px-3 py-2 text-xs text-ink/60">
+      <div className="flex justify-between"><span>Donation</span><span>{formatNaira(amount)}</span></div>
+      <div className="flex justify-between"><span>Processing fee</span><span>{formatNaira(fee)}</span></div>
+      <div className="flex justify-between font-semibold text-ink"><span>Total</span><span>{formatNaira(q.totalCharged)}</span></div>
+    </div>
+  );
 }
 
 /* ------------------- Multi-project layout ------------------- */
 
 function ProjectsDonation({
-  siteData, brandColor, projects,
+  siteData, brandColor, projects, fees,
 }: {
-  siteData: SiteData; brandColor: string; projects: CatalogDonationProject[];
+  siteData: SiteData; brandColor: string; projects: CatalogDonationProject[]; fees: SiteFees | null;
 }) {
   const { canDonate, unassigned } = useDonation();
 
@@ -78,7 +104,7 @@ function ProjectsDonation({
       </div>
 
       <div className={`mt-10 grid gap-6 md:grid-cols-2 ${projects.length >= 3 ? "xl:grid-cols-3" : ""}`}>
-        {projects.map((p) => <ProjectCard key={p.id} project={p} brandColor={brandColor} feeBearer={siteData.feeBearer} />)}
+        {projects.map((p) => <ProjectCard key={p.id} project={p} brandColor={brandColor} feeBearer={siteData.feeBearer} fees={fees} />)}
       </div>
 
       {unassigned.count > 0 && (
@@ -99,9 +125,9 @@ function ProjectsDonation({
 }
 
 function ProjectCard({
-  project, brandColor, feeBearer,
+  project, brandColor, feeBearer, fees,
 }: {
-  project: CatalogDonationProject; brandColor: string; feeBearer?: "customer" | "owner";
+  project: CatalogDonationProject; brandColor: string; feeBearer?: "customer" | "owner"; fees: SiteFees | null;
 }) {
   const { siteId } = useStore();
   const { projects: totals, refresh } = useDonation();
@@ -215,7 +241,7 @@ function ProjectCard({
               style={{ background: brandColor, color: onBrand }}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Heart className="h-4 w-4" />} Donate {amount >= 100 ? formatNaira(amount) : ""}
             </button>
-            {feeBearer === "customer" && <p className="mt-2 text-center text-xs text-ink/50">A small payment-processing fee is added at checkout.</p>}
+            <DonationBreakdown amount={amount} fees={fees} feeBearer={feeBearer} />
             <button onClick={() => setFormOpen(false)} className="mt-2 w-full text-center text-xs font-medium text-ink/50 hover:text-ink">Cancel</button>
           </>
         )}
@@ -226,7 +252,7 @@ function ProjectCard({
 
 /* ------------------- Single general-goal layout ------------------- */
 
-function GeneralDonation({ siteData, brandColor }: { siteData: SiteData; brandColor: string }) {
+function GeneralDonation({ siteData, brandColor, fees }: { siteData: SiteData; brandColor: string; fees: SiteFees | null }) {
   const { siteId } = useStore();
   const { raised, goal, count, canDonate, refresh } = useDonation();
   const onBrand = contrastText(brandColor);
@@ -322,7 +348,7 @@ function GeneralDonation({ siteData, brandColor }: { siteData: SiteData; brandCo
                 style={{ background: brandColor, color: onBrand }}>
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Heart className="h-4 w-4" />} Donate {amount >= 100 ? formatNaira(amount) : ""}
               </button>
-              {siteData.feeBearer === "customer" && <p className="mt-2 text-center text-xs text-ink/50">A small payment-processing fee is added at checkout.</p>}
+              <DonationBreakdown amount={amount} fees={fees} feeBearer={siteData.feeBearer} />
               {!canDonate && <p className="mt-2 text-center text-xs text-ink/50">Online giving activates once the organisation adds their payout bank.</p>}
             </>
           )}

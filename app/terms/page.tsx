@@ -35,6 +35,9 @@ export default function TermsPage() {
           <h3>Subscriptions</h3>
           <p>Paid plans renew for the period you select unless cancelled before renewal. Fees are shown before you pay. Except where the law requires otherwise, fees already paid are non-refundable. We may change plan features or pricing with reasonable notice.</p>
 
+          <h3>Transaction fees</h3>
+          <p>On some plans, including the Free plan, Tomora charges a transaction fee on each online sale or donation made through your site. The fee for your plan is shown on our pricing page and in your dashboard. It is added to your customer&apos;s or donor&apos;s total at checkout, shown to them before they pay, and paid to Tomora by Paystack as part of the same payment, so it is not deducted from the amount owed to you. Paystack&apos;s own processing fee is separate. Plans that charge a transaction fee accept online payments only, not direct bank transfers. We may change transaction fees with reasonable notice.</p>
+
           <h3>Tomora Live</h3>
           <p>Activating Tomora Live is free. We take {LIVE_COMMISSION_PERCENT}% of each sale that comes through WhatsApp, and nothing else. Sales made through your website are not charged this commission.</p>
 

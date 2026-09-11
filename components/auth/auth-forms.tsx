@@ -182,7 +182,7 @@ export function SignupForm() {
   const { mood, look, emailProps, secretProps } = usePanda(state);
 
   return (
-    <AuthPanel mood={mood} look={look} title="Start free for 14 days" subtitle="No credit card required. Go live in minutes.">
+    <AuthPanel mood={mood} look={look} title="Start free" subtitle="No credit card required. Go live in minutes.">
       <div className="space-y-4">
         <SocialAuth next="/dashboard" />
         <form action={action} className="space-y-4">

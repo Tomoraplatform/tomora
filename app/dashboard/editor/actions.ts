@@ -23,8 +23,8 @@ export async function saveSite(
     .update({ brand_color: siteData.brandColor, logo_url: siteData.logoUrl || null })
     .eq("user_id", user.id);
 
-  // Publish gating: the first (primary) site can go live on the trial; any
-  // additional site can only be published on a paid Growth+ plan.
+  // Publish gating: the first (primary) site can go live on the Free plan; any
+  // additional site needs a paid plan that allows more than one.
   let effectiveLive = isLive;
   let gated = false;
   if (isLive) {
@@ -57,7 +57,7 @@ export async function saveSite(
   revalidateSite(siteId);
   revalidatePath("/dashboard");
   if (gated) {
-    return { ok: true, gated: true, error: "Saved. Publishing extra sites needs the Growth plan or higher, upgrade to take this one live." };
+    return { ok: true, gated: true, error: "Saved. The Free plan publishes one site. Upgrade to Starter or higher to take this one live too." };
   }
   return { ok: true };
 }

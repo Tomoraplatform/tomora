@@ -2,7 +2,7 @@
 
 > Tomora is a no-code website builder made for African businesses, NGOs, churches, artisans and creators. Users pick a professionally designed template, add their brand, text, photos and products, and publish a live website in minutes at their own subdomain (yourname.tomora.com.ng) or a custom domain. Payments are handled through Paystack and payouts go directly to the owner's bank account.
 
-Tomora is built and operated in Nigeria. Pricing is in Nigerian Naira with a 14 day free trial.
+Tomora is built and operated in Nigeria. Pricing is in Nigerian Naira, with a Free plan to start.
 
 ## What Tomora offers
 
@@ -14,8 +14,9 @@ Tomora is built and operated in Nigeria. Pricing is in Nigerian Naira with a 14 
 
 ## Plans
 
-- Free trial: 14 days.
-- Starter, Pro and a One-Time plan (first year covers everything in Pro, then a small yearly renewal for domain and infrastructure).
+- Free: one website on a Tomora subdomain, with checkout and donations. A 3% + ₦75 transaction fee is added to the customer's total.
+- Starter (₦4,900/month, 3 websites, 1.5% transaction fee), Growth (₦9,800/month, 5 websites, custom domain, no transaction fee) and Pro (₦19,800/month, 10 websites, dedicated account manager, no transaction fee).
+- A One-Time plan (first year covers everything in Pro, then a small yearly renewal for domain and infrastructure).
 - Custom domains (.com.ng and others) can be requested inside the dashboard.
 
 ## Support

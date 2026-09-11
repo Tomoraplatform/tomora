@@ -6,27 +6,13 @@ import { isAdmin } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { updateSubaccount } from "@/lib/paystack";
-import { TRIAL_DAYS, getPlan, STORE_COMMISSION_PERCENT } from "@/lib/constants";
+import { getPlan, STORE_COMMISSION_PERCENT } from "@/lib/constants";
+import { validRate } from "@/lib/platform-fee";
 import { normaliseCode } from "@/lib/plan-coupons";
 
 async function guard() {
   if (!(await isAdmin())) throw new Error("Forbidden");
   return createAdminClient();
-}
-
-export async function extendTrial(siteId: string, days = TRIAL_DAYS): Promise<{ ok: boolean; error?: string }> {
-  try {
-    const admin = await guard();
-    const { data: site } = await admin.from("sites").select("trial_ends_at").eq("id", siteId).maybeSingle();
-    const base = site?.trial_ends_at && new Date(site.trial_ends_at) > new Date()
-      ? new Date(site.trial_ends_at) : new Date();
-    base.setDate(base.getDate() + days);
-    const { error } = await admin.from("sites").update({ trial_ends_at: base.toISOString(), is_live: true }).eq("id", siteId);
-    if (error) return { ok: false, error: error.message };
-    revalidateSite(siteId);
-    revalidatePath("/admin");
-    return { ok: true };
-  } catch (e: any) { return { ok: false, error: e.message }; }
 }
 
 /**
@@ -119,6 +105,27 @@ export async function setPlanDiscount(planId: string, percent: number): Promise<
     });
     if (error) return { ok: false, error: error.message };
     revalidatePath("/admin");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/**
+ * Set a plan's transaction fee. Takes effect on the next checkout, no
+ * redeploy. Merchants with their own override (those paying before the fee
+ * launched) keep it.
+ */
+export async function setPlanFee(planId: string, percent: number, flat: number): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const admin = await guard();
+    if (!getPlan(planId)) return { ok: false, error: "Unknown plan." };
+    const rate = validRate(percent, flat);
+    if (!rate) return { ok: false, error: "Percent must be 0 to 20, and the flat fee ₦0 to ₦5,000." };
+    const { error } = await admin.from("plan_fees").upsert({
+      plan_id: planId, fee_percent: rate.percent, fee_flat: rate.flat, updated_at: new Date().toISOString(),
+    });
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin");
+    revalidatePath("/");
     return { ok: true };
   } catch (e: any) { return { ok: false, error: e.message }; }
 }

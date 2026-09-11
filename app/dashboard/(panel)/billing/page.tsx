@@ -4,14 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { UpgradeButton } from "@/components/dashboard/upgrade-button";
-import { PLANS, getPlan, nextCharge, RENEWAL_INTERVAL_MONTHS } from "@/lib/constants";
+import { PLANS, getPlan } from "@/lib/constants";
 import { loadPlanDiscounts, discountedPrice } from "@/lib/discounts";
+import { feePolicyForOwner, loadPlanFeeRates } from "@/lib/plan-fees";
+import { feeRateLabel, isFree, transactionFeeLine } from "@/lib/platform-fee";
 import { formatNaira } from "@/lib/utils";
 import { SUPPORT_EMAIL } from "@/lib/support";
 
 export const metadata = { title: "Billing | Tomora" };
 
-const PAID_PLANS = PLANS.filter((p) => p.id !== "trial" && p.id !== "custom");
+const PAID_PLANS = PLANS.filter((p) => (p.price ?? 0) > 0);
 
 export default async function BillingPage({
   searchParams,
@@ -19,14 +21,16 @@ export default async function BillingPage({
   searchParams: { status?: string };
 }) {
   const { subscription } = await getDashboardData();
-  const discounts = await loadPlanDiscounts();
+  const [discounts, { rates }] = await Promise.all([loadPlanDiscounts(), loadPlanFeeRates()]);
   const active = subscription?.status === "active";
   const pastDue = subscription?.status === "past_due";
   const currentPlan = getPlan(subscription?.plan || "");
-  const isPro = currentPlan?.id === "pro";
-  const position = subscription?.billing_cycle_position ?? 0;
-  const proCharge = nextCharge(position);
-  const nextAmount = isPro ? proCharge.amount : currentPlan?.renewal ?? currentPlan?.price ?? 0;
+  const nextAmount = currentPlan?.renewal ?? currentPlan?.price ?? 0;
+  // The merchant's own rate, which can differ from the plan's list rate when
+  // they were paying before the fee launched.
+  const policy = active && subscription?.user_id
+    ? await feePolicyForOwner(subscription.user_id).catch(() => null)
+    : null;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -49,7 +53,7 @@ export default async function BillingPage({
       <Card>
         <CardHeader className="flex-row items-center justify-between space-y-0">
           <CardTitle>Current Plan</CardTitle>
-          <Badge variant={active ? "success" : "secondary"}>{active ? currentPlan?.name || "Active" : "Free Trial"}</Badge>
+          <Badge variant={active ? "success" : "secondary"}>{active ? currentPlan?.name || "Active" : "Free"}</Badge>
         </CardHeader>
         <CardContent className="space-y-4">
           {active ? (
@@ -58,16 +62,17 @@ export default async function BillingPage({
               <Stat label="Next amount" value={formatNaira(nextAmount)} />
               <Stat label="Next billing date" value={subscription?.next_billing_date ? new Date(subscription.next_billing_date).toLocaleDateString() : "—"} />
               <Stat label="Last payment" value={subscription?.last_payment_date ? new Date(subscription.last_payment_date).toLocaleDateString() : "—"} />
+              {policy && (
+                <Stat label="Your transaction fee" value={isFree(policy.rate) ? "None" : feeRateLabel(policy.rate)} />
+              )}
               <div className="pt-2 sm:col-span-2">
                 <UpgradeButton plan={currentPlan?.id} planName={currentPlan?.name} label="Renew now" />
-                {isPro && (
-                  <p className="mt-2 text-xs text-ink/50">Cycle {position} of 3 · renews every {RENEWAL_INTERVAL_MONTHS} months.</p>
-                )}
               </div>
             </div>
           ) : (
             <p className="text-ink/70">
-              You&apos;re on the free trial. Choose a plan below to keep your site online and unlock more features.
+              You&apos;re on the Free plan: one website, with a {feeRateLabel(rates.free)} transaction fee that your
+              customers pay at checkout. Choose a plan below for more sites, a custom domain and a lower fee.
             </p>
           )}
         </CardContent>
@@ -94,15 +99,16 @@ export default async function BillingPage({
                 {discounts[plan.id] ? (
                   <Badge variant="success" className="mt-1">{discounts[plan.id]}% off</Badge>
                 ) : null}
-                {plan.id === "pro" && (
-                  <p className="text-xs text-ink/50">then {formatNaira(plan.renewal!)} every {RENEWAL_INTERVAL_MONTHS} months</p>
-                )}
                 {plan.id === "onetime" && (
                   <p className="text-xs text-ink/50">then only {formatNaira(plan.renewal!)}/year, domain renewal &amp; maintenance</p>
                 )}
               </CardHeader>
               <CardContent className="space-y-4">
                 <ul className="space-y-2 text-sm">
+                  <li className="flex items-start gap-2">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                    <span className="min-w-0 break-words font-medium text-ink/80">{transactionFeeLine(rates[plan.id])}</span>
+                  </li>
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-start gap-2">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />

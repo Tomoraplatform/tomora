@@ -2,6 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { initTransaction } from "@/lib/paystack";
 import { PAYSTACK_FEE_PERCENT } from "@/lib/constants";
+import { feePolicyForOwner, type FeePolicy } from "@/lib/plan-fees";
+import { quoteCharge } from "@/lib/platform-fee";
+import { recordPaymentCharge } from "@/lib/payment-charges";
 
 /**
  * Starts an online donation: records a pending row and initializes a Paystack
@@ -25,7 +28,7 @@ export async function POST(request: NextRequest) {
 
   const { data: site } = await admin
     .from("sites")
-    .select("id, is_live, paystack_subaccount, site_data")
+    .select("id, is_live, paystack_subaccount, site_data, user_id")
     .eq("id", siteId)
     .maybeSingle();
   if (!site || !site.is_live || !(site.site_data as any)?.donationEnabled) {
@@ -33,6 +36,15 @@ export async function POST(request: NextRequest) {
   }
   if (!site.paystack_subaccount) {
     return NextResponse.json({ error: "This organisation hasn't set up payouts yet." }, { status: 400 });
+  }
+
+  // The organisation's plan decides Tomora's transaction fee on the gift.
+  let policy: FeePolicy;
+  try {
+    policy = await feePolicyForOwner(site.user_id as string);
+  } catch (e) {
+    console.error("[donations] could not resolve the site's plan:", e);
+    return NextResponse.json({ error: "Giving is briefly unavailable. Please try again in a moment." }, { status: 503 });
   }
 
   // Resolve the named project this gift is for (multi-project fundraising).
@@ -68,26 +80,36 @@ export async function POST(request: NextRequest) {
 
   try {
     const origin = request.headers.get("origin") || new URL(request.url).origin;
-    // When the org passes the fee on, the donor is charged a bit more so the
-    // cause still receives the full gift. The recorded donation stays `amount`.
+    // Tomora's fee, when the plan has one, is added on top of the gift. When
+    // the org passes Paystack's fee on too, the donor is charged a bit more
+    // again so the cause still receives the full gift. The recorded donation
+    // stays `amount` either way, which is what the progress bar counts.
     const feeBearer = (site.site_data as any)?.feeBearer === "customer" ? "customer" : "owner";
-    const charge = feeBearer === "customer" ? Math.round(amount * (1 + PAYSTACK_FEE_PERCENT / 100)) : amount;
+    const quote = quoteCharge(amount, policy.rate, feeBearer === "customer" ? PAYSTACK_FEE_PERCENT : 0);
+    const charge = quote.totalCharged;
+    await recordPaymentCharge({
+      reference, kind: "donation", siteId, ownerId: site.user_id as string, policy, quote,
+    });
     // Split to the organisation's own payout account: the gift lands in their
-    // bank, not Tomora's. They bear Paystack's fee, since Tomora takes no cut
-    // of a donation.
+    // bank, not Tomora's. They bear Paystack's fee. Tomora's fee goes to its
+    // main account as transaction_charge, never out of the gift.
     const init = await initTransaction({
       email: String(email),
       amountNaira: charge,
       reference,
       subaccount: site.paystack_subaccount as string,
       bearer: "subaccount",
+      transactionCharge: quote.platformFee > 0 ? quote.platformFee : undefined,
       callbackUrl: `${origin}/?donated=1`,
       metadata: { custom_fields: [
         { display_name: "Donation", variable_name: "donation", value: name || email },
         ...(project ? [{ display_name: "Project", variable_name: "project", value: project.name }] : []),
       ] },
     });
-    return NextResponse.json({ reference: init.reference, accessCode: init.access_code });
+    return NextResponse.json({
+      reference: init.reference, accessCode: init.access_code,
+      amount, platformFee: quote.platformFee, processingFee: charge - amount, charge,
+    });
   } catch (e: any) {
     return NextResponse.json({ error: e.message || "Could not start this donation." }, { status: 502 });
   }
