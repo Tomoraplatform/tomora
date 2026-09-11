@@ -7,7 +7,7 @@ import { revalidateSite, revalidateSiteHosts } from "@/lib/site-cache";
 import { createClient } from "@/lib/supabase/server";
 import { SITE_COOKIE, DEMO_SITE_COOKIE } from "@/lib/dashboard";
 import { createCatalogContent, isCatalogTemplate, catalogTemplate, type CatalogCategoryId } from "@/lib/catalog";
-import { getPlan } from "@/lib/constants";
+import { FREE_PLAN_ID, getPlan } from "@/lib/constants";
 import { slugifySubdomain } from "@/lib/utils";
 import type { SiteCategory } from "@/lib/database.types";
 
@@ -87,8 +87,8 @@ export async function createAdditionalSite(templateId: string): Promise<CreateSi
   ]);
 
   const count = sites?.length ?? 0;
-  const planId = sub?.status === "active" ? sub?.plan || "pro" : "trial";
-  const plan = getPlan(planId) ?? getPlan("trial")!;
+  const planId = sub?.status === "active" ? sub?.plan || "pro" : FREE_PLAN_ID;
+  const plan = getPlan(planId) ?? getPlan(FREE_PLAN_ID)!;
   if (count >= plan.siteLimit) {
     return { ok: false, error: `Your ${plan.name} plan allows ${plan.siteLimit} site${plan.siteLimit > 1 ? "s" : ""}. Upgrade to add more.` };
   }

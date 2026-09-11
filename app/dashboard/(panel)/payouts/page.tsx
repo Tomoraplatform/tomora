@@ -6,6 +6,9 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { PayoutsForm } from "@/components/dashboard/payouts-form";
 import { PaymentOptions } from "@/components/dashboard/payment-options";
+import { feePolicyForOwner } from "@/lib/plan-fees";
+import { feeRateLabel, isFree } from "@/lib/platform-fee";
+import { getPlan } from "@/lib/constants";
 
 export const metadata = { title: "Payouts | Tomora" };
 
@@ -28,6 +31,13 @@ export default async function PayoutsPage() {
         .maybeSingle()
     : { data: null };
 
+  // The plan decides the transaction fee and whether bank transfer is offered.
+  // Shown here so an owner is never surprised by either at their own checkout.
+  const policy = await feePolicyForOwner(site!.user_id).catch(() => null);
+  const feeNote = policy && !isFree(policy.rate)
+    ? `Your ${getPlan(policy.planId)?.name || ""} plan adds a ${feeRateLabel(policy.rate)} transaction fee to each online payment. Your customer pays it on top of their total, so it never comes out of your sale.`
+    : null;
+
   return (
     <div className="space-y-6">
       <PayoutsForm
@@ -45,6 +55,8 @@ export default async function PayoutsPage() {
       {site!.category === "ecommerce" && (
         <PaymentOptions
           connected={!!site!.paystack_subaccount}
+          transferAllowed={policy?.allowBankTransfer ?? true}
+          feeNote={feeNote}
           initial={{
             paystack: site!.site_data?.paymentMethods?.paystack ?? true,
             transfer: site!.site_data?.paymentMethods?.transfer ?? true,
@@ -57,6 +69,7 @@ export default async function PayoutsPage() {
       {site!.category !== "ecommerce" && (site!.category === "organization" || !!site!.site_data?.donationEnabled) && (
         <PaymentOptions
           donationOnly
+          feeNote={feeNote}
           connected={!!site!.paystack_subaccount}
           initial={{
             paystack: true,

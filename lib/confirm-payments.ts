@@ -5,6 +5,7 @@ import { LIVE_COMMISSION_PERCENT } from "@/lib/live/config";
 import { enqueueAndSend, clearCartAfterPayment } from "@/lib/live/conversations";
 import { text } from "@/lib/live/messages";
 import { verifyTransaction } from "@/lib/paystack";
+import { settlePaymentCharge, type PaymentCharge } from "@/lib/payment-charges";
 import { sendEmail } from "@/lib/email";
 import { escapeHtml as esc } from "@/lib/html";
 import { formatNaira } from "@/lib/utils";
@@ -65,6 +66,13 @@ export async function confirmDonationPaid(reference: string): Promise<{ updated:
   if (error) throw new Error(error.message);
   if (!updated || !updated.length) return { updated: false };
 
+  // Tomora's transaction fee, when this gift carried one. It went to Tomora's
+  // account at Paystack, never to the organisation, so the gift recorded below
+  // stays exactly what the donor chose to give.
+  let charge: PaymentCharge | null = null;
+  try { charge = await settlePaymentCharge(reference); } catch { /* non-fatal */ }
+  const fee = charge?.platform_fee || 0;
+
   try {
     const row = updated[0] as {
       site_id: string; amount: number; donor_name: string | null; settled_direct?: boolean;
@@ -86,8 +94,9 @@ export async function confirmDonationPaid(reference: string): Promise<{ updated:
       });
       // Donations are the owner's money; recorded for platform-wide stats only.
       await recordTransaction({
-        kind: "donation", reference, grossAmount: row.amount,
-        payeeAmount: row.amount, userId: site.user_id, siteId: row.site_id,
+        kind: "donation", reference, grossAmount: row.amount + fee,
+        payeeAmount: row.amount, platformAmount: fee || undefined,
+        userId: site.user_id, siteId: row.site_id,
         description: `Donation${row.donor_name ? ` from ${row.donor_name}` : ""}`,
       });
     }
@@ -95,7 +104,7 @@ export async function confirmDonationPaid(reference: string): Promise<{ updated:
 
   // Told once, on the flip from pending to paid, so the browser confirm, the
   // Paystack webhook and the reconcile pass cannot each send their own copy.
-  try { await notifyDonation(admin, updated[0], reference); } catch { /* non-fatal */ }
+  try { await notifyDonation(admin, updated[0], reference, charge); } catch { /* non-fatal */ }
 
   return { updated: true };
 }
@@ -132,6 +141,13 @@ export async function confirmOrdersPaid(reference: string): Promise<{ updated: n
   // withdraw money Tomora never received, and pay for the sale twice.
   const direct = !!(pending[0] as { settled_direct?: boolean }).settled_direct;
 
+  // Tomora's transaction fee, when the plan charges one. The customer paid it
+  // on top of the order and it went to Tomora's account at Paystack, so the
+  // order rows, and the owner's income below, are untouched by it.
+  let charge: PaymentCharge | null = null;
+  try { charge = await settlePaymentCharge(reference); } catch { /* non-fatal */ }
+  const fee = charge?.platform_fee || 0;
+
   try {
     const total = pending.reduce((s: number, r: any) => s + (r.amount || 0), 0);
     const commission = isLive ? Math.round((total * LIVE_COMMISSION_PERCENT) / 100) : 0;
@@ -158,16 +174,18 @@ export async function confirmOrdersPaid(reference: string): Promise<{ updated: n
         });
       }
       // Store sales belong to the owner, less Live's cut when there is one.
+      // Tomora's transaction fee was paid on top, so it adds to the gross
+      // rather than coming out of the owner's share.
       await recordTransaction({
-        kind: "store_order", reference, grossAmount: total,
-        payeeAmount: payee, platformAmount: commission || undefined,
+        kind: "store_order", reference, grossAmount: total + fee,
+        payeeAmount: payee, platformAmount: commission + fee || undefined,
         userId: site.user_id, siteId: pending[0].site_id,
         description: `${isLive ? "WhatsApp order" : "Order"} from ${pending[0].buyer_name || "customer"}`,
       });
     }
   } catch { /* non-fatal, wallet table may not exist yet */ }
 
-  try { await notifyOrder(admin, pending, reference); } catch { /* non-fatal */ }
+  try { await notifyOrder(admin, pending, reference, charge); } catch { /* non-fatal */ }
   if (isLive) {
     try { await notifyLiveBuyer(pending, reference); } catch { /* non-fatal */ }
   }
@@ -224,7 +242,25 @@ export async function reconcilePendingDonations(siteId: string): Promise<number>
   return settled;
 }
 
-async function notifyOrder(admin: ReturnType<typeof createAdminClient>, rows: any[], reference: string) {
+/**
+ * The customer's receipt lines when they paid more than the merchant's total.
+ * Their bank statement shows what they were charged, so the receipt has to
+ * add up to that, not to the order total the owner sees.
+ */
+function customerTotalHtml(
+  labels: { plain: string; base: string }, subtotal: number, charge: PaymentCharge | null,
+): string {
+  const extra = charge ? charge.total_charged - charge.subtotal : 0;
+  if (!charge || extra <= 0) return `<p><strong>${labels.plain}: ${formatNaira(subtotal)}</strong></p>`;
+  return `
+        <p>${labels.base}: ${formatNaira(charge.subtotal)}<br>
+        Processing fee: ${formatNaira(extra)}<br>
+        <strong>Total paid: ${formatNaira(charge.total_charged)}</strong></p>`;
+}
+
+async function notifyOrder(
+  admin: ReturnType<typeof createAdminClient>, rows: any[], reference: string, charge: PaymentCharge | null = null,
+) {
   const siteId = rows[0].site_id;
   const buyer = {
     name: rows[0].buyer_name as string,
@@ -272,7 +308,7 @@ async function notifyOrder(admin: ReturnType<typeof createAdminClient>, rows: an
         <h2>Thank you, ${esc(buyer.name || "there")}!</h2>
         <p>Your order from <strong>${esc(storeName)}</strong> has been placed successfully.</p>
         <ul>${items}</ul>
-        <p><strong>Total: ${formatNaira(total)}</strong></p>
+        ${customerTotalHtml({ plain: "Total", base: "Subtotal" }, total, charge)}
         <p>Reference: ${esc(reference)}</p>`,
     });
   }
@@ -289,6 +325,7 @@ async function notifyDonation(
   admin: ReturnType<typeof createAdminClient>,
   row: any,
   reference: string,
+  charge: PaymentCharge | null = null,
 ) {
   const amount = formatNaira(row?.amount || 0);
   const { data: site } = await admin
@@ -329,7 +366,7 @@ async function notifyDonation(
       html: `
         <h2>Thank you, ${esc(row.donor_name || "friend")}!</h2>
         <p>Your donation to <strong>${esc(orgName)}</strong> has been received.</p>
-        <p><strong>Amount: ${amount}</strong></p>
+        ${customerTotalHtml({ plain: "Amount", base: "Donation" }, row?.amount || 0, charge)}
         ${projectLine}
         <p>Reference: ${esc(reference)}</p>
         <p>Keep this email as your receipt.</p>`,

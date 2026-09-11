@@ -101,16 +101,13 @@ export const loadPublishedSite = cache(async (
   if (!content) return null;
 
   const { site, products, reviews, subscription } = content;
-  const compExpired = isCompExpired(subscription);
-  const subActive = !compExpired && subscription?.status === "active";
 
-  let isLive = site.is_live as boolean;
-  if (compExpired) {
-    isLive = false;
-  } else if (isLive && site.trial_ends_at) {
-    const trialOver = new Date(site.trial_ends_at).getTime() < Date.now();
-    if (trialOver) isLive = subActive;
-  }
+  // A published site stays up on the Free plan for as long as its owner likes.
+  // It used to go dark when `trial_ends_at` passed; that date is still written
+  // at signup but no longer gates anything. What does take a site offline is
+  // `is_live` being cleared (a lapsed paid plan, an admin), or a comp running
+  // out, which is still treated as offline until the dashboard cancels it.
+  const isLive = !isCompExpired(subscription) && (site.is_live as boolean);
 
   return { site, products, reviews, isLive };
 });

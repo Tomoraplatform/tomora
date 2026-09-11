@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/utils";
-import { extendTrial, setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount, syncStoreCommission, deleteUserAccount, resetRevenue, updateTemplateSettings, setNovaEnabled, createPlanCoupon, setPlanCouponActive, deletePlanCoupon } from "@/app/admin/actions";
+import { setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount, setPlanFee, syncStoreCommission, deleteUserAccount, resetRevenue, updateTemplateSettings, setNovaEnabled, createPlanCoupon, setPlanCouponActive, deletePlanCoupon } from "@/app/admin/actions";
+import { feeRateLabel, type FeeRate } from "@/lib/platform-fee";
 import { setAcademyOpen } from "@/app/admin/creators/actions";
 import { PLANS } from "@/lib/constants";
 import { CATALOG_TEMPLATES, CATALOG_CATEGORIES } from "@/lib/catalog";
@@ -23,7 +24,6 @@ export interface AdminUserRow {
   email: string;
   plan: string;
   domain: string;
-  trialEnd: string;
   lastPayment: string;
   isLive: boolean;
   compExpires?: string | null;
@@ -57,7 +57,7 @@ interface AdminSeries {
 }
 
 export function AdminDashboard({
-  rows, domains, stats, planDiscounts = {}, planCoupons = [], revenueResetAt = null,
+  rows, domains, stats, planDiscounts = {}, planFees = {}, feesLive = false, planCoupons = [], revenueResetAt = null,
   series = { signups: [], liveSites: [], subs: [], payments: [] },
   templateOverrides = {},
   novaEnabled = false,
@@ -67,6 +67,9 @@ export function AdminDashboard({
   domains: AdminDomainRow[];
   stats: { totalUsers: number; liveSites: number; activeSubs: number; estAnnualRevenue: number; monthly: Record<string, number> };
   planDiscounts?: Record<string, { percent: number; active: boolean }>;
+  planFees?: Record<string, FeeRate>;
+  /** False until migration 0047 has run: no fee is charged before then. */
+  feesLive?: boolean;
   planCoupons?: AdminCouponRow[];
   revenueResetAt?: string | null;
   series?: AdminSeries;
@@ -273,11 +276,10 @@ export function AdminDashboard({
                       <p className="truncate font-semibold text-ink">{r.name}</p>
                       <p className="truncate text-xs text-ink/60">{r.email}</p>
                     </div>
-                    <Badge variant={r.plan === "Trial" ? "warning" : (r.plan === "Offline" || r.plan === "No site") ? "secondary" : "success"}>{r.plan}</Badge>
+                    <Badge variant={r.plan === "Free" ? "warning" : (r.plan === "Offline" || r.plan === "No site") ? "secondary" : "success"}>{r.plan}</Badge>
                   </div>
                   <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
                     <Cell label="Domain" value={r.domain} wide />
-                    <Cell label="Trial end" value={r.trialEnd} />
                     <Cell label="Last payment" value={r.lastPayment} />
                     {r.compExpires && <Cell label="Comp expires" value={r.compExpires} />}
                   </dl>
@@ -297,7 +299,6 @@ export function AdminDashboard({
                     <th className="p-3 font-medium">Email</th>
                     <th className="p-3 font-medium">Plan</th>
                     <th className="p-3 font-medium">Domain</th>
-                    <th className="p-3 font-medium">Trial end</th>
                     <th className="p-3 font-medium">Last payment</th>
                     <th className="p-3 font-medium">Controls</th>
                   </tr>
@@ -308,11 +309,10 @@ export function AdminDashboard({
                       <td className="p-3 font-medium text-ink">{r.name}</td>
                       <td className="p-3 text-ink/70">{r.email}</td>
                       <td className="p-3">
-                        <Badge variant={r.plan === "Trial" ? "warning" : (r.plan === "Offline" || r.plan === "No site") ? "secondary" : "success"}>{r.plan}</Badge>
+                        <Badge variant={r.plan === "Free" ? "warning" : (r.plan === "Offline" || r.plan === "No site") ? "secondary" : "success"}>{r.plan}</Badge>
                         {r.compExpires && <p className="mt-1 text-[11px] text-ink/50">Comp expires {r.compExpires}</p>}
                       </td>
                       <td className="p-3 text-ink/70">{r.domain}</td>
-                      <td className="p-3 text-ink/70">{r.trialEnd}</td>
                       <td className="p-3 text-ink/70">{r.lastPayment}</td>
                       <td className="p-3">
                         <UserControls
@@ -330,6 +330,9 @@ export function AdminDashboard({
 
         {/* Templates */}
         <TemplatesPanel overrides={templateOverrides} />
+
+        {/* Transaction fees */}
+        <PlanFees fees={planFees} live={feesLive} />
 
         {/* Plan discounts */}
         <PlanDiscounts discounts={planDiscounts} />
@@ -499,10 +502,6 @@ function UserControls({
       </Button>
       {r.siteId && (
         <>
-          <Button size="sm" variant="outline" disabled={busy === r.userId + "t"}
-            onClick={() => run(r.userId + "t", () => extendTrial(r.siteId!))}>
-            {busy === r.userId + "t" ? <Loader2 className="h-3 w-3 animate-spin" /> : "+14d"}
-          </Button>
           <Button size="sm" variant="outline" disabled={busy === r.userId + "a"}
             onClick={() => run(r.userId + "a", () => setSiteLive(r.siteId!, !r.isLive))}>
             {busy === r.userId + "a" ? <Loader2 className="h-3 w-3 animate-spin" /> : r.isLive ? "Disable" : "Activate"}
@@ -527,7 +526,7 @@ function UserControls({
   );
 }
 
-const DISCOUNTABLE = PLANS.filter((p) => p.id !== "trial" && p.id !== "custom");
+const DISCOUNTABLE = PLANS.filter((p) => (p.price ?? 0) > 0);
 
 export interface AdminCouponRow {
   id: string;
@@ -720,6 +719,85 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
       </label>
       {children}
     </div>
+  );
+}
+
+/**
+ * Each plan's transaction fee, editable without a redeploy. The customer pays
+ * it on top of their total and Paystack sends it to Tomora's account.
+ */
+function PlanFees({ fees, live }: { fees: Record<string, FeeRate>; live: boolean }) {
+  const [vals, setVals] = useState<Record<string, { percent: string; flat: string }>>(() => {
+    const v: Record<string, { percent: string; flat: string }> = {};
+    PLANS.forEach((p) => {
+      v[p.id] = { percent: String(fees[p.id]?.percent ?? 0), flat: String(fees[p.id]?.flat ?? 0) };
+    });
+    return v;
+  });
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function save(id: string) {
+    const percent = Number(vals[id]?.percent);
+    const flat = Number(vals[id]?.flat);
+    const label = PLANS.find((p) => p.id === id)?.name || id;
+    if (!confirm(`Charge ${label} customers ${feeRateLabel({ percent, flat })} per payment, starting now?`)) return;
+    setError(null);
+    setBusy(id);
+    const res = await setPlanFee(id, percent, flat);
+    setBusy(null);
+    if (!res.ok) setError(res.error || "Could not save that fee.");
+  }
+
+  return (
+    <Card>
+      <CardHeader><CardTitle>Transaction fees</CardTitle></CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm text-ink/50">
+          Fee = subtotal × percent + flat, added to the customer&apos;s total on online payments and sent to
+          Tomora&apos;s account by Paystack. A change applies to the next checkout. Merchants who were paying
+          before the fee launched keep their own rate.
+        </p>
+        {!live && (
+          <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Fees are off: run migration 0047_plan_fees.sql to switch them on.
+          </p>
+        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <div className="grid gap-3 sm:grid-cols-2">
+          {PLANS.map((p) => (
+            <div key={p.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-ink/10 p-3">
+              <div className="min-w-[120px] flex-1">
+                <p className="font-medium text-ink">{p.name}</p>
+                <p className="text-xs text-ink/50">
+                  {feeRateLabel(fees[p.id]) === "No" ? "No fee" : `${feeRateLabel(fees[p.id])} per payment`}
+                </p>
+              </div>
+              <div className="flex flex-wrap items-center gap-1">
+                <input
+                  type="number" min={0} max={20} step={0.1} disabled={!live}
+                  className="h-8 w-16 rounded-md border border-ink/15 px-2 text-sm"
+                  aria-label={`${p.name} percent`}
+                  value={vals[p.id]?.percent ?? ""}
+                  onChange={(e) => setVals((v) => ({ ...v, [p.id]: { ...v[p.id], percent: e.target.value } }))}
+                />
+                <span className="text-xs text-ink/50">% +₦</span>
+                <input
+                  type="number" min={0} max={5000} step={1} disabled={!live}
+                  className="h-8 w-20 rounded-md border border-ink/15 px-2 text-sm"
+                  aria-label={`${p.name} flat fee`}
+                  value={vals[p.id]?.flat ?? ""}
+                  onChange={(e) => setVals((v) => ({ ...v, [p.id]: { ...v[p.id], flat: e.target.value } }))}
+                />
+                <Button size="sm" variant="outline" disabled={!live || busy === p.id} onClick={() => save(p.id)}>
+                  {busy === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save"}
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

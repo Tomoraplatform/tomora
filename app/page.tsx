@@ -16,8 +16,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { FAQS, PLANS, RENEWAL_INTERVAL_MONTHS } from "@/lib/constants";
+import { FAQS, PLANS } from "@/lib/constants";
 import { loadPlanDiscounts, discountedPrice } from "@/lib/discounts";
+import { loadPlanFeeRates, type FeeRates } from "@/lib/plan-fees";
+import { transactionFeeLine } from "@/lib/platform-fee";
 import { CATALOG_TEMPLATES, CATALOG_CATEGORIES } from "@/lib/catalog";
 import { getTemplateOverrides } from "@/lib/template-overrides";
 import { formatNaira } from "@/lib/utils";
@@ -41,7 +43,7 @@ export default async function Home({
     redirect(`/login?error=${encodeURIComponent(searchParams.error)}`);
   }
 
-  const discounts = await loadPlanDiscounts();
+  const [discounts, { rates: feeRates }] = await Promise.all([loadPlanDiscounts(), loadPlanFeeRates()]);
   // Hide admin-archived/removed templates from the public showcase; apply renames.
   const templateOverrides = await getTemplateOverrides();
   const showcaseTemplates = CATALOG_TEMPLATES
@@ -77,7 +79,7 @@ export default async function Home({
               operatingSystem: "Web",
               url: "https://www.tomora.com.ng",
               description: "Build and publish a business website with online payments, no code required.",
-              offers: { "@type": "Offer", price: "0", priceCurrency: "NGN", description: "14 day free trial" },
+              offers: { "@type": "Offer", price: "0", priceCurrency: "NGN", description: "Free plan" },
             },
           ]),
         }}
@@ -89,7 +91,7 @@ export default async function Home({
       <TemplateShowcase templates={showcaseTemplates} />
       <LiveSection />
       <TomoraAiTeaser />
-      <Pricing discounts={discounts} />
+      <Pricing discounts={discounts} feeRates={feeRates} />
       <Testimonials />
       <Faq />
       <MarketingFooter />
@@ -113,7 +115,7 @@ function Hero() {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button asChild size="lg" className="rounded-lg bg-flame text-ink hover:bg-flame-600">
-              <Link href="/signup">Start Free for 14 Days</Link>
+              <Link href="/signup">Start Free</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="rounded-lg border-ink/15 bg-white">
               <a href="#templates">Browse Templates</a>
@@ -184,7 +186,7 @@ function TemplateShowcase({ templates }: { templates: (typeof CATALOG_TEMPLATES)
 }
 
 /* ---------------------------- Pricing --------------------------- */
-function Pricing({ discounts }: { discounts: Record<string, number> }) {
+function Pricing({ discounts, feeRates }: { discounts: Record<string, number>; feeRates: FeeRates }) {
   return (
     <section id="pricing" className="container py-20 md:py-28">
       <div className="mx-auto max-w-2xl text-center">
@@ -192,7 +194,7 @@ function Pricing({ discounts }: { discounts: Record<string, number> }) {
           Simple, honest pricing
         </h2>
         <p className="mt-4 text-lg text-ink/70">
-          Start free. Pick a plan when you&apos;re ready to go live.
+          Start free and go live today. Upgrade when you want more sites or no transaction fee.
         </p>
       </div>
 
@@ -216,9 +218,7 @@ function Pricing({ discounts }: { discounts: Record<string, number> }) {
               <p className={`mt-1 text-sm ${popular ? "text-cream/70" : "text-ink/60"}`}>{plan.tagline}</p>
 
               <div className="mt-5">
-                {plan.id === "trial" ? (
-                  <span className="text-3xl font-bold">14 days</span>
-                ) : isCustom ? (
+                {isCustom ? (
                   <span className="text-3xl font-bold">Let&apos;s talk</span>
                 ) : (
                   <div className="flex flex-wrap items-baseline gap-x-1.5">
@@ -232,11 +232,6 @@ function Pricing({ discounts }: { discounts: Record<string, number> }) {
                 {discounts[plan.id] ? (
                   <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${popular ? "bg-cream text-ink" : "bg-emerald-100 text-emerald-700"}`}>{discounts[plan.id]}% off</span>
                 ) : null}
-                {plan.id === "pro" && (
-                  <p className={`mt-1 text-xs ${popular ? "text-cream/60" : "text-ink/50"}`}>
-                    then {formatNaira(plan.renewal!)} every {RENEWAL_INTERVAL_MONTHS} months
-                  </p>
-                )}
                 {plan.id === "onetime" && (
                   <p className={`mt-1 text-xs ${popular ? "text-cream/60" : "text-ink/50"}`}>
                     then only {formatNaira(plan.renewal!)}/year, domain renewal &amp; maintenance
@@ -245,6 +240,11 @@ function Pricing({ discounts }: { discounts: Record<string, number> }) {
               </div>
 
               <ul className="mt-5 flex-1 space-y-2.5 text-sm">
+                {/* From the same config the checkout charges from. */}
+                <li className="flex items-start gap-2">
+                  <Check className={`mt-0.5 h-4 w-4 shrink-0 ${popular ? "text-cream" : "text-emerald-600"}`} />
+                  <span className={`font-medium ${popular ? "text-cream" : "text-ink"}`}>{transactionFeeLine(feeRates[plan.id])}</span>
+                </li>
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2">
                     <Check className={`mt-0.5 h-4 w-4 shrink-0 ${popular ? "text-cream" : "text-emerald-600"}`} />

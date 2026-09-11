@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { BrowserFrame } from "@/components/browser-frame";
 import { SiteRenderer } from "@/components/templates";
-import { APP_DOMAIN, TRIAL_DAYS } from "@/lib/constants";
+import { APP_DOMAIN } from "@/lib/constants";
 import { CATALOG_CATEGORIES, catalogTemplatesByCategory, createCatalogContent, isCatalogTemplate, catalogTemplate, type CatalogCategoryId } from "@/lib/catalog";
 import type { SiteData } from "@/lib/database.types";
 import { slugifySubdomain } from "@/lib/utils";
@@ -286,7 +286,7 @@ export function OnboardingWizard({
                 </Button>
                 <Button size="lg" disabled={submitting} onClick={() => submit("published")}>
                   {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                  Publish Free for {TRIAL_DAYS} Days
+                  Publish Free
                 </Button>
               </div>
               <button onClick={() => setStep(3)} className="mx-auto mt-4 flex items-center gap-1 text-sm text-ink/50 hover:text-ink">
@@ -303,7 +303,7 @@ export function OnboardingWizard({
               <PartyPopper className="h-8 w-8" />
             </div>
             <h1 className="text-3xl font-bold">You're live!</h1>
-            <p className="mt-3 text-ink/60">Your free {TRIAL_DAYS}-day trial has started. Your site is published at:</p>
+            <p className="mt-3 text-ink/60">You&apos;re on the Free plan. Your site is published at:</p>
             <a
               href={siteLiveUrl({ subdomain })}
               target="_blank"

@@ -7,7 +7,9 @@ import { formatNaira, contrastText } from "@/lib/utils";
 import { validateCoupon } from "@/lib/coupons";
 import { orderCode, whatsappOrderLink, etaLabel, normaliseWhatsapp } from "@/lib/restaurant/order";
 import { PAYSTACK_FEE_PERCENT } from "@/lib/constants";
+import { quoteCharge } from "@/lib/platform-fee";
 import { optimisedSrc, optimisedSrcSet } from "@/lib/image";
+import { useSiteFees } from "./use-site-fees";
 
 export interface CartLine { product: Product; qty: number; color?: string; }
 
@@ -48,8 +50,14 @@ export function CartDrawer({
   onOrdered?: () => void;
 }) {
   const methods = siteData.paymentMethods;
-  const transferEnabled = !!accountNumber && (methods?.transfer ?? true);
-  const canPaystack = paystackEnabled && (methods?.paystack ?? true);
+  const fees = useSiteFees(siteId);
+  // A plan with a transaction fee takes online payment only: a transfer never
+  // passes through Paystack, so the fee could not be collected from it. Online
+  // payment is then always offered, whatever the saved toggle says, so the
+  // store is never left with no way to pay.
+  const transferAllowed = fees?.allowBankTransfer ?? true;
+  const transferEnabled = !!accountNumber && (methods?.transfer ?? true) && transferAllowed;
+  const canPaystack = paystackEnabled && ((methods?.paystack ?? true) || !transferAllowed);
   const canCheckout = transferEnabled || canPaystack;
   const feeBearer = siteData.feeBearer === "customer" ? "customer" : "owner";
   const [payMethod, setPayMethod] = useState<"paystack" | "transfer">(canPaystack ? "paystack" : "transfer");
@@ -86,6 +94,12 @@ export function CartDrawer({
   const subtotal = lines.reduce((n, l) => n + l.product.price * l.qty, 0);
   const discount = appliedCoupon ? validateCoupon(siteData.coupons, appliedCoupon, subtotal).discount : 0;
   const total = Math.max(0, subtotal - discount) + shippingFee;
+  // What an online payment adds on top: Tomora's fee on the store's plan, plus
+  // Paystack's fee when the owner passes it on. Same sums the server charges.
+  const payingOnline = canPaystack && (!transferEnabled || payMethod === "paystack");
+  const quote = quoteCharge(total, fees?.rate, feeBearer === "customer" ? PAYSTACK_FEE_PERCENT : 0);
+  const processingFee = payingOnline ? quote.totalCharged - total : 0;
+  const payable = total + processingFee;
 
   function applyCoupon() {
     setCouponError(null);
@@ -143,8 +157,10 @@ export function CartDrawer({
       onOrdered?.();
     } catch (e: any) {
       setError(e.message || "Could not place order. Please try again.");
+      // Nothing opened, so nothing else will clear the spinner.
+      setBusy(false);
     } finally {
-      if (!(canPaystack && payMethod === "paystack")) setBusy(false);
+      if (activeMethod !== "paystack") setBusy(false);
     }
   }
 
@@ -319,12 +335,12 @@ export function CartDrawer({
                     <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800">This store hasn&apos;t added a payment account yet.</p>
                   )}
 
-                  {canCheckout && (canPaystack && (!transferEnabled || payMethod === "paystack")) && (
+                  {canCheckout && payingOnline && (
                     <div className="rounded-lg border border-ink/15 bg-cream/50 p-4 text-sm">
-                      <p className="font-semibold text-ink">Pay {formatNaira(total)} securely online</p>
+                      <p className="font-semibold text-ink">Pay {formatNaira(payable)} securely online</p>
                       <p className="mt-1 text-xs text-ink/55">Card, bank or USSD via Paystack. You&apos;ll get a receipt instantly.</p>
-                      {feeBearer === "customer" && (
-                        <p className="mt-1 text-xs text-ink/55">A {PAYSTACK_FEE_PERCENT}% payment fee applies at checkout.</p>
+                      {processingFee > 0 && (
+                        <p className="mt-1 text-xs text-ink/55">Includes a {formatNaira(processingFee)} processing fee.</p>
                       )}
                     </div>
                   )}
@@ -372,7 +388,7 @@ export function CartDrawer({
                 </div>
               )}
 
-              {(discount > 0 || shippingFee > 0) && (
+              {(discount > 0 || shippingFee > 0 || processingFee > 0) && (
                 <>
                   <div className="mb-1.5 flex justify-between text-sm">
                     <span className="text-ink/60">Subtotal</span>
@@ -390,11 +406,17 @@ export function CartDrawer({
                       <span className="text-ink/70">{formatNaira(shippingFee)}</span>
                     </div>
                   )}
+                  {processingFee > 0 && (
+                    <div className="mb-1.5 flex justify-between text-sm">
+                      <span className="text-ink/60">Processing fee</span>
+                      <span className="text-ink/70">{formatNaira(processingFee)}</span>
+                    </div>
+                  )}
                 </>
               )}
               <div className="mb-4 flex justify-between text-sm">
                 <span className="text-ink/60">Total</span>
-                <span className="font-semibold text-ink">{formatNaira(total)}</span>
+                <span className="font-semibold text-ink">{formatNaira(payable)}</span>
               </div>
               {!checkout ? (
                 <button onClick={() => setCheckout(true)} className="w-full rounded-md py-3 text-sm font-semibold" style={{ background: brandColor, color: onBrand }}>
@@ -403,7 +425,7 @@ export function CartDrawer({
               ) : (
                 <button onClick={placeOrder} disabled={busy || !canCheckout} className="flex w-full items-center justify-center gap-2 rounded-md py-3 text-sm font-semibold disabled:opacity-60" style={{ background: brandColor, color: onBrand }}>
                   {busy && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {(canPaystack && (!transferEnabled || payMethod === "paystack")) ? `Pay ${formatNaira(feeBearer === "customer" ? Math.round(total * (1 + PAYSTACK_FEE_PERCENT / 100)) : total)} now` : "I've sent the payment"}
+                  {payingOnline ? `Pay ${formatNaira(payable)} now` : "I've sent the payment"}
                 </button>
               )}
             </div>

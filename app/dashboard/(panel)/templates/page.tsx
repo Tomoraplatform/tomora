@@ -1,5 +1,5 @@
 import { getDashboardData } from "@/lib/dashboard";
-import { getPlan } from "@/lib/constants";
+import { FREE_PLAN_ID, getPlan } from "@/lib/constants";
 import { catalogTemplate } from "@/lib/catalog";
 import { getTemplateOverrides } from "@/lib/template-overrides";
 import { TemplatesBrowser } from "@/components/dashboard/templates-browser";
@@ -8,8 +8,8 @@ export const metadata = { title: "Templates | Tomora" };
 
 export default async function TemplatesPage() {
   const { site, sites, subscription } = await getDashboardData();
-  const planId = subscription?.status === "active" ? subscription?.plan || "pro" : "trial";
-  const plan = getPlan(planId) ?? getPlan("trial")!;
+  const planId = subscription?.status === "active" ? subscription?.plan || "pro" : FREE_PLAN_ID;
+  const plan = getPlan(planId) ?? getPlan(FREE_PLAN_ID)!;
 
   const overrides = await getTemplateOverrides();
   const templateName = (id: string) => overrides[id]?.displayName || catalogTemplate(id)?.name || id;

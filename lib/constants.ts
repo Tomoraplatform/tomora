@@ -3,10 +3,13 @@ import type { SiteCategory } from "./database.types";
 export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com.ng";
 
 /* ---------------- Billing ---------------- */
+/** Still written to `sites.trial_ends_at` at signup, as a record. It no longer
+ *  takes a site offline: the Free plan replaced the trial (2026-09-11). */
 export const TRIAL_DAYS = 14;
-export const FIRST_PAYMENT_AMOUNT = 29800; // NGN. Pro first payment, includes 1yr custom domain
-export const RENEWAL_AMOUNT = 24800; // NGN. Pro renewals at positions 1,2,3
-export const RENEWAL_INTERVAL_MONTHS = 3;
+/** Fallback amounts for a subscription whose plan cannot be resolved. They
+ *  were Pro's first payment and quarterly renewal before Pro became monthly. */
+export const FIRST_PAYMENT_AMOUNT = 29800;
+export const RENEWAL_AMOUNT = 24800;
 export const GRACE_PERIOD_DAYS = 7;
 /** Flat price to buy + activate a brand-new domain through Tomora (assisted). */
 export const NEW_DOMAIN_AMOUNT = 5550; // NGN base fee, covers .com.ng registration + margin (VAT added on top)
@@ -48,34 +51,13 @@ export const STAFF_AREAS: { id: string; label: string; description: string }[] =
  */
 export const NEW_DOMAIN_TLDS = ["com.ng"] as const;
 
-/**
- * Given the current billing_cycle_position (0-3), returns the amount to charge
- * for the NEXT payment and the position it will become afterwards.
- *  - position 0  -> charge 29,800 (first payment / reset), becomes 1
- *  - position 1,2 -> charge 24,800, becomes +1
- *  - position 3  -> charge 24,800, becomes 0 (cycle resets)
- */
-export function nextCharge(position: number): {
-  amount: number;
-  nextPosition: number;
-  includesDomain: boolean;
-} {
-  if (position <= 0) {
-    return { amount: FIRST_PAYMENT_AMOUNT, nextPosition: 1, includesDomain: true };
-  }
-  if (position >= 3) {
-    return { amount: RENEWAL_AMOUNT, nextPosition: 0, includesDomain: false };
-  }
-  return { amount: RENEWAL_AMOUNT, nextPosition: position + 1, includesDomain: false };
-}
-
 /* ---------------- Plans ---------------- */
-export type PlanId = "trial" | "basic" | "starter" | "growth" | "pro" | "onetime" | "custom";
+export type PlanId = "free" | "basic" | "starter" | "growth" | "pro" | "onetime" | "custom";
 
 export interface Plan {
   id: PlanId;
   name: string;
-  /** First charge amount in NGN (0 for trial, null for custom). */
+  /** First charge amount in NGN (0 for free, null for custom). */
   price: number | null;
   /** Renewal amount in NGN if different from price. */
   renewal?: number;
@@ -90,30 +72,47 @@ export interface Plan {
   /** Whether publishing live is allowed on this plan. */
   canPublish: boolean;
   includesDomain?: boolean;
+  /**
+   * Tomora's cut of each online sale or donation, as a percentage of what the
+   * merchant is owed (3 means 3%). Paid by the customer on top of their total.
+   * This is the default: a row in `plan_fees` overrides it without a redeploy.
+   * See lib/platform-fee.ts.
+   */
+  transactionFeePercent: number;
+  /** Flat part of the same fee, in naira, added once per payment. */
+  transactionFeeFlat: number;
+  /**
+   * Whether the store may offer direct bank transfer at checkout. A transfer
+   * never passes through Paystack, so no fee can be split from it; plans that
+   * charge a fee therefore take card / bank / USSD payments only.
+   */
+  allowBankTransfer: boolean;
 }
 
 export const PLANS: Plan[] = [
   {
-    id: "trial",
-    name: "Free Trial",
+    id: "free",
+    name: "Free",
     price: 0,
-    period: "14 days",
-    tagline: "Build and preview, no credit card.",
+    period: "month",
+    tagline: "Start selling today, no card required.",
     features: [
-      "14 days free",
       "1 website on a Tomora subdomain",
-      "All 14 templates",
+      "Basic templates",
       "Mobile-responsive design",
-      "No credit card required",
+      "Online checkout & donations with Paystack",
     ],
-    cta: "Start Free Trial",
+    cta: "Start Free",
     siteLimit: 1,
     canPublish: true,
+    transactionFeePercent: 3,
+    transactionFeeFlat: 75,
+    allowBankTransfer: false,
   },
   {
     id: "starter",
     name: "Starter",
-    price: 9800,
+    price: 4900,
     period: "month",
     tagline: "Get your business online, up to 3 websites.",
     features: [
@@ -128,11 +127,14 @@ export const PLANS: Plan[] = [
     cta: "Choose Starter",
     siteLimit: 3,
     canPublish: true,
+    transactionFeePercent: 1.5,
+    transactionFeeFlat: 0,
+    allowBankTransfer: true,
   },
   {
     id: "growth",
     name: "Growth",
-    price: 14800,
+    price: 9800,
     period: "month",
     tagline: "For growing online stores.",
     features: [
@@ -148,17 +150,19 @@ export const PLANS: Plan[] = [
     canPublish: true,
     includesDomain: true,
     popular: true,
+    transactionFeePercent: 0,
+    transactionFeeFlat: 0,
+    allowBankTransfer: true,
   },
   {
     id: "pro",
     name: "Pro",
-    price: 29800,
-    renewal: 24800,
-    period: "3 months",
+    price: 19800,
+    period: "month",
     tagline: "Everything, plus a dedicated expert.",
     features: [
       "Everything in Growth",
-      "1-year custom domain included",
+      "Custom domain included",
       "Up to 10 published websites",
       "VIP priority support",
       "Dedicated account manager",
@@ -168,6 +172,9 @@ export const PLANS: Plan[] = [
     siteLimit: 10,
     canPublish: true,
     includesDomain: true,
+    transactionFeePercent: 0,
+    transactionFeeFlat: 0,
+    allowBankTransfer: true,
   },
   {
     id: "onetime",
@@ -188,6 +195,9 @@ export const PLANS: Plan[] = [
     siteLimit: 10,
     canPublish: true,
     includesDomain: true,
+    transactionFeePercent: 0,
+    transactionFeeFlat: 0,
+    allowBankTransfer: true,
   },
   {
     id: "custom",
@@ -206,6 +216,9 @@ export const PLANS: Plan[] = [
     siteLimit: 99,
     canPublish: true,
     includesDomain: true,
+    transactionFeePercent: 0,
+    transactionFeeFlat: 0,
+    allowBankTransfer: true,
   },
 ];
 
@@ -232,12 +245,21 @@ const LEGACY_PLANS: Plan[] = [
     cta: "Choose Basic",
     siteLimit: 1,
     canPublish: true,
+    transactionFeePercent: 0,
+    transactionFeeFlat: 0,
+    allowBankTransfer: true,
   },
 ];
 
 export function getPlan(id: string): Plan | undefined {
-  return PLANS.find((p) => p.id === id) || LEGACY_PLANS.find((p) => p.id === id);
+  // "trial" was the name of the free tier until the Free plan replaced it
+  // (2026-09-11). Anything still holding the old id means the same thing.
+  const key = id === "trial" ? "free" : id;
+  return PLANS.find((p) => p.id === key) || LEGACY_PLANS.find((p) => p.id === key);
 }
+
+/** The plan anyone without an active subscription is on. */
+export const FREE_PLAN_ID: PlanId = "free";
 
 /** The minimum plan that allows publishing a paid live site (Growth). */
 export const PUBLISH_PLAN: PlanId = "growth";
@@ -357,15 +379,15 @@ export function getTemplate(id: string): TemplateMeta | undefined {
 export const FAQS = [
   {
     q: "Is Tomora free to use?",
-    a: "Yes. You can build and publish your website on a free 14-day trial with a Tomora subdomain, no credit card required. Upgrade to Pro whenever you're ready for a custom domain and e-commerce.",
+    a: "Yes. The Free plan gives you one website on a Tomora subdomain with online checkout and donations, for as long as you like, no credit card required. Upgrade whenever you want more sites, a custom domain or no transaction fee.",
   },
   {
     q: "Can I use my own domain name?",
-    a: "Yes. The Growth and Pro plans include a custom domain for your primary site. We give you simple DNS instructions and verify it automatically. On the Basic and Starter plans you can add a custom domain for ₦8,000.",
+    a: "Yes. The Growth and Pro plans include a custom domain for your primary site. We give you simple DNS instructions and verify it automatically. On the Starter plan you can add a custom domain for ₦8,000.",
   },
   {
-    q: "What happens when my trial ends?",
-    a: "After 14 days your site goes offline with an upgrade prompt. Upgrade to Pro and it goes live again instantly on your subdomain or custom domain.",
+    q: "Are there transaction fees?",
+    a: "On the Free and Starter plans Tomora's transaction fee is added to your customer's total at checkout, so it never comes out of your sale or donation. Growth, Pro, One-Time and Custom have no transaction fee. Paystack's own processing fee applies on every plan, as it does today.",
   },
   {
     q: "Does Tomora support Paystack?",

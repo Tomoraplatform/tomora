@@ -7,4 +7,4 @@
  * legal page is a claim, so it is edited by hand when the wording actually
  * changes.
  */
-export const LEGAL_LAST_UPDATED = "8 September 2026";
+export const LEGAL_LAST_UPDATED = "11 September 2026";

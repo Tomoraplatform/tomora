@@ -81,20 +81,32 @@ npm run dev
 
 ---
 
-## Billing cycle
+## Plans and billing
 
-`billing_cycle_position` (0–3) drives the price of the next charge:
+Plans live in `PLANS` in `lib/constants.ts`. Anyone without an active
+subscription is on the Free plan. Paid plans renew monthly; the One-Time plan
+renews yearly. `lib/plan-pricing.ts` decides what a renewal costs and
+`lib/billing.ts` (`applyPlatformPayment`) records it. `billing_cycle_position`
+is left over from Pro's old 3-month cycle and is always written as 0.
 
-| Position | Next charge | Includes domain | Becomes  |
-|----------|-------------|-----------------|----------|
-| 0        | ₦30,000     | yes (1 year)    | 1        |
-| 1        | ₦22,500     | no              | 2        |
-| 2        | ₦22,500     | no              | 3        |
-| 3        | ₦22,500     | no              | 0 (reset)|
+## Transaction fee
 
-After position 3, the cycle resets and the next charge is ₦30,000 again,
-renewing the domain for another year. See `lib/constants.ts` (`nextCharge`) and
-`lib/billing.ts` (`applyPlatformPayment`).
+Some plans take a fee on each online sale or donation:
+`fee = round(subtotal × percent / 100) + flat`. The customer pays
+`subtotal + fee`. The fee is sent to Paystack as `transaction_charge` on the
+split, so it lands in Tomora's main account; `bearer` stays `subaccount`, so
+the merchant keeps paying Paystack's own fee as before.
+
+- Defaults: `transactionFeePercent` / `transactionFeeFlat` on each plan.
+- Live values: the `plan_fees` table (admin → Transaction fees), no redeploy.
+- Merchants paying before the fee launched carry a 0% override on their
+  subscription (`fee_percent_override`, `fee_flat_override`).
+- Each payment's make-up is stored in `payment_charges`, including Paystack's
+  reported split once it is paid.
+- Plans with a fee take online payment only (`allowBankTransfer: false`).
+- Nothing is charged until migration `0047_plan_fees.sql` has run.
+
+See `lib/platform-fee.ts`, `lib/plan-fees.ts` and `lib/payment-charges.ts`.
 
 ## Project layout
 

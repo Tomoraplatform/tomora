@@ -8,9 +8,8 @@ import { getDashboardData } from "@/lib/dashboard";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { TRIAL_DAYS, FIRST_PAYMENT_AMOUNT, RENEWAL_AMOUNT, RENEWAL_INTERVAL_MONTHS, nextCharge, getPlan } from "@/lib/constants";
+import { PLANS, getPlan } from "@/lib/constants";
 import { siteLiveUrl } from "@/lib/site-url";
 import { catalogTemplate } from "@/lib/catalog";
 import { formatNaira } from "@/lib/utils";
@@ -76,15 +75,10 @@ export default async function DashboardHome() {
     ? await loadRevenue(supabase, site.id, mode, Number((site as any).visit_count || 0))
     : null;
 
-  // ---- Status + trial ----
-  const now = Date.now();
-  const trialEnd = site?.trial_ends_at ? new Date(site.trial_ends_at).getTime() : 0;
+  // ---- Status + plan ----
   const isPro = subscription?.status === "active";
-  const trialMsLeft = trialEnd - now;
-  const daysLeft = Math.max(0, Math.ceil(trialMsLeft / 86400000));
-  const onTrial = !isPro && site?.is_live && trialMsLeft > 0;
-  const status = isPro ? "Live (Pro)" : onTrial ? "Trial" : "Offline";
-  const statusVariant = isPro ? "success" : onTrial ? "warning" : "destructive";
+  const status = site?.is_live ? "Live" : "Offline";
+  const statusVariant = site?.is_live ? "success" : "destructive";
 
   const liveUrl = siteLiveUrl(site!);
   const liveHost = liveUrl.replace(/^https?:\/\//, "");
@@ -106,10 +100,9 @@ export default async function DashboardHome() {
       done: orderCount > 0 },
   ] : [];
 
-  const charge = nextCharge(subscription?.billing_cycle_position ?? 0);
   const currentPlan = getPlan(subscription?.plan || "");
-  const isProPlan = currentPlan?.id === "pro";
-  const nextAmount = isProPlan ? charge.amount : (currentPlan?.renewal ?? currentPlan?.price ?? charge.amount);
+  const nextAmount = currentPlan?.renewal ?? currentPlan?.price ?? 0;
+  const cheapestPaid = Math.min(...PLANS.filter((p) => (p.price ?? 0) > 0).map((p) => p.price!));
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
@@ -139,17 +132,8 @@ export default async function DashboardHome() {
               <Globe className="h-4 w-4 text-ink/50" /> {liveHost} <ExternalLink className="h-3.5 w-3.5 text-ink/40" />
             </a>
 
-            {onTrial && (
-              <div>
-                <div className="mb-1.5 flex justify-between text-sm">
-                  <span className="text-ink/60">Free trial</span>
-                  <span className="font-medium text-ink">{daysLeft} {daysLeft === 1 ? "day" : "days"} left</span>
-                </div>
-                <Progress value={Math.round(((TRIAL_DAYS - daysLeft) / TRIAL_DAYS) * 100)} />
-              </div>
-            )}
-            {!isPro && !onTrial && (
-              <p className="text-sm text-ink/60">Your trial has ended. Upgrade to bring your site back online.</p>
+            {!site?.is_live && (
+              <p className="text-sm text-ink/60">Your site is offline. Publish it from the editor to bring it back.</p>
             )}
 
             <div className="flex flex-wrap gap-2 pt-1">
@@ -164,7 +148,7 @@ export default async function DashboardHome() {
         <Card>
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle>Subscription</CardTitle>
-            <Badge variant={isPro ? "success" : "secondary"}>{isPro ? currentPlan?.name || "Active" : "Free Trial"}</Badge>
+            <Badge variant={isPro ? "success" : "secondary"}>{isPro ? currentPlan?.name || "Active" : "Free"}</Badge>
           </CardHeader>
           <CardContent className="space-y-3">
             {isPro ? (
@@ -172,13 +156,13 @@ export default async function DashboardHome() {
                 <Row label="Plan" value={currentPlan?.name || "—"} />
                 <Row label="Next billing date" value={subscription?.next_billing_date ? new Date(subscription.next_billing_date).toLocaleDateString() : "—"} />
                 <Row label="Next amount" value={formatNaira(nextAmount)} />
-                {isProPlan && <Row label="Cycle position" value={`${subscription?.billing_cycle_position ?? 0} of 3`} />}
                 <Button asChild size="sm" variant="outline" className="mt-1"><Link href="/dashboard/billing">Manage Plan</Link></Button>
               </>
             ) : (
               <>
                 <p className="text-sm text-ink/60">
-                  Plans from {formatNaira(10000)}/month. Pro is {formatNaira(FIRST_PAYMENT_AMOUNT)} then {formatNaira(RENEWAL_AMOUNT)} every {RENEWAL_INTERVAL_MONTHS} months.
+                  You&apos;re on the Free plan. Paid plans start at {formatNaira(cheapestPaid)}/month, with more sites
+                  and a lower transaction fee.
                 </p>
                 <Button asChild size="sm" className="mt-1"><Link href="/dashboard/billing"><CreditCard className="h-4 w-4" /> Choose a Plan</Link></Button>
               </>
