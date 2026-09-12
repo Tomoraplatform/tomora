@@ -143,8 +143,51 @@ export async function applyPlatformPayment(
 }
 
 /**
+ * Moves a user onto the Free plan, keeping their site up.
+ *
+ * A lapsed subscription used to take every one of a user's sites offline.
+ * Since the Free plan replaced the trial there is no reason for that: Free
+ * publishes one website, so the primary site stays up and only the extra ones
+ * (which Free does not include) go dark. A custom domain already connected
+ * keeps working, because nothing here disconnects it.
+ *
+ * `publishPrimary` is for an admin bringing someone back deliberately. On a
+ * lapse it stays false, so a site the owner had unpublished themselves is not
+ * republished behind their back.
+ */
+export async function downgradeToFree(
+  userId: string,
+  opts?: { publishPrimary?: boolean },
+): Promise<{ kept: string | null; tookOffline: number }> {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("sites")
+    .select("id, is_demo, is_live, created_at")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: true });
+
+  // A sandbox demo store costs nothing and takes no real money, so a plan's
+  // limit has no business closing it.
+  const real = ((data as { id: string; is_demo?: boolean | null; is_live?: boolean }[]) || [])
+    .filter((s) => !s.is_demo);
+  const [primary, ...extra] = real;
+
+  if (primary && opts?.publishPrimary && !primary.is_live) {
+    await admin.from("sites").update({ is_live: true }).eq("id", primary.id);
+  }
+
+  const toClose = extra.filter((s) => s.is_live).map((s) => s.id);
+  if (toClose.length) {
+    await admin.from("sites").update({ is_live: false }).in("id", toClose);
+  }
+
+  await revalidateSitesForUser(userId);
+  return { kept: primary?.id || null, tookOffline: toClose.length };
+}
+
+/**
  * Handles a failed/declined platform payment. Marks the subscription past_due
- * and, once the grace period has elapsed, takes the site offline.
+ * and, once the grace period has elapsed, drops the user to the Free plan.
  */
 export async function applyPaymentFailure(userId: string) {
   const admin = createAdminClient();
@@ -159,20 +202,19 @@ export async function applyPaymentFailure(userId: string) {
     .update({ status: "past_due" })
     .eq("user_id", userId);
 
-  // If the last successful payment is older than the grace period, go offline.
+  // Once the grace period is up they are simply a Free user again: their
+  // website stays online, with Free's limits and its transaction fee.
   const last = sub?.last_payment_date ? new Date(sub.last_payment_date).getTime() : 0;
   const graceMs = GRACE_PERIOD_DAYS * 86400000;
   if (!last || Date.now() - last > graceMs) {
-    await admin.from("sites").update({ is_live: false }).eq("user_id", userId);
-    await revalidateSitesForUser(userId);
+    await downgradeToFree(userId);
   }
 }
 
 export async function disableSubscription(userId: string) {
   const admin = createAdminClient();
   await admin.from("subscriptions").update({ status: "cancelled" }).eq("user_id", userId);
-  await admin.from("sites").update({ is_live: false }).eq("user_id", userId);
-  await revalidateSitesForUser(userId);
+  await downgradeToFree(userId);
 }
 
 /** True when a comped subscription's expiry date has passed. */
@@ -182,7 +224,7 @@ export function isCompExpired(
   return !!(sub && sub.status === "active" && sub.comp_expires_at && new Date(sub.comp_expires_at).getTime() < Date.now());
 }
 
-/** If a comp has expired, cancel it and take the user's site offline. Returns true if it did. */
+/** If a comp has expired, end it and drop the user to Free. Returns true if it did. */
 export async function expireCompIfDue(
   userId: string,
   sub?: { status?: string | null; comp_expires_at?: string | null } | null
@@ -190,8 +232,7 @@ export async function expireCompIfDue(
   if (!isCompExpired(sub)) return false;
   const admin = createAdminClient();
   await admin.from("subscriptions").update({ status: "cancelled" }).eq("user_id", userId);
-  await admin.from("sites").update({ is_live: false }).eq("user_id", userId);
-  await revalidateSitesForUser(userId);
+  await downgradeToFree(userId);
   return true;
 }
 

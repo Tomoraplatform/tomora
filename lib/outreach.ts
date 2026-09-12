@@ -137,6 +137,20 @@ If you'd rather carry on yourself, your site is waiting at {{dashboard}} and you
 — The Tomora team`,
   },
   {
+    id: "back_online_free",
+    name: "Tell a lapsed subscriber they are back online",
+    subject: "Good news: your Tomora website is back online, free",
+    body: `Hi {{name}},
+
+Your website went offline when your subscription ended. That has changed: Tomora now has a Free plan that keeps one website online for as long as you like, at no cost, and your site is live again at {{site}}.
+
+You keep your design, your pages and your products, and you can take payments straight into your own bank account. On the Free plan a small processing fee is added to your customer's total at checkout, so it never comes out of your sale.
+
+Want your own domain name instead of a Tomora address? You can buy one from your dashboard at {{dashboard}}, or reply to this email and we'll sort it out for you.
+
+— The Tomora team`,
+  },
+  {
     id: "connect_payouts",
     name: "Ask them to connect their bank",
     subject: "Your Tomora site can't take payments yet",

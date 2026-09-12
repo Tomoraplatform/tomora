@@ -9,6 +9,7 @@ import { updateSubaccount, resolveAccount, createSubaccount } from "@/lib/paysta
 import { getPlan, STORE_COMMISSION_PERCENT } from "@/lib/constants";
 import { validRate } from "@/lib/platform-fee";
 import { normaliseCode } from "@/lib/plan-coupons";
+import { downgradeToFree } from "@/lib/billing";
 
 async function guard() {
   if (!(await isAdmin())) throw new Error("Forbidden");
@@ -72,10 +73,36 @@ export async function revokePlan(userId: string): Promise<{ ok: boolean; error?:
     const { error } = await admin
       .from("subscriptions").update({ status: "cancelled", comp_expires_at: null }).eq("user_id", userId);
     if (error) return { ok: false, error: error.message };
-    await admin.from("sites").update({ is_live: false }).eq("user_id", userId);
-    await revalidateSitesForUser(userId);
+    // Taking the plan away drops them to Free, it does not take their website
+    // down. Use "Disable" on the site itself for that.
+    await downgradeToFree(userId);
     revalidatePath("/admin");
     return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/**
+ * Puts a user on the Free plan and brings their website back online.
+ *
+ * For accounts that went dark when the old trial ran out or a subscription
+ * lapsed. Free publishes one website, so the primary site comes back and any
+ * extras stay closed; a custom domain they already have keeps working. If
+ * they later pay for a plan, that payment restores the rest by itself.
+ */
+export async function restoreOnFree(userId: string): Promise<{ ok: boolean; error?: string; tookOffline?: number }> {
+  try {
+    const admin = await guard();
+    const { data: sub } = await admin
+      .from("subscriptions").select("id, status").eq("user_id", userId).maybeSingle();
+    // An "active" row would keep them on a paid plan's rules, comp included.
+    if (sub && sub.status === "active") {
+      await admin.from("subscriptions")
+        .update({ status: "cancelled", comp_expires_at: null }).eq("user_id", userId);
+    }
+    const { kept, tookOffline } = await downgradeToFree(userId, { publishPrimary: true });
+    if (!kept) return { ok: false, error: "This user has no website to bring back." };
+    revalidatePath("/admin");
+    return { ok: true, tookOffline };
   } catch (e: any) { return { ok: false, error: e.message }; }
 }
 
