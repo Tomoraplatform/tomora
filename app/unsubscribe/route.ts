@@ -12,6 +12,20 @@ export const dynamic = "force-dynamic";
  * unaffected, because that is mail people asked for.
  */
 export async function GET(request: NextRequest) {
+  return handle(request);
+}
+
+/**
+ * One-click unsubscribe (RFC 8058). Gmail and Yahoo post here themselves when
+ * someone presses the unsubscribe button in the mail client, and they judge
+ * bulk senders on offering it. No page is shown: the mail client reports it.
+ */
+export async function POST(request: NextRequest) {
+  const res = await handle(request);
+  return new Response(null, { status: res.status === 200 ? 200 : 400 });
+}
+
+async function handle(request: NextRequest) {
   const token = new URL(request.url).searchParams.get("t") || "";
   let done = false;
 

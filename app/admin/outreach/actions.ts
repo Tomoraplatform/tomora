@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { isAdmin } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { sendEmail } from "@/lib/email";
+import { sendEmailDetailed, emailDeliveryStatus } from "@/lib/email";
 import { escapeHtml } from "@/lib/html";
 import { SUPPORT_EMAIL } from "@/lib/support";
 import { APP_DOMAIN } from "@/lib/constants";
@@ -91,23 +91,34 @@ export async function sendOutreach(input: {
         booking: booking || `mailto:${SUPPORT_EMAIL}`,
       });
 
-      const sent = await sendEmail({
+      const stopLink = unsubscribeUrl(p.unsubscribe_token);
+      const res = await sendEmailDetailed({
         to: email,
         subject,
         html: emailHtml(text, p.unsubscribe_token),
-        text: `${text}\n\n---\nYou are receiving this because you have a Tomora account. To stop these emails, reply with STOP.`,
+        text: `${text}\n\n---\nYou are receiving this because you have a Tomora account.${stopLink ? ` To stop these emails: ${stopLink}` : " To stop these emails, reply with STOP."}`,
         replyTo: SUPPORT_EMAIL,
+        // Bulk mail is judged by a stricter standard than a receipt is. Gmail
+        // and Yahoo expect a machine-readable way out of a mailing list, and
+        // quietly bin bulk mail that offers only a link in the body. The POST
+        // header is one-click unsubscribe (RFC 8058), which /unsubscribe
+        // answers.
+        headers: stopLink ? {
+          "List-Unsubscribe": `<${stopLink}>, <mailto:${SUPPORT_EMAIL}?subject=Unsubscribe>`,
+          "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+        } : undefined,
       });
 
-      if (sent) result.sent += 1;
+      if (res.ok) result.sent += 1;
       else {
         result.failed += 1;
-        if (result.problems.length < 5) result.problems.push(`${email}: the mail service refused it`);
+        if (result.problems.length < 5) result.problems.push(`${email}: ${res.error || "the mail service refused it"}`);
       }
       rows.push({
         user_id: p.user_id, email, subject, body,
-        status: sent ? "sent" : "failed",
-        error: sent ? null : "send failed",
+        status: res.ok ? "sent" : "failed",
+        error: res.ok ? null : (res.error || "send failed"),
+        message_id: res.id || null,
         sent_by: me?.id || null,
       });
 
@@ -115,7 +126,14 @@ export async function sendOutreach(input: {
     }
 
     if (rows.length) {
-      const { error } = await admin.from("outreach_messages").insert(rows);
+      let { error } = await admin.from("outreach_messages").insert(rows);
+      // message_id arrives in migration 0049; without it the history is still
+      // worth keeping, just not traceable.
+      if (error) {
+        ({ error } = await admin.from("outreach_messages").insert(
+          rows.map(({ message_id: _drop, ...rest }) => rest)
+        ));
+      }
       // The mail has gone either way; say so rather than pretending it failed.
       if (error) result.problems.push(`Sent, but the history could not be saved: ${error.message}`);
     }
@@ -124,6 +142,48 @@ export async function sendOutreach(input: {
     return result;
   } catch (e: any) {
     return { ...blank, error: e?.message || "Could not send." };
+  }
+}
+
+/** The one-click way out, which is also what the List-Unsubscribe header points at. */
+function unsubscribeUrl(token?: string | null): string | null {
+  return token ? `https://www.${APP_DOMAIN}/unsubscribe?t=${encodeURIComponent(token)}` : null;
+}
+
+/**
+ * Asks the mail service what became of recent sends and records it.
+ *
+ * Tomora only ever knew that a message was accepted. This is the difference
+ * between "we sent it" and "it arrived", which is the whole question when a
+ * batch goes out and nobody replies.
+ */
+export async function refreshOutreachDelivery(): Promise<{ ok: boolean; checked: number; error?: string }> {
+  try {
+    if (!(await isAdmin())) return { ok: false, checked: 0, error: "Forbidden" };
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("outreach_messages")
+      .select("id, message_id, delivery")
+      .not("message_id", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (error) return { ok: false, checked: 0, error: "Run migration 0049 first." };
+
+    let checked = 0;
+    for (const row of (data as { id: string; message_id: string; delivery: string | null }[]) || []) {
+      // A delivered message cannot become undelivered; a bounce is final too.
+      if (row.delivery === "delivered" || row.delivery === "bounced" || row.delivery === "complained") continue;
+      const status = await emailDeliveryStatus(row.message_id);
+      if (!status) continue;
+      await admin.from("outreach_messages")
+        .update({ delivery: status, delivery_checked_at: new Date().toISOString() })
+        .eq("id", row.id);
+      checked += 1;
+    }
+    revalidatePath("/admin/outreach");
+    return { ok: true, checked };
+  } catch (e: any) {
+    return { ok: false, checked: 0, error: e?.message || "Could not check." };
   }
 }
 

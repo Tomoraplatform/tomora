@@ -3,8 +3,10 @@ import { ArrowLeft, Send } from "lucide-react";
 import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { siteLiveUrl } from "@/lib/site-url";
+import { realOnly } from "@/lib/orders/query";
 import { stageOf } from "@/lib/outreach";
 import { OutreachComposer, type OutreachRow } from "@/components/admin/outreach-composer";
+import { OutreachHistory, type OutreachSend } from "@/components/admin/outreach-history";
 
 export const metadata = { robots: { index: false, follow: false }, title: "Outreach | Admin | Tomora" };
 export const dynamic = "force-dynamic";
@@ -37,14 +39,32 @@ export default async function OutreachPage() {
     admin.from("sites").select("id, user_id, subdomain, custom_domain, domain_status, is_live, category, is_demo, paystack_subaccount, created_at"),
     admin.from("subscriptions").select("user_id, status, plan"),
     admin.from("products").select("site_id"),
-    admin.from("orders").select("site_id").eq("status", "paid"),
+    // Real sales only: a sandbox order is practice, and counting it would
+    // read as "this person is selling" and quietly drop them off the list.
+    realOnly(admin.from("orders").select("site_id").eq("status", "paid")),
   ]);
 
   const contacted = new Map<string, string>();
+  let history: OutreachSend[] = [];
   if (!needsMigration) {
+    // `*`: delivery and message_id arrive in 0049, and naming a column that
+    // does not exist yet would fail the whole query.
     const { data } = await admin
-      .from("outreach_messages").select("user_id, created_at").order("created_at", { ascending: false });
-    for (const m of (data as any[]) || []) if (m.user_id && !contacted.has(m.user_id)) contacted.set(m.user_id, m.created_at);
+      .from("outreach_messages").select("*").order("created_at", { ascending: false });
+    const rows = (data as any[]) || [];
+    for (const m of rows) if (m.user_id && !contacted.has(m.user_id)) contacted.set(m.user_id, m.created_at);
+    history = rows.slice(0, 40).map((m) => ({
+      id: m.id,
+      email: m.email,
+      subject: m.subject,
+      status: m.status,
+      error: m.error ?? null,
+      delivery: m.delivery ?? null,
+      // Formatted on the server: two different renderings would break hydration.
+      when: new Date(m.created_at).toLocaleString("en-NG", {
+        day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+      }),
+    }));
   }
 
   const siteByUser = new Map<string, any>();
@@ -115,6 +135,8 @@ export default async function OutreachPage() {
       )}
 
       <OutreachComposer rows={rows} disabled={needsMigration} />
+
+      <OutreachHistory sends={history} />
     </div>
   );
 }

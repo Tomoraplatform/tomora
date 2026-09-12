@@ -55,11 +55,38 @@ export async function sendEmail(params: {
   text?: string;
   /** Where a reply should go. Defaults to the support inbox. */
   replyTo?: string;
+  /** Extra headers. Bulk mail needs List-Unsubscribe; normal mail does not. */
+  headers?: Record<string, string>;
 }): Promise<boolean> {
+  return (await sendEmailDetailed(params)).ok;
+}
+
+export interface SendResult {
+  ok: boolean;
+  /** The mail service's id for this message, for asking what became of it. */
+  id?: string;
+  error?: string;
+}
+
+/**
+ * The same send, with the provider's answer kept.
+ *
+ * Acceptance is not delivery: this returns the id so a later check can say
+ * whether the message was delivered, bounced or marked as spam. Bulk sending
+ * without that distinction is guesswork.
+ */
+export async function sendEmailDetailed(params: {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text?: string;
+  replyTo?: string;
+  headers?: Record<string, string>;
+}): Promise<SendResult> {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
     console.error("[email] RESEND_API_KEY is not set; nothing was sent");
-    return false;
+    return { ok: false, error: "RESEND_API_KEY is not set" };
   }
   const from = senderAddress();
   try {
@@ -77,23 +104,66 @@ export async function sendEmail(params: {
         // reputation, which only sending well earns.
         text: params.text || htmlToText(params.html),
         reply_to: params.replyTo || SUPPORT_EMAIL,
+        ...(params.headers ? { headers: params.headers } : {}),
       }),
     });
     if (!res.ok) {
       // Say why. A silent false here is how a wrong sender address went
       // unnoticed for weeks: every caller treats sending as best-effort, so
       // without this the only symptom is mail that never arrives.
-      const detail = await res.text().catch(() => "");
+      const detail = await readBody(res);
       console.error(
         `[email] Resend rejected the send: ${res.status} ${res.statusText}. ` +
         `from=${JSON.stringify(from)} subject=${JSON.stringify(params.subject)} ${detail.slice(0, 500)}`
       );
-      return false;
+      return { ok: false, error: `${res.status} ${detail.slice(0, 200)}`.trim() };
     }
-    return true;
+    // The message is away. Reading the id is a bonus, and never a reason to
+    // report a successful send as a failure.
+    return { ok: true, id: await readId(res) };
   } catch (err) {
     console.error("[email] could not reach Resend:", err);
-    return false;
+    return { ok: false, error: err instanceof Error ? err.message : "could not reach Resend" };
+  }
+}
+
+/** The provider's id for an accepted message, or nothing. Never throws. */
+async function readId(res: Response): Promise<string | undefined> {
+  try {
+    const body = await res.json();
+    return typeof body?.id === "string" ? body.id : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Whatever the failed response said, for the log. Never throws. */
+async function readBody(res: Response): Promise<string> {
+  try {
+    return await res.text();
+  } catch {
+    return "";
+  }
+}
+
+/**
+ * What became of one message, as the mail service sees it: "delivered",
+ * "bounced", "complained", "delivery_delayed", or "sent" while it is still in
+ * flight. Null when it cannot be read.
+ */
+export async function emailDeliveryStatus(messageId: string): Promise<string | null> {
+  const key = process.env.RESEND_API_KEY;
+  if (!key || !messageId) return null;
+  try {
+    const res = await fetch(`https://api.resend.com/emails/${encodeURIComponent(messageId)}`, {
+      headers: { Authorization: `Bearer ${key}` },
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const d = await res.json();
+    return (d?.last_event as string) || (d?.status as string) || null;
+  } catch {
+    return null;
   }
 }
 
