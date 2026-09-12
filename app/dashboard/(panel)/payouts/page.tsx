@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { PayoutsForm } from "@/components/dashboard/payouts-form";
 import { PaymentOptions } from "@/components/dashboard/payment-options";
+import { OtherSitePayouts, type SitePayout } from "@/components/dashboard/other-site-payouts";
+import { siteLiveUrl } from "@/lib/site-url";
 import { feePolicyForOwner } from "@/lib/plan-fees";
 import { feeRateLabel, isFree } from "@/lib/platform-fee";
 import { getPlan } from "@/lib/constants";
@@ -13,7 +15,7 @@ import { getPlan } from "@/lib/constants";
 export const metadata = { title: "Payouts | Tomora" };
 
 export default async function PayoutsPage() {
-  const { site } = await getDashboardData();
+  const { site, sites } = await getDashboardData();
   // Stores, organisations, and any site that turned on donations settle to a bank.
   const needsPayout = site!.category === "ecommerce" || site!.category === "organization" || !!site!.site_data?.donationEnabled;
   if (!needsPayout) redirect("/dashboard");
@@ -38,10 +40,25 @@ export default async function PayoutsPage() {
     ? `Your ${getPlan(policy.planId)?.name || ""} plan adds a ${feeRateLabel(policy.rate)} transaction fee to each online payment. Your customer pays it on top of their total, so it never comes out of your sale.`
     : null;
 
+  // Every website has its own payout bank, so the ones not being edited are
+  // listed underneath: an owner who connected a bank on one site has no other
+  // way to notice that another still cannot be paid.
+  const others: SitePayout[] = sites
+    .filter((s) => s.id !== site!.id)
+    .map((s) => ({
+      id: s.id,
+      name: s.site_data?.businessName || s.subdomain,
+      host: siteLiveUrl(s).replace(/^https?:\/\//, ""),
+      bank: s.account_number ? `${s.bank_name || "Bank"} ${s.account_number}` : null,
+      takesMoney: s.category === "ecommerce" || s.category === "organization" || !!s.site_data?.donationEnabled,
+    }));
+
   return (
     <div className="space-y-6">
       <PayoutsForm
         changeStatus={(changeReq as { status: string } | null)?.status ?? null}
+        siteName={site!.site_data?.businessName || site!.subdomain}
+        siteHost={siteLiveUrl(site!).replace(/^https?:\/\//, "")}
         initial={{
           bankCode: site!.bank_code || "",
           bankName: site!.bank_name || "",
@@ -78,6 +95,8 @@ export default async function PayoutsPage() {
           }}
         />
       )}
+
+      <OtherSitePayouts sites={others} />
 
       {/* Store still in setup, guide them back into the rest of the flow. */}
       {!site!.is_live && (

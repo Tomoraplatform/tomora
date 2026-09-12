@@ -46,6 +46,10 @@ export function PaymentOptions({
     <Card className="mx-auto max-w-2xl">
       <CardHeader><CardTitle>{donationOnly ? "Donation payment fee" : "Payment options at checkout"}</CardTitle></CardHeader>
       <CardContent className="space-y-5">
+        <p className="text-sm text-ink/55">
+          These settings, and the bank account above, apply to this website only. Your other websites keep their own.
+        </p>
+
         {!connected && (
           <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">Connect your payout bank above first, {donationOnly ? "this activates" : "payment options activate"} once it&apos;s set up.</p>
         )}
