@@ -13,11 +13,12 @@
 export const MAX_PER_SEND = 100;
 
 /** How far someone got before they stopped. */
-export type Stage = "no_site" | "unpublished" | "no_products" | "no_sales" | "active";
+export type Stage = "no_site" | "unpublished" | "no_payouts" | "no_products" | "no_sales" | "active";
 
 export const STAGE_LABEL: Record<Stage, string> = {
   no_site: "Signed up, no website",
   unpublished: "Website built, never published",
+  no_payouts: "Live, but cannot be paid",
   no_products: "Store live, no products",
   no_sales: "Live, no sales yet",
   active: "Active",
@@ -28,6 +29,8 @@ export interface UserFacts {
   hasSite: boolean;
   isLive: boolean;
   isStore: boolean;
+  /** A Paystack payout account is connected, so the site can be paid. */
+  hasPayout: boolean;
   productCount: number;
   paidOrderCount: number;
   subscriptionActive: boolean;
@@ -41,6 +44,11 @@ export function stageOf(u: UserFacts): Stage {
   if (u.subscriptionActive || u.paidOrderCount > 0) return "active";
   if (!u.hasSite) return "no_site";
   if (!u.isLive) return "unpublished";
+  // A live site with no payout bank can take nothing: cards need one, and on
+  // the Free plan there is no bank transfer to fall back on. That beats a
+  // missing product, because adding products to a shop nobody can pay at
+  // changes nothing.
+  if (!u.hasPayout) return "no_payouts";
   if (u.isStore && u.productCount === 0) return "no_products";
   return "no_sales";
 }
@@ -125,6 +133,20 @@ You started a website on Tomora but haven't taken it live yet. If you'd like, we
 It takes about 30 minutes together. Pick a time here and we'll do it with you: {{booking}}
 
 If you'd rather carry on yourself, your site is waiting at {{dashboard}} and you can reply to this email with any question.
+
+— The Tomora team`,
+  },
+  {
+    id: "connect_payouts",
+    name: "Ask them to connect their bank",
+    subject: "Your Tomora site can't take payments yet",
+    body: `Hi {{name}},
+
+Your site at {{site}} is live, but you haven't connected a bank account yet, so there is nowhere for your customers' money to go. Anyone who tries to pay you today cannot.
+
+It takes two minutes: open {{dashboard}}, go to Payouts, and enter your bank and account number. Payments then go straight into your own account, not to Tomora.
+
+If you'd rather we did it with you, pick a time here: {{booking}}
 
 — The Tomora team`,
   },

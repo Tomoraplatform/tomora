@@ -34,7 +34,7 @@ export default async function OutreachPage() {
   }
 
   const [{ data: sites }, { data: subs }, { data: products }, { data: paidOrders }] = await Promise.all([
-    admin.from("sites").select("id, user_id, subdomain, custom_domain, domain_status, is_live, category, is_demo, created_at"),
+    admin.from("sites").select("id, user_id, subdomain, custom_domain, domain_status, is_live, category, is_demo, paystack_subaccount, created_at"),
     admin.from("subscriptions").select("user_id, status, plan"),
     admin.from("products").select("site_id"),
     admin.from("orders").select("site_id").eq("status", "paid"),
@@ -67,6 +67,7 @@ export default async function OutreachPage() {
         hasSite: !!site,
         isLive: !!site?.is_live,
         isStore: site?.category === "ecommerce",
+        hasPayout: !!site?.paystack_subaccount,
         productCount: site ? productCount.get(site.id) || 0 : 0,
         paidOrderCount: site ? orderCount.get(site.id) || 0 : 0,
         subscriptionActive: sub?.status === "active",

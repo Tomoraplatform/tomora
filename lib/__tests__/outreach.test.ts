@@ -15,18 +15,27 @@ const now = Date.UTC(2026, 8, 12);
 const ago = (days: number) => new Date(now - days * DAY).toISOString();
 
 const base: UserFacts = {
-  createdAt: ago(30), hasSite: true, isLive: true, isStore: true,
+  createdAt: ago(30), hasSite: true, isLive: true, isStore: true, hasPayout: true,
   productCount: 3, paidOrderCount: 0, subscriptionActive: false, email: "ada@example.com",
 };
 
-const filters: Filters = { stages: ["no_site", "unpublished", "no_products", "no_sales"], minAgeDays: 7, quietDays: 30 };
+const filters: Filters = {
+  stages: ["no_site", "unpublished", "no_payouts", "no_products", "no_sales"],
+  minAgeDays: 7, quietDays: 30,
+};
 
 describe("stageOf", () => {
   it("says how far someone got", () => {
     expect(stageOf({ ...base, hasSite: false })).toBe("no_site");
     expect(stageOf({ ...base, isLive: false })).toBe("unpublished");
+    expect(stageOf({ ...base, hasPayout: false })).toBe("no_payouts");
     expect(stageOf({ ...base, productCount: 0 })).toBe("no_products");
     expect(stageOf(base)).toBe("no_sales");
+  });
+
+  it("puts a missing payout bank ahead of missing products, because it is what stops the money", () => {
+    // A shop nobody can pay at is not helped by adding products to it.
+    expect(stageOf({ ...base, hasPayout: false, productCount: 0 })).toBe("no_payouts");
   });
 
   it("counts anyone paying, or being paid, as active", () => {
