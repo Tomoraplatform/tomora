@@ -76,18 +76,24 @@ export async function feePolicyForOwner(userId: string): Promise<FeePolicy> {
   const { data: sub, error } = await admin
     .from("subscriptions").select("*").eq("user_id", userId).maybeSingle();
   if (error) throw new Error(`Could not read the store's plan: ${error.message}`);
+  return policyFrom(sub as SubscriptionFeeFields | null, await loadPlanFeeRates());
+}
 
-  const s = sub as {
-    status?: string | null; plan?: string | null; comp_expires_at?: string | null;
-    fee_percent_override?: unknown; fee_flat_override?: unknown;
-  } | null;
+export type SubscriptionFeeFields = {
+  status?: string | null; plan?: string | null; comp_expires_at?: string | null;
+  fee_percent_override?: unknown; fee_flat_override?: unknown;
+};
 
+/** The policy for one subscription row (or none), given the loaded rates. */
+export function policyFrom(
+  s: SubscriptionFeeFields | null,
+  { rates, live }: { rates: FeeRates; live: boolean },
+): FeePolicy {
   const active = !!s && s.status === "active" && !isCompExpired(s);
   // An active subscription with no plan recorded predates the plan column and
   // was Pro; the rest of the app reads it the same way.
   const plan = (active ? getPlan(s!.plan || "pro") : undefined) ?? getPlan(FREE_PLAN_ID)!;
 
-  const { rates, live } = await loadPlanFeeRates();
   if (!live) return { planId: plan.id, rate: NO_FEE, allowBankTransfer: true, overridden: false };
 
   const override = active ? validRate(s!.fee_percent_override, s!.fee_flat_override) : null;

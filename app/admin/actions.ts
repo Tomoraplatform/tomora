@@ -5,7 +5,7 @@ import { revalidateSite, revalidateSiteHosts, revalidateSitesForUser } from "@/l
 import { isAdmin } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { updateSubaccount } from "@/lib/paystack";
+import { updateSubaccount, resolveAccount, createSubaccount } from "@/lib/paystack";
 import { getPlan, STORE_COMMISSION_PERCENT } from "@/lib/constants";
 import { validRate } from "@/lib/platform-fee";
 import { normaliseCode } from "@/lib/plan-coupons";
@@ -92,6 +92,39 @@ export async function syncStoreCommission(): Promise<{ ok: boolean; updated?: nu
     }
     return { ok: true, updated };
   } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/**
+ * Rebuilds a site's Paystack payout account from the bank details it already
+ * has saved, for a site whose account Paystack no longer recognises (created
+ * under another key, or deactivated). It is what happens when the owner
+ * connects their bank, done on their behalf: the account is verified with
+ * Paystack first, and the new code only replaces the old one if that works.
+ */
+export async function reconnectSubaccount(siteId: string): Promise<{ ok: boolean; error?: string; accountName?: string }> {
+  try {
+    const admin = await guard();
+    const { data: site } = await admin
+      .from("sites").select("id, bank_code, account_number").eq("id", siteId).maybeSingle();
+    if (!site?.bank_code || !site?.account_number) {
+      return { ok: false, error: "This site has no saved bank details. The owner must reconnect their payout bank." };
+    }
+    const accountName = await resolveAccount(site.account_number as string, site.bank_code as string);
+    const { subaccountCode } = await createSubaccount({
+      businessName: accountName,
+      bankCode: site.bank_code as string,
+      accountNumber: site.account_number as string,
+      percentageCharge: STORE_COMMISSION_PERCENT,
+    });
+    const { error } = await admin
+      .from("sites")
+      .update({ paystack_subaccount: subaccountCode, account_name: accountName })
+      .eq("id", siteId);
+    if (error) return { ok: false, error: error.message };
+    revalidateSite(siteId);
+    revalidatePath("/admin/payments");
+    return { ok: true, accountName };
+  } catch (e: any) { return { ok: false, error: e.message || "Paystack refused the bank details." }; }
 }
 
 /** Set (or update) a discount percentage on a plan. */
