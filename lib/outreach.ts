@@ -13,11 +13,12 @@
 export const MAX_PER_SEND = 100;
 
 /** How far someone got before they stopped. */
-export type Stage = "no_site" | "unpublished" | "no_products" | "no_sales" | "active";
+export type Stage = "no_site" | "unpublished" | "no_payouts" | "no_products" | "no_sales" | "active";
 
 export const STAGE_LABEL: Record<Stage, string> = {
   no_site: "Signed up, no website",
   unpublished: "Website built, never published",
+  no_payouts: "Live, but cannot be paid",
   no_products: "Store live, no products",
   no_sales: "Live, no sales yet",
   active: "Active",
@@ -28,6 +29,8 @@ export interface UserFacts {
   hasSite: boolean;
   isLive: boolean;
   isStore: boolean;
+  /** A Paystack payout account is connected, so the site can be paid. */
+  hasPayout: boolean;
   productCount: number;
   paidOrderCount: number;
   subscriptionActive: boolean;
@@ -41,6 +44,11 @@ export function stageOf(u: UserFacts): Stage {
   if (u.subscriptionActive || u.paidOrderCount > 0) return "active";
   if (!u.hasSite) return "no_site";
   if (!u.isLive) return "unpublished";
+  // A live site with no payout bank can take nothing: cards need one, and on
+  // the Free plan there is no bank transfer to fall back on. That beats a
+  // missing product, because adding products to a shop nobody can pay at
+  // changes nothing.
+  if (!u.hasPayout) return "no_payouts";
   if (u.isStore && u.productCount === 0) return "no_products";
   return "no_sales";
 }
@@ -125,6 +133,34 @@ You started a website on Tomora but haven't taken it live yet. If you'd like, we
 It takes about 30 minutes together. Pick a time here and we'll do it with you: {{booking}}
 
 If you'd rather carry on yourself, your site is waiting at {{dashboard}} and you can reply to this email with any question.
+
+— The Tomora team`,
+  },
+  {
+    id: "back_online_free",
+    name: "Tell a lapsed subscriber they are back online",
+    subject: "Good news: your Tomora website is back online, free",
+    body: `Hi {{name}},
+
+Your website went offline when your subscription ended. That has changed: Tomora now has a Free plan that keeps one website online for as long as you like, at no cost, and your site is live again at {{site}}.
+
+You keep your design, your pages and your products, and you can take payments straight into your own bank account. On the Free plan a small processing fee is added to your customer's total at checkout, so it never comes out of your sale.
+
+Want your own domain name instead of a Tomora address? You can buy one from your dashboard at {{dashboard}}, or reply to this email and we'll sort it out for you.
+
+— The Tomora team`,
+  },
+  {
+    id: "connect_payouts",
+    name: "Ask them to connect their bank",
+    subject: "Your Tomora site can't take payments yet",
+    body: `Hi {{name}},
+
+Your site at {{site}} is live, but you haven't connected a bank account yet, so there is nowhere for your customers' money to go. Anyone who tries to pay you today cannot.
+
+It takes two minutes: open {{dashboard}}, go to Payouts, and enter your bank and account number. Payments then go straight into your own account, not to Tomora.
+
+If you'd rather we did it with you, pick a time here: {{booking}}
 
 — The Tomora team`,
   },

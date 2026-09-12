@@ -23,9 +23,9 @@ export interface OutreachRow {
   optedOut: boolean;
 }
 
-const STAGES: Stage[] = ["no_site", "unpublished", "no_products", "no_sales", "active"];
+const STAGES: Stage[] = ["no_site", "unpublished", "no_payouts", "no_products", "no_sales", "active"];
 /** Active people are not dormant, so they start off the list. */
-const DEFAULT_STAGES: Stage[] = ["no_site", "unpublished", "no_products", "no_sales"];
+const DEFAULT_STAGES: Stage[] = ["no_site", "unpublished", "no_payouts", "no_products", "no_sales"];
 
 export function OutreachComposer({ rows, disabled = false }: { rows: OutreachRow[]; disabled?: boolean }) {
   const [filters, setFilters] = useState<Filters>({ stages: DEFAULT_STAGES, minAgeDays: 7, quietDays: 30 });

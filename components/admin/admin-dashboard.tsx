@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/utils";
-import { setSiteLive, grantPlan, revokePlan, setPlanDiscount, clearPlanDiscount, setPlanFee, syncStoreCommission, deleteUserAccount, resetRevenue, updateTemplateSettings, setNovaEnabled, createPlanCoupon, setPlanCouponActive, deletePlanCoupon } from "@/app/admin/actions";
+import { setSiteLive, grantPlan, revokePlan, restoreOnFree, setPlanDiscount, clearPlanDiscount, setPlanFee, syncStoreCommission, deleteUserAccount, resetRevenue, updateTemplateSettings, setNovaEnabled, createPlanCoupon, setPlanCouponActive, deletePlanCoupon } from "@/app/admin/actions";
 import { feeRateLabel, type FeeRate } from "@/lib/platform-fee";
 import { setAcademyOpen } from "@/app/admin/creators/actions";
 import { PLANS } from "@/lib/constants";
@@ -514,8 +514,18 @@ function UserControls({
           </Button>
         </>
       )}
+      {/* Brings a site that went dark back online on the Free plan. */}
+      {r.siteId && !r.isLive && (
+        <Button size="sm" variant="outline" disabled={busy === r.userId + "f"}
+          onClick={() => run(r.userId + "f", async () => {
+            const res = await restoreOnFree(r.userId);
+            if (typeof window !== "undefined" && !res.ok) window.alert(res.error || "Could not restore.");
+          })}>
+          {busy === r.userId + "f" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Free plan"}
+        </Button>
+      )}
       <Button size="sm" variant="ghost" className="text-destructive" disabled={busy === r.userId + "r"}
-        onClick={() => { if (confirm("Revoke this user's plan?")) run(r.userId + "r", () => revokePlan(r.userId)); }}>
+        onClick={() => { if (confirm("Revoke this user's paid plan? Their website stays online on the Free plan.")) run(r.userId + "r", () => revokePlan(r.userId)); }}>
         {busy === r.userId + "r" ? <Loader2 className="h-3 w-3 animate-spin" /> : "Revoke"}
       </Button>
       <Button size="sm" variant="ghost" className="text-destructive" disabled={busy === r.userId + "d"} title="Delete account"
