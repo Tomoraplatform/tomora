@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Users, Globe, CreditCard, TrendingUp, Loader2, RotateCcw, Trash2, Sparkles, GraduationCap, Store, Layers, LifeBuoy, HeartPulse } from "lucide-react";
+import { Users, Globe, CreditCard, TrendingUp, Loader2, RotateCcw, Trash2, Sparkles, GraduationCap, Store, Layers, LifeBuoy, HeartPulse, Send } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -140,6 +140,9 @@ export function AdminDashboard({
             </Button>
             <Button asChild variant="outline" size="sm">
               <Link href="/admin/payments"><HeartPulse className="h-3.5 w-3.5" /> Payments health</Link>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/admin/outreach"><Send className="h-3.5 w-3.5" /> Outreach</Link>
             </Button>
             <Button
               variant="outline"
