@@ -18,7 +18,15 @@ interface Initial {
   connected: boolean;
 }
 
-export function PayoutsForm({ initial, changeStatus = null }: { initial: Initial; changeStatus?: string | null }) {
+export function PayoutsForm({
+  initial, changeStatus = null, siteName = null, siteHost = null,
+}: {
+  initial: Initial;
+  changeStatus?: string | null;
+  /** The website this bank account belongs to. */
+  siteName?: string | null;
+  siteHost?: string | null;
+}) {
   const [banks, setBanks] = useState<{ name: string; code: string }[]>([]);
   const [bankCode, setBankCode] = useState(initial.bankCode);
   const [accountNumber, setAccountNumber] = useState(initial.accountNumber);
@@ -98,8 +106,18 @@ export function PayoutsForm({ initial, changeStatus = null }: { initial: Initial
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-ink">Payouts</h1>
-        <p className="mt-1 text-ink/60">Add the bank account that receives payments and donations from your site.</p>
+        {/* Naming the website matters: each one has its own payout bank, and
+            an owner with several sites would otherwise take this for an
+            account-wide setting and wonder why their other store cannot be
+            paid. */}
+        <h1 className="text-2xl font-bold text-ink">
+          Payouts{siteName ? <> for <span className="text-ink">{siteName}</span></> : ""}
+        </h1>
+        <p className="mt-1 text-ink/60">
+          The bank account that receives payments and donations from
+          {siteHost ? <> <span className="font-medium text-ink">{siteHost}</span></> : " this website"}.
+          {" "}Each of your websites has its own.
+        </p>
       </div>
 
       <div className="flex items-start gap-2 rounded-lg bg-cream p-4 text-sm text-ink/70">
