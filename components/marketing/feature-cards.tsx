@@ -59,7 +59,7 @@ function Panel({
     <div className="container">
       <div
         className={`grid grid-cols-1 items-center gap-10 rounded-[28px] p-8 sm:p-10 md:p-14 lg:grid-cols-2 lg:gap-14 ${
-          dark ? "bg-slate text-white" : "bg-[#F4F3F1] text-ink"
+          dark ? "bg-slate text-white" : "bg-[#F4F1F4] text-ink"
         }`}
       >
         <div className={reverse ? "lg:order-2" : ""}>
@@ -83,14 +83,14 @@ function Panel({
 /** White surface the mocks sit on, so they read as a real screen. */
 function Surface({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-ink/10 bg-white p-5 shadow-[0_18px_50px_rgba(2,34,69,0.16)] sm:p-6">
+    <div className="rounded-2xl border border-ink/10 bg-white p-5 shadow-[0_18px_50px_rgba(34,25,42,0.16)] sm:p-6">
       {children}
     </div>
   );
 }
 
 function BrandVisual() {
-  const swatches = ["#022245", "#c75b39", "#0f9d76", "#d4a23a", "#7c5cff"];
+  const swatches = ["#5E2A66", "#c75b39", "#0f9d76", "#d4a23a", "#7c5cff"];
   return (
     <Surface>
       <div className="flex items-center gap-2">

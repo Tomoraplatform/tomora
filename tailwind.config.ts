@@ -15,17 +15,23 @@ const config: Config = {
     },
     extend: {
       colors: {
-        // Tomora brand
-        cream: "#FAF7F0",
-        ink: "#022245",
-        "ink-700": "#0a3263",
-        "ink-300": "#5b7799",
-        // Warm accent introduced by the landing redesign: primary CTA, the
-        // "how it works" path and section eyebrows.
-        flame: "#EE8B3D",
-        "flame-600": "#DE7526",
-        // Panel navy used by the landing feature cards (lighter than `ink`).
-        slate: "#2A3B55",
+        // Tomora brand: plum and peach, on warm neutrals (2026-09-15).
+        //
+        // Text and dark surfaces are a near-black with a plum undertone rather
+        // than the brand colour itself, so pages read calm and neutral and the
+        // plum is saved for buttons, links and brand panels. `ink` keeps its
+        // name because some 1,800 classes use it.
+        cream: "#FAF8F9", // soft warm white: page and light sections
+        ink: "#22192A", // headings, body text (via opacity), dark sections
+        "ink-700": "#4A1F52", // deep plum: primary button hover
+        "ink-300": "#8A7F8E", // warm grey: quiet labels
+        // Warm accent: primary CTA, the "how it works" path and section eyebrows.
+        flame: "#F2906F", // peach
+        "flame-600": "#E5775A",
+        // Brand panels used by the landing feature cards.
+        slate: "#3A1942", // deep plum
+        // The brand colour itself, for anywhere that needs plum by name.
+        plum: "#5E2A66",
 
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

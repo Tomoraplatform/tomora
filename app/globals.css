@@ -5,34 +5,37 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 211 94% 14%;
+    /* Near-black with a plum undertone #22192A */
+    --foreground: 283 26% 13%;
 
     --card: 0 0% 100%;
-    --card-foreground: 211 94% 14%;
+    --card-foreground: 283 26% 13%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 211 94% 14%;
+    --popover-foreground: 283 26% 13%;
 
-    /* Dark blue #022245 */
-    --primary: 211 94% 14%;
-    --primary-foreground: 42 50% 96%;
+    /* Plum #5E2A66: buttons, links, focus */
+    --primary: 293 42% 28%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Cream #FAF7F0 */
-    --secondary: 42 50% 96%;
-    --secondary-foreground: 211 94% 14%;
+    /* Pale plum tint #F5EDF5: soft fills and hover washes */
+    --secondary: 300 30% 95%;
+    --secondary-foreground: 283 26% 13%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 42%;
+    /* Warm neutral greys */
+    --muted: 300 12% 95%;
+    --muted-foreground: 285 6% 42%;
 
-    --accent: 42 50% 96%;
-    --accent-foreground: 211 94% 14%;
+    --accent: 300 30% 95%;
+    --accent-foreground: 283 26% 13%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 20% 90%;
-    --input: 214 20% 90%;
-    --ring: 211 94% 14%;
+    /* Hairlines #EAE4EA */
+    --border: 300 12% 90%;
+    --input: 300 12% 90%;
+    --ring: 293 42% 28%;
 
     --radius: 0.65rem;
   }

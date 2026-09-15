@@ -17,8 +17,8 @@ export function Logo({
   tone?: "ink" | "cream";
   href?: string | null;
 }) {
-  const markBg = tone === "cream" ? "#FAF7F0" : "#022245";
-  const markFg = tone === "cream" ? "#022245" : "#FAF7F0";
+  const markBg = tone === "cream" ? "#FAF8F9" : "#5E2A66";
+  const markFg = tone === "cream" ? "#5E2A66" : "#FFFFFF";
   const text = tone === "cream" ? "text-cream" : "text-ink";
 
   const inner = (

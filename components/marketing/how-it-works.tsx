@@ -31,7 +31,7 @@ export function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="bg-[#F4F3F1] py-16 md:py-24">
+    <section id="how-it-works" className="bg-[#F4F1F4] py-16 md:py-24">
       <div className="container">
         <span className="text-xs font-bold uppercase tracking-[0.2em] text-flame">
           How it works
@@ -56,7 +56,7 @@ export function HowItWorks() {
           >
             <path
               d="M0 210 C 60 210, 90 200, 150 200 C 260 200, 300 110, 500 110 C 650 110, 680 45, 800 45 C 900 45, 950 60, 1000 72"
-              stroke="#EE8B3D"
+              stroke="#F2906F"
               strokeWidth="2"
               strokeLinecap="round"
               vectorEffect="non-scaling-stroke"
@@ -68,10 +68,10 @@ export function HowItWorks() {
           {STEP_POINTS.map((pos, i) => (
             <span
               key={i}
-              className="absolute flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-[0_2px_10px_rgba(2,34,69,0.14)]"
+              className="absolute flex h-7 w-7 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-[0_2px_10px_rgba(34,25,42,0.14)]"
               style={{ left: pos.left, top: pos.node }}
             >
-              <span className="h-2.5 w-2.5 rounded-full bg-[#C9CBD0]" />
+              <span className="h-2.5 w-2.5 rounded-full bg-[#D8D0DA]" />
             </span>
           ))}
 
@@ -91,7 +91,7 @@ export function HowItWorks() {
         <ol className="relative mt-10 space-y-8 border-l-2 border-flame/40 pl-7 md:hidden">
           {steps.map((s) => (
             <li key={s.title} className="relative">
-              <span className="absolute -left-[38px] top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-[0_2px_10px_rgba(2,34,69,0.14)]">
+              <span className="absolute -left-[38px] top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white shadow-[0_2px_10px_rgba(34,25,42,0.14)]">
                 <span className="h-2 w-2 rounded-full bg-flame" />
               </span>
               <h3 className="text-base font-bold">{s.title}</h3>

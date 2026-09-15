@@ -16,7 +16,7 @@ const DESKTOP_WIDTH = 1280;
  */
 export function TemplatePreview({
   templateId,
-  brandColor = "#022245",
+  brandColor = "#5E2A66",
   businessName = "Your Brand",
   autoScroll = false,
   className,
