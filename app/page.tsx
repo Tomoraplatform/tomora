@@ -126,7 +126,7 @@ function Hero() {
 
       {/* A real Ecommerce One storefront, fully stocked, scrolling itself. */}
       <div className="container pb-16 pt-12 md:pb-24">
-        <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-ink/10 shadow-[0_30px_90px_rgba(2,34,69,0.16)]">
+        <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-ink/10 shadow-[0_30px_90px_rgba(34,25,42,0.16)]">
           <TemplatePreview
             templateId="shop-01"
             brandColor="#1F3A2E"
@@ -206,7 +206,7 @@ function Pricing({ discounts, feeRates }: { discounts: Record<string, number>; f
             <div
               key={plan.id}
               className={`relative flex flex-col rounded-2xl border p-6 ${
-                popular ? "border-2 border-ink bg-ink text-cream" : "border-ink/10 bg-white"
+                popular ? "border-2 border-slate bg-slate text-cream" : "border-ink/10 bg-white"
               }`}
             >
               {popular && (

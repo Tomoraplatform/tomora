@@ -107,9 +107,9 @@ function Sparkline({ points }: { points: number[] }) {
 
   return (
     <svg viewBox={`0 0 ${w} ${h}`} className="mt-3 h-8 w-full" aria-hidden="true">
-      <polygon points={area} fill="#022245" opacity={0.08} />
-      <polyline points={line} fill="none" stroke="#022245" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={coords[coords.length - 1][0]} cy={coords[coords.length - 1][1]} r={2.5} fill="#022245" />
+      <polygon points={area} fill="#5E2A66" opacity={0.08} />
+      <polyline points={line} fill="none" stroke="#5E2A66" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={coords[coords.length - 1][0]} cy={coords[coords.length - 1][1]} r={2.5} fill="#5E2A66" />
     </svg>
   );
 }

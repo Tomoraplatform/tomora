@@ -55,11 +55,11 @@ function page(done: boolean): string {
 <title>${done ? "Unsubscribed" : "Link not recognised"} | Tomora</title>
 <style>
   body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
-       background:#fdfaf4;color:#022245;font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;padding:24px}
+       background:#FAF8F9;color:#22192A;font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;padding:24px}
   .card{max-width:34rem;text-align:center}
   h1{font-size:1.5rem;margin:0 0 .5rem}
   p{color:#4b5563;margin:.5rem 0}
-  a{color:#022245}
+  a{color:#5E2A66}
 </style></head>
 <body><div class="card">
   <h1>${done ? "You're unsubscribed" : "We couldn't do that"}</h1>
