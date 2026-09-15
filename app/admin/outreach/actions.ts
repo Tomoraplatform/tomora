@@ -157,7 +157,12 @@ function unsubscribeUrl(token?: string | null): string | null {
  * between "we sent it" and "it arrived", which is the whole question when a
  * batch goes out and nobody replies.
  */
-export async function refreshOutreachDelivery(): Promise<{ ok: boolean; checked: number; error?: string }> {
+export async function refreshOutreachDelivery(): Promise<{
+  ok: boolean; checked: number;
+  /** Recent sends that can be traced at all. Zero means they all predate tracking. */
+  traceable?: number;
+  error?: string;
+}> {
   try {
     if (!(await isAdmin())) return { ok: false, checked: 0, error: "Forbidden" };
     const admin = createAdminClient();
@@ -168,6 +173,9 @@ export async function refreshOutreachDelivery(): Promise<{ ok: boolean; checked:
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) return { ok: false, checked: 0, error: "Run migration 0049 first." };
+    // Messages sent before delivery tracking existed carry no id, so there is
+    // nothing to ask about. Saying "checked 0" reads as a failure instead.
+    if (!data?.length) return { ok: true, checked: 0, traceable: 0 };
 
     let checked = 0;
     for (const row of (data as { id: string; message_id: string; delivery: string | null }[]) || []) {
@@ -181,7 +189,7 @@ export async function refreshOutreachDelivery(): Promise<{ ok: boolean; checked:
       checked += 1;
     }
     revalidatePath("/admin/outreach");
-    return { ok: true, checked };
+    return { ok: true, checked, traceable: data.length };
   } catch (e: any) {
     return { ok: false, checked: 0, error: e?.message || "Could not check." };
   }

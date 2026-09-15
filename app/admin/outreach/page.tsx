@@ -60,6 +60,7 @@ export default async function OutreachPage() {
       status: m.status,
       error: m.error ?? null,
       delivery: m.delivery ?? null,
+      traceable: !!m.message_id,
       // Formatted on the server: two different renderings would break hydration.
       when: new Date(m.created_at).toLocaleString("en-NG", {
         day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",

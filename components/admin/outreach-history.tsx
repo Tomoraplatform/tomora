@@ -14,6 +14,8 @@ export interface OutreachSend {
   error: string | null;
   /** What the mail service says became of it, once checked. */
   delivery: string | null;
+  /** False for sends made before Tomora kept the provider's id. */
+  traceable: boolean;
   when: string;
 }
 
@@ -32,8 +34,8 @@ function tone(s: OutreachSend): string {
 function label(s: OutreachSend): string {
   if (s.status === "skipped") return "skipped";
   if (s.status === "failed") return "not sent";
-  if (!s.delivery) return "accepted, not checked";
-  return s.delivery.replace(/_/g, " ");
+  if (s.delivery) return s.delivery.replace(/_/g, " ");
+  return s.traceable ? "accepted, not checked" : "accepted, before tracking";
 }
 
 /**
@@ -52,7 +54,14 @@ export function OutreachHistory({ sends }: { sends: OutreachSend[] }) {
     setNote(null);
     const res = await refreshOutreachDelivery();
     setBusy(false);
-    setNote(res.ok ? `Checked ${res.checked}. Reload to see them.` : res.error || "Could not check.");
+    if (!res.ok) { setNote(res.error || "Could not check."); return; }
+    if (!res.traceable) {
+      setNote("Nothing to check: these went out before delivery tracking existed, so there is no id to ask about. Your next send will show delivered or bounced.");
+      return;
+    }
+    setNote(res.checked
+      ? `Checked ${res.checked}. Reload the page to see them.`
+      : "Nothing new: every traceable message already has its answer.");
   }
 
   return (
