@@ -17,9 +17,12 @@ export function Logo({
   tone?: "ink" | "cream";
   href?: string | null;
 }) {
-  const markBg = tone === "cream" ? "#FAF8F9" : "#5E2A66";
-  const markFg = tone === "cream" ? "#5E2A66" : "#FFFFFF";
-  const text = tone === "cream" ? "text-cream" : "text-ink";
+  // The logo keeps Tomora's original navy and cream, written out rather than
+  // taken from the `ink` and `cream` tokens: those moved to the plum palette
+  // (2026-09-15), and the mark is the one thing that stays as it always was.
+  const markBg = tone === "cream" ? "#FAF7F0" : "#022245";
+  const markFg = tone === "cream" ? "#022245" : "#FAF7F0";
+  const text = tone === "cream" ? "text-[#FAF7F0]" : "text-[#022245]";
 
   const inner = (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
