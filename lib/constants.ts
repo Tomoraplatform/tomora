@@ -1,4 +1,5 @@
 import type { SiteCategory } from "./database.types";
+import { FREE_PLAN_FEE_TIERS, type FeeTier } from "./platform-fee";
 
 export const APP_DOMAIN = process.env.NEXT_PUBLIC_APP_DOMAIN || "tomora.com.ng";
 
@@ -82,6 +83,11 @@ export interface Plan {
   /** Flat part of the same fee, in naira, added once per payment. */
   transactionFeeFlat: number;
   /**
+   * A fixed fee by payment size, used instead of the percentage and flat
+   * amount when set. The Free plan uses this.
+   */
+  transactionFeeTiers?: FeeTier[];
+  /**
    * Whether the store may offer direct bank transfer at checkout. A transfer
    * never passes through Paystack, so no fee can be split from it; plans that
    * charge a fee therefore take card / bank / USSD payments only.
@@ -105,8 +111,10 @@ export const PLANS: Plan[] = [
     cta: "Start Free",
     siteLimit: 1,
     canPublish: true,
-    transactionFeePercent: 3,
-    transactionFeeFlat: 75,
+    // ₦105 to ₦750 by order size (2026-09-16). Was 3% + ₦75.
+    transactionFeePercent: 0,
+    transactionFeeFlat: 0,
+    transactionFeeTiers: FREE_PLAN_FEE_TIERS,
     allowBankTransfer: false,
   },
   {
@@ -127,7 +135,8 @@ export const PLANS: Plan[] = [
     cta: "Choose Starter",
     siteLimit: 3,
     canPublish: true,
-    transactionFeePercent: 1.5,
+    // Only the Free plan carries a fee (2026-09-16). Was 1.5%.
+    transactionFeePercent: 0,
     transactionFeeFlat: 0,
     allowBankTransfer: true,
   },
@@ -387,7 +396,7 @@ export const FAQS = [
   },
   {
     q: "Are there transaction fees?",
-    a: "On the Free and Starter plans Tomora's transaction fee is added to your customer's total at checkout, so it never comes out of your sale or donation. Growth, Pro, One-Time and Custom have no transaction fee. Paystack's own processing fee applies on every plan, as it does today.",
+    a: "Only on the Free plan. A small fixed fee is added to your customer's total at checkout, so it never comes out of your sale or donation: ₦105 for orders under ₦5,000, ₦200 under ₦15,000, ₦250 under ₦30,000, ₦500 under ₦50,000, and ₦750 for ₦50,000 and above. Starter, Growth, Pro, One-Time and Custom have no transaction fee. Paystack's own processing fee applies on every plan, as it does today.",
   },
   {
     q: "Does Tomora support Paystack?",

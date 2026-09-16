@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
+import { FREE_PLAN_FEE_TIERS, type FeeRate } from "../platform-fee";
 
 /**
  * What storefront checkout and donations send to Paystack.
@@ -10,7 +11,10 @@ import { NextRequest } from "next/server";
  * the order or donation Tomora records is the subtotal, never the fee.
  */
 
-type Policy = { planId: string; rate: { percent: number; flat: number }; allowBankTransfer: boolean; overridden: boolean };
+type Policy = { planId: string; rate: FeeRate; allowBankTransfer: boolean; overridden: boolean };
+
+// The Free plan's fixed fee by order size.
+const FREE_RATE: FeeRate = { percent: 0, flat: 0, tiers: FREE_PLAN_FEE_TIERS };
 
 let policy: Policy;
 let policyError: Error | null = null;
@@ -94,7 +98,7 @@ beforeEach(() => {
   policyError = null;
   initError = null;
   site.site_data = { donationEnabled: true, businessName: "Ada Stores" };
-  policy = { planId: "free", rate: { percent: 3, flat: 75 }, allowBankTransfer: false, overridden: false };
+  policy = { planId: "free", rate: FREE_RATE, allowBankTransfer: false, overridden: false };
 });
 
 describe("store checkout on the Free plan", () => {
@@ -105,11 +109,11 @@ describe("store checkout on the Free plan", () => {
 
     expect(res.status).toBe(200);
     expect(inits).toHaveLength(1);
-    expect(inits[0].amountNaira).toBe(10_375);
-    expect(inits[0].transactionCharge).toBe(375);
+    expect(inits[0].amountNaira).toBe(10_200);
+    expect(inits[0].transactionCharge).toBe(200);
     expect(inits[0].subaccount).toBe("ACCT_test");
     expect(inits[0].bearer).toBe("subaccount");
-    expect(body).toMatchObject({ subtotal: 10_000, platformFee: 375, charge: 10_375 });
+    expect(body).toMatchObject({ subtotal: 10_000, platformFee: 200, charge: 10_200 });
   });
 
   it("records the order at the subtotal, so the owner's revenue excludes the fee", async () => {
@@ -124,7 +128,7 @@ describe("store checkout on the Free plan", () => {
     await POST(post("/api/checkout", order("paystack")));
     expect(chargesRecorded).toHaveLength(1);
     expect(chargesRecorded[0]).toMatchObject({ kind: "order", siteId: "site-1", ownerId: "owner-1" });
-    expect(chargesRecorded[0].quote).toEqual({ subtotal: 10_000, platformFee: 375, passthroughFee: 0, totalCharged: 10_375 });
+    expect(chargesRecorded[0].quote).toEqual({ subtotal: 10_000, platformFee: 200, passthroughFee: 0, totalCharged: 10_200 });
   });
 
   it("refuses a bank transfer, before any order is written", async () => {
@@ -139,9 +143,9 @@ describe("store checkout on the Free plan", () => {
     site.site_data = { shippingZones: [{ id: "z1", name: "Lagos", fee: 2_000 }] };
     const { POST } = await import("@/app/api/checkout/route");
     await POST(post("/api/checkout", { ...order("paystack"), shippingZoneId: "z1" }));
-    // 3% of 12,000 = 360, + 75
-    expect(inits[0].transactionCharge).toBe(435);
-    expect(inits[0].amountNaira).toBe(12_435);
+    // ₦12,000 is in the ₦5,000 to under ₦15,000 band: ₦200
+    expect(inits[0].transactionCharge).toBe(200);
+    expect(inits[0].amountNaira).toBe(12_200);
   });
 
   it("stops rather than guess when the plan cannot be read", async () => {
@@ -198,12 +202,12 @@ describe("donations", () => {
     const res = await POST(post("/api/donations", { siteId: "site-1", email: "d@example.com", amount: 5_000 }));
     const body = await res.json();
 
-    // 3% of 5,000 = 150, + 75
-    expect(inits[0].amountNaira).toBe(5_225);
-    expect(inits[0].transactionCharge).toBe(225);
+    // ₦5,000 is not under ₦5,000, so it is in the ₦200 band
+    expect(inits[0].amountNaira).toBe(5_200);
+    expect(inits[0].transactionCharge).toBe(200);
     expect(inits[0].bearer).toBe("subaccount");
     expect(donationInserts[0].amount).toBe(5_000);
-    expect(body).toMatchObject({ amount: 5_000, platformFee: 225, charge: 5_225 });
+    expect(body).toMatchObject({ amount: 5_000, platformFee: 200, charge: 5_200 });
     expect(chargesRecorded[0]).toMatchObject({ kind: "donation" });
   });
 

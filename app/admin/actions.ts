@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { updateSubaccount, resolveAccount, createSubaccount } from "@/lib/paystack";
 import { getPlan, STORE_COMMISSION_PERCENT } from "@/lib/constants";
-import { validRate } from "@/lib/platform-fee";
+import { validRate, validTiers } from "@/lib/platform-fee";
 import { normaliseCode } from "@/lib/plan-coupons";
 import { downgradeToFree } from "@/lib/billing";
 
@@ -180,8 +180,37 @@ export async function setPlanFee(planId: string, percent: number, flat: number):
     if (!getPlan(planId)) return { ok: false, error: "Unknown plan." };
     const rate = validRate(percent, flat);
     if (!rate) return { ok: false, error: "Percent must be 0 to 20, and the flat fee ₦0 to ₦5,000." };
+    // A percentage replaces any fee bands the plan had, rather than sitting
+    // unused underneath them.
     const { error } = await admin.from("plan_fees").upsert({
-      plan_id: planId, fee_percent: rate.percent, fee_flat: rate.flat, updated_at: new Date().toISOString(),
+      plan_id: planId, fee_percent: rate.percent, fee_flat: rate.flat, fee_tiers: null,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) return { ok: false, error: error.message };
+    revalidatePath("/admin");
+    revalidatePath("/");
+    return { ok: true };
+  } catch (e: any) { return { ok: false, error: e.message }; }
+}
+
+/**
+ * Set a plan's fixed fee by order size. Takes effect on the next checkout.
+ * The schedule must rise, and end with an open band, so every order has a fee.
+ */
+export async function setPlanFeeTiers(
+  planId: string,
+  tiers: { below: number | null; fee: number }[],
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const admin = await guard();
+    if (!getPlan(planId)) return { ok: false, error: "Unknown plan." };
+    const valid = validTiers(tiers);
+    if (!valid) {
+      return { ok: false, error: "Each limit must be higher than the one before, and each fee between ₦0 and ₦5,000." };
+    }
+    const { error } = await admin.from("plan_fees").upsert({
+      plan_id: planId, fee_percent: 0, fee_flat: 0, fee_tiers: valid,
+      updated_at: new Date().toISOString(),
     });
     if (error) return { ok: false, error: error.message };
     revalidatePath("/admin");

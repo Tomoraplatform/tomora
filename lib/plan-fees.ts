@@ -2,7 +2,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isCompExpired } from "@/lib/billing";
 import { FREE_PLAN_ID, PLANS, getPlan, type PlanId } from "@/lib/constants";
-import { NO_FEE, validRate, type FeeRate } from "@/lib/platform-fee";
+import { NO_FEE, validRate, validTiers, type FeeRate } from "@/lib/platform-fee";
 
 /**
  * Which transaction fee applies, and to whom.
@@ -25,7 +25,13 @@ function defaultRates(): FeeRates {
   // Legacy plans too, so an old subscriber resolves to a rate rather than to nothing.
   for (const id of [...PLANS.map((p) => p.id), "basic"]) {
     const p = getPlan(id);
-    if (p) rates[p.id] = { percent: p.transactionFeePercent, flat: p.transactionFeeFlat };
+    if (p) {
+      rates[p.id] = {
+        percent: p.transactionFeePercent,
+        flat: p.transactionFeeFlat,
+        ...(p.transactionFeeTiers ? { tiers: p.transactionFeeTiers } : {}),
+      };
+    }
   }
   return rates;
 }
@@ -38,13 +44,28 @@ export async function loadPlanFeeRates(): Promise<{ rates: FeeRates; live: boole
   const rates = defaultRates();
   try {
     const admin = createAdminClient();
-    const { data, error } = await admin.from("plan_fees").select("plan_id, fee_percent, fee_flat");
+    // `*`: fee_tiers arrives in migration 0050, and naming a column that does
+    // not exist yet would fail the query and switch every fee off.
+    const { data, error } = await admin.from("plan_fees").select("*");
     if (error || !data) return { rates, live: false };
-    for (const row of data as { plan_id: string; fee_percent: unknown; fee_flat: unknown }[]) {
+    for (const row of data as { plan_id: string; fee_percent: unknown; fee_flat: unknown; fee_tiers?: unknown }[]) {
       if (!(row.plan_id in rates)) continue;
       const rate = validRate(row.fee_percent, row.fee_flat);
-      if (rate) rates[row.plan_id] = rate;
-      else console.error(`[fees] plan_fees row for ${row.plan_id} is out of range; using the default`, row);
+      if (!rate) {
+        console.error(`[fees] plan_fees row for ${row.plan_id} is out of range; using the default`, row);
+        continue;
+      }
+      // Bands, when the row has them, replace the percentage. A malformed
+      // schedule is refused rather than half-applied.
+      if (row.fee_tiers !== null && row.fee_tiers !== undefined) {
+        const tiers = validTiers(row.fee_tiers);
+        if (!tiers) {
+          console.error(`[fees] plan_fees fee_tiers for ${row.plan_id} is not a valid schedule; using the default`, row);
+          continue;
+        }
+        rate.tiers = tiers;
+      }
+      rates[row.plan_id] = rate;
     }
     return { rates, live: true };
   } catch (err) {

@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatNaira } from "@/lib/utils";
-import { setSiteLive, grantPlan, revokePlan, restoreOnFree, setPlanDiscount, clearPlanDiscount, setPlanFee, syncStoreCommission, deleteUserAccount, resetRevenue, updateTemplateSettings, setNovaEnabled, createPlanCoupon, setPlanCouponActive, deletePlanCoupon } from "@/app/admin/actions";
-import { feeRateLabel, type FeeRate } from "@/lib/platform-fee";
+import { setSiteLive, grantPlan, revokePlan, restoreOnFree, setPlanDiscount, clearPlanDiscount, setPlanFee, setPlanFeeTiers, syncStoreCommission, deleteUserAccount, resetRevenue, updateTemplateSettings, setNovaEnabled, createPlanCoupon, setPlanCouponActive, deletePlanCoupon } from "@/app/admin/actions";
+import { feeRateLabel, feeTierLines, type FeeRate } from "@/lib/platform-fee";
 import { setAcademyOpen } from "@/app/admin/creators/actions";
 import { PLANS } from "@/lib/constants";
 import { CATALOG_TEMPLATES, CATALOG_CATEGORIES } from "@/lib/catalog";
@@ -752,6 +752,15 @@ function PlanFees({ fees, live }: { fees: Record<string, FeeRate>; live: boolean
   });
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Fee bands, for plans that use them, as editable text.
+  const [bands, setBands] = useState<Record<string, { below: string; fee: string }[]>>(() => {
+    const b: Record<string, { below: string; fee: string }[]> = {};
+    PLANS.forEach((p) => {
+      const tiers = fees[p.id]?.tiers;
+      if (tiers?.length) b[p.id] = tiers.map((t) => ({ below: t.below === null ? "" : String(t.below), fee: String(t.fee) }));
+    });
+    return b;
+  });
 
   async function save(id: string) {
     const percent = Number(vals[id]?.percent);
@@ -765,14 +774,29 @@ function PlanFees({ fees, live }: { fees: Record<string, FeeRate>; live: boolean
     if (!res.ok) setError(res.error || "Could not save that fee.");
   }
 
+  async function saveBands(id: string) {
+    const rows = bands[id] || [];
+    const tiers = rows.map((r, i) => ({
+      below: i === rows.length - 1 ? null : Number(r.below),
+      fee: Number(r.fee),
+    }));
+    const label = PLANS.find((p) => p.id === id)?.name || id;
+    if (!confirm(`Charge ${label} customers these fees by order size, starting now?\n\n${feeTierLines(tiers).join("\n")}`)) return;
+    setError(null);
+    setBusy(id);
+    const res = await setPlanFeeTiers(id, tiers);
+    setBusy(null);
+    if (!res.ok) setError(res.error || "Could not save those fees.");
+  }
+
   return (
     <Card>
       <CardHeader><CardTitle>Transaction fees</CardTitle></CardHeader>
       <CardContent className="space-y-3">
         <p className="text-sm text-ink/50">
-          Fee = subtotal × percent + flat, added to the customer&apos;s total on online payments and sent to
-          Tomora&apos;s account by Paystack. A change applies to the next checkout. Merchants who were paying
-          before the fee launched keep their own rate.
+          Added to the customer&apos;s total on online payments and sent to Tomora&apos;s account by Paystack.
+          A plan either charges a fixed fee by order size, or a percentage plus a flat amount. A change
+          applies to the next checkout.
         </p>
         {!live && (
           <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
@@ -781,7 +805,53 @@ function PlanFees({ fees, live }: { fees: Record<string, FeeRate>; live: boolean
         )}
         {error && <p className="text-sm text-destructive">{error}</p>}
         <div className="grid gap-3 sm:grid-cols-2">
-          {PLANS.map((p) => (
+          {PLANS.map((p) => bands[p.id] ? (
+            <div key={p.id} className="space-y-2 rounded-lg border border-ink/10 p-3 sm:col-span-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="font-medium text-ink">{p.name}</p>
+                  <p className="text-xs text-ink/50">{feeRateLabel(fees[p.id])} per order, by order size</p>
+                </div>
+                <Button size="sm" variant="outline" disabled={!live || busy === p.id} onClick={() => saveBands(p.id)}>
+                  {busy === p.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Save fees"}
+                </Button>
+              </div>
+              <div className="grid gap-1.5 sm:grid-cols-2">
+                {bands[p.id].map((row, i, all) => {
+                  const last = i === all.length - 1;
+                  const from = i === 0 ? null : all[i - 1].below;
+                  return (
+                    <div key={i} className="flex items-center gap-1.5 text-sm">
+                      <span className="w-28 shrink-0 text-xs text-ink/55">
+                        {last ? `₦${Number(from || 0).toLocaleString("en-NG")} and above` : "Under ₦"}
+                      </span>
+                      {!last && (
+                        <input
+                          type="number" min={1} step={1} disabled={!live}
+                          className="h-8 w-24 rounded-md border border-ink/15 px-2 text-sm"
+                          aria-label={`${p.name} band ${i + 1} upper limit`}
+                          value={row.below}
+                          onChange={(e) => setBands((b) => ({
+                            ...b, [p.id]: b[p.id].map((r, j) => (j === i ? { ...r, below: e.target.value } : r)),
+                          }))}
+                        />
+                      )}
+                      <span className="text-xs text-ink/50">fee ₦</span>
+                      <input
+                        type="number" min={0} max={5000} step={1} disabled={!live}
+                        className="h-8 w-20 rounded-md border border-ink/15 px-2 text-sm"
+                        aria-label={`${p.name} band ${i + 1} fee`}
+                        value={row.fee}
+                        onChange={(e) => setBands((b) => ({
+                          ...b, [p.id]: b[p.id].map((r, j) => (j === i ? { ...r, fee: e.target.value } : r)),
+                        }))}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
             <div key={p.id} className="flex flex-wrap items-center gap-2 rounded-lg border border-ink/10 p-3">
               <div className="min-w-[120px] flex-1">
                 <p className="font-medium text-ink">{p.name}</p>
