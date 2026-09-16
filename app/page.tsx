@@ -19,7 +19,7 @@ import {
 import { FAQS, PLANS } from "@/lib/constants";
 import { loadPlanDiscounts, discountedPrice } from "@/lib/discounts";
 import { loadPlanFeeRates, type FeeRates } from "@/lib/plan-fees";
-import { transactionFeeLine } from "@/lib/platform-fee";
+import { feeTierLines, transactionFeeLine } from "@/lib/platform-fee";
 import { CATALOG_TEMPLATES, CATALOG_CATEGORIES } from "@/lib/catalog";
 import { getTemplateOverrides } from "@/lib/template-overrides";
 import { formatNaira } from "@/lib/utils";
@@ -243,7 +243,17 @@ function Pricing({ discounts, feeRates }: { discounts: Record<string, number>; f
                 {/* From the same config the checkout charges from. */}
                 <li className="flex items-start gap-2">
                   <Check className={`mt-0.5 h-4 w-4 shrink-0 ${popular ? "text-cream" : "text-emerald-600"}`} />
-                  <span className={`font-medium ${popular ? "text-cream" : "text-ink"}`}>{transactionFeeLine(feeRates[plan.id])}</span>
+                  <span className={`font-medium ${popular ? "text-cream" : "text-ink"}`}>
+                    {transactionFeeLine(feeRates[plan.id])}
+                    {/* The exact bands, so nobody has to guess what their order costs. */}
+                    {feeRates[plan.id]?.tiers?.length ? (
+                      <span className={`mt-1 block text-xs font-normal leading-relaxed ${popular ? "text-cream/70" : "text-ink/55"}`}>
+                        {feeTierLines(feeRates[plan.id].tiers).map((line) => (
+                          <span key={line} className="block">{line}</span>
+                        ))}
+                      </span>
+                    ) : null}
+                  </span>
                 </li>
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2">

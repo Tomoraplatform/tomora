@@ -35,32 +35,40 @@ vi.mock("@/lib/supabase/admin", () => ({
 
 const load = async () => await import("../plan-fees");
 
+const FREE_TIERS = [
+  { below: 5000, fee: 105 },
+  { below: 15000, fee: 200 },
+  { below: 30000, fee: 250 },
+  { below: 50000, fee: 500 },
+  { below: null, fee: 750 },
+];
+
 beforeEach(() => {
   vi.resetModules();
   subscription = null;
   subscriptionError = null;
   feeTableError = null;
-  // What migration 0047 seeds.
+  // What migration 0050 leaves in plan_fees.
   feeRows = [
-    { plan_id: "free", fee_percent: "3.00", fee_flat: 75 },
-    { plan_id: "starter", fee_percent: "1.50", fee_flat: 0 },
-    { plan_id: "growth", fee_percent: "0", fee_flat: 0 },
-    { plan_id: "pro", fee_percent: "0", fee_flat: 0 },
+    { plan_id: "free", fee_percent: "0", fee_flat: 0, fee_tiers: FREE_TIERS },
+    { plan_id: "starter", fee_percent: "0", fee_flat: 0, fee_tiers: null },
+    { plan_id: "growth", fee_percent: "0", fee_flat: 0, fee_tiers: null },
+    { plan_id: "pro", fee_percent: "0", fee_flat: 0, fee_tiers: null },
   ];
 });
 
 describe("feePolicyForOwner", () => {
-  it("puts an owner with no subscription on the Free plan: 3% + ₦75, no bank transfer", async () => {
+  it("puts an owner with no subscription on the Free plan: fixed fee by order size, no bank transfer", async () => {
     const { feePolicyForOwner } = await load();
     const p = await feePolicyForOwner("u1");
     expect(p.planId).toBe("free");
-    expect(p.rate).toEqual({ percent: 3, flat: 75 });
+    expect(p.rate.tiers).toEqual(FREE_TIERS);
     expect(p.allowBankTransfer).toBe(false);
   });
 
-  it("charges nothing on Growth and Pro", async () => {
+  it("charges nothing on any paid plan, Starter included", async () => {
     const { feePolicyForOwner } = await load();
-    for (const plan of ["growth", "pro", "onetime", "custom"]) {
+    for (const plan of ["starter", "growth", "pro", "onetime", "custom"]) {
       subscription = { status: "active", plan };
       const p = await feePolicyForOwner("u1");
       expect(p.rate, plan).toEqual({ percent: 0, flat: 0 });
@@ -68,14 +76,8 @@ describe("feePolicyForOwner", () => {
     }
   });
 
-  it("charges a new Starter subscriber 1.5%", async () => {
-    subscription = { status: "active", plan: "starter", fee_percent_override: null, fee_flat_override: null };
-    const { feePolicyForOwner } = await load();
-    expect((await feePolicyForOwner("u1")).rate).toEqual({ percent: 1.5, flat: 0 });
-  });
-
   it("keeps a Starter subscriber from before the launch at 0%", async () => {
-    // What the migration writes on every subscription that was already paying.
+    // What migration 0047 writes on every subscription that was already paying.
     subscription = { status: "active", plan: "starter", fee_percent_override: "0", fee_flat_override: 0 };
     const { feePolicyForOwner } = await load();
     const p = await feePolicyForOwner("u1");
@@ -88,7 +90,7 @@ describe("feePolicyForOwner", () => {
     const { feePolicyForOwner } = await load();
     const p = await feePolicyForOwner("u1");
     expect(p.planId).toBe("free");
-    expect(p.rate).toEqual({ percent: 3, flat: 75 });
+    expect(p.rate.tiers).toEqual(FREE_TIERS);
   });
 
   it("treats an expired comp as Free", async () => {
@@ -97,17 +99,32 @@ describe("feePolicyForOwner", () => {
     expect((await feePolicyForOwner("u1")).planId).toBe("free");
   });
 
-  it("uses the rate in plan_fees over the config, which is how fees change without a redeploy", async () => {
-    feeRows = [{ plan_id: "free", fee_percent: "2.5", fee_flat: 50 }];
+  it("uses the fees in plan_fees over the config, which is how fees change without a redeploy", async () => {
+    feeRows = [{ plan_id: "free", fee_percent: "0", fee_flat: 0, fee_tiers: [{ below: 10000, fee: 150 }, { below: null, fee: 600 }] }];
+    const { feePolicyForOwner } = await load();
+    expect((await feePolicyForOwner("u1")).rate.tiers).toEqual([{ below: 10000, fee: 150 }, { below: null, fee: 600 }]);
+  });
+
+  it("still reads a percentage row that has no bands", async () => {
+    feeRows = [{ plan_id: "free", fee_percent: "2.5", fee_flat: 50, fee_tiers: null }];
     const { feePolicyForOwner } = await load();
     expect((await feePolicyForOwner("u1")).rate).toEqual({ percent: 2.5, flat: 50 });
   });
 
-  it("ignores a plan_fees row nobody could have meant, and keeps the default", async () => {
+  it("ignores a fee schedule nobody could have meant, and keeps the default bands", async () => {
+    // Limits going down, and no open band at the end.
+    feeRows = [{ plan_id: "free", fee_percent: "0", fee_flat: 0, fee_tiers: [{ below: 50000, fee: 500 }, { below: 5000, fee: 105 }] }];
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    const { feePolicyForOwner } = await load();
+    expect((await feePolicyForOwner("u1")).rate.tiers).toEqual(FREE_TIERS);
+    errors.mockRestore();
+  });
+
+  it("ignores a percentage row nobody could have meant, and keeps the default", async () => {
     feeRows = [{ plan_id: "free", fee_percent: "30", fee_flat: 75 }];
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
     const { feePolicyForOwner } = await load();
-    expect((await feePolicyForOwner("u1")).rate).toEqual({ percent: 3, flat: 75 });
+    expect((await feePolicyForOwner("u1")).rate.tiers).toEqual(FREE_TIERS);
     errors.mockRestore();
   });
 

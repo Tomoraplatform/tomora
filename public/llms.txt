@@ -14,8 +14,8 @@ Tomora is built and operated in Nigeria. Pricing is in Nigerian Naira, with a Fr
 
 ## Plans
 
-- Free: one website on a Tomora subdomain, with checkout and donations. A 3% + ₦75 transaction fee is added to the customer's total.
-- Starter (₦4,900/month, 3 websites, 1.5% transaction fee), Growth (₦9,800/month, 5 websites, custom domain, no transaction fee) and Pro (₦19,800/month, 10 websites, dedicated account manager, no transaction fee).
+- Free: one website on a Tomora subdomain, with checkout and donations. A fixed transaction fee from ₦105 (orders under ₦5,000) to ₦750 (₦50,000 and above) is added to the customer's total.
+- Starter (₦4,900/month, 3 websites, no transaction fee), Growth (₦9,800/month, 5 websites, custom domain, no transaction fee) and Pro (₦19,800/month, 10 websites, dedicated account manager, no transaction fee).
 - A One-Time plan (first year covers everything in Pro, then a small yearly renewal for domain and infrastructure).
 - Custom domains (.com.ng and others) can be requested inside the dashboard.
 

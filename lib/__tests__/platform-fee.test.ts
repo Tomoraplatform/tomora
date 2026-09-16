@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  computePlatformFee, quoteCharge, validRate, feeRateLabel, transactionFeeLine, NO_FEE,
+  computePlatformFee, quoteCharge, validRate, validTiers, feeRateLabel, feeTierLines, transactionFeeLine,
+  NO_FEE, FREE_PLAN_FEE_TIERS,
 } from "../platform-fee";
 import { PLANS, getPlan } from "../constants";
 
@@ -10,33 +11,89 @@ import { PLANS, getPlan } from "../constants";
  * every payment.
  */
 
-const FREE = { percent: 3, flat: 75 };
-const STARTER = { percent: 1.5, flat: 0 };
+// The percentage form, still supported for any plan an admin sets that way.
+const PERCENT_FLAT = { percent: 3, flat: 75 };
+const PERCENT_ONLY = { percent: 1.5, flat: 0 };
 
 describe("computePlatformFee", () => {
   it("is round(subtotal × percent) + flat", () => {
-    expect(computePlatformFee(10_000, FREE)).toBe(375); // 300 + 75
-    expect(computePlatformFee(10_000, STARTER)).toBe(150);
+    expect(computePlatformFee(10_000, PERCENT_FLAT)).toBe(375); // 300 + 75
+    expect(computePlatformFee(10_000, PERCENT_ONLY)).toBe(150);
   });
 
   it("rounds the percentage part to whole naira before adding the flat part", () => {
     // 3% of 1,234 is 37.02
-    expect(computePlatformFee(1_234, FREE)).toBe(37 + 75);
+    expect(computePlatformFee(1_234, PERCENT_FLAT)).toBe(37 + 75);
     // 1.5% of 999 is 14.985, which rounds up
-    expect(computePlatformFee(999, STARTER)).toBe(15);
+    expect(computePlatformFee(999, PERCENT_ONLY)).toBe(15);
   });
 
   it("is nothing on a plan without a fee, or on nothing", () => {
     expect(computePlatformFee(50_000, NO_FEE)).toBe(0);
     expect(computePlatformFee(50_000, null)).toBe(0);
+    expect(computePlatformFee(0, PERCENT_FLAT)).toBe(0);
+    expect(computePlatformFee(-10, PERCENT_FLAT)).toBe(0);
+  });
+});
+
+describe("the Free plan's fixed fee by order size", () => {
+  const FREE = { percent: 0, flat: 0, tiers: FREE_PLAN_FEE_TIERS };
+
+  it("charges each band's fee, with 'below' meaning strictly below", () => {
+    expect(computePlatformFee(100, FREE)).toBe(105);
+    expect(computePlatformFee(4_999, FREE)).toBe(105);
+    expect(computePlatformFee(5_000, FREE)).toBe(200);
+    expect(computePlatformFee(14_999, FREE)).toBe(200);
+    expect(computePlatformFee(15_000, FREE)).toBe(250);
+    expect(computePlatformFee(29_999, FREE)).toBe(250);
+    expect(computePlatformFee(30_000, FREE)).toBe(500);
+    expect(computePlatformFee(49_999, FREE)).toBe(500);
+    expect(computePlatformFee(50_000, FREE)).toBe(750);
+    expect(computePlatformFee(2_000_000, FREE)).toBe(750);
+  });
+
+  it("charges nothing on nothing", () => {
     expect(computePlatformFee(0, FREE)).toBe(0);
-    expect(computePlatformFee(-10, FREE)).toBe(0);
+  });
+
+  it("adds the fee on top of what the customer pays", () => {
+    expect(quoteCharge(10_000, FREE)).toEqual({ subtotal: 10_000, platformFee: 200, passthroughFee: 0, totalCharged: 10_200 });
+  });
+
+  it("labels the fee as a range, and lists the bands in words", () => {
+    expect(feeRateLabel(FREE)).toBe("₦105–₦750");
+    expect(transactionFeeLine(FREE)).toBe("₦105–₦750 per order by order size, paid by your customer");
+    expect(feeTierLines(FREE_PLAN_FEE_TIERS)).toEqual([
+      "Under ₦5,000: ₦105",
+      "₦5,000 to under ₦15,000: ₦200",
+      "₦15,000 to under ₦30,000: ₦250",
+      "₦30,000 to under ₦50,000: ₦500",
+      "₦50,000 and above: ₦750",
+    ]);
+  });
+});
+
+describe("validTiers", () => {
+  it("accepts a rising schedule that ends with an open band", () => {
+    expect(validTiers(FREE_PLAN_FEE_TIERS)).toEqual(FREE_PLAN_FEE_TIERS);
+    expect(validTiers([{ below: "10000", fee: "150" }, { below: null, fee: 600 }])).toEqual([
+      { below: 10000, fee: 150 }, { below: null, fee: 600 },
+    ]);
+  });
+
+  it("refuses a schedule that would leave an order without a fee, or charge nonsense", () => {
+    expect(validTiers([{ below: 5000, fee: 105 }])).toBeNull(); // no open band
+    expect(validTiers([{ below: 50000, fee: 500 }, { below: 5000, fee: 105 }, { below: null, fee: 750 }])).toBeNull(); // falling
+    expect(validTiers([{ below: null, fee: 75000 }])).toBeNull(); // fee too big
+    expect(validTiers([{ below: null, fee: -1 }])).toBeNull();
+    expect(validTiers([])).toBeNull();
+    expect(validTiers("nope")).toBeNull();
   });
 });
 
 describe("quoteCharge", () => {
   it("charges the customer subtotal + fee, and the merchant is owed the subtotal", () => {
-    const q = quoteCharge(10_000, FREE);
+    const q = quoteCharge(10_000, PERCENT_FLAT);
     expect(q).toEqual({ subtotal: 10_000, platformFee: 375, passthroughFee: 0, totalCharged: 10_375 });
   });
 
@@ -50,7 +107,7 @@ describe("quoteCharge", () => {
   });
 
   it("grosses up the whole charge, fee included, when Paystack's fee is passed on", () => {
-    const q = quoteCharge(10_000, FREE, 2.5);
+    const q = quoteCharge(10_000, PERCENT_FLAT, 2.5);
     expect(q.platformFee).toBe(375);
     expect(q.totalCharged).toBe(Math.round(10_375 * 1.025));
     expect(q.subtotal + q.platformFee + q.passthroughFee).toBe(q.totalCharged);
@@ -75,18 +132,21 @@ describe("validRate", () => {
 
 describe("labels", () => {
   it("say the fee the way a pricing card should", () => {
-    expect(feeRateLabel(FREE)).toBe("3% + ₦75");
-    expect(feeRateLabel(STARTER)).toBe("1.5%");
+    expect(feeRateLabel(PERCENT_FLAT)).toBe("3% + ₦75");
+    expect(feeRateLabel(PERCENT_ONLY)).toBe("1.5%");
     expect(transactionFeeLine(NO_FEE)).toBe("No transaction fee");
-    expect(transactionFeeLine(FREE)).toBe("3% + ₦75 per transaction, paid by your customer");
+    expect(transactionFeeLine(PERCENT_FLAT)).toBe("3% + ₦75 per transaction, paid by your customer");
   });
 });
 
 describe("the plan config", () => {
   it("has the launch prices and fees", () => {
     const byId = Object.fromEntries(PLANS.map((p) => [p.id, p]));
-    expect([byId.free.price, byId.free.transactionFeePercent, byId.free.transactionFeeFlat]).toEqual([0, 3, 75]);
-    expect([byId.starter.price, byId.starter.transactionFeePercent, byId.starter.transactionFeeFlat]).toEqual([4900, 1.5, 0]);
+    expect([byId.free.price, byId.free.transactionFeePercent, byId.free.transactionFeeFlat]).toEqual([0, 0, 0]);
+    expect(byId.free.transactionFeeTiers).toEqual(FREE_PLAN_FEE_TIERS);
+    // Only the Free plan carries a fee.
+    expect([byId.starter.price, byId.starter.transactionFeePercent, byId.starter.transactionFeeFlat]).toEqual([4900, 0, 0]);
+    for (const p of PLANS.filter((x) => x.id !== "free")) expect(p.transactionFeeTiers, p.id).toBeUndefined();
     expect([byId.growth.price, byId.growth.transactionFeePercent]).toEqual([9800, 0]);
     expect([byId.pro.price, byId.pro.period, byId.pro.transactionFeePercent]).toEqual([19800, "month", 0]);
     expect([byId.onetime.price, byId.onetime.transactionFeePercent]).toEqual([84500, 0]);

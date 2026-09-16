@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { FeeRate } from "@/lib/platform-fee";
+import { validTiers, type FeeRate } from "@/lib/platform-fee";
 
 export interface SiteFees {
   rate: FeeRate;
@@ -25,8 +25,15 @@ export function useSiteFees(siteId?: string | null): SiteFees | null {
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (cancelled || !d) return;
+        // Bands are checked again here: a display that disagreed with what the
+        // server charges would show the customer the wrong total.
+        const tiers = validTiers(d.tiers);
         setFees({
-          rate: { percent: Number(d.percent) || 0, flat: Number(d.flat) || 0 },
+          rate: {
+            percent: Number(d.percent) || 0,
+            flat: Number(d.flat) || 0,
+            ...(tiers ? { tiers } : {}),
+          },
           allowBankTransfer: d.allowBankTransfer !== false,
         });
       })
