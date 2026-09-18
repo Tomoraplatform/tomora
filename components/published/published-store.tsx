@@ -10,6 +10,7 @@ import { formatNaira, contrastText } from "@/lib/utils";
 import { CartDrawer } from "./cart-drawer";
 import { useStoreCart } from "./store/use-store-cart";
 import { ownsMobileBar } from "@/lib/templates/mobile-bar";
+import { optimisedFallback, optimisedSrcSet } from "@/lib/image";
 
 export function PublishedStore({
   templateId, siteData, brandColor, products, reviews = [], siteId, bankName, accountNumber, accountName, paystackEnabled = false, isTenantHost = false,
@@ -130,7 +131,9 @@ export function PublishedStore({
               <div className="bg-neutral-100">
                 {detailImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={detailImage} alt={detail.name} className="h-72 w-full object-cover md:h-full" />
+                  <img src={optimisedFallback(detailImage)}
+                    {...(optimisedSrcSet(detailImage) ? { srcSet: optimisedSrcSet(detailImage), sizes: "(max-width: 768px) 100vw, 600px" } : {})}
+                    alt={detail.name} decoding="async" className="h-72 w-full object-cover md:h-full" />
                 ) : <div className="h-72 md:h-full" />}
               </div>
               <div className="space-y-4 p-5">
