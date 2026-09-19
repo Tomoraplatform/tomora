@@ -19,7 +19,7 @@ import { currentMode } from "@/lib/sandbox";
 import { loadRevenue } from "@/lib/analytics/revenue";
 import { RevenueAnalytics } from "@/components/dashboard/revenue-analytics";
 
-export const metadata = { title: "Dashboard | Tomora" };
+export const metadata = { title: "Dashboard" };
 
 export default async function DashboardHome() {
   const { site, sites, subscription, profile } = await getDashboardData();

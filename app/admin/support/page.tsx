@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export const metadata = {
   robots: { index: false, follow: false },
-  title: "Support | Admin | Tomora",
+  title: "Support | Admin",
 };
 export const dynamic = "force-dynamic";
 

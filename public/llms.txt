@@ -1,25 +1,56 @@
 # Tomora
 
-> Tomora is a no-code website builder made for African businesses, NGOs, churches, artisans and creators. Users pick a professionally designed template, add their brand, text, photos and products, and publish a live website in minutes at their own subdomain (yourname.tomora.com.ng) or a custom domain. Payments are handled through Paystack and payouts go directly to the owner's bank account.
+> Tomora is a no-code website builder and online store platform made in Nigeria for African businesses, NGOs, churches, schools, coaches and creators. You pick a professionally designed template, add your brand, photos and products, and publish a live website in minutes on a free subdomain (yourname.tomora.com.ng) or your own domain. Customers pay with Paystack (card, bank transfer, USSD) and the money goes straight into the owner's own bank account. Prices are in Nigerian Naira and there is a free plan with no credit card required.
 
-Tomora is built and operated in Nigeria. Pricing is in Nigerian Naira, with a Free plan to start.
+Website: https://www.tomora.com.ng
+Sign up free: https://www.tomora.com.ng/signup
+Support: support@tomora.com.ng
 
-## What Tomora offers
+## Who Tomora is for
 
-- [Website builder](https://www.tomora.com.ng): 15+ templates across Business & Services, Ecommerce, Organisations & NGOs, Portfolio & Creators, and Restaurants & Food. Live editing, custom branding, hero videos, testimonials, before and after results, and donation projects with progress bars.
-- [Online stores](https://www.tomora.com.ng): full ecommerce with product catalogs, categories, product pages, carts, Paystack checkout, order management and delivery settings.
-- [Donations for NGOs and churches](https://www.tomora.com.ng): multiple fundraising projects per site, each with its own target and progress bar. Donations go to the site owner's wallet and are withdrawn to their own bank account.
-- [Tomora Academy](https://www.tomora.com.ng/academy): practical video and slide courses watched inside the portal, such as building websites and digital products with AI.
-- [Tomora AI](https://www.tomora.com.ng/tomora-ai): a template library where users customise premium designs and copy the exact HTML and CSS for use on any platform.
+- Small businesses and shops in Nigeria that want to sell online and take payments without a developer
+- Fashion, beauty, food and retail sellers who currently sell through WhatsApp or Instagram and want a proper storefront
+- NGOs and churches collecting donations, with separate fundraising projects and progress bars
+- Coaches, consultants, creators and personal brands who need a professional site fast
+- Schools and organisations that need an information website
 
-## Plans
+## What you can build
 
-- Free: one website on a Tomora subdomain, with checkout and donations. A fixed transaction fee from ₦105 (orders under ₦5,000) to ₦750 (₦50,000 and above) is added to the customer's total.
-- Starter (₦4,900/month, 3 websites, no transaction fee), Growth (₦9,800/month, 5 websites, custom domain, no transaction fee) and Pro (₦19,800/month, 10 websites, dedicated account manager, no transaction fee).
-- A One-Time plan (first year covers everything in Pro, then a small yearly renewal for domain and infrastructure).
-- Custom domains (.com.ng and others) can be requested inside the dashboard.
+- [Business websites](https://www.tomora.com.ng): templates for services, portfolios, restaurants, organisations and more, with live editing, custom brand colours, logos, hero images and videos, testimonials and contact forms.
+- [Online stores](https://www.tomora.com.ng): product catalogues with photos, prices in Naira, stock, colour and size variants, categories, product pages, cart and Paystack checkout, order management, delivery settings, discount codes and customer reviews.
+- [Donation sites](https://www.tomora.com.ng): multiple fundraising projects per site, each with its own target and progress bar.
+- [Tomora Academy](https://www.tomora.com.ng/academy): practical video courses, such as building websites and digital products with AI. Creators can also sell their own courses.
+- [Free web resources](https://www.tomora.com.ng/resources): copy-ready HTML sections and prompts.
+- [Tomora AI](https://www.tomora.com.ng/tomora-ai): a library of premium designs you can customise and copy.
 
-## Support
+## How it works
 
-- Email: tommyconcept4@gmail.com
-- Website: https://www.tomora.com.ng
+1. Create a free account at https://www.tomora.com.ng/signup (no credit card).
+2. Choose the kind of website you need and a template.
+3. Add your business name, logo, brand colour, headline and photos.
+4. Add products or donation projects, and your bank account for payouts.
+5. Publish to yourname.tomora.com.ng in one click, or connect your own domain.
+6. Track orders, revenue and visits from the dashboard on your phone.
+
+## Pricing (Nigerian Naira)
+
+- Free: ₦0. One website on a Tomora subdomain with online checkout and donations, for as long as you like. A small fixed fee is added to the customer's total at checkout (never taken from your sale): ₦105 under ₦5,000, ₦200 under ₦15,000, ₦250 under ₦30,000, ₦500 under ₦50,000, ₦750 for ₦50,000 and above.
+- Starter: ₦4,900 per month. Up to 3 websites, online store, order management, lead capture, no transaction fee. Custom domain available for ₦8,000.
+- Growth: ₦9,800 per month. Up to 5 websites, custom domain included, inventory management, customer reviews, no transaction fee.
+- Pro: ₦19,800 per month. Up to 10 websites, custom domain included, dedicated account manager, VIP support, no transaction fee.
+- One-Time: ₦84,500 for the first year with everything in Pro and a custom domain, then ₦20,000 per year.
+
+Paystack's own processing fee applies on every plan. Current prices are always shown at https://www.tomora.com.ng/#pricing.
+
+## Frequently asked questions
+
+- Is Tomora free? Yes. The Free plan gives one website with online checkout and donations, with no time limit and no credit card.
+- Can I use my own domain? Yes. Growth, Pro and One-Time include a custom domain; on Starter one can be added for ₦8,000.
+- Does Tomora support Paystack? Yes. Stores collect payments through Paystack straight into the owner's own bank account.
+- Can I sell products? Yes. Choose an e-commerce template, add products with images and Naira prices, and buyers check out with Paystack.
+- Do I need to know how to code? No. Everything is done by picking a template and filling in your details.
+- Does it work on a phone? Yes. Every site is mobile-responsive, and the dashboard is designed to be run from a phone.
+
+## About
+
+Tomora is built and operated in Nigeria and serves businesses across Africa. The main site is https://www.tomora.com.ng.

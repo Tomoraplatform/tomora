@@ -23,11 +23,13 @@ export const metadata: Metadata = {
     "website builder", "no code website", "Nigeria website builder", "African business website",
     "online store builder", "church website", "NGO website", "ecommerce Nigeria", "Tomora",
   ],
-  alternates: { canonical: "/" },
+  // No canonical here. Set on this layout it is inherited by every page in the
+  // app, customer storefronts included, and declared all of them duplicates of
+  // the Tomora homepage. Each page names its own (see app/page.tsx and
+  // lib/seo/storefront.ts); a page without one is canonical to itself.
   openGraph: {
     type: "website",
     siteName: "Tomora",
-    url: "https://www.tomora.com.ng",
     title: "Tomora | Build Your Business Website in Minutes",
     description:
       "No code. No stress. Pick a template, add your brand, and go live. Built for African businesses.",

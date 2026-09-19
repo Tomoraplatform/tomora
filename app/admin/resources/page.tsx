@@ -7,7 +7,7 @@ import { ResourcesManager } from "@/components/admin/resources-manager";
 
 export const metadata = {
   robots: { index: false, follow: false },
-  title: "Resources | Admin | Tomora",
+  title: "Resources | Admin",
 };
 export const dynamic = "force-dynamic";
 

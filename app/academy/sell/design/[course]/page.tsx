@@ -9,7 +9,7 @@ import { readSalesPage } from "@/lib/creator/sales-page";
 import { SalesPageEditor } from "@/components/creator/sales-page-editor";
 import { APP_DOMAIN } from "@/lib/constants";
 
-export const metadata = { robots: { index: false, follow: false }, title: "Design your sales page | Tomora" };
+export const metadata = { robots: { index: false, follow: false }, title: "Design your sales page" };
 export const dynamic = "force-dynamic";
 
 interface Params { params: { course: string } }

@@ -5,7 +5,7 @@ import { scopeToMode } from "@/lib/orders/query";
 import { currentMode } from "@/lib/sandbox";
 import { loadRevenue } from "@/lib/analytics/revenue";
 
-export const metadata = { title: "Milestones & Goals | Tomora" };
+export const metadata = { title: "Milestones & Goals" };
 
 const dayKey = (iso: string) => new Date(iso).toISOString().slice(0, 10);
 const monthKey = (iso: string) => new Date(iso).toISOString().slice(0, 7);

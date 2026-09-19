@@ -7,7 +7,7 @@ import { platformBalance } from "@/lib/creator/money";
 import { PlatformWallet } from "@/components/admin/platform-wallet";
 import { formatNaira } from "@/lib/utils";
 
-export const metadata = { robots: { index: false, follow: false }, title: "Transactions | Admin | Tomora" };
+export const metadata = { robots: { index: false, follow: false }, title: "Transactions | Admin" };
 export const dynamic = "force-dynamic";
 
 type Row = {

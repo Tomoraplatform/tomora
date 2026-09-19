@@ -9,7 +9,7 @@ import { siteLiveUrl } from "@/lib/site-url";
 import { loadRevenue } from "@/lib/analytics/revenue";
 import type { Order, Product, Site } from "@/lib/database.types";
 
-export const metadata = { robots: { index: false, follow: false }, title: "Sandbox | Tomora" };
+export const metadata = { robots: { index: false, follow: false }, title: "Sandbox" };
 
 export default async function SandboxPage() {
   // The nav hides this from everyone else, but the page guards itself too: a

@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { TEAM_PLANS } from "@/lib/constants";
 import { StaffManager, type StaffRow } from "@/components/dashboard/staff-manager";
 
-export const metadata = { title: "Staff | Tomora" };
+export const metadata = { title: "Staff" };
 
 export default async function StaffPage() {
   const { userId, subscription, isStaff } = await getDashboardData();

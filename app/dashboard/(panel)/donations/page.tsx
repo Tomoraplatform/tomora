@@ -6,7 +6,7 @@ import { reconcilePendingDonations } from "@/lib/confirm-payments";
 import { summariseDonations, type PaidGift, type ProjectDef } from "@/lib/donations/totals";
 import { DonationsManager, type DonationRecord, type ProjectSummary } from "@/components/dashboard/donations-manager";
 
-export const metadata = { title: "Donations | Tomora" };
+export const metadata = { title: "Donations" };
 
 export default async function DonationsPage() {
   const { site } = await getDashboardData();

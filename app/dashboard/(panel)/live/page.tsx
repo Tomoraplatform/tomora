@@ -5,7 +5,7 @@ import { currentSiteId } from "@/lib/dashboard";
 import { liveConfigured, liveNumber, storeLink, LIVE_COMMISSION_PERCENT } from "@/lib/live/config";
 import { LiveManager } from "@/components/dashboard/live-manager";
 
-export const metadata = { title: "Tomora Live | Tomora" };
+export const metadata = { title: "Tomora Live" };
 
 export default async function LivePage() {
   const supabase = createClient();

@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { listCourses, getCourseWithContent, listAllReviews } from "@/lib/academy/db";
 import { AcademyManager, type CourseRoster, type ReviewsByCourse, type AdminCoupon } from "@/components/admin/academy-manager";
 
-export const metadata = { robots: { index: false, follow: false },  title: "Academy | Admin | Tomora" };
+export const metadata = { robots: { index: false, follow: false },  title: "Academy | Admin" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminAcademyPage() {

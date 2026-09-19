@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CreatorsManager, type AdminCreatorRow, type AdminPayoutRow, type AdminDomainReq } from "@/components/admin/creators-manager";
 
-export const metadata = { robots: { index: false, follow: false }, title: "Creators | Admin | Tomora" };
+export const metadata = { robots: { index: false, follow: false }, title: "Creators | Admin" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminCreatorsPage() {
