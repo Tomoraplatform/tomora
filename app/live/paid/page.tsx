@@ -5,7 +5,7 @@ import { confirmOrdersPaid } from "@/lib/confirm-payments";
 import { liveNumber } from "@/lib/live/config";
 import { LIVE_REFERENCE_PREFIX } from "@/lib/live/data";
 
-export const metadata = { title: "Payment received | Tomora", robots: { index: false, follow: false } };
+export const metadata = { title: "Payment received", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
 
 /**

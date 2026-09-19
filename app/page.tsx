@@ -24,6 +24,10 @@ import { CATALOG_TEMPLATES, CATALOG_CATEGORIES } from "@/lib/catalog";
 import { getTemplateOverrides } from "@/lib/template-overrides";
 import { formatNaira } from "@/lib/utils";
 
+// The homepage is the one page that is canonical at the root. This used to be
+// set on the root layout, where every other page inherited it.
+export const metadata = { alternates: { canonical: "/" } };
+
 const CATALOG_LABEL = Object.fromEntries(
   CATALOG_CATEGORIES.map((c) => [c.id, c.name])
 ) as Record<string, string>;
@@ -70,18 +74,49 @@ export default async function Home({
               "@type": "WebSite",
               name: "Tomora",
               url: "https://www.tomora.com.ng",
+              inLanguage: "en-NG",
             },
             {
               "@context": "https://schema.org",
               "@type": "SoftwareApplication",
               name: "Tomora",
               applicationCategory: "BusinessApplication",
+              applicationSubCategory: "Website builder",
               operatingSystem: "Web",
               url: "https://www.tomora.com.ng",
-              description: "Build and publish a business website with online payments, no code required.",
-              offers: { "@type": "Offer", price: "0", priceCurrency: "NGN", description: "Free plan" },
+              description: "No-code website builder and online store for Nigerian and African businesses, NGOs, churches and creators. Publish in minutes on a free subdomain or your own domain, and accept payments with Paystack straight into your bank account.",
+              // Every plan, at the price the page is showing today, so a search
+              // result or an AI answer quotes the same number a visitor sees.
+              // A plan without a fixed price (Custom) is quoted, so it is left out.
+              offers: PLANS.flatMap((plan) => (plan.price === null ? [] : [{ ...plan, price: plan.price }])).map((plan) => ({
+                "@type": "Offer",
+                name: `${plan.name} plan`,
+                price: String(discountedPrice(plan.price, discounts[plan.id])),
+                priceCurrency: "NGN",
+                description: plan.tagline,
+                url: "https://www.tomora.com.ng/#pricing",
+                ...(plan.price > 0
+                  ? {
+                      priceSpecification: {
+                        "@type": "UnitPriceSpecification",
+                        price: String(discountedPrice(plan.price, discounts[plan.id])),
+                        priceCurrency: "NGN",
+                        billingDuration: plan.period === "year" ? "P1Y" : "P1M",
+                      },
+                    }
+                  : {}),
+              })),
             },
-          ]),
+            {
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: FAQS.map((f) => ({
+                "@type": "Question",
+                name: f.q,
+                acceptedAnswer: { "@type": "Answer", text: f.a },
+              })),
+            },
+          ]).replace(/</g, "\\u003c"),
         }}
       />
       <MarketingNav />

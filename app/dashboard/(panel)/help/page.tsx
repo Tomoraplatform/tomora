@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { HelpAndSupport } from "@/components/dashboard/help-support";
 
-export const metadata = { title: "Help & Support | Tomora" };
+export const metadata = { title: "Help & Support" };
 
 export default async function HelpPage() {
   // Prefill the reply address with the one on the account, while still letting

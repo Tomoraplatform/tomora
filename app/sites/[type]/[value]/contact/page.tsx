@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { loadPublishedSite } from "@/lib/published";
+import { storefrontMetadata } from "@/lib/seo/storefront";
 import { ChronovaContact } from "@/components/published/chronova/chronova-contact";
 
 // Cached and served from the edge, then dropped the moment the owner changes
@@ -24,8 +25,8 @@ interface Params { params: { type: string; value: string } }
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const type = params.type === "custom" ? "custom" : "subdomain";
   const data = await loadPublishedSite(type, decodeURIComponent(params.value));
-  const name = data?.site.site_data?.businessName || "Store";
-  return { title: `Contact | ${name}` };
+  if (!data) return { title: "Not found", robots: { index: false, follow: false } };
+  return storefrontMetadata(data.site, data.isLive, { path: "/contact", title: "Contact" });
 }
 
 export default async function ContactPage({ params }: Params) {

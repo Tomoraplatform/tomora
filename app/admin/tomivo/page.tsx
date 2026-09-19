@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/admin";
 import { listAllDesigns } from "@/lib/tomivo/db";
 import { TomivoManager } from "@/components/admin/tomivo-manager";
 
-export const metadata = { robots: { index: false, follow: false }, title: "AI Designs | Admin | Tomora" };
+export const metadata = { robots: { index: false, follow: false }, title: "AI Designs | Admin" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminTomivoPage() {

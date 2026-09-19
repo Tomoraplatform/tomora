@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { loadPublishedSite } from "@/lib/published";
 import { slugify } from "@/lib/utils";
+import { storefrontMetadata } from "@/lib/seo/storefront";
 import { StoreCategoryPage } from "@/components/published/store/store-category-page";
 
 // Cached and served from the edge, then dropped the moment the owner changes
@@ -25,9 +26,16 @@ interface Params { params: { type: string; value: string; slug: string } }
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const type = params.type === "custom" ? "custom" : "subdomain";
   const data = await loadPublishedSite(type, decodeURIComponent(params.value));
-  if (!data) return { title: "Not found" };
-  const name = data.site.site_data?.businessName || "Store";
-  return { title: `${decodeURIComponent(params.slug)} | ${name}` };
+  if (!data) return { title: "Not found", robots: { index: false, follow: false } };
+  const slug = decodeURIComponent(params.slug);
+  // Title the page with the category's real name, not its URL slug.
+  const tile = (data.site.site_data?.shopCategories || []).find((c) => slugify(c.name) === slug);
+  const label = tile?.name || data.products.find((p) => p.category && slugify(p.category) === slug)?.category || slug;
+  return storefrontMetadata(data.site, data.isLive, {
+    path: `/category/${slug}`,
+    title: label,
+    image: tile?.image,
+  });
 }
 
 export default async function CategoryPage({ params }: Params) {

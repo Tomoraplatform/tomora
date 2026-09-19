@@ -8,7 +8,7 @@ import { stageOf } from "@/lib/outreach";
 import { OutreachComposer, type OutreachRow } from "@/components/admin/outreach-composer";
 import { OutreachHistory, type OutreachSend } from "@/components/admin/outreach-history";
 
-export const metadata = { robots: { index: false, follow: false }, title: "Outreach | Admin | Tomora" };
+export const metadata = { robots: { index: false, follow: false }, title: "Outreach | Admin" };
 export const dynamic = "force-dynamic";
 
 /**

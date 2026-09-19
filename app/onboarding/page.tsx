@@ -7,7 +7,7 @@ import { getTemplateOverrides } from "@/lib/template-overrides";
 import { TikTokEvent } from "@/components/analytics/tiktok-pixel";
 import { TIKTOK_EVENTS } from "@/lib/tiktok/config";
 
-export const metadata = { robots: { index: false, follow: false },  title: "Set Up Your Site | Tomora" };
+export const metadata = { robots: { index: false, follow: false },  title: "Set Up Your Site" };
 
 export default async function OnboardingPage({
   searchParams,

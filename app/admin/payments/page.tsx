@@ -9,7 +9,7 @@ import { getPlan, APP_DOMAIN } from "@/lib/constants";
 import { diagnose, worst, type HealthIssue } from "@/lib/payments-health";
 import { ReconnectPayoutsButton } from "@/components/admin/reconnect-payouts-button";
 
-export const metadata = { robots: { index: false, follow: false }, title: "Payments health | Admin | Tomora" };
+export const metadata = { robots: { index: false, follow: false }, title: "Payments health | Admin" };
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 

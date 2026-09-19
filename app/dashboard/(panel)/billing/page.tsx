@@ -11,7 +11,7 @@ import { feeRateLabel, isFree, transactionFeeLine } from "@/lib/platform-fee";
 import { formatNaira } from "@/lib/utils";
 import { SUPPORT_EMAIL } from "@/lib/support";
 
-export const metadata = { title: "Billing | Tomora" };
+export const metadata = { title: "Billing" };
 
 const PAID_PLANS = PLANS.filter((p) => (p.price ?? 0) > 0);
 

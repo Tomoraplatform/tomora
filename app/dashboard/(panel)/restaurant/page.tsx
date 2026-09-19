@@ -4,7 +4,7 @@ import { catalogTemplate } from "@/lib/catalog";
 import { RestaurantSettings } from "@/components/dashboard/restaurant-settings";
 import { combosOf } from "@/lib/restaurant/types";
 
-export const metadata = { title: "Restaurant | Tomora" };
+export const metadata = { title: "Restaurant" };
 
 export default async function RestaurantPage() {
   const { site } = await getDashboardData();

@@ -12,7 +12,7 @@ import { feePolicyForOwner } from "@/lib/plan-fees";
 import { feeRateLabel, isFree } from "@/lib/platform-fee";
 import { getPlan } from "@/lib/constants";
 
-export const metadata = { title: "Payouts | Tomora" };
+export const metadata = { title: "Payouts" };
 
 export default async function PayoutsPage() {
   const { site, sites } = await getDashboardData();

@@ -5,7 +5,7 @@ import { WALLET_UNLIMITED_PLANS } from "@/lib/constants";
 import { WalletManager, type WalletTx } from "@/components/dashboard/wallet-manager";
 import { currentMode } from "@/lib/sandbox";
 
-export const metadata = { title: "Payments received | Tomora" };
+export const metadata = { title: "Payments received" };
 
 export default async function WalletPage() {
   const { site, subscription } = await getDashboardData();

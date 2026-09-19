@@ -4,6 +4,7 @@ import { loadPublishedSite } from "@/lib/published";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Review } from "@/lib/database.types";
 import { StoreProductPage } from "@/components/published/store/store-product-page";
+import { jsonLdHtml, productJsonLd, storefrontMetadata } from "@/lib/seo/storefront";
 
 // Cached and served from the edge, then dropped the moment the owner changes
 // anything (see lib/site-cache.ts). The five minutes is only a backstop for a
@@ -27,9 +28,13 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const type = params.type === "custom" ? "custom" : "subdomain";
   const data = await loadPublishedSite(type, decodeURIComponent(params.value));
   const product = data?.products.find((p) => p.id === params.id);
-  if (!data || !product) return { title: "Product not found" };
-  const name = data.site.site_data?.businessName || "Store";
-  return { title: `${product.name} | ${name}`, description: product.description || undefined };
+  if (!data || !product) return { title: "Product not found", robots: { index: false, follow: false } };
+  return storefrontMetadata(data.site, data.isLive, {
+    path: `/product/${product.id}`,
+    title: product.name,
+    description: product.description,
+    image: product.images?.[0],
+  });
 }
 
 export default async function ProductPage({ params }: Params) {
@@ -54,12 +59,18 @@ export default async function ProductPage({ params }: Params) {
   }
 
   return (
-    <StoreProductPage
-      site={data.site}
-      product={product}
-      categoryProducts={data.products}
-      reviews={reviews}
-      paystackEnabled={!!data.site.paystack_subaccount}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(productJsonLd(data.site, product, reviews)) }}
+      />
+      <StoreProductPage
+        site={data.site}
+        product={product}
+        categoryProducts={data.products}
+        reviews={reviews}
+        paystackEnabled={!!data.site.paystack_subaccount}
+      />
+    </>
   );
 }

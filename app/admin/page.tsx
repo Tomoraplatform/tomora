@@ -9,7 +9,7 @@ import { APP_DOMAIN, FIRST_PAYMENT_AMOUNT, getPlan } from "@/lib/constants";
 import { loadPlanFeeRates } from "@/lib/plan-fees";
 import type { Profile, Site, Subscription, Domain, DomainRequest } from "@/lib/database.types";
 
-export const metadata = { robots: { index: false, follow: false },  title: "Admin | Tomora" };
+export const metadata = { robots: { index: false, follow: false },  title: "Admin" };
 
 export default async function AdminPage() {
   await requireAdmin();

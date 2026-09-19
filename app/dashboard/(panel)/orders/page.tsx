@@ -6,7 +6,7 @@ import type { Order, Product } from "@/lib/database.types";
 import { scopeToMode } from "@/lib/orders/query";
 import { currentMode } from "@/lib/sandbox";
 
-export const metadata = { title: "Orders | Tomora" };
+export const metadata = { title: "Orders" };
 
 export default async function OrdersPage() {
   const { site } = await getDashboardData();
